@@ -1,0 +1,25 @@
+Не сработал <not><verifyElementText description="Checks" type="b" text="Notice" /></not>
+надо было проверить, что такого элемент нет. Но возвращается что нет, хотя он есть. (берётся первый попавшийся элемент)
+
+Также не смог найти текст "Notice: ", потому что был тег внутри... А Notice нашёл.
+
+config.properties - нужен, чтобы использовать настройки одновременно и в config теста и в самом тесте
+${prop} - для свойств, определённых до <target..
+#{prop} - для свойств, определённых внутри теста
+
+
+<verifyElement type="A" text="#{db2}" /> не сработал почему-то...............
+
+
+
+
+<!-- remove db - we need later test deleting db
+<group description="Delete DB">
+    <invoke url="http://home1c.am/msc/?db=#{database}&amp;s=tbl_list&amp;action=dbDelete" />
+</group> -->
+
+
+
+<!--
+ <property name="wt.testInWork" value="tests/allTests.xml"/>
+-->

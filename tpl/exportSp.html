@@ -1,0 +1,18 @@
+		<style>
+		.contentTable { white-space:nowrap}
+		</style>
+		<form method="post" action="">
+			<input type="hidden" name="exportSpecial" value="1">	
+			<?php include DIR_MYSQL . 'tpl/exportOptions.htm.php'; ?>	
+			<p><input type="submit" value="Выполнить" /></p>
+			<?php echo plDrawSelector($setsArray, ' onChange="location=\'?db='.$msc->db.'&s='.$msc->page.'&set=\'+this.options[this.selectedIndex].value"', GET('set'), '			', true, '<option value=0>Загрузить установку</option>')?>			
+			<input type="submit" name="save" value="Сохранить изменения"/>
+			<input type="submit" name="new" value="Создать новую установку" onClick="if (m = prompt('Введите имя для установки', 'Новая')) {this.value = m; } else {return false;}" />
+			<input type="submit" name="delete" value="Удалить установку"/>
+			<?php echo $table->make()?>
+		</form>
+		<script language="javascript">
+		function updateCheckeds(object, num) {
+			$('row2'+num).checked = object.checked;
+		}
+		</script>

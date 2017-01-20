@@ -1,0 +1,479 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+    <!ENTITY config SYSTEM "config.xml">
+    <!ENTITY prepare_db SYSTEM "tests/prepare_db.xml">
+    <!ENTITY check_success SYSTEM "tests/check_success.xml">
+    <!ENTITY definitions__databaseAdd__xml SYSTEM "definitions/databaseAdd.xml">
+    <!ENTITY definitions__query__xml SYSTEM "definitions/query.xml">
+    <!ENTITY check_xpath SYSTEM "tests/xpath.xml">
+]>
+
+<project name="example" default="wt.full">
+
+    <property file="config.properties"/>
+	<property name="webtest.home" value="C:\WebTest"/>
+    <property name="baseUrl" value="${config.protocol}://${config.host}${config.basepath}"/>
+
+	<import file="${webtest.home}/webtest.xml" description="Import all functionalities for a full build"/>
+
+	<target name="wt.testInWork" depends="all" />
+	<target name="all" depends="checkDB,checkStructure,addTable,addData,tableOperations,editField,sqlQuery,checkLinks,generalTest,clear"/>
+	
+    <target name="wt.defineMacros" description="Defines macros and project specific Steps" unless="macroDefined">
+        <property name="macroDefined" value="true"/>
+        &definitions__databaseAdd__xml;
+        &definitions__query__xml;
+    </target>
+
+    <!-- Код для документирования возможностей вебтестов -->
+	<target name="test">
+		<webtest name="test">
+            <!--<databaseAdd name="Testdatabase2"/>-->
+            <!--<query value="CREATE DATABASE Testdatabase3"/>-->
+		</webtest>
+	</target>
+
+    <!-- Тест для исследования возможностей XPath а также других опций. Нужно в т.ч. для проверки denormalized -->
+	<target name="check_xpath">
+		<webtest name="check_xpath">
+            <invoke url="${baseUrl}_testxpath.html" />
+
+            <!-- Extract href of first link on page -->
+            <storeXPath xpath="//a[1]/@href" property="uri" />
+            <storeXPath xpath="//table[1]/@id" property="uri" />
+            <echo>#{uri}</echo>
+            
+            <!-- Некоторые примеры -->
+            <verifyXPath xpath="/html/head/title"/>
+            <verifyXPath xpath="//img[@src='seibertec.gif']"/>
+            <verifyXPath xpath="//a[@href='test.html']"/>
+            <verifyXPath xpath="/html/head/title" text="Testing xpath"/>
+            <verifyXPath xpath="1 &gt; 0" description="simple boolean expression"/>
+
+            <!-- Интересно! Если значение не найдено - берется значение по умолчанию, без ошибки -->
+            <storeXPath xpath="//a[2]/@href" property="uri" default="testdefault.html" />
+            <echo>#{uri}</echo>
+            
+            <!-- получить значение второй ячейки, где первая ячейка=2:1 -->
+            <verifyXPath xpath="//tr[td[1][text()='2:1']]/td[2]/text()" text="2:2" />
+            
+            <verifyXPath xpath="/a" />
+
+            <!-- не работает 
+            <storeXPath xpath="/table/tr/td" property="uri" />
+            <storeXPath xpath="table[1]" property="uri" />
+            <storeXPath xpath="table" property="uri" /> -->
+
+            <!-- Проверка таблиц. Внимание - индексы здесь начинаются с 0! htmlid - ид таблицы -->
+            <verifyText text="2:2" >
+              <table row="1" column="1" htmlid="testTableId"/>
+            </verifyText>
+		</webtest>
+	</target>
+	
+	
+	<!-- Регулярные выражения -->
+	<target name="check_regex">
+		<webtest name="check_regex">
+            <!-- Extract target location from javascript command. Внимание - РВ регистрозависимы - click != Click -->
+            <storeRegEx text="onClick=&quot;alert\((.*)\)" group="1" property="targetLocation" />
+            <echo>#{targetLocation}</echo>
+		</webtest>
+	</target>
+
+	<target name="checkDB">
+		<webtest name="checkDB">
+            &config;
+
+            <!-- Создать БД #{database} через форму в списке баз данных -->
+            <invoke url="${baseUrl}?s=db_list" />
+            <ifStep>
+                <condition>
+                    <not><verifyXPath xpath="//a[@href='?db=#{database}']"/></not>
+                </condition>
+                <setInputField name="dbName" value="#{database}" />
+                <clickButton label="Создать!" />
+                &check_success;
+                <verifyXPath xpath="//a[@href='?db=#{database}']"/>
+            </ifStep>
+
+            <!-- Обозначить и удалить тестовые БД + проверка удаления БД -->
+            <storeProperty property="db1" value="TestDatabase1" propertyType="dynamic" />
+            <storeProperty property="db2" value="TestDatabase2" propertyType="dynamic" />
+            <storeProperty property="db3" value="TestDatabase3" propertyType="dynamic" />
+            <invoke url="${baseUrl}?s=db_list" />
+            <ifStep>
+                <condition><verifyXPath xpath="//a[@href='?db=#{db1}']"/></condition>
+                <clickLink xpath="//a[@title='Удалить #{db1}']" />
+            </ifStep>
+            <ifStep>
+                <condition><verifyXPath xpath="//a[@href='?db=#{db2}']"/></condition>
+                <clickLink xpath="//a[@title='Удалить #{db2}']" />
+            </ifStep>
+            <ifStep>
+                <condition><verifyXPath xpath="//a[@href='?db=#{db3}']"/></condition>
+                <clickLink xpath="//a[@title='Удалить #{db3}']" />
+            </ifStep>
+            
+            <!-- Создать БД #{db1} через форму в списке баз данных -->
+            <invoke url="${baseUrl}?s=db_list" />
+            <setInputField name="dbName" value="#{db1}" />
+            <clickButton label="Создать!" />
+            &check_success;
+            <verifyXPath xpath="//a[@href='?db=#{db1}']"/>
+
+            <!-- Создать еще 2 базы через запрос. Проверка списка БД. -->
+            <query value="CREATE DATABASE #{db2}"/>
+            <query value="CREATE DATABASE #{db3}"/>
+            <invoke url="${baseUrl}?s=db_list" />
+            <verifyXPath xpath="//a[@href='?db=#{db1}']"/>
+            <verifyXPath xpath="//a[@href='?db=#{db2}']"/>
+            <verifyXPath xpath="//a[@href='?db=#{db3}']"/>
+
+            <!-- Удалить множественно БД + проверка что их нет в списке -->
+            <setCheckbox xpath="//input[@value='#{db2}']" checked="true" />
+            <setCheckbox xpath="//input[@value='#{db3}']" checked="true" />
+            <clickButton xpath="//input[@src='tpl/images/close.png']" />
+            &check_success;
+            <invoke url="${baseUrl}?s=db_list" />
+            <not><verifyXPath xpath="//a[@href='?db=#{db2}']"/></not>
+            <not><verifyXPath xpath="//a[@href='?db=#{db3}']"/></not>
+            
+            <!-- Переходим к операциям с БД... -->
+            <clickLink xpath="//a[@href='?db=#{db1}&amp;s=actions']" />
+            
+            <!-- Операции с БД  -->
+            <!-- 1. переименование БД -->
+            <selectForm name="renameDBForm"></selectForm>
+            <setInputField name="newName" value="#{db1}_renamed" />
+            <clickButton label="Выполнить!" />
+            &check_success;
+            <invoke url="${baseUrl}?s=db_list" />
+            <verifyXPath xpath="//a[@href='?db=#{db1}_renamed']"/>
+            <clickLink xpath="//a[@href='?db=#{db1}_renamed&amp;s=actions']" />
+            <!-- 2. копирование БД -->
+            <selectForm name="copyDBForm"></selectForm>
+            <setInputField name="newName" value="#{db1}" />
+            <clickButton label="Выполнить!" />
+            &check_success;
+            <!-- 3. кодировка БД -->
+            <selectForm name="charsetDBForm"></selectForm>
+            <setSelectField name="charset" text="cp1251" />
+            <clickButton label="Выполнить!" />
+            &check_success;
+            <selectForm name="charsetDBForm"></selectForm>
+            <verifySelectField name="charset" text="cp1251" />
+            <!-- удаляем базу -->
+            <query value="DROP DATABASE #{db1}_renamed" />
+            
+            <!-- Запрос в базу -->
+            <invoke url="${baseUrl}?db=#{db1}&amp;s=sql" />
+            <setInputField htmlid="sqlContent" value="DROP TABLE `test_table`" />
+            <clickButton label="Отправить запрос!" />
+            <setInputField htmlid="sqlContent" value="DROP DATABASE `#{db1}_copy`" />
+            <clickButton label="Отправить запрос!" />
+            <setInputField htmlid="sqlContent" value="CREATE TABLE `test_table` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(255) NOT NULL, PRIMARY KEY (id) )" />
+            <clickButton label="Отправить запрос!" />
+            &check_success;
+            <verifyXPath xpath="//a[@href='?db=#{db1}&amp;table=test_table&amp;s=tbl_data']"/>
+            <setInputField htmlid="sqlContent" value="CREATE TABLE `test_table` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(255) NOT NULL, PRIMARY KEY (id) )" />
+
+            <!-- Поиск -->
+            <setInputField htmlid="sqlContent" value="INSERT INTO `test_table` (`id`, `name`) VALUES ('', 'Andrew'),('', 'Karl') " />
+            <clickButton label="Отправить запрос!" />
+            <invoke url="${baseUrl}?db=#{db1}&amp;s=search" />
+            <setInputField htmlid="queryAll" value="Andrew" />
+            <clickButton label="Искать!" />
+            <verifyXPath xpath="//a[@href='?db=#{db1}&amp;table=test_table&amp;s=tbl_data&amp;query=Andrew']"/>
+
+            <!-- Экспорт -->
+            <invoke url="${baseUrl}?db=#{db1}&amp;s=export" />
+            <clickButton label="Экспортировать!" />
+            <verifyText text="INSERT INTO `test_table` VALUES (1,'Andrew');" />
+
+            <!-- Проверка копирования в списке таблиц -->
+            <invoke url="${baseUrl}?s=db_list" />
+            <setCheckbox xpath="//input[@value='#{db1}']" checked="true" />
+            <clickButton xpath="//input[@src='tpl/images/copy.gif']" />
+            &check_success;
+            <verifyXPath xpath="//a[@href='?db=#{db1}_copy']"/>
+            <!-- не удаляет??? -->
+            <invoke url="${baseUrl}?s=db_list" />
+            <clickLink xpath="//a[@title='Удалить #{db1}_copy']" />
+
+		</webtest>
+	</target>
+	
+	
+	<target name="checkStructure">
+		<webtest name="checkStructure">
+            &config;
+            <!-- Создать тестовую таблицу и тестовые данные, перейти к структуре -->
+            <query value="CREATE TABLE IF NOT EXISTS `test_table` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(255) NOT NULL, `jobOoohhJob` VARCHAR(255) NOT NULL, PRIMARY KEY (id) )"/>
+            <query value="INSERT INTO `test_table` (`id`, `name`) VALUES ('', 'Andrew'), ('', 'Karl')"/>
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_struct" />
+            <!-- Проверить редактирование поля -->
+            <setCheckbox htmlId="field1" checked="true" />
+            <clickButton xpath="//input[@src='tpl/images/edit.gif']" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify success" xpath="//span[@style='color:blue']" />
+            <!-- Проверить печатную версию -->
+            <clickLink label="Печатная версия" />
+            <not><verifyXPath xpath="/html/head/title"/></not>
+            <!-- Проверить удаление поля -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_struct" />
+            <setCheckbox htmlId="field2" checked="true" />
+            <clickButton xpath="//input[@src='tpl/images/close.png']" />
+            &check_success;
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_struct" />
+            <not><verifyText text="jobOoohhJob" /></not>
+            <!-- Проверить создание пяти полей -->
+            <setInputField name="fieldsNum" value="5" />
+            <clickButton label="Добавить!" />
+            <verifyXPath xpath="//tr[@id='tableFormEditTr4']"/>
+            <!-- удалить таблицу -->
+            <query value="DROP TABLE `test_table`"/>
+		</webtest>
+	</target>
+
+	<target name="addTable">
+		<webtest name="Check table adding">
+            &config;
+            <!-- Подготовка: создание БД, удаление таблицы, если есть -->
+            &prepare_db;
+            <invoke url="${baseUrl}?db=#{database}&amp;s=tbl_list" />
+            <ifStep>
+                <condition><verifyText description="Find Table" text="test_table" /></condition>
+                <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;action=tableDelete" />
+                <verifyXPath description="Verify tableDelete" xpath="//span[@style='color:green']" />
+            </ifStep>
+            <!-- Заполнить поля таблицы -->
+            <invoke url="${baseUrl}?db=#{database}&amp;s=tbl_add" />
+            <setInputField name="table_name" value="test_table" />
+            <!-- field id -->
+            <setInputField htmlId="name0" value="id" />
+            <setSelectField htmlId="typeSelectorId0" text="INT" />
+            <setInputField htmlId="length0" value="6" />
+            <setCheckbox htmlId="auto0" checked="true" />
+            <setRadioButton htmlId="key10" />
+            <setSelectField htmlId="attr0" text="UNSIGNED" />
+            <!-- field name -->
+            <setInputField htmlId="name1" value="name" />
+            <setSelectField htmlId="typeSelectorId1" text="VARCHAR" />
+            <setInputField htmlId="length1" value="200" />
+            <setInputField htmlId="default1" value="Andrew" />
+            <setCheckbox htmlId="key21" />
+            <!-- field is_admin -->
+            <setInputField htmlId="name2" value="is_admin" />
+            <setSelectField htmlId="typeSelectorId2" text="TINYINT" />
+            <setInputField htmlId="length2" value="1" />
+            <setCheckbox htmlId="isNull2" checked="true" />
+            <!-- field description -->
+            <setInputField htmlId="name3" value="description" />
+            <setSelectField htmlId="typeSelectorId3" text="TEXT" />
+            <!-- field dob -->
+            <setInputField htmlId="name4" value="dob" />
+            <setSelectField htmlId="typeSelectorId4" text="YEAR" />
+            <setCheckbox htmlId="isNull4" checked="true" />
+            <!-- field status -->
+            <setInputField htmlId="name5" value="status" />
+            <setSelectField htmlId="typeSelectorId5" text="ENUM" />
+            <setInputField htmlId="length5" value="'aaa','bbb','ccc'" />
+            <setInputField htmlId="default5" value="bbb" />
+            <!-- Проверить -->
+            <clickButton label="Создать таблицу!" />
+            <verifyXPath description="Verify table add" xpath="//span[@style='color:green']" />
+		</webtest>
+	</target>
+
+	<target name="addData">
+		<webtest name="Check rows inserting">
+            &config;
+            <!-- Проверить очистку таблицы -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}&amp;action=tableTruncate" />
+            <verifyXPath description="Verify tableTruncate" xpath="//span[@style='color:green']" />
+            <repeat count="10" countername="row">
+                <!-- Заполняем только что созданную таблицу из 5 полей -->
+                <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}&amp;s=tbl_change" />
+                <!-- Заполнить первый ряд -->
+                <storeRandom description="choose colour" property="expectedColour" choice="aaa,bbb,ccc"/>
+                <storeRandom description="choose level" property="level" from="1900" to="2000"/>
+                <storeRandom description="choose level" property="descr" from="10000" to="20000"/>
+                <setInputField name="row[0][1]" value="Steve#{row}" />
+                <setInputField name="row[0][2]" value="1" />
+                <setInputField name="row[0][3]" value="#{descr}" />
+                <setCheckbox name="isNull[0][4]" checked="false" />
+                <setInputField name="row[0][4]" value="#{level}" />
+                <setSelectField name="row[0][5]" text="#{expectedColour}" />
+                <!-- Заполнить второй ряд -->
+                <storeRandom description="choose colour" property="expectedColour" choice="aaa,bbb,ccc"/>
+                <storeRandom description="choose level" property="level" from="1900" to="2000"/>
+                <storeRandom description="choose level" property="descr" from="10000" to="20000"/>
+                <setInputField name="row[1][1]" value="Karl#{row}" />
+                <setInputField name="row[1][2]" value="0" />
+                <setInputField name="row[1][3]" value="#{descr}" />
+                <setCheckbox name="isNull[1][4]" checked="false" />
+                <setInputField name="row[1][4]" value="#{level}" />
+                <setSelectField name="row[1][5]" text="#{expectedColour}" />
+                <!-- Выполнить и проверить -->
+                <clickButton label="Вставить данные!" />
+                <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            </repeat>
+		</webtest>
+	</target>
+
+	<target name="tableOperations">
+		<webtest name="Check tableOperations">
+            &config;
+            <!-- Переходим к операциям с таблицей -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}&amp;s=actions" />
+            <!-- Переименовать и обратно -->
+            <setInputField name="newName" value="test_table_renamed" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <setInputField name="newName" value="#{table}" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <!-- Скопировать -->
+            <selectForm name="tableCopyTo"></selectForm>
+            <setInputField name="newName" value="#{table}_copy" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <!-- Изменить кодировку, проверить -->
+            <selectForm name="tableCharset"></selectForm>
+            <setSelectField name="charset" text="cp1251" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <selectForm name="tableCharset"></selectForm>
+            <verifySelectField name="charset" text="cp1251" />
+            <!-- Изменить комментарий, проверить -->
+            <selectForm name="tableComment"></selectForm>
+            <setInputField name="comment" value="tra ta ta" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <selectForm name="tableComment"></selectForm>
+            <verifyInputField name="comment" value="tra ta ta" />
+            <!-- Переместить во вторую рабочую БД -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}_copy&amp;s=actions" />
+            <selectForm name="tableMove"></selectForm>
+            <setSelectField name="newDB" text="#{database2}" />
+            <setInputField name="newName" value="#{table}_copy" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <!--Удалить перемещённую таблицу -->
+            <invoke url="${baseUrl}?db=#{database2}&amp;table=#{table}_copy&amp;action=tableDelete" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+		</webtest>
+	</target>
+
+	<target name="editField">
+		<webtest name="Check edit field">
+            &config;
+            <!-- Проверить редактирование поля -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}&amp;s=tbl_add&amp;field=is_admin" />
+            <setInputField htmlId="name0" value="is_admin" />
+            <setSelectField htmlId="typeSelectorId0" text="SMALLINT" />
+            <setInputField htmlId="length0" value="5" />
+            <setCheckbox htmlId="isNull0" checked="false" />
+            <clickButton label="Выполнить!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+		</webtest>
+	</target>
+	
+	<target name="sqlQuery">
+		<webtest name="Check sql query">
+            &config;
+            <!-- Проверить sql запрос на таблицу -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}&amp;s=sql" />
+            <setInputField htmlid="sqlContent" value="UPDATE `#{table}` SET description='tyrueiwo' LIMIT 1" />
+            <clickButton label="Отправить запрос!" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+		</webtest>
+	</target>
+	
+	<target name="checkLinks">
+		<webtest name="checkLinks">
+            &config;
+            <!-- Переход по разным ссылкам -->
+            <invoke url="${baseUrl}?db=#{database}&amp;s=db_list" />
+            <clickLink label="статус" />
+            <verifyXPath xpath="//a[@href='?db=#{database}&amp;s=server_status']"/>
+            <clickLink label="#{database}" />
+            <verifyXPath xpath="//a[@href='?db=#{database}&amp;s=tbl_add']"/>
+            <clickLink label="создать таблицу" />
+            <verifyXPath xpath="//a[@href='?db=#{database}&amp;s=tbl_list']"/>
+            <clickLink label="#{table}" />
+            <verifyXPath xpath="//a[@href='?table=#{table}&amp;db=#{database}&amp;s=tbl_change']"/>
+            <clickLink label="структура" />
+            <clickLink label="вставить" />
+            <clickLink label="поиск" />
+            <clickLink label="экспорт" />
+            <clickLink label="sql" />
+            <clickLink label="операции" />
+            <clickLink label="очистить" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+            <clickLink label="удалить" />
+            <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+		</webtest>
+	</target>
+	
+	<target name="generalTest">
+		<webtest name="Check that all right">
+            &config;
+            <!-- Вызов разных страниц -->
+            <!-- Server pages  -->
+            <invoke url="${baseUrl}?s=server_status" />
+            <invoke url="${baseUrl}?s=server_variables" />
+            <invoke url="${baseUrl}?s=server_collations" />
+            <invoke url="${baseUrl}?s=users" />
+            <!-- DBs pages  -->
+            <invoke url="${baseUrl}?s=db_list" />
+            <invoke url="${baseUrl}?s=search" />
+            <invoke url="${baseUrl}?s=export" />
+            <invoke url="${baseUrl}?s=sql" />
+            <invoke url="${baseUrl}?s=actions" />
+            <!-- TABLEs pages  -->
+            <invoke url="${baseUrl}?db=#{database}&amp;s=tbl_list" />
+            <invoke url="${baseUrl}?db=#{database}&amp;s=tbl_add" />
+            <invoke url="${baseUrl}?db=#{database}&amp;s=search" />
+            <invoke url="${baseUrl}?db=#{database}&amp;s=export" />
+            <invoke url="${baseUrl}?db=#{database}&amp;s=sql" />
+            <invoke url="${baseUrl}?db=#{database}&amp;s=actions" />
+            <!-- ROWs pages  -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_data" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_change" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=search" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=export" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=sql" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=actions" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=import" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_change&amp;row=id%3D%2250%22" />
+            <!-- FIELDs pages  -->
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_struct" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_add" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_add&amp;field=name" />
+            <invoke url="${baseUrl}?db=#{database}&amp;table=test_table&amp;s=tbl_add&amp;action=fieldsAdd" />
+            <!-- Error check  -->
+            <invoke url="${baseUrl}?s=unknownPage" />
+            <invoke url="${baseUrl}?db=unknownDB" />
+            <invoke url="${baseUrl}?db=unknownDB&amp;table=unknownTable&amp;s=tbl_data" />
+            <invoke url="${baseUrl}?db=unknownDB&amp;table=unknownTable&amp;s=tbl_struct" />
+            <!-- прочие  -->
+            <invoke url="${baseUrl}?s=help" />
+            <invoke url="${baseUrl}?s=msc_configuration" />
+            <invoke url="${baseUrl}?s=phpinfo" />
+		</webtest>
+	</target>
+	
+	<target name="clear">
+		<webtest name="clear">
+            &config;
+            <query value="DROP DATABASE #{database}" />
+            <storeProperty property="database" value="#{database}1" propertyType="dynamic" />
+            <query value="DROP DATABASE #{database}" />
+            <storeProperty property="database" value="#{database}_copy" propertyType="dynamic" />
+            <query value="DROP DATABASE #{database}" />
+		</webtest>
+	</target>
+
+</project>

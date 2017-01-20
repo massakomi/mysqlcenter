@@ -1,0 +1,18 @@
+rpage|Сколько рядов таблицы показывать на 1 страницу максимум|100|integer
+insertrows|Сколько рядов вставлять за 1 раз|1|integer
+linksrange|Сколько ссылок на постраничный вывод показывать максимум|10|integer
+headwrap|Длина wrap у переносимых заголовков полей|3|integer
+textcut|Text поля обрезка|100|integer
+dbfullinfo|Полная инфо о базах данных по умолчанию|0|boolean
+datetimeformat|Формат даты и времени|d.m.Y H:i|string
+fieldsmax|Количество полей при создании таблицы по умолчанию|3|integer
+showtablecompare|Блок "Сравнить таблицу с ..." показать|0|boolean
+showtableupdated|Блок "Показать таблицы обновлённые ..." показать|1|boolean
+nulldesign|HTML код, отображаемый на месте NULL-значения в таблице|<i>NULL</i>|string
+showmessages|Показывать сообщения|1|boolean
+hidemessages|Скрывать сообщения по умолчанию|0|boolean
+errorlog|Лог всех php ошибок в файл error.log|1|boolean
+sqllog|Лог всех не-SELECT sql запросов в папку data по базам данных|1|boolean
+greyempty|Выделять пустые таблицы цветом в меню таблиц|1|boolean
+tblfullstart|Полный вид таблиц по умолчанию|0|boolean
+tblliststart|При входе в программу показывать список таблиц последней базы данных|1|boolean

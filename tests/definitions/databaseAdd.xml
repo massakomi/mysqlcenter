@@ -1,0 +1,13 @@
+<macrodef name="databaseAdd" description="Database add macros">
+	<attribute name="name"/>
+	<sequential>
+        <invoke url="${baseUrl}?s=db_list" />
+        <ifStep>
+            <condition>
+                <not><verifyText description="Find @{name}" text="@{name}" /></not>
+            </condition>
+            <setInputField name="dbName" value="@{name}" />
+            <clickButton label="Создать!" />
+        </ifStep>
+	</sequential>
+</macrodef>

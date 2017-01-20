@@ -1,0 +1,67 @@
+
+
+/* Текст */
+                   
+DIV.menuTables .t1,     
+DIV.pageBlock B A,      
+SPAN.menuChain A:hover, 
+DIV#dbHiddenMenu       { color:#CCCCCC }
+
+SPAN.hiddenText,
+A.hiddenSmallLink,
+DIV.globalMenu .delim  { color:#CCCCCC }
+
+BODY,
+INPUT, SELECT, TEXTAREA{ color:#FFFFFF }
+
+TABLE.contentTable TH,
+FORM.tableFormEdit TH,
+.dateString,
+DIV.menuTables A.cur   { color:#FFFFFF }
+
+TABLE.tableExport .hs,
+DIV.chbxAction,
+SPAN.menuChain A       { color:#999999 }
+
+A,
+TABLE.contentTable A,
+DIV#dbHiddenMenu A,
+DIV.globalMenu A       { color:#CCFF00 }
+DIV.globalMenu A.cur,
+DIV.menuTables .t2     { color:#FFFFFF }
+DIV.formSet H2         { color:#FFFFFF }
+
+TABLE.globalMessage .mysqlError { color:#FF0000 }
+
+A.truncate { color:#3399FF!important}
+A.delete { color:red!important}
+.selectedRow { color:#eea}
+
+/* Фон */
+
+BODY,
+INPUT, SELECT, TEXTAREA,
+DIV#dbHiddenMenu,
+FORM.popupGeneralForm  { background-color:#000033 }
+
+TABLE.globalMessage th,
+TABLE.contentTable TH,
+FORM.tableFormEdit .editHeader TD,
+.interlace,
+FORM.tableFormEdit TH  { background-color:#003399 }
+
+/* Рамка */
+
+FORM.popupGeneralForm,
+TABLE.globalMessage td,
+.globalMessage th,
+TABLE.contentTable TH,
+FORM.tableFormEdit TH  { border: 1px solid #ccc  }
+
+FORM.formSearch INPUT,
+TABLE.contentTable TD  { border: 1px solid #ccc  }
+
+DIV.pageBlock,
+FORM.tableFormEdit TD  { border: 1px solid rgb(70,100,180)  }
+
+FORM.tableFormEdit .si { border: 1px solid #666  }

@@ -1,0 +1,1 @@
+    <verifyXPath description="Verify success" xpath="//span[@style='color:green']" />

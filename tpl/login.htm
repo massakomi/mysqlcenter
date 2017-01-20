@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>Login to MysqlCenter</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+P { margin:3px}
+</style>
+</head>
+<body style="text-align:center">
+<div style="color:#FF0000; padding:10px">
+<?php
+if (isset($errorMessage)) {
+	echo $errorMessage;
+}
+?>
+</div>
+<form method="post">
+	<b>логин</b>
+	<p><input type="text" name="user" /></p>
+	<b>пароль</b>
+	<p><input type="password" name="pass" /></p>
+	<p><input type="submit" value="Enter" /></p>
+</form>
+<script language="javascript">
+document.getElementsByTagName('INPUT')[0].focus();
+</script>
+</body>
+</html>

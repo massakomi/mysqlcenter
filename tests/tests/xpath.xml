@@ -1,0 +1,14 @@
+<group description="Load DB List">
+    <invoke url="${baseUrl}?s=db_list" />
+</group>
+<group description="Creating DB">
+    <ifStep>
+        <condition>
+            <not><verifyText description="Find TestDatabase" text="#{database}" /></not>
+        </condition>
+        <setInputField name="dbName" value="#{database}" />
+        <clickButton label="Создать!" />
+        <sleep description="Ajax DB Query Sleep" seconds="1" />
+        <verifyXPath description="Check Table List" xpath="//img[@src='tpl/images/close.png']"/>
+    </ifStep>
+</group>

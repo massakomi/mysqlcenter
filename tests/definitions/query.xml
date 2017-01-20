@@ -1,0 +1,9 @@
+<macrodef name="query" description="SQL query">
+	<attribute name="value" />
+	<sequential>
+        <invoke url="${baseUrl}?db=#{database}&amp;table=#{table}&amp;s=sql" />
+        <setInputField htmlid="sqlContent" value="@{value}" />
+        <clickButton label="Отправить запрос!" />
+        <verifyXPath description="Verify" xpath="//span[@style='color:green']" />
+	</sequential>
+</macrodef>
