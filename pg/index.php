@@ -3,24 +3,27 @@
 $a = parse_url($_SERVER['REQUEST_URI']);
 define('URL_ROOT', $a['path']);
 
+if ($_GET['db']) {
+    setcookie('db', $_GET['db'], time() + 86400*365, '/');
+}
+
 require_once 'functions.php';
 
 define('DB_HOST',       '127.0.0.1');
 define('DB_USERNAME',   'test');
 define('DB_PASSWORD',   'test');
-define('DB_NAME',       'test');
+define('DB_NAME',       $_GET['db'] ? $_GET['db'] : $_COOKIE['db']);
 
 global $conn;
-$conn = pg_connect('hostaddr='.DB_HOST.' port=5432 dbname='.DB_NAME.' user='.DB_USERNAME.' password='.DB_PASSWORD);
+$s = 'hostaddr='.DB_HOST.' port=5432 user='.DB_USERNAME.' password='.DB_PASSWORD;
+if (DB_NAME) {
+	$s .= ' dbname='.DB_NAME;
+}
+$conn = pg_connect($s);
 if (!$conn) {
     echo 'Соединение не удалось';
     return ;
 }
-
-// echo '<pre>'; print_r(pg_version()); echo '</pre>';
-
-//$data = getData('SELECT * FROM pg_stat_activity');
-//echo '<pre>'; print_r($data); echo '</pre>';
 
 
 ?>
@@ -29,50 +32,30 @@ if (!$conn) {
 <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
     <title>PG MSC</title>
-    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="bootstrap/js/bootstrap.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-    <style type="text/css">
-    .table-pg {width:auto}
-    .table-pg th, .table-pg td {
-        padding: 3px!important;
-        font-size: 12px;
-    }
-    .table-pg th {
-        text-align: center;
-        white-space: nowrap;
-        background-color: #CCCCCC;
-        color: #CC0000;
-        border: 1px solid #000!important;
-    }
-    .table-pg td {
-        border: 1px solid #ccc;
-    }
-    .table-pg tr:nth-child(even) {
-        background-color: #eee;
-    }
-    .table-pg .glyphicon {
-        font-size:16px;
-    }
-    .table-pg .glyphicon-edit {
-        color:#006600
-    }
-    .table-pg .glyphicon-remove {
-        color:#CC0000
-    }
-    .table-pg .p {
-        padding:3px 5px!important;
-    }
-    .tbl-menu {padding: 0; margin-top:5px;}
-    .tbl-menu li {list-style: none; line-height: 11px;}
-    .tbl-menu li.tab a {margin-left:5px; color: #000000;}
-    .tbl-menu a {font-size:10px; color: green;}
-    .tbl-menu li.active a {color:red}
-    form.top {vertical-align: top; display:inline-block; margin-bottom:10px;}
-    form.top + .pagination {margin:0px;}
-
-    .alert-sql {margin-bottom:10px; font-size: 12px; padding: 5px 10px;}
-    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link href="data/css/bootstrap.css" rel="stylesheet">
+    <script src="data/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="data/main.css" type="text/css" media="all" />
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $('.confirm').click(function() {
+            if (!confirm('Подтвердите действие')) {
+                return false;
+            }
+        })
+        $('.prompt').click(function() {
+            var def = $(this).attr('data-prompt');
+            if (!def) {
+            	def = $(this).html();
+            }
+            var val = prompt('Введите название', def)
+            if (val === false) {
+                return false;
+            }
+            $(this).attr('href', $(this).attr('href')+'&val='+val)
+        })
+    });
+    </script>
 </head><body>
 
   <nav class="navbar navbar-default navbar-static-top">
@@ -94,18 +77,22 @@ if (!$conn) {
         $t = $_GET['table'];
         if ($t) {
             $menu = [
-                URL_ROOT.'?table='.$t => 'Обзор',
+                URL_ROOT.'?table='.$t.'&s=tbl_data' => 'Обзор',
                 URL_ROOT.'?table='.$t.'&s=tbl_struct' => 'Структура'
             ];
         } else {
             $menu = [
-                'Базы данных',
-                'Поиск',
-                'Экспорт'
+                URL_ROOT.'?s=db_list' => 'Список баз',
+                URL_ROOT => DB_NAME ? 'База '.DB_NAME : '',
+                URL_ROOT.'?s=search' => 'Поиск',
+                URL_ROOT.'?s=export' => 'Экспорт'
             ];
         }
 
         foreach ($menu as $k => $v) {
+            if (!$v) {
+                continue;
+            }
             $add = '';
             if ($k == '/') {
                 if ($sru == $k) {
@@ -122,51 +109,58 @@ if (!$conn) {
     </div>
   </nav>
 
-<div class="container-fluid" style="padding:0 10px;">
+<div class="container-fluid">
 
 <div class="row">
     <div class="col-md-1">
     <?php
 
-    $tables = listTables($onlyNames=true);
+    function tableMenu()
+    {
+        $tables = listTables($onlyNames=true);
 
-	$prefixes = array();
-	foreach ($tables as $t) {
-		$end = strlen($t) > 2 && strpos($t, '_', 3) > 0 ? strpos($t, '_', 3) : 50;
-		$prefix = substr($t, 0, $end);
-		$prefixes [$prefix] = !isset($prefixes [$prefix]) ? 1 : $prefixes [$prefix] + 1;
-	}
+    	$prefixes = array();
+    	foreach ($tables as $t) {
+    		$end = strlen($t) > 2 && strpos($t, '_', 3) > 0 ? strpos($t, '_', 3) : 50;
+    		$prefix = substr($t, 0, $end);
+    		$prefixes [$prefix] = !isset($prefixes [$prefix]) ? 1 : $prefixes [$prefix] + 1;
+    	}
 
-    echo '<ul class="tbl-menu">';
-    $addUrl = '';
-    if ($_GET['s'] && $_GET['table']) {
-    	$addUrl = '&s='.$_GET['s'];
-    }
-    foreach ($tables as $table) {
-		$end = strlen($table) > 2 && strpos($table, '_', 3) > 0 ? strpos($table, '_', 3) : 50;
-		$p = substr($table, 0, $end);
-        $class = '';
-		if (array_key_exists($p, $prefixes) && $prefixes[$p] > 1) {
-			$class = 'tab';
-		}
-        if ($_GET['table'] == $table) {
-        	$class .= ' active';
+        echo '<ul class="tbl-menu">';
+        $addUrl = '&s=tbl_data';
+        if (in_array($_GET['s'], array('tbl_data', 'tbl_struct')) && $_GET['table']) {
+        	$addUrl = '&s='.$_GET['s'];
         }
-        $add = '';
-        if ($class) {
-        	$add = ' class="'.$class.'"';
+        foreach ($tables as $table) {
+    		$end = strlen($table) > 2 && strpos($table, '_', 3) > 0 ? strpos($table, '_', 3) : 50;
+    		$p = substr($table, 0, $end);
+            $class = '';
+    		if (array_key_exists($p, $prefixes) && $prefixes[$p] > 1) {
+    			$class = 'tab';
+    		}
+            if ($_GET['table'] == $table) {
+            	$class .= ' active';
+            }
+            $add = '';
+            if ($class) {
+            	$add = ' class="'.$class.'"';
+            }
+            echo '<li'.$add.'><a href="?table='.$table.$addUrl.'">'.$table.'</a></li>';
         }
-        echo '<li'.$add.'><a href="?table='.$table.$addUrl.'">'.$table.'</a></li>';
+        echo '</ul>';
     }
-    echo '</ul>';
+
+    if (DB_NAME) {
+        tableMenu();
+    } else {
+        err('База не выбрана');
+    }
+
     ?>
     </div>
     <div class="col-md-11">
         <?php
         $s = $_GET['s'];
-        if (!$s && $_GET['table']) {
-        	$s = 'tbl_data';
-        }
         if (!$s) {
         	$s = 'tbl_list';
         }
@@ -177,4 +171,16 @@ if (!$conn) {
 
 
 </div>
+
+
+
+<?php
+$version = pg_version();
+?>
+<footer class="footer">
+  <div class="container-fluid">
+    <p class="text-muted">client <?=$version['client']?> server <?=$version['server']?> кодировка <?=$version['server_encoding']?> имя юзера <?=$version['session_authorization']?></p>
+  </div>
+</footer>
+
 </body></html>

@@ -13,7 +13,7 @@ function msg()
 
 function err($e)
 {
-    echo '<div class="alert alert-danger">'.$e.'</div>';
+    echo '<div class="alert alert-danger" style="margin-top:15px;">'.$e.'</div>';
 }
 
 
@@ -101,18 +101,77 @@ function url($qs)
     return $url;
 }
 
+function printTable($data, $opts=[])
+{
+    $rows = '';
+
+    $rows .= '<tr>';
+    $headers = array_keys($data[0]);
+    foreach ($headers as $key => $row) {
+        if ($opts) {
+        	$row = preg_replace('~(?<=.)_(?=.)~', '<br />', $row);
+        }
+       	$rows .= '<th>'.$row.'</th>';
+    }
+    $rows .= '</tr>';
+
+    foreach ($data as $fieldInfo) {
+    	$rows .= '<tr>';
+        foreach ($fieldInfo as $k => $v) {
+            $rows .= '<td>'.$v.'</td>';
+        }
+        $rows .= '</tr>';
+    }
+    echo '<table class="table table-pg">'.$rows.'</table>';
+}
+
+function formatSize($bytes) {
+    if ($bytes < pow(1024, 1)) {
+        return "$bytes b";
+    } elseif ($bytes < pow(1024, 2)) {
+        return round($bytes / pow(1024, 1), 2).' Kb';
+    } elseif ($bytes < pow(1024, 3)) {
+        return round($bytes / pow(1024, 2), 2).' Mb';
+    } elseif ($bytes < pow(1024, 4)) {
+        return round($bytes / pow(1024, 3), 2).' Gb';
+    }
+}
+
+function redirect($s)
+{
+    echo '<script type="text/javascript">location="'.$s.'"</script>';
+}
+
+function query($sql)
+{
+    global $conn;
+    $result = pg_query($conn, $sql);
+    if (!$result) {
+        echo 'Ошибка запроса "'.$sql.'"';
+        exit;
+    }
+    return $result;
+}
+
+function getData($sql)
+{
+    $result = query($sql);
+    $data = array();
+    while ($row = pg_fetch_assoc($result)) {
+        $data []= $row;
+    }
+    return $data;
+}
 
 function getCountAll($table, $where)
 {
-    $data = getOne('SELECT COUNT(*) FROM '.$table.$where);
-    $countAll = $data['count'];
-    return $countAll;
+    $data = getVal('SELECT COUNT(*) FROM '.$table.$where);
+    return $data;
 }
 
 function getFields($table, $onlyNames=true)
 {
     $data = getData('select * from INFORMATION_SCHEMA.COLUMNS where table_name = \''.$table.'\'');
-    // echo '<pre>'; print_r($data); echo '</pre>';
     if ($onlyNames) {
         $a = array();
         foreach ($data as $k => $v) {
@@ -128,21 +187,6 @@ function getFieldsFull($table)
     return getFields($table, false);
 }
 
-function getData($sql)
-{
-    global $conn;
-    $result = pg_query($conn, $sql);
-    if (!$result) {
-        echo "An error occured.\n";
-        exit;
-    }
-    $data = array();
-    while ($row = pg_fetch_assoc($result)) {
-        $data []= $row;
-    }
-    return $data;
-}
-
 function getOne($sql)
 {
     $data = getData($sql);
@@ -150,6 +194,12 @@ function getOne($sql)
         return $data[0];
     }
     return array();
+}
+
+function getVal($sql)
+{
+    $data = getOne($sql);
+    return array_shift($data);
 }
 
 function listDatabases()
@@ -188,8 +238,16 @@ function primaryKey($table)
     INNER JOIN pg_class i ON i.oid = x.indexrelid
     WHERE x.indrelid = \''.$table.'\'::regclass::oid AND i.relkind = \'i\'::"char"
     AND x.indisprimary');
-    $pk = $keys[0]['indexname']; // table_name_id_pkey
-    preg_match('~'.$table.'_(.*?)_pkey$~i', $pk, $a);
+
+    preg_match('~\("([^"]+)"\)~i', $keys[0]['indexdef'], $a);
+
+    if (!$a[1]) {
+    	$fields = getFields($table);
+        if (in_array('id', $fields)) {
+            return 'id';
+        }
+    }
+
     return $a[1];
 }
 
