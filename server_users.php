@@ -7,7 +7,7 @@ $msc->pageTitle = 'Различная информация';
 
 
 $res = $msc->query('SHOW COUNT(*) ERRORS');
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysqli_fetch_assoc($res)) {
 	pre($row);
 }
 
@@ -16,7 +16,7 @@ echo '<h3>Пользователи</h3>';
 $res = $msc->query('SELECT * FROM mysql.user');
 $table = new Table('contentTable');
 $data = array();
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysqli_fetch_assoc($res)) {
 	foreach ($row as $k => $v) {
 		if (!isset($data [$k])) {
 			$data [$k][]=$k;
@@ -39,7 +39,7 @@ echo $table -> make();
 echo '<h3>SHOW GRANTS</h3>';
 $res = $msc->query('SHOW GRANTS');
 $table = new Table('contentTable');
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysqli_fetch_assoc($res)) {
 	 if ($table->tableCont == null) {
 	 	$table->makeRowHead(array_keys($row));
 	 }
@@ -77,7 +77,7 @@ SHOW GRANTS displays only the privileges granted explicitly to the named account
 echo '<h3>SHOW PRIVILEGES</h3>';
 $res = $msc->query('SHOW PRIVILEGES');
 $table = new Table('contentTable');
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysqli_fetch_assoc($res)) {
 	 if ($table->tableCont == null) {
 	 	$table->makeRowHead(array_keys($row));
 	 }
@@ -91,7 +91,7 @@ echo $table -> make();
 echo '<h3>SHOW ENGINES</h3>';
 $res = $msc->query('SHOW ENGINES');
 $table = new Table('contentTable');
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysqli_fetch_assoc($res)) {
 	 if ($table->tableCont == null) {
 	 	$table->makeRowHead(array_keys($row));
 	 }
@@ -138,7 +138,7 @@ GRANT ALL
     ON *
     TO zorro IDENTIFIED BY 'zorro'
 ");
-echo mysql_error();
+echo mysqli_error();
 
 
 

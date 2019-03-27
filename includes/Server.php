@@ -13,9 +13,9 @@ class Server {
 	 */
 	function getDatabases() {
 		global $connection;
-		$db_list = mysql_list_dbs($connection);
+		$db_list = mysqli_query($connection, 'SHOW DATABASES');
 		$array = array();
-		while ($row = mysql_fetch_object($db_list)) {
+		while ($row = mysqli_fetch_object($db_list)) {
 			$array []= $row->Database;
 		}
 		return $array;

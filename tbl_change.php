@@ -123,7 +123,7 @@ if ($whereCondition != null) {
 	$j = 0;
     $table = new Table();
     $contentMain = '';
-	while (($data = mysql_fetch_object($result)) !== false) {
+	while ($data = mysqli_fetch_object($result)) {
 		$i = 0;
 		$table->makeRow(array('Поле', 'Ноль', 'Ряд #' . ($j + 1), 'Функция'), ' class="editHeader"', '');
 		$pk = array();

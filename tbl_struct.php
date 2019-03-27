@@ -37,7 +37,7 @@ if (GET('action') == 'add_key') {
             $fields = getFields($msc->table);
 			$msc->addMessage('Ключ добавлен', $sql, MS_MSG_SUCCESS);
 		} else {
-			$msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT, mysql_error());
+			$msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT, mysqli_error());
 		}
     }
     if ($returnInAdd) {
@@ -60,7 +60,7 @@ if ($msc->table == '') {
 $dbt = new DatabaseTable($msc->db, $msc->table);
 if (!$dbt->isExists()) {
 	$msc->pageTitle = NULL;
-	$msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysql_error());
+	$msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysqli_error());
 	return null;
 }
 $msc->pageTitle = 'Структура таблицы '.$msc->table;

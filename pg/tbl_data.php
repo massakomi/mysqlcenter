@@ -10,6 +10,7 @@ function getWhere($table)
     if ($_POST['search']) {
         $search = $_POST['search'];
         $numeric = is_numeric($search);
+
         $fields = getFieldsFull($table);
         $where = [];
         $skipped = [];
@@ -24,7 +25,7 @@ function getWhere($table)
                     $skipped []= 'Поиск по полю "'.$field.'" пропущен';
                     continue;
                 }
-                $where []= '"'.$field.'"='.intval($search).''."\n";
+                $where []= '"'.$field.'"='.$search.''."\n";
             } elseif (strpos($type, 'text') !== false || strpos($type, 'char') !== false) {
                 $where []= '"'.$field.'" LIKE \'%'.$search.'%\''."\n";
             } elseif ($type == 'USER-DEFINED' || $type == 'real' || $type == 'boolean' || strpos($type, 'timestamp') !== false) {
@@ -49,7 +50,7 @@ function getWhere($table)
 
     else if ($_POST['id']) {
     	$pk = primaryKey($table);
-        $where = '"'.$pk.'"='.intval($_POST['id']).''."\n";
+        $where = '"'.$pk.'"='.$_POST['id'].''."\n";
     }
 
     if ($where) {
@@ -127,6 +128,10 @@ $limit = 100;
 $nav = pagination($limit, $countAll, $offset);
 $rows = generateRows($table, $limit, $offset, $where, $sql);
 ?>
+
+<style type="text/css">
+.table-pg td {white-space:nowrap;}
+</style>
 
 <h3>Таблица: <?=$table?> (<?=$countAll?> строк)</h3>
 

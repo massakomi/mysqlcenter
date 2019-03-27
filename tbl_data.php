@@ -93,7 +93,7 @@ if (isset($directSQL) && $msc->table == '') {
 $fields = getFields($msc->table);
 // Если полей нет, значит и таблицы нет
 if (!$fields || count($fields) == 0) {
-	return $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysql_error());
+	return $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysqli_error());
 }
 
 // Собираем массив имён полей, и также массив имён только ключевых полей
@@ -125,7 +125,7 @@ if (!isset($directSQL)) {
     // Получаем кол-во рядов в таблице
     $count = 0;
     $result = $msc->query('SELECT COUNT(*) as c FROM '.$msc->table.' '.$whereCondition);
-    if ($result && $row = mysql_fetch_object($result)) {
+    if ($result && $row = mysqli_fetch_object($result)) {
         $count = $row->c;
     }
     if (GET('part') == 'all') {
@@ -154,7 +154,7 @@ if (!isset($directSQL)) {
         $msc->notice('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
         return;
     }
-    $a = mysql_fetch_object($a);
+    $a = mysqli_fetch_object($a);
    	$count = $a->rows;
    	
    	// Часть пока будет равна всем данным, потому что лимита нет. И ссылок не будет.
@@ -181,7 +181,7 @@ $headers = array('<a href="'.$umaker->switcher('fullText', '1').'" title="Пок
 $table = new Table('contentTable');
 $table->setInterlaceClass('', 'interlace');
 $j = 0;
-while (($row = mysql_fetch_object($result)) !== false) {
+while ($row = mysqli_fetch_object($result)) {
 	if ($table->headerCont == null) {
 		if (isset($directSQL)) {
 			$fields = array();

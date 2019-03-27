@@ -61,7 +61,7 @@ if ($msc->page == 'exportSp') {
 		// Save
 		if (POST('new') != null) {
 			if (!$id_set = $msct->insertSet(POST('new'))) {
-				return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, mysql_error());
+				return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, mysqli_error());
 			}
 			foreach ($_POST['table'] as $key => $t){
 				$struct = intval(isset($_POST['struct'][$key]));
@@ -86,7 +86,7 @@ if ($msc->page == 'exportSp') {
 				}
 				$msct->insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
 			}
-			$msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS, mysql_error());
+			$msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS, mysqli_error());
 		// Send
 		} else {
 			$drawForm = false;
@@ -137,7 +137,7 @@ if ($msc->page == 'exportSp') {
 		$table->makeRowHead('Таблица', 'Структ', 'Данные', 'Поле', 'Диапазон', 'WHERE');
 		$result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db);
 		$i = 0;
-		while (($o = mysql_fetch_object($result)) !== false) {			
+		while ($o = mysqli_fetch_object($result)) {
 			$tprefix = substr($o->Name, 0, strpos($o->Name, '_', $start));
 			$checkedStruct = null;
 			$checkedData = ' checked';

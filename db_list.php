@@ -22,7 +22,7 @@ if (GET('mode') == 'speedtest') {
     global $msc;
     $result = $msc->query($sql);
     if (!$result) {
-      $msc->addMessage('Ошибка', $sql, MS_MSG_FAULT, mysql_error());
+      $msc->addMessage('Ошибка', $sql, MS_MSG_FAULT, mysqli_error());
     }
   }
   
@@ -30,7 +30,7 @@ if (GET('mode') == 'speedtest') {
   $sql = 'CREATE DATABASE `test`';
   tquery($sql);
   
-  mysql_select_db('test') or die('oooops');
+  $msc->selectDb('test') or die('oooops');
 
   $msc->allowRepeatMessages = true;
 
@@ -98,7 +98,7 @@ if ($showFullInfo) {
         $countTables = $countSize = $countRows = 0;
         $updateTime = null;
         if ($result) {
-            while ($row = mysql_fetch_object($result)) {
+            while ($row = mysqli_fetch_object($result)) {
                 $countTables ++;
                 if ($row->Update_time > 0) {
                     $updateTime = max($updateTime, strtotime($row->Update_time));

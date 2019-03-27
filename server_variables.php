@@ -11,18 +11,18 @@ $msc->pageTitle = 'Переменные сервера ('.$vi.')';
  */
 if ($vi >= 40003) {
 	$res = $msc->query('SHOW SESSION VARIABLES');
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		$serverVars[$row[0]] = $row[1];
 	}
 	unset($res, $row);
 	$res = $msc->query('SHOW GLOBAL VARIABLES');
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		$serverVarsGlobal[$row[0]] = $row[1];
 	}
 	unset($res, $row);
 } else {
 	$res = $msc->query('SHOW VARIABLES');
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 			$serverVars[$row[0]] = $row[1];
 	}
 	unset($res, $row);

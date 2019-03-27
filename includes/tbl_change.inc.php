@@ -38,7 +38,7 @@ function processRowsEdit($editType) {
 		if ($editType == 0) {
 			$where  = urldecode($_POST['cond'][$numRow]);
 			$result = $msc->query('SELECT * FROM `'.$msc->table.'` WHERE '.$where);
-			$cValue = mysql_fetch_object($result);
+			$cValue = mysqli_fetch_object($result);
 		}
 		$arrayValues = array();
 		$countEmpty = 0;
@@ -77,7 +77,7 @@ function processRowsEdit($editType) {
 			$msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
 			$countInsert ++;
 		} else {
-			$msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, mysql_error());
+			$msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, mysqli_error());
 		}
 	}
 	if ($countInsert == 0) {

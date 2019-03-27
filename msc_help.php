@@ -9,7 +9,7 @@ if (GET('id') == '') {
 	$table = new Table('contentTable');
 	$table -> setInterlace('', '#eeeeee');
 	$headers = array();
-	while ($o = mysql_fetch_object($result)) {
+	while ($o = mysqli_fetch_object($result)) {
 		$data = array();
 		if (count($headers) == 0) {
 			foreach ($o as $k => $v) {
@@ -33,7 +33,7 @@ if (GET('id') == '') {
 	$table = new Table('contentTable');
 	$table -> setInterlace('', '#eeeeee');
 	$headers = array();
-	while ($o = mysql_fetch_object($result)) {
+	while ($o = mysqli_fetch_object($result)) {
 		$data = array();
 		if (count($headers) == 0) {
 			foreach ($o as $k => $v) {

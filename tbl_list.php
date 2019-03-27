@@ -117,7 +117,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
         if ($table->Rows > 0) {
             
             $result = $msc->query('SELECT * FROM '.$table->Name.' LIMIT 3');
-            while ($row = mysql_fetch_object($result)) {
+            while ($row = mysqli_fetch_object($result)) {
                 echo '<tr class="info">';
                 foreach ($row as $v) {
                 	echo '<td>'.wordwrap( mb_substr(strip_tags($v), 0, 100), 50, '<br />', true).'</td>';
@@ -188,8 +188,8 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
         if (isset($_GET['makeMyIsam'])) {
             if ($o->Engine == 'MyISAM') continue;
             	echo '<br>'.$o->Name.' '.$o->Rows;
-                mysql_query('ALTER TABLE `'.$o->Name.'` ENGINE = MyISAM');
-                echo mysql_error();
+                $msc->query('ALTER TABLE `'.$o->Name.'` ENGINE = MyISAM');
+                echo mysqli_error();
         }
 if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
         
@@ -199,7 +199,7 @@ if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
     		if ($msc->query($sql)) {
     			$msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
     		} else {
-    			$msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT, mysql_error());
+    			$msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT, mysqli_error());
     		}
         }
 

@@ -104,7 +104,7 @@ if (isset($_POST['pass']) && isset($_POST['user'])) {
 global $msc, $umaker, $pagel, $connection;
 
 // 3. проверка соединения с базой
-$connection = @mysql_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
+$connection = @mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
 if ($connection == false) {
   //setcookie('msc_pass', '', time(), '/');
   //setcookie('msc_user', '', time(), '/');

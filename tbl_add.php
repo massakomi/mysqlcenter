@@ -277,7 +277,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
 			include_once(DIR_MYSQL . 'tbl_data.php');
 			return null;
 		} else {
-			$msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, mysql_error());
+			$msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, mysqli_error());
 		}
 	}
 	// создание запроса на изменение полей
@@ -360,7 +360,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
     		if ($msc->query($s)) {
     			$msc->addMessage('Ключи изменены', $s, MS_MSG_SUCCESS);
 			} else {
-    			$msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, mysql_error());
+    			$msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, mysqli_error());
 			}
 		}
 		// выполнение
@@ -370,7 +370,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
     			include DIR_MYSQL . 'tbl_struct.php';
     			return null;
     		} else {
-    			$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysql_error());
+    			$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
     		}
         } else {
     		$msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
@@ -394,7 +394,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
 			$msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
 			return null;
 		} else {
-			$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysql_error());
+			$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
 		}
 	}
 }
@@ -444,7 +444,7 @@ if ($msc->table == null) {
 		$msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
 		return null;
 	} else {
-		$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysql_error());
+		$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
 	}	
 
 // Редактирование полей или таблицы	

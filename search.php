@@ -50,14 +50,14 @@ if (GET('table') != null) {
 		$msc->pageTitle = 'Найти и заменить';
     	$sql = 'UPDATE `'.$msc->table.'` SET '.POST('field').' = REPLACE(`'.POST('field').'`, "'.POST('search_for').'", "'.POST('replace_in').'")';
     	if ($msc->query($sql)) {
-    		$c = mysql_affected_rows();
+    		$c = mysqli_affected_rows();
     		if ($c > 0) {
     			return $msc->addMessage('Таблица изменена, затронуто рядов: '.$c, $sql, MS_MSG_SUCCESS);
     		} else {
     			return $msc->addMessage('Ничего не найдено и не заменено', $sql, MS_MSG_NOTICE);
     		}
     	} else {
-    		return $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysql_error());
+    		return $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
     	}
 	}
 	$fields = getFields(GET('table'), true);
@@ -131,7 +131,7 @@ if (GET('table') != null) {
 			$sql = "SELECT COUNT(*) as c FROM $table $whereCondition";			
 			$result = $msc->query($sql);
 			// найдено что-то
-			if (($row = mysql_fetch_object($result)) !== false) {
+			if ($row = mysqli_fetch_object($result)) {
 				if ($row->c > 0) {
 					$founded ++;
 					$DTSquery = MS_URL.'?db='.$msc->db.'&table='.$table.'&s=tbl_data';

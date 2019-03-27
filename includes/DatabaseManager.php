@@ -32,7 +32,7 @@ class DatabaseManager extends DatabaseInterface {
 		if ($this->query($sql)){
 			return $msc->addMessage("База данных $db $text", $sql, MS_MSG_SUCCESS);
 		} else {
-			return $msc->addMessage("Ошибка работы с $db", $sql, MS_MSG_FAULT, mysql_error());
+			return $msc->addMessage("Ошибка работы с $db", $sql, MS_MSG_FAULT, mysqli_error());
 		}
 	}
 
@@ -116,7 +116,7 @@ class DatabaseManager extends DatabaseInterface {
 		if ($this->query($sql, $db)) {
 			return $msc->addMessage("Успешно выполнено", $sql, MS_MSG_SUCCESS);
 		} else {
-			return $msc->addMessage("Ошибка при выполнении операции с $db", $sql, MS_MSG_FAULT, mysql_error());
+			return $msc->addMessage("Ошибка при выполнении операции с $db", $sql, MS_MSG_FAULT, mysqli_error());
 		}
 	}
 
@@ -127,12 +127,12 @@ class DatabaseManager extends DatabaseInterface {
 	 * @return array
 	 */
 	function getTables($database=null){
-		global $msc;
+		global $msc, $connection;
 		if (!is_null($database)) {
 			if (!is_null($msc)) {
 				$msc->selectDb($database);
 			} else {
-				mysql_select_db($database);
+				mysqli_select_db($connection, $database);
 			}
 		}
 		

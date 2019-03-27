@@ -107,9 +107,11 @@ class MSCenter {
 			$this->db = DB_NAME;
 		}
 		if (!$this->selectDb($this->db)) {
-			$this->db = DB_NAME;
+            if (DB_NAME) {
+            	$this->db = DB_NAME;
+            }
 			if (!$this->selectDb($this->db)) {
-				$this->addMessage('Ошибка при выборе базы данных "'.DB_NAME.'"', '', MS_MSG_FAULT, mysql_error());
+				$this->addMessage('Ошибка при выборе базы данных "'.$this->db.'"', '', MS_MSG_FAULT, mysqli_error());
 				return $this->db = null;
 			}
 		}
@@ -214,7 +216,7 @@ showhide("'.$messageId.'");
 	 * @param string
 	 */
 	function notice($text, $sql=null) {
-		$this->addMessage($text, $sql, MS_MSG_NOTICE, mysql_error());
+		$this->addMessage($text, $sql, MS_MSG_NOTICE, mysqli_error());
 	}
 
 	/**
@@ -227,10 +229,10 @@ showhide("'.$messageId.'");
 	 */
 	function addMessage($text, $sql=null, $type=MS_MSG_SIMPLE) {
 		if ($sql != '') {
-			$aff = '<br /><span style="color:#ccc">затронуто рядов: '.mysql_affected_rows().'</span>';
+			$aff = '<br /><span style="color:#ccc">затронуто рядов: '.mysqli_affected_rows().'</span>';
 			$text .= '<div class="sqlQuery">'.wordwrap(htmlspecialchars($sql), 200, "\r\n").';'.$aff.'</div>';
-    		if (mysql_error() != null) {
-    			$text .= '<div class="mysqlError"><b>Ошибка:</b> '.mysql_error().'</div>';
+    		if (mysqli_error() != null) {
+    			$text .= '<div class="mysqlError"><b>Ошибка:</b> '.mysqli_error().'</div>';
     		}
 		}
 		$colors = array(
@@ -257,11 +259,12 @@ showhide("'.$messageId.'");
 	 * @return resource mysql
 	 */
 	function query($sql, $database=null, $log=true) {
+		global $connection;
 		if ($database != null) {
 			$this->selectDb($database);
 		}
 		$this->queries []= $sql;
-		$result = mysql_query($sql);
+		$result = mysqli_query($connection, $sql);
 		if ($result === false) {
             msclog('query()', $sql);
         }
@@ -336,7 +339,7 @@ showhide("'.$messageId.'");
 			if ($this->query($v['query'], null, false)) {
 				$succ ++;
 			} else {
-				$errors []= mysql_error();
+				$errors []= mysqli_error();
 			}
 		}
 		$fault = count($errors);
@@ -469,13 +472,14 @@ showhide("'.$messageId.'");
 	 * @param string
 	 */
 	function selectDb($db) {
+        global $connection;
 		if ($db == null) {
 			return false;
 		}
 		if ($this->dbSelected == $db) {
 			return true;
 		}
-		if (mysql_select_db($db)) {
+		if (mysqli_select_db($connection, $db)) {
 			$this->db = $db;
 			return true;
 		} else {

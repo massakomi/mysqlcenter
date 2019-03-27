@@ -48,7 +48,7 @@ function processValues($row, $fields, $process=true) {
 
 function tableCompare($databases, $table) {
 	global $msc;
-    mysql_select_db($databases[0]);
+    $msc->selectDb($databases[0]);
 	// Поля таблицы
 	$fields = getFields($table);
 	$pk = array();
@@ -72,7 +72,7 @@ function tableCompare($databases, $table) {
 	$sql = "SELECT * FROM $databases[0].$table";
 	$result = $msc->query($sql.$orderBy);
 	$data = array();
-	while (($row = mysql_fetch_object($result)) !== false) {
+	while ($row = mysqli_fetch_object($result)) {
 		$data [$row->$pk[0]][$databases[0]]= processValues($row, $fields, false);
 		$data [$row->$pk[0]][$databases[1]]= '-';
 	}
@@ -80,7 +80,7 @@ function tableCompare($databases, $table) {
 	// Вторая БД + сравнение
 	$sql = "SELECT * FROM $databases[1].$table";
 	$result = $msc->query($sql.$orderBy);
-	while (($row = mysql_fetch_object($result)) !== false) {
+	while ($row = mysqli_fetch_object($result)) {
 		$a = processValues($row, $fields, false);
 		// Одинаковые ключевые поля
 		if (isset($data[$row->$pk[0]][$databases[0]])) {

@@ -28,7 +28,7 @@ foreach ($databases as $k => $v) {
 	$result = $msc->query('SHOW TABLE STATUS FROM '.$v);	
 	$dbArray[$k] = array();
 	$dbSimpleArray[$v] = array();
-	while ($row = mysql_fetch_object($result)) {
+	while ($row = mysqli_fetch_object($result)) {
 		$dbArray[$v][$row->Name]= $row;
 		$dbSimpleArray[$v][]= $row->Name;
 	}  

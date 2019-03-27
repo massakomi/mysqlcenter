@@ -62,7 +62,7 @@ if ($msc->table != '') {
     	'<span title="Метод индексирования (BTREE - если длина полей индекса не превышает 10 байт, HASH - хранение значений как хэш кодов. Используется, если индекс составной, его длина больше одной восьмой от размера страницы БД или же больше, чем 256 байт, FULLTEXT, RTREE)">Тип индекса</span>',
     	'<span title="">Комментарий</span>'
     );
-    while ($row = mysql_fetch_assoc($res)) {
+    while ($row = mysqli_fetch_assoc($res)) {
         array_unshift($row, '<a href="'.$umaker->make('s', 'tbl_struct', 'key', $row['Key_name'], 'field', $row['Column_name'], 'action', 'deleteKey').'" onclick="check(this, \'удаление ключа\'); return false"><img src="'.MS_DIR_IMG.'close.png" alt="" border="0" /></a>');
     	 $table->makeRow($row);
     }

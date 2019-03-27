@@ -40,10 +40,10 @@ function getDbCollation($db, $version) {
         $return = select('SELECT DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = \'' . $db . '\' LIMIT 1;', '', 1);
         return $return[0];
     } else if ($version >= 40101) {
-        mysql_select_db($db);
+        $msc->selectDb($db);
         $return = select('SHOW VARIABLES LIKE \'collation_database\'', 'array', '', 1);
         if ($db !== $msc->db) {
-            mysql_select_db($msc->db);
+            $msc->selectDb($msc->db);
         }
         return $return[0];
     } else {
@@ -122,8 +122,8 @@ function get_databases_full($database=null, $force_stats=false, $link=null, $sor
            ORDER BY BINARY `' . $sort_by . '` ' . $sort_order
            . $limit;
         $databases = array();
-        $res = mysql_query($sql);
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = $msc->query($sql);
+        while ($row = mysqli_fetch_assoc($res)) {
             $databases []= $row;
         }
         unset($sql_where_schema, $sql, $drops);
@@ -159,16 +159,16 @@ function get_databases_full($database=null, $force_stats=false, $link=null, $sor
  * @return string
  */
 function getServerCollation() {
-    global $msc;
+    global $msc, $connection;
     if (is_object($msc)) {
         $r = $msc->query('SHOW VARIABLES LIKE \'collation_server\'');
     } else {
-        if (($r = @mysql_query('SHOW VARIABLES LIKE \'collation_server\'')) === false) {
+        if ($r = @mysql_query($connection, 'SHOW VARIABLES LIKE \'collation_server\'')) {
             return '';
         }
     }
     $a = array();
-    while ($row = mysql_fetch_array($r)) {
+    while ($row = mysqli_fetch_array($r)) {
         $a []= $row[1];
     }
     return $a;
@@ -207,7 +207,7 @@ if ($msc->table == '') {
 
     $result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db.' LIKE "'.$msc->table.'"');
     $charset = null;
-    if ($row = mysql_fetch_object($result)) {
+    if ($row = mysqli_fetch_object($result)) {
         $charset = substr($row->Collation, 0, strpos($row->Collation, '_'));
     }
     

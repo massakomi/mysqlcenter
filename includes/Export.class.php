@@ -166,7 +166,7 @@ class MySQLExport {
     }
     $fields = array();
     $this->fields = array();
-    while (($row = mysql_fetch_object($result)) !== false) {
+    while ($row = mysql_fetch_object($result)) {
       $this->fields []= $row;
       if ($this->addKav) {
         $field_info  = '`' . $row->Field . '` ' . $row->Type;
@@ -203,7 +203,7 @@ class MySQLExport {
     $parts = array();
     $result = mysql_query('SHOW KEYS FROM '.$this->tableb);
     $x = $this->addKav ? '`' : '';
-    while (($row = mysql_fetch_object($result)) !== false) {
+    while ($row = mysql_fetch_object($result)) {
       $row->Column_name = $x.$row->Column_name.$x;
       if ($row->Sub_part > 0) {
         $row->Column_name .= '('.$row->Sub_part.')';
@@ -254,7 +254,7 @@ class MySQLExport {
       $result = mysql_query("SHOW TABLE STATUS FROM $this->db");
       $this->tableStructure[$this->db] = array();
       if ($result) {
-        while (($row = mysql_fetch_object($result)) !== false) {
+        while ($row = mysql_fetch_object($result)) {
           $this->tableStructure [$this->db][]= $row;
         }
       }

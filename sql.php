@@ -94,7 +94,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             	$data = array_unique($data);
             }
             foreach ($data as $k => $v) {
-            	$row = array_map('mysql_escape_string', explode(';', trim($v)));
+            	$row = array_map('mysqli_escape_string', explode(';', trim($v)));
                 echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("'.implode('","', $row).'");';
             }
 			
@@ -154,7 +154,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 		}
 		// Применяем кодировку если надо
 		if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
-            mysql_query("SET NAMES '".POST('sqlFileCharset')."'");
+            $msc->query("SET NAMES '".POST('sqlFileCharset')."'");
 		}
 		//echo substr_count($s, 'ENGINE=InnoDB');
 		$s = str_replace('ENGINE=InnoDB', 'ENGINE=MyISAM', $s);
@@ -163,7 +163,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 		$log = strlen($s) < 10000;
 		execSql(GET('db'), $s, $log);
 		if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
-            mysql_query("SET NAMES 'utf8'");
+            $msc->query("SET NAMES 'utf8'");
 		}
 	} else {
 		$msc->addMessage('Размер файла превышает максимально допустимый', null, MS_MSG_FAULT);

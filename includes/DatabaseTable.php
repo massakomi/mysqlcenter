@@ -54,7 +54,7 @@ class DatabaseTable extends DatabaseInterface {
 		if ($this->query($sql, $db)){
 			return $msc->addMessage("Таблица $table $text", $sql, MS_MSG_SUCCESS);
 		} else {
-			return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, mysql_error());
+			return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, mysqli_error());
 		}
 	}
 
@@ -96,7 +96,7 @@ class DatabaseTable extends DatabaseInterface {
 		}
 		// переход в старую БД после запроса
 		if ($database != $db) {
-			mysql_select_db($db);
+			$msc->selectDb($db);
 		}
 		// дамп данных
 		if ($data) {
@@ -109,7 +109,7 @@ class DatabaseTable extends DatabaseInterface {
 				$msc->addMessage('Данные скопированы', $sql, MS_MSG_SUCCESS);
 			} else {
 				$errorsFull++;
-				$msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, mysql_error());
+				$msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, mysqli_error());
 			}
 		}
 		return ($errorsFull == 0);
@@ -124,7 +124,7 @@ class DatabaseTable extends DatabaseInterface {
 		global $msc;
 		$sql = 'SELECT COUNT(1) AS c FROM '.$this->table;
 		$msc->query($sql);
-		$this->exists = (mysql_error() == null);
+		$this->exists = (mysqli_error() == null);
 		return $this->exists;
 	}
 	
@@ -182,12 +182,12 @@ class DatabaseTable extends DatabaseInterface {
 
     $result = $msc->query('SHOW TABLE STATUS');
 
-  	if (!$result || mysql_num_rows($result) == 0) {
+  	if (!$result || mysqli_num_rows($result) == 0) {
   		return array();
   	}
 
     $array = array();
-    while ($row = mysql_fetch_object($result)) {
+    while ($row = mysqli_fetch_object($result)) {
       $array []= $row;
     }
 

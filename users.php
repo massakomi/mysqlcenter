@@ -36,7 +36,7 @@ $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('Пользователь "'.$username.'" добавлен', $sql, MS_MSG_SUCCESS);
 } else {
-  $msc->addMessage('Ошибка добавления пользователя "'.$username.'"', $sql, MS_MSG_FAULT, mysql_error());
+  $msc->addMessage('Ошибка добавления пользователя "'.$username.'"', $sql, MS_MSG_FAULT, mysqli_error());
   return;
 }
 
@@ -46,7 +46,7 @@ $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('База данных "'.$database.'" создана', $sql, MS_MSG_SUCCESS);
 } else {
-  $msc->addMessage('Ошибка создания базы данных "'.$database.'"', $sql, MS_MSG_FAULT, mysql_error());
+  $msc->addMessage('Ошибка создания базы данных "'.$database.'"', $sql, MS_MSG_FAULT, mysqli_error());
   return;
 }
 
@@ -56,7 +56,7 @@ $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('Права на базу "'.$database.'" отданы пользоватлю "'.$username.'"', $sql, MS_MSG_SUCCESS);
 } else {
-  $msc->addMessage('Ошибка наделения прав на базу "'.$database.'"', $sql, MS_MSG_FAULT, mysql_error());
+  $msc->addMessage('Ошибка наделения прав на базу "'.$database.'"', $sql, MS_MSG_FAULT, mysqli_error());
   return;
 }
 

@@ -81,6 +81,7 @@ class DatabaseInterface {
 	 * @return resource
 	 */
 	function query($sql, $database=null) {
+        global $connection;
 		if ($this->queryObject != '' && $this->queryMethod != '') {
 			if (!isset($GLOBALS[$this->queryObject])) {
 				exit('Query object must be global');
@@ -90,7 +91,7 @@ class DatabaseInterface {
 			}
 			return call_user_func(array($GLOBALS[$this->queryObject], $this->queryMethod), $sql, $database);
 		}
-		return mysql_query($sql);
+		return mysqli_query($connection, $sql);
 	}
 	
 	/**

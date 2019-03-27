@@ -39,7 +39,7 @@ class PageLayout {
         	if ($msc->db != '') {
         		$result = $msc->query($t = 'SELECT * FROM mysqlcenter.db_info WHERE db_name="'.$msc->db.'"');
         		$a = array();
-        		while (($o = mysql_fetch_object($result)) !== false) {
+        		while ($o = mysqli_fetch_object($result)) {
         			$a []= $o;
         		}
                 if (count($a) == 0) {
@@ -54,7 +54,7 @@ class PageLayout {
             		$result = $msc->query($t = 'SELECT * FROM mysqlcenter.table_info
                         WHERE db_name="'.$msc->db.'" AND table_name="'.$msc->table.'"');
             		$a = array();
-            		while (($o = mysql_fetch_object($result)) !== false) {
+            		while ($o = mysqli_fetch_object($result)) {
             			$a []= $o;
             		}
                     if (count($a) == 0) {

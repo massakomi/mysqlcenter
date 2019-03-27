@@ -137,16 +137,7 @@ class ActionProcessor {
     		$c ++;
     		
     		echo "\n".'$("sqlCounterDiv").innerHTML = "'.$c.'";';
-    		//addSqlAjaxLog(mysql_escape_string(htmlspecialchars($q)));
-/*
-    		if ($replace_from != '') {
-          $q = str_replace($replace_from, $replace_to, $q);
-        }
-    		if (!mysql_unbuffered_query($q)) {
-    			$errors []= mysql_error();
-    		} else {
-    			$affected += mysql_affected_rows();
-    		}*/
+
     		
     	}
     	$fault = count($errors);
@@ -224,7 +215,7 @@ class ActionProcessor {
 			if ($msc->query($sql)){
 				return $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
 			} else {
-				return $msc->addMessage('Ошибка изменения таблицы', $sql, MS_MSG_FAULT, mysql_error());
+				return $msc->addMessage('Ошибка изменения таблицы', $sql, MS_MSG_FAULT, mysqli_error());
 			}
 			break;
 			
@@ -417,7 +408,7 @@ class ActionProcessor {
 			if ($msc->query($sql, $db)) {
 				$msc->addMessage('Поле удалено', $sql, MS_MSG_SUCCESS);
 			} else {
-				$msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, mysql_error());
+				$msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, mysqli_error());
 			}
 			break;
 		
@@ -433,7 +424,7 @@ class ActionProcessor {
     			if ($msc->query($sql, $db)) {
     				$msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
     			} else {
-    				$msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysql_error());
+    				$msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_error());
     			}
             }
 			break;

@@ -58,7 +58,7 @@ echo '<b>Список процессов</b>';
 $serverProcesses = array();
 $sql_query = 'SHOW FULL PROCESSLIST';
 $res = $msc->query($sql_query);
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysqli_fetch_assoc($res)) {
 	 $serverProcesses[] = $row;
 }
 unset($res);
@@ -86,7 +86,7 @@ echo $table -> make();
  * Sends the query and buffers the result
  */
 $res = $msc->query('SHOW STATUS');
-while ($row = mysql_fetch_array($res)) {
+while ($row = mysqli_fetch_array($res)) {
   $serverStatus[$row[0]] = $row[1];
 }
 unset($res, $row);
@@ -97,7 +97,7 @@ unset($res, $row);
  */
 //Uptime calculation
 $res = $msc->query('SELECT UNIX_TIMESTAMP() - ' . $serverStatus['Uptime']);
-$row = mysql_fetch_array($res);
+$row = mysqli_fetch_array($res);
 echo 'ServerStatusUptime - ' . date(MS_DATE_FORMAT, $row[0]);
 unset($res, $row);
 
@@ -302,7 +302,7 @@ if (!empty($serverStatus)) {
 }
 $res = $msc->query('SHOW VARIABLES LIKE \'have_innodb\'');
 if ($res) {
-  $row = mysql_fetch_array($res);
+  $row = mysqli_fetch_array($res);
   if (!empty($row[1]) && $row[1] == 'YES') {
 ?>
   <br />

@@ -115,7 +115,7 @@ function dropPrimaryKey($tbl) {
 		if ($msc->query($sql)) {
 			return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
 		} else {
-			return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysql_error());
+			return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_error());
 		}
     }
     return '';
@@ -132,7 +132,7 @@ function getServerVersion() {
 	global $msc;
 	$result = $msc->query('SELECT VERSION() AS version');
 	if ($result !== false) {
-		$row   = mysql_fetch_array($result);
+		$row   = mysqli_fetch_array($result);
 		$match = explode('.', $row[0]);
 	}
 	if (!isset($row)) {
@@ -173,13 +173,13 @@ function select($sql, $type='', $group='', $simple='') {
         return $result;
     }
     if ($result === false) {
-        //echo mysql_error();
+        //echo mysqli_error();
         return array(); // что возвращать?
     }
-    $count = mysql_num_rows($result);
+    $count = mysqli_num_rows($result);
     $array = array();
     $i = 0;
-    while(($row = call_user_func('mysql_fetch_'.$type, $result)) !== false) {
+    while($row = call_user_func('mysqli_fetch_'.$type, $result)) {
         $key = $i;
         if ($group != '') {
             if (isset($row[$group])) {
@@ -218,7 +218,7 @@ function getTableKeys($table) {
     if (!$res) {
         return array();
     }
-    while ($row = mysql_fetch_object($res)) {
+    while ($row = mysqli_fetch_object($res)) {
     	 if ($row->Key_name == 'PRIMARY') {
             $keys [$row->Column_name][$row->Key_name]= 'PRI';
          } else {
@@ -248,7 +248,7 @@ function getFields($table, $onlyNames=false) {
 	if (!$result) {
 		return false;
 	}
-	while ($row = mysql_fetch_object($result)) {
+	while ($row = mysqli_fetch_object($result)) {
 		if ($onlyNames) {
 			$a []= $row->Field;
 		} else {
@@ -269,7 +269,7 @@ function getCharsetArray($extended=false) {
     global $msc;
     $charsetList = array();
     $result = $msc->query('SHOW CHARACTER SET');
-    while (($row = mysql_fetch_array($result)) !== false) {
+    while ($row = mysqli_fetch_array($result)) {
        $charsetList [$row['Charset']]= $extended ? $row : $row['Charset'];
     }
     ksort($charsetList);
@@ -293,7 +293,7 @@ function processValueType($value, $type, $isNull) {
 		if (preg_match('~^[a-z]+int~iU', trim($type)) && !empty($value) && is_numeric($value)) {
 			return $value;
 		} else {
-			return '"' . mysql_escape_string($value) . '"';
+			return '"' . mysqli_escape_string($value) . '"';
 		}
 	}
 }
@@ -703,7 +703,7 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
 	$dataArray = array();
 	// Преобразование входного объекта/массива
 	if (is_resource($object)) {
-		while ($o = mysql_fetch_assoc($object)) {
+		while ($o = mysqli_fetch_assoc($object)) {
 			$dataArray []= $o;
 		}
 	} else {
@@ -757,7 +757,7 @@ function printSqlTable($sql) {
     global $msc;
     $table = new Table('sqlTable', 1, 1, 0);
     $result = $msc->query($sql);
-    while (($row = mysql_fetch_object($result)) !== false) {
+    while ($row = mysqli_fetch_object($result)) {
         if ($table->tableCont == null) {
             $a = array();
             foreach ($row as $k => $v) {
@@ -814,7 +814,7 @@ function msclog($message, $sql=null) {
 	$time    = date('d.m.y H:i:s ');
 	$string  = "\n".$time.$message;
 	if ($sql != null) {
-		$string  .= '('.$sql.' '.mysql_error().')';
+		$string  .= '('.$sql.' '.mysqli_error().')';
 	}
 	@fwrite($file, $string);
 	@fclose($file);
@@ -841,7 +841,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline) {
         return;
     }
 	if (stristr($errstr, 'Unable to save result set')) {
-        $logstr  .= '('.mysql_error().')';
+        $logstr  .= '('.mysqli_error().')';
     }
 	$errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
 	if (function_exists('msclog')) {
@@ -1035,10 +1035,10 @@ function execSql($db, &$sql, $log=true) {
 			continue;
 		}
 		$c ++;
-		if (!mysql_unbuffered_query($q)) {
-			$errors []= mysql_error();
+		if (!$msc->query($q)) {
+			$errors []= mysqli_error();
 		} else {
-			$affected += mysql_affected_rows();
+			$affected += mysqli_affected_rows();
 		}
 	}
 	$fault = count($errors);

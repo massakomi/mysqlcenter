@@ -9,7 +9,7 @@ require_once DIR_MYSQL . 'config.php';
 
 $a = $msc->query('SHOW FIELDS FROM mysqlcenter.big_table');
 $fields = array();
-while ($row = mysql_fetch_object($a)) {
+while ($row = mysqli_fetch_object($a)) {
     $fields []= $row;
 }
 
@@ -81,13 +81,13 @@ for ($i = 150000; $i < 150001; $i ++) {
         $p = 'INSERT INTO big_table (`'.implode('`, `', array_keys($data)).'`) VALUES ("';
     }
     $sql = $p.implode('","', $data).'")';
-    mysql_query($sql);
-    if (mysql_error() != '') {
+    mysqli_query($sql);
+    if (mysqli_error() != '') {
         $f = fopen('log.txt', 'a+');
-        fwrite($f, $sql.mysql_error());
+        fwrite($f, $sql.mysqli_error());
         fclose($f);
     }*/
-    //echo mysql_error();
+    //echo mysqli_error();
     //$sql []= implode('", "', $data);
     //$insert []= $data;
 }
