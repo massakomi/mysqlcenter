@@ -154,7 +154,7 @@ function MSC_DrawFields($array='') {
         '<input name="isNull['.$k.']" tabindex="4" id="isNull'.$k.'" type="checkbox" value="1"'.$ISNULL.' />',
         '<input name="default[]" tabindex="5" id="default'.$k.'" type="text" size="10" value="'.$DEFAULT.'" />',
         
-        '<input name="auto['.$k.']" tabindex="6" id="auto'.$k.'" onclick="$(\'default'.$k.'\').value=\'\'"
+        '<input name="auto['.$k.']" tabindex="6" id="auto'.$k.'" onclick="get(\'default'.$k.'\').value=\'\'"
             type="checkbox" value="1"'.$AUT.' />',
 
         // primaryKey - значение должно быть либо номером, либо полем, так оно считывается ниже
@@ -492,9 +492,9 @@ for (var i = 0; i < a.length; i ++) {
 }
 // Очищает все отмеченные ключи
 function clearKeys(k) {
-    $('key1'+k).checked = false;
-    $('key2'+k).checked = false;
-    $('key3'+k).checked = false;
+    get('key1'+k).checked = false;
+    get('key2'+k).checked = false;
+    get('key3'+k).checked = false;
     return false;
 }
 </script>

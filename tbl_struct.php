@@ -37,7 +37,7 @@ if (GET('action') == 'add_key') {
             $fields = getFields($msc->table);
 			$msc->addMessage('Ключ добавлен', $sql, MS_MSG_SUCCESS);
 		} else {
-			$msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT, mysqli_error());
+			$msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT);
 		}
     }
     if ($returnInAdd) {
@@ -60,7 +60,7 @@ if ($msc->table == '') {
 $dbt = new DatabaseTable($msc->db, $msc->table);
 if (!$dbt->isExists()) {
 	$msc->pageTitle = NULL;
-	$msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysqli_error());
+	$msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT);
 	return null;
 }
 $msc->pageTitle = 'Структура таблицы '.$msc->table;
@@ -97,8 +97,8 @@ foreach ($fields as $k => $v) {
 		$key,
 		$v->Extra,
 		// ссылки
-		'<a href="'.$umaker->make('s', 'tbl_add', 'field', urlencode($v->Field)).'" title="Редактировать ряд"><img src="'.MS_DIR_IMG.'edit.gif" alt="" border="0" /></a>',
-		'<a href="#" onClick="msQuery(\'deleteField\', \''.$urlDelete.'&id=f-'.urlencode($v->Field).'\'); return false" title="Удалить ряд"><img src="'.MS_DIR_IMG.'close.png" alt="" border="0" /></a>'
+		'<a href="'.$umaker->make('s', 'tbl_add', 'field', urlencode($v->Field)).'" title="Редактировать ряд"><img src="'.MS_DIR_IMG.'edit.gif" alt="" /></a>',
+		'<a href="#" onClick="msQuery(\'deleteField\', \''.$urlDelete.'&id=f-'.urlencode($v->Field).'\'); return false" title="Удалить ряд"><img src="'.MS_DIR_IMG.'close.png" alt="" /></a>'
 		),
 		' id="f-'.$v->Field.'"'
 	);
@@ -108,4 +108,3 @@ $tableAddStr []= ")";
 $contentMain = $table -> make();
 
 include(MS_DIR_TPL . 'tbl_struct.htm.php');
-?>

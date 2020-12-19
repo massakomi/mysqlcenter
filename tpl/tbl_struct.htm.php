@@ -28,7 +28,7 @@
   <input name="afterOption" type="radio" value="end" checked id="f1"> <label for="f1">в конец </label>
   <input name="afterOption" type="radio" value="start" id="f2"> <label for="f2">в начало</label>
   <input name="afterOption" type="radio" value="field" id="f3">  <label for="f3">после </label>
-  <select name="afterField" onFocus="$('f3').checked = true"><?php echo draw_array_options($fieldNames)?></select>
+  <select name="afterField" onFocus="get('f3').checked = true"><?php echo draw_array_options($fieldNames)?></select>
   <input type="submit" value="Добавить!">
 </form>
 </fieldset>

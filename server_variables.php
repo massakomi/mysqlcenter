@@ -46,4 +46,3 @@ foreach ($serverVars as $name => $value) {
 	);
 }
 echo $table->make();
-?>

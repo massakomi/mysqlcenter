@@ -7,9 +7,12 @@
  * @pack 13.03.2010
  */
 
-$ = function (id) {
+/*$ = function (id) {
+    if (id.indexOf('#') === 0) {
+        return jQuery(id);
+    }
     return document.getElementById(id);
-}
+}*/
 get = function (id) {
     return document.getElementById(id);
 }
@@ -21,7 +24,7 @@ get = function (id) {
  * @return object Вставленная строка
  */
 function addRow(tableId, from='last', after=true) {
-	var table = $(tableId);
+	var table = get(tableId);
 	// сколько всего рядов
 	var i     = table.rows.length;
 	// берём последний/первый ряд
@@ -35,7 +38,7 @@ function addRow(tableId, from='last', after=true) {
   	insertAfter('trAfterId' + i, 'TR', 'trNewId' + i);
   }
 	// вот она!
-	var tr2 = $('trNewId' + i);
+	var tr2 = get('trNewId' + i);
 	// копируем ячейки из одной строки в другую
 	for (var j = 0; j < tr.cells.length; j ++) {
 		td = document.createElement('TD')
@@ -49,13 +52,13 @@ function addRow(tableId, from='last', after=true) {
  * Вставляет элемент после другого элемента
  */
 function insertAfter (sAfterId, sTag, sId){
-	var objSibling = $(sAfterId);
+	var objSibling = get(sAfterId);
 	objElement = document.createElement(sTag);
 	objElement.setAttribute('id',sId);
 	objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling);
 }
 function insertBefore (sAfterId, sTag, sId){
-	var objSibling = $(sAfterId);
+	var objSibling = get(sAfterId);
 	objElement = document.createElement(sTag);
 	objElement.setAttribute('id',sId);
 	objSibling.parentNode.insertBefore(objElement, objSibling);
@@ -65,7 +68,7 @@ function insertBefore (sAfterId, sTag, sId){
  * Удаляет ряд таблицы с конца
  */
 function removeRow(tableId) {
-	var r = $(tableId).rows;
+	var r = get(tableId).rows;
 	if (r.length == 1) {
         return false;
     }
@@ -122,7 +125,7 @@ function str_replace(srch, repl, str) {
  */
 function showhide(id) {
     if (typeof(id) != 'object') {
-        id = $(id);
+        id = get(id);
     }
 	if (id.style.display == '') {
 		id.style.display = 'block';
@@ -200,7 +203,23 @@ function check(obj, message) {
 /**
  * Групповые действия с чекбоксами
  */
-function chbx_action(form_name, action, mask) {
+function chbx_action(form_name, action, mask=false) {
+    var add = '';
+    if (mask) {
+    	add = '[name="'+mask+'"]'
+    }
+    var chbxs = document.querySelectorAll('form[name="'+form_name+'"] input[type="checkbox"]'+add);
+    for (var chx of chbxs) {
+		if (action == 'invert') {
+			chx.checked = !chx.checked;
+		} else if (action == 'check') {
+			chx.checked = true;
+		} else if (action == 'uncheck') {
+			chx.checked = false;
+		}
+    }
+    /*return ;
+
 	var f = document.getElementsByName(form_name);
 	var forma = f[0];
 	var e = forma.elements;
@@ -223,7 +242,7 @@ function chbx_action(form_name, action, mask) {
 		} else if (action == 'uncheck') {
 			chx.checked = false;	
 		} 	
-	}
+	}*/
 }
 
 /**

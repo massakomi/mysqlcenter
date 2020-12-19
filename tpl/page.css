@@ -110,3 +110,5 @@ DIV.imageAction IMG {cursor:pointer}
 DIV.imageAction U { font-weight:bold; font-size:14px}
 DIV.chbxAction {font-size:12px; margin:5px;}
 IMG.helpimg {cursor:pointer}
+
+#msAjaxQueryDiv {position: fixed; right: 0; bottom: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}

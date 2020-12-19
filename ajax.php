@@ -10,7 +10,14 @@ require_once DIR_MYSQL . 'config.php';
 
 $actPro = new ActionProcessor(true);
 
-echo '$("msAjaxQueryDiv").innerHTML = $("msAjaxQueryDiv").innerHTML + "'.str_replace('"', '\'', $msc->getMessages()).'"; ';
-
-
 ?>
+
+$("#msAjaxQueryDiv").show()
+$("#msAjaxQueryDiv").prepend("<div><?=str_replace('"', '\'', $msc->getMessages())?></div>");
+
+if (typeof(msAjaxQueryDivTm) != 'undefined') {
+    clearTimeout(msAjaxQueryDivTm);
+}
+msAjaxQueryDivTm = setTimeout(function() {
+    $("#msAjaxQueryDiv").fadeOut()
+}, 2000);

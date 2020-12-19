@@ -178,28 +178,28 @@ if ($contentMain != null) {
 <script language="javascript">
 
 function changeCurrentPage(obj) {
-	$('rowsForm').action = '?s='+obj.value+'&table=<?php echo $msc->table ?>&db=<?php echo $msc->db ?>';
+	get('rowsForm').action = '?s='+obj.value+'&table=<?php echo $msc->table ?>&db=<?php echo $msc->db ?>';
 }
-changeCurrentPage($('f2'));
+changeCurrentPage(get('f2'));
 
 
 /**
  * Назначает события функций processNullInput / processNull
  */
 function refreshActions() {
-    var inputs = $('rowsForm').getElementsByTagName('INPUT')
+    var inputs = get('rowsForm').getElementsByTagName('INPUT')
     for (var i = 0; i < inputs.length; i++) {
         if (inputs[i].type == 'checkbox') {
             var idName = inputs[i].name.substr(6);
             var chbxFieldName = inputs[i].name;
             var textFieldName = 'row' + idName;
-            list($('rowsForm')[textFieldName], 'keyup', function () {
+            list(get('rowsForm')[textFieldName], 'keyup', function () {
                 var chbxFieldName = 'isNull' + this.name.substr(3);
-                processNullInput($('rowsForm')[chbxFieldName], this)
+                processNullInput(get('rowsForm')[chbxFieldName], this)
             });
-            list($('rowsForm')[chbxFieldName], 'click', function () {
+            list(get('rowsForm')[chbxFieldName], 'click', function () {
                 var textFieldName = 'row' + this.name.substr(6);
-                processNull(this, $('rowsForm')[textFieldName])
+                processNull(this, get('rowsForm')[textFieldName])
             });
         }
     }

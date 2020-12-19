@@ -2,10 +2,44 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
 
+function xajax(query)
+{
+    var ajaxdebug = (typeof(debug) != 'undefined' && debug == '1');
+
+    var options = {
+        method: 'POST',
+        body: new URLSearchParams('?'+query),
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }
+
+    fetch('ajax.php', options)
+        .then(response => {
+            if (!response.ok) {
+            	console.error(response.status +' ' + response.statusText)
+            } else {
+                return response.text();
+            }
+        })
+        .then(text => {
+            if (text.indexOf('Parse error') != -1) {
+            	console.error(text)
+            } else {
+                try {
+                	eval(text);
+                } catch(e) {
+                    if (ajaxdebug) {
+                        console.error('JS код не выполнен: '+text);
+                    }
+                }
+            }
+        })
+        .catch((error) => {
+            console.error(error)
+        });
+}
+
 /**
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
- *
- * @use xla.send()
  *
  * @param  string  Режим запроса
  * @param  string  Строка запроса urldecoded
@@ -21,7 +55,9 @@ function msQuery(mode, query) {
 		var query = '';
 	}
     query = query.replace(/^\?/, '')
-	xla.send(query+'&'+'mode='+mode);
+
+    xajax(query+'&'+'mode='+mode)
+
 	return false;
 }
 
@@ -52,65 +88,31 @@ function msImageAction(formName, param, actionReplace) {
  * @param string Опция обработки select|unselect|invert
  */
 function msMultiSelect(formName, fieldName, option) {
-	var f = document.getElementsByName(formName);
-	var forma = f[0];
-	var sel = forma[fieldName];
-	for (var i = 0; i < sel.options.length; i ++) {
+    var opts = document.querySelectorAll('form[name="'+formName+'"] select[name="'+fieldName+'"] option');
+    opts.forEach(function(opt) {
 		if (option == 'select') {
-			sel.options[i].selected = true;
+			opt.selected = true;
 		}
 		if (option == 'unselect') {
-			sel.options[i].selected = false;
+			opt.selected = false;
 		}
 		if (option == 'invert') {
-			sel.options[i].selected = !sel.options[i].selected;
-		}			
-	}
+			opt.selected = !opt.selected;
+		}
+    })
 }
 
 /**
  * Функция, которая отвечает за механизм отображения/скрытия блока быстрого SQL запроса на всех страницах MSC
  */
 function msDisplaySql() {
-	var s = document.getElementById('sqlPopupQueryForm').style;
-	if (s.display == 'block') {
-		s.display = 'none'
+	if (jQuery('#sqlPopupQueryForm').is(':visible')) {
+		jQuery('#sqlPopupQueryForm').hide()
 	} else {		
-		s.display = 'block';
-		document.getElementById('sqlPopupQueryForm')['sql'].focus();
+		jQuery('#sqlPopupQueryForm').show().find('textarea').focus()
 	}	
 }
 
-/*
-key = {
-	needkey:function(e) {
-		var code;
-		if (!e) var e = window.event;
-		if (e.keyCode) code = e.keyCode;
-		else if (e.which) code = e.which;
-		//window.status = code + '-' + e.ctrlKey + '-' + e.altKey
-		//alert(code + '-' + e.ctrlKey + '-' + e.altKey)
-		// Обзор  ALT + R
-		if ((code == 82) && (e.ctrlKey == false) && (e.altKey == true))
-			window.location = '?s=tbl_data&table=<?php echo $msc->table?>';
-
-		// Структура  ALT + S
-		if ((code == 83) && (e.ctrlKey == false) && (e.altKey == true))
-			window.location = '?s=tbl_struct&table=<?php echo $msc->table?>';
-
-		// Список таблиц  ALT + T
-		if ((code == 84) && (e.ctrlKey == false) && (e.altKey == true))
-			window.location = '?s=tbl_list';
-
-		// Быстрый экспорт в файл  CTRL + ALT + F или F
-		//if ((code == 70) && (e.ctrlKey == false) && (e.altKey == false))
-			//window.location = '?s=export&table=<?php echo $msc->table?>&action=quick2';
-	}
-}
-if (document.getElementById) {
-		document.onkeydown = key.needkey;
-}
-*/
 
 
 function createFlyBlock (id, style) {

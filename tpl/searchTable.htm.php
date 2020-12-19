@@ -8,20 +8,20 @@
 
   $fields = array_map(create_function('$a', 'return $a;'), $fields);
   array_unshift($fields, '[поля]');
-  echo plDrawSelector($fields, ' onchange="$(\'where\').value += this.options[this.selectedIndex].text"');
+  echo plDrawSelector($fields, ' onchange="document.querySelector(\'#where\').value += this.options[this.selectedIndex].text"');
   
   echo plDrawSelector(array(
     '[операнды]', ' = ', ' != ', ' < ', ' > ', 'IS NULL',
     ' LIKE "%%" ', ' LIKE "%" ', ' LIKE "" ', ' NOT LIKE "" ',
     ' REGEXP "^fo" '
     ),
-    ' onchange="$(\'where\').value += this.options[this.selectedIndex].text"');
+    ' onchange="document.querySelector(\'#where\').value += this.options[this.selectedIndex].text"');
     
     
   echo plDrawSelector(array(
     '[функции]', 'UPPER()', 'LOWER()', 'TRIM()', 'SUBSTRING()', 'REPLACE()', 'REPEAT()'
     ),
-    ' onchange="$(\'where\').value += this.options[this.selectedIndex].text"');
+    ' onchange="document.querySelector(\'#where\').value += this.options[this.selectedIndex].text"');
     
   ?>
   

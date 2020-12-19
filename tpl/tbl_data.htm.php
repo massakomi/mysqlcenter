@@ -46,20 +46,12 @@ SELECT.miniSelector OPTION { font-size:12px;}
 
 jQuery('.contentTable TD').click(function(){
     var tr = jQuery(this).parent();
-    var ch = tr.find('input').attr('checked');
+    var ch = tr.find('input').prop('checked');
     if (jQuery(this).index() == 0) {
-    	if (ch) {
-            tr.addClass('selectedRow');
-    	} else {
-    		tr.removeClass('selectedRow');
-    	}
+        tr.toggleClass('selectedRow', ch);
     	return true;
     }
-	if (!ch) {
-        tr.addClass('selectedRow');
-	} else {
-		tr.removeClass('selectedRow');
-	}
+    tr.toggleClass('selectedRow', !ch);
     jQuery(this).parent().find('input').attr('checked', !ch)
 });
 

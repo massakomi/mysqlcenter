@@ -15,7 +15,7 @@
  * @return string Определение поля (field definition)
  */
 function getFieldDefinition($type=null, $null=null, $default=null, $extra=null, $length=null) {
-echo "<br />$type, $null, $default, $extra, $length";
+    //echo "<br />$type, $null, $default, $extra, $length";
     if (is_object($type)) {
         foreach ($type as $param => $value) {
             $param = strtolower($param);
@@ -287,17 +287,23 @@ function getCharsetArray($extended=false) {
  * @return string Результат
  */
 function processValueType($value, $type, $isNull) {
+    global $connection;
 	if ($isNull) {
 		return 'NULL';
 	} else {
 		if (preg_match('~^[a-z]+int~iU', trim($type)) && !empty($value) && is_numeric($value)) {
 			return $value;
 		} else {
-			return '"' . mysqli_escape_string($value) . '"';
+			return '"' . mysqli_escape_stringx($value) . '"';
 		}
 	}
 }
 
+function mysqli_escape_stringx($value)
+{
+    global $connection;
+    return mysqli_escape_string($connection, $value);
+}
 
 
 /**
@@ -632,7 +638,7 @@ function get_real_size($size=0) {
 	$scan['Kb'] = 1024;
 	$scan['K']  = 1024;
 	$scan['k']  = 1024;
-	while (list($key) = each($scan)) {
+    foreach (array_keys($scan) as $key) {
 		if ((strlen($size)>strlen($key))&&(substr($size, strlen($size) - strlen($key))==$key)) {
 			$size = substr($size, 0, strlen($size) - strlen($key)) * $scan[$key];
 			break;
@@ -702,7 +708,7 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
 	$headers = array();
 	$dataArray = array();
 	// Преобразование входного объекта/массива
-	if (is_resource($object)) {
+	if (!is_array($object)) {
 		while ($o = mysqli_fetch_assoc($object)) {
 			$dataArray []= $o;
 		}
@@ -803,6 +809,7 @@ function pre($arrray, $html=false) {
  * @param string  SQL запрос (добавляется к сообщению)
  */
 function msclog($message, $sql=null) {
+    global $connection;
 	$logFile = 'error.log';
 	if (!file_exists($logFile)) {
 		$file = @fopen($logFile, 'w+');
@@ -814,7 +821,7 @@ function msclog($message, $sql=null) {
 	$time    = date('d.m.y H:i:s ');
 	$string  = "\n".$time.$message;
 	if ($sql != null) {
-		$string  .= '('.$sql.' '.mysqli_error().')';
+		$string  .= '('.$sql.' '.mysqli_error($connection).')';
 	}
 	@fwrite($file, $string);
 	@fclose($file);
@@ -837,7 +844,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline) {
     } else {
         return;
     }
-	if (stristr($errstr, 'should not be called statically')) {
+	if ($errno == 8) {
         return;
     }
 	if (stristr($errstr, 'Unable to save result set')) {
@@ -919,7 +926,7 @@ function processRowValue($v, $type) {
 		}
 		// дата
 		if (stristr($type, 'int') && strlen($v) == 10 && is_numeric($v)) {
-			$e = ' onmouseover="$(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="$(\'tblDataInfoId\').innerHTML=\'\'"';
+			$e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
 			$v = '<span class="dateString"'.$e.'>'.$v.'</span>';
 		}
 	}

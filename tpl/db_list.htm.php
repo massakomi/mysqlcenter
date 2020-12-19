@@ -44,30 +44,27 @@ if (!$showFullInfo) {
 <legend>Добавить пользователя</legend>
 <form action="?s=users&action=add" method="post">
   <div style="margin-bottom:5px"><input name="rootpass" type="text" value="" /> Пароль админа</div>
-  <div style="margin-bottom:5px"><input name="database" type="text" value="" id="databaseField" onkeyup="updateButton(); $('unameField').value=this.value" /> Имя базы данных</div>
-  <div style="margin-bottom:5px"><input name="databaseuser" onkeyup="updateButton()" id="unameField" type="text" value="" /> Логин пользователя</div>
-  <div style="margin-bottom:5px"><input name="userpass" type="password" id="passwordField" value="" onkeyup="updateButton()" /> Пароль</div>
-  <div style="margin-bottom:5px"><input name="userpass2" type="password" id="password2Field" value="" onkeyup="updateButton()" /> Пароль еще раз</div>
+  <div style="margin-bottom:5px"><input name="database" type="text" required id="databaseField" onkeyup="jQuery('#unameField').val(this.value)" /> Имя базы данных</div>
+  <div style="margin-bottom:5px"><input name="databaseuser" id="unameField" type="text" required /> Логин пользователя</div>
+  <div style="margin-bottom:5px"><input name="userpass" type="password" id="passwordField" required /> Пароль</div>
+  <div style="margin-bottom:5px"><input name="userpass2" type="password" id="password2Field" required /> Пароль еще раз</div>
   <div><input type="submit" value="Добавить" disabled="true" id="submitBtnId" /></div>
 </form>
 </fieldset>
 
 <script language="javascript">
 function updateButton() {
-  var doEnable = true;
-  if ($('databaseField').value == '') {
-  	doEnable = false;
-  }
-  if ($('unameField').value == '') {
-  	doEnable = false;
-  }
-  if ($('passwordField').value == '' || ($('passwordField').value != $('password2Field').value)) {
-  	doEnable = false;
-  }
-  if (doEnable) {
-    $('submitBtnId').disabled = false;
-  }
+    var doEnable = true;
+    if (jQuery('#passwordField').val() != jQuery('#password2Field').val()) {
+        doEnable = false;
+    }
+    if (doEnable) {
+        document.querySelector('#submitBtnId').disabled = false;
+    }
 }
+jQuery(document).ready(function(){
+    jQuery('form input').on('keyup', updateButton)
+});
 </script>
 
 	</td>

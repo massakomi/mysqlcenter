@@ -19,7 +19,3 @@
 </fieldset>
 </form>
 
-
-<script language="javascript">
-//xla.send('db=<?=$msc->db?>&mode=sqlQuery')
-</script>

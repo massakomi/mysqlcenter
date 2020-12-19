@@ -31,7 +31,7 @@ class Table {
 	 * Конструктор: позволяет задать заголовок h3 для таблицы, а также имя класса
 	 * Значения $border, $cp, $cs учитываются только если не указан класс
 	 */
-	function Table($class=null, $border=null, $cpadd=null, $cspace=null, $width=null, $id=null) {
+	function __construct($class=null, $border=null, $cpadd=null, $cspace=null, $width=null, $id=null) {
 		if (strpos($class, ':') === false) {
 			$this->className = $class;
 		} else {

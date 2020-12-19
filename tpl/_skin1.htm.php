@@ -8,17 +8,12 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>'."\n";?>
     <title><?php echo $msc->getWindowTitle()?></title>
     <script language="javascript" src="<?php echo MS_DIR_JS?>jquery-1.7.1.min.js"></script>
     <script type="text/javascript" language="javascript">
-    $.noConflict();
-    window.onerror = function (e) {
-        //alert('Ошибка: ' + arguments[0] + '\r\nСтрока: ' + arguments[2] + '\r\nФайл: ' + arguments[1])
-    }
+    /*$.noConflict();*/
     </script>
-    <script language="JavaScript" src="<?php echo MS_DIR_JS?>FrameWork.js"></script>
-    <script language="JavaScript" src="<?php echo MS_DIR_JS?>MysqlCenter.js"></script>
-    <script language="JavaScript" src="<?php echo MS_DIR_JS?>XLAjax.js"></script>
+    <script language="JavaScript" src="<?php echo MS_DIR_JS?>FrameWork.js?<?=filemtime(MS_DIR_JS.'FrameWork.js')?>"></script>
+    <script language="JavaScript" src="<?php echo MS_DIR_JS?>MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
     <script language="javascript">
     var debug = '1';
-    var xla = new XLAjax('ajax.php');
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>page.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>color.white.css" />
@@ -44,7 +39,7 @@ echo $this->getTableMenu();
       <table width="800" border=0 cellspacing=0 cellpadding=0><tr>
         <td width="500"><h1><?php echo $msc->getPageTitle()?></h1></td>
         <td style="white-space:nowrap">
-        <span class="hiddenText" onclick="showhide($('queryPopupBlock')); return false">запросы&nbsp;</span>
+        <span class="hiddenText" onclick="showhide(get('queryPopupBlock')); return false">запросы&nbsp;</span>
         <?php echo count($msc->queries) ?>
         &nbsp;&nbsp;
         <?php
@@ -71,7 +66,7 @@ if (conf('showmessages') == '1') {
 ?>
 <?php echo $contentMain?>
     </td>
-    <td><div id="msAjaxQueryDiv">&nbsp;</div></td>
+    <td><div id="msAjaxQueryDiv"></div></td>
   </tr>
 </table>
 <form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post" name="sqlPopupQueryForm" id="sqlPopupQueryForm" style="text-align:right">
@@ -114,38 +109,38 @@ if (function_exists('memory_get_peak_usage')) {
 ?>
   пиковая память <?php echo formatSize(memory_get_peak_usage()) ?> &nbsp;
   сейчас <?php echo formatSize(memory_get_usage()) ?> &nbsp;
-  inc <?php echo formatSize(array_sum(array_map(create_function('$file', 'return filesize("$file");'), get_included_files())))  ?>
+  inc <?php echo formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files())))  ?>
   limit <?php echo ini_get('memory_limit') ?> &nbsp; &nbsp;&nbsp;
 <?php
 }
-?>
+?>$
   <strong><a href="?s=logout">Выход</a></strong>
 </div>
 <script language="javascript">
 hideTimeout = null;
-$('appNameId').onmouseover = function () {
-	$('dbHiddenMenu').style.display = 'block';
-}
+$('#appNameId').mouseover(function () {
+	$('#dbHiddenMenu').show();
+})
 function menuHidder(e) {
-  var w = parseInt(jQuery('#dbHiddenMenu').width());
+  var w = parseInt($('#dbHiddenMenu').width());
   if (e.pageX > w) {
   	hideTimeout = setTimeout(function() {
-  		$('dbHiddenMenu').style.display = 'none';
+  		$('#dbHiddenMenu').hide()
   	}, 300);
   }
 }
 
-$('dbHiddenMenu').onmouseout = menuHidder;
+$('#dbHiddenMenu').mouseout(menuHidder);
 
-$('dbHiddenMenu').onmouseover = function (e) {
+$('#dbHiddenMenu').mouseover(function (e) {
 	if (hideTimeout != null) {
 		clearInterval(hideTimeout);
 	}
-}
-$('dbHiddenMenu').onclick = function (e) {
-  $('dbHiddenMenu').style.display = 'none';
-}
-$('queryPopupBlock').style.display = 'none'
+})
+$('#dbHiddenMenu').on('click', function (e) {
+    $('#dbHiddenMenu').hide();
+})
+$('#queryPopupBlock').hide()
 
 
 
@@ -194,5 +189,7 @@ function checkboxer(index, selector) {
         }
     }
 }
+
+
 </script>
 </html>

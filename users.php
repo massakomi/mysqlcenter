@@ -36,7 +36,7 @@ $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('Пользователь "'.$username.'" добавлен', $sql, MS_MSG_SUCCESS);
 } else {
-  $msc->addMessage('Ошибка добавления пользователя "'.$username.'"', $sql, MS_MSG_FAULT, mysqli_error());
+  $msc->addMessage('Ошибка добавления пользователя "'.$username.'"', $sql, MS_MSG_FAULT);
   return;
 }
 
@@ -46,7 +46,7 @@ $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('База данных "'.$database.'" создана', $sql, MS_MSG_SUCCESS);
 } else {
-  $msc->addMessage('Ошибка создания базы данных "'.$database.'"', $sql, MS_MSG_FAULT, mysqli_error());
+  $msc->addMessage('Ошибка создания базы данных "'.$database.'"', $sql, MS_MSG_FAULT);
   return;
 }
 
@@ -56,49 +56,6 @@ $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('Права на базу "'.$database.'" отданы пользоватлю "'.$username.'"', $sql, MS_MSG_SUCCESS);
 } else {
-  $msc->addMessage('Ошибка наделения прав на базу "'.$database.'"', $sql, MS_MSG_FAULT, mysqli_error());
+  $msc->addMessage('Ошибка наделения прав на базу "'.$database.'"', $sql, MS_MSG_FAULT);
   return;
 }
-
-/*
-RENAME USER old_user TO new_user
-    [, old_user TO new_user] ...
-    
-REVOKE priv_type [(column_list)] [, priv_type [(column_list)]] ...
-    ON [object_type] {tbl_name | * | *.* | db_name.*}
-    FROM user [, user] ...
-REVOKE ALL PRIVILEGES, GRANT OPTION FROM user [, user]
-
-SET PASSWORD [FOR user] = PASSWORD('some password')
-
-*/
-
-
-
-/*
-GRANT priv_type [(column_list)] [, priv_type [(column_list)]] ...
-    ON [object_type] {tbl_name | * | *.* | db_name.*}
-    TO user [IDENTIFIED BY [PASSWORD] 'password']
-        [, user [IDENTIFIED BY [PASSWORD] 'password']] ...
-    [REQUIRE
-        NONE |
-        [{SSL| X509}]
-        [CIPHER 'cipher' [AND]]
-        [ISSUER 'issuer' [AND]]
-        [SUBJECT 'subject']]
-    [WITH with_option [with_option] ...]
-
-object_type =
-    TABLE
-  | FUNCTION
-  | PROCEDURE
-
-with_option =
-    GRANT OPTION
-  | MAX_QUERIES_PER_HOUR count
-  | MAX_UPDATES_PER_HOUR count
-  | MAX_CONNECTIONS_PER_HOUR count
-  | MAX_USER_CONNECTIONS count
-
-  */
-?>

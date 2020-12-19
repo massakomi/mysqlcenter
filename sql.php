@@ -94,7 +94,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             	$data = array_unique($data);
             }
             foreach ($data as $k => $v) {
-            	$row = array_map('mysqli_escape_string', explode(';', trim($v)));
+            	$row = array_map('mysqli_escape_stringx', explode(';', trim($v)));
                 echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("'.implode('","', $row).'");';
             }
 			

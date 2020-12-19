@@ -13,7 +13,7 @@ class DatabaseRow extends DatabaseInterface {
 	/**
 	 * @access private
 	 */
-	function DatabaseRow() {
+	function __construct() {
 		$this->_init();
 	}
 	

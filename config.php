@@ -53,7 +53,7 @@ if (isset($_GET['s']) && $_GET['s'] == 'logout') {
     setcookie('msc_pass', '', time(), '/');
     setcookie('msc_user', '', time(), '/');
     unset($_SESSION['msc_user'], $_SESSION['msc_pass']);
-	  header('Location: '.$_SERVER['PHP_SELF']);
+    header('Location: '.$_SERVER['PHP_SELF']);
 }
 
 // 2. проверка пользователя на знание логина и пароля к базе

@@ -126,7 +126,7 @@ class DatabaseManager extends DatabaseInterface {
 	 * @param string База данных
 	 * @return array
 	 */
-	function getTables($database=null){
+	public static function getTables($database=null){
 		global $msc, $connection;
 		if (!is_null($database)) {
 			if (!is_null($msc)) {
@@ -136,7 +136,7 @@ class DatabaseManager extends DatabaseInterface {
 			}
 		}
 		
-    $tables = DatabaseTable::getCashedTablesArray();
+        $tables = DatabaseTable::getCashedTablesArray();
 		$array = array();
 		foreach ($tables as $o) {
 			$array[]= $o->Name;

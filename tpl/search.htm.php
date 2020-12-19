@@ -20,5 +20,5 @@
 </table>
 </form>
 <script language="JavaScript" type="text/javascript">
-document.forms['formSearch'].query.focus()
+document.querySelector('#queryAll').focus()
 </script>

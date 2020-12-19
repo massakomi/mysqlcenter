@@ -13,7 +13,7 @@ class DatabaseTable extends DatabaseInterface {
 	/**
      * @access private
 	 */
-	function DatabaseTable($db=null, $table=null) {
+	function __construct($db=null, $table=null) {
 		$this->_init();
 		$this->database = $db;
 		$this->tableb   = $table;
@@ -173,7 +173,7 @@ class DatabaseTable extends DatabaseInterface {
 	
 
 
-  function getCashedTablesArray() {
+  public static function getCashedTablesArray() {
     global $msc;
   	if ($msc->db == 'pr_marketmixer' && isset($_SESSION['table_menu_array'])) {
       $msc->addMessage('Список таблиц закэширован на сессию', null, MS_MSG_NOTICE);

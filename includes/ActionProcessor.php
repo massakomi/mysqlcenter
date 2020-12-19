@@ -32,15 +32,16 @@ class ActionProcessor {
 	 * Конструктор
 	 * @param boolean True, если запускается из ajax-скрипта
 	 */
-	function ActionProcessor($isAjax=false) {
+	function __construct($isAjax=false) {
 		global $msc;
-		
+
         if ($isAjax) {
             //$this->params  = $_POST;
             $queryMode = POST('mode');
         } else {
             $queryMode = GET('action') != null ? GET('action') : POST('action');
         }
+
         if ($queryMode == null) {
             return false;
         }
@@ -55,7 +56,7 @@ class ActionProcessor {
 		if ($db != '') {
 			$msc->selectDb($db);
 		}
-		
+
 		/**
 		 * Подгружаем и инициализируем функции для работы с БД
 		 */
@@ -92,23 +93,23 @@ class ActionProcessor {
     	
 			echo '
       insertBefore("sqlQueryForm", "h2", "sqlTitleDiv");
-			remove($("sqlQueryForm"));
-      $("sqlTitleDiv").innerHTML = "<b>Выполняем запросы из файла '.$file.'<b>";
+			remove(get("sqlQueryForm"));
+      get("sqlTitleDiv").innerHTML = "<b>Выполняем запросы из файла '.$file.'<b>";
 			
       insertAfter("sqlTitleDiv", "DIV", "sqlQueryDiv");
-      $("sqlQueryDiv").style.border = "1px solid #ccc";
-      $("sqlQueryDiv").style.padding = "10px";
-      $("sqlQueryDiv").style.marginTop = "10px";
+      get("sqlQueryDiv").style.border = "1px solid #ccc";
+      get("sqlQueryDiv").style.padding = "10px";
+      get("sqlQueryDiv").style.marginTop = "10px";
       
       insertAfter("sqlTitleDiv", "DIV", "sqlCounterDiv");
-      $("sqlCounterDiv").style.border = "1px solid #ccc";
-      $("sqlCounterDiv").style.padding = "10px";
-      $("sqlCounterDiv").style.marginTop = "10px";
+      get("sqlCounterDiv").style.border = "1px solid #ccc";
+      get("sqlCounterDiv").style.padding = "10px";
+      get("sqlCounterDiv").style.marginTop = "10px";
       ';
       //addAssign($id, $param, $value);
     	
       function addSqlAjaxLog($txt) {
-        echo "\n".'$("sqlQueryDiv").innerHTML = "<div>'.$txt.'</div>" + $("sqlQueryDiv").innerHTML;';
+        echo "\n".'get("sqlQueryDiv").innerHTML = "<div>'.$txt.'</div>" + get("sqlQueryDiv").innerHTML;';
       }
 
 
@@ -121,35 +122,35 @@ class ActionProcessor {
     	
 			
 			
-    	//$msc->logInFile($sql);
-    	$sql = str_replace("\r\n", "\n", $sql);
-    	$array = explode(";\n", $sql);
-    	$errors = array();
-    	$c = 0;
-    	$affected = 0;
-    	$count = count($array);
-    	//addSqlAjaxLog('Всего запросов в файле: '.$count);
-    	for ($i = 0; $i < $count; $i ++) {
-    		$q = trim($array[$i]);
-    		if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
-    			continue;
-    		}
-    		$c ++;
-    		
-    		echo "\n".'$("sqlCounterDiv").innerHTML = "'.$c.'";';
+        	//$msc->logInFile($sql);
+        	$sql = str_replace("\r\n", "\n", $sql);
+        	$array = explode(";\n", $sql);
+        	$errors = array();
+        	$c = 0;
+        	$affected = 0;
+        	$count = count($array);
+        	//addSqlAjaxLog('Всего запросов в файле: '.$count);
+        	for ($i = 0; $i < $count; $i ++) {
+        		$q = trim($array[$i]);
+        		if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
+        			continue;
+        		}
+        		$c ++;
 
-    		
-    	}
-    	$fault = count($errors);
-    	$succ = $c - $fault;
-    	$info = " $succ запросов выполнено, $fault неудач. ";
-    	if (count($errors) == 0) {
-    		$msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
-    	} else {
-    		$msc->addMessage('Запросы выполнен с ошибками' . $info .'<br />'. implode('<br />', $errors), null, MS_MSG_FAULT);
-    	}
-    	$mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
-    	$msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
+        		echo "\n".'get("sqlCounterDiv").innerHTML = "'.$c.'";';
+
+
+        	}
+        	$fault = count($errors);
+        	$succ = $c - $fault;
+        	$info = " $succ запросов выполнено, $fault неудач. ";
+        	if (count($errors) == 0) {
+        		$msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
+        	} else {
+        		$msc->addMessage('Запросы выполнен с ошибками' . $info .'<br />'. implode('<br />', $errors), null, MS_MSG_FAULT);
+        	}
+        	$mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
+        	$msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
 
 			
 			break;
@@ -432,8 +433,7 @@ class ActionProcessor {
 		default:	//$msc->addMessage('Неизвестный запрос: '.$queryMode, null, MS_MSG_NOTICE);
 	
 		}
-	
-	
+
 		
 		//$objResponse->addConfirmCommands(1, 'Тест addConfirmCommands');
 	
@@ -477,7 +477,7 @@ function addAlert($str) {
  * @package msc
  */
 function addRemove($id) {
-    echo "\n".'remove($("'.$id.'"));';
+    echo "\n".'remove(get("'.$id.'"));';
 }
 /**
  * setAttribute-аналог для ajax
@@ -485,7 +485,7 @@ function addRemove($id) {
  * @package msc
  */
 function addAssign($id, $param, $value) {
-    echo "\n".'$("'.$id.'").setAttribute("'.$param.'", "'.$value.'");';
+    echo "\n".'get("'.$id.'").setAttribute("'.$param.'", "'.$value.'");';
 }
 
 ?>

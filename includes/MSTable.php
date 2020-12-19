@@ -13,7 +13,7 @@ class MSTable {
 	/**
 	 * Возвращает все переменные сета
 	 */
-	function getSetInfo($idSet) {
+	public static function getSetInfo($idSet) {
 		if ($idSet == null) {
 			return array();
 		}
@@ -29,7 +29,7 @@ class MSTable {
 	/**
 	 * Возвращает массив сетов
 	 */
-	function getSetsArray() {
+	public static function getSetsArray() {
 		global $msc;
 		$result = $msc->query('SELECT * FROM mysqlcenter.export_set');
 		$a = array();
@@ -42,7 +42,7 @@ class MSTable {
 	/**
 	 * Возвращает массив сетов
 	 */
-	function getHiddensArray() {
+	public static function getHiddensArray() {
 		global $msc;
 		$result = $msc->query('SELECT * FROM mysqlcenter.db_info WHERE visible=0');
 		$a = array();
@@ -55,7 +55,7 @@ class MSTable {
 	/**
 	 * Добавляет новый сет
 	 */
-	function insertSet($name) {
+	public static function insertSet($name) {
 		global $msc;
 		if ($msc->query('INSERT INTO mysqlcenter.export_set (`name`) VALUES ("'.$name.'")')) {
 			return mysqli_insert_id();
@@ -67,7 +67,7 @@ class MSTable {
 	/**
 	 * Вставляет новую переменню сета
 	 */
-	function insertOption($id_set, $table_name, $struct, $data, $where_sql, $pk_top) {
+	public static function insertOption($id_set, $table_name, $struct, $data, $where_sql, $pk_top) {
         global $msc;
 		if ($struct + $data == 0) {
 			return false;

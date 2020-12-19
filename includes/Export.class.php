@@ -26,7 +26,7 @@ class MySQLExport {
   /**
    * Позволяет сразу установить опции экспорта
    */
-  function MySQLExport($db=null, $table=null, $header=null) {
+  function __construct($db=null, $table=null, $header=null) {
     $this->table  = $this->tableb = $table;
     $this->db     = $db;
     $this->data   = $header;
@@ -52,9 +52,10 @@ class MySQLExport {
 
   // Установить текущую базу данных
   function setDatabase($a) {
+    global $msc;
     if ($this->db != $a) {
       $this->db = $a;
-      mysql_select_db($this->db);
+      $msc->selectDb($this->db);
     }
   }
 
@@ -129,6 +130,7 @@ class MySQLExport {
    * @$this->comments - добавить комментарий
    */
   function exportStructure($addDelim = true, $addDrop = false) {
+	global $connection;
     $delim     = ";\r\n";
     $wr   = "\r\n";
     $tab = '  ';
@@ -160,13 +162,13 @@ class MySQLExport {
     $dump .= 'CREATE TABLE '.$ife. $this->tableb . ' ('.$wr.$tab;
 
     // дамп полей
-    $result = mysql_query('SHOW FIELDS FROM '.$this->tableb);
+    $result = mysqli_query($connection, 'SHOW FIELDS FROM '.$this->tableb);
     if (!$result) {
       return null;
     }
     $fields = array();
     $this->fields = array();
-    while ($row = mysql_fetch_object($result)) {
+    while ($row = mysqli_fetch_object($result)) {
       $this->fields []= $row;
       if ($this->addKav) {
         $field_info  = '`' . $row->Field . '` ' . $row->Type;
@@ -201,9 +203,9 @@ class MySQLExport {
     $keys = array();
     $keys['PRI'] = $keys['UNI'] = $keys['MUL'] = $keys['FULL'] = array();
     $parts = array();
-    $result = mysql_query('SHOW KEYS FROM '.$this->tableb);
+    $result = mysqli_query($connection, 'SHOW KEYS FROM '.$this->tableb);
     $x = $this->addKav ? '`' : '';
-    while ($row = mysql_fetch_object($result)) {
+    while ($row = mysqli_fetch_object($result)) {
       $row->Column_name = $x.$row->Column_name.$x;
       if ($row->Sub_part > 0) {
         $row->Column_name .= '('.$row->Sub_part.')';
@@ -251,10 +253,10 @@ class MySQLExport {
     $engine = 'MyISAM';
 		$pack = null;
     if (!isset($this->tableStructure[$this->db])) {
-      $result = mysql_query("SHOW TABLE STATUS FROM $this->db");
+      $result = mysqli_query($connection, "SHOW TABLE STATUS FROM $this->db");
       $this->tableStructure[$this->db] = array();
       if ($result) {
-        while ($row = mysql_fetch_object($result)) {
+        while ($row = mysqli_fetch_object($result)) {
           $this->tableStructure [$this->db][]= $row;
         }
       }
@@ -299,7 +301,7 @@ class MySQLExport {
    * @param boolean  пропускать ли поля с auto_increment
    */
   function exportData($type = 'INSERT', $where = null, $skipAi=false){
-    global $memory_limit;
+    global $memory_limit, $connection;
     $delim = ";\r\n";
     $wr   = "\r\n";
     $tab = '    ';
@@ -312,13 +314,13 @@ class MySQLExport {
         $sql = "SELECT * FROM $this->tableb WHERE $where";
       }
     }
-    if (!$q_result = mysql_query($sql)) {
+    if (!$q_result = mysqli_query($connection, $sql)) {
       return null;
     }
     $dump = null;
-    if (mysql_num_rows($q_result) == 0) {
+    /*if (mysql_num_rows($q_result) == 0) {
       return null;
-    }
+    }*/
     // поля
     $exportedFields = array();
     if ($_POST['fields']) {
@@ -355,11 +357,12 @@ class MySQLExport {
     }
     $count = 0;
     $isFullDump = true;
-    while ($row = mysql_fetch_row($q_result)) {
+    while ($row = mysqli_fetch_assoc($q_result)) {
       if (memory_get_usage() > $memory_limit) {
         $isFullDump = $count;
         break;
       }
+      $row = array_values($row);
       // UPDATE
       if ($typeName == 'UPDATE') {
         $a = array();
@@ -399,7 +402,7 @@ class MySQLExport {
             if (stristr($v->Type, 'int')) {
               $val =  $row[$i];
             } else {
-              $val =  '\'' . mysql_escape_string($row[$i]) . '\'';
+              $val =  '\'' . mysqli_escape_stringx($row[$i]) . '\'';
             }
           } else {
             $val = 'NULL';
@@ -481,12 +484,13 @@ class MySQLExport {
     }
 
   function getFields($table, $onlyNames=false) {
+    global $connection;
     $a = array();
-    $result = mysql_query('SHOW FIELDS FROM ' . $table);
+    $result = mysqli_query($connection, 'SHOW FIELDS FROM ' . $table);
     if (!$result) {
       return false;
     }
-    while ($row = mysql_fetch_object($result)) {
+    while ($row = mysqli_fetch_object($result)) {
       if ($onlyNames) {
         $a []= $row->Field;
       } else {

@@ -37,19 +37,18 @@ function addDataRow(id) {
 jQuery('//input@[name="ftype[]"]').change(function() {
     var curType = jQuery(this).val();
     if (curType == 'SERIAL') {
-        var autoinc = jQuery(this).parent().parent().find('input:eq(5)');
+        var autoinc = jQuery(this).closest('tr').find('input:eq(5)');
     	autoinc.attr('checked', true);
     	autoinc.attr('disabled', true);
-        var nulled = jQuery(this).parent().parent().find('input:eq(3)');
+        var nulled = jQuery(this).closest('tr').find('input:eq(3)');
     	nulled.attr('disabled', true);
     }
-    if (curType == 'ENUM' || urType == 'SET') {
-        var value = jQuery(this).parent().parent().find('input:eq(2)');
+    if (curType == 'ENUM' || curType == 'SET') {
+        var value = jQuery(this).closest('tr').find('[name="length[]"]');
         value.val("'','',''");
     }
 });
 
-if (document.forms['addForm'].table_name) {
-    document.forms['addForm'].table_name.focus();
-}
+jQuery('[name="table_name"]').focus()
+
 </script>

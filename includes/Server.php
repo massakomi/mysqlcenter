@@ -6,12 +6,14 @@
 /**
  * Класс Server - сервер, где расположены базы данных
  */
-class Server {
+class Server
+{
 	
 	/**
 	 * Возвращает массив баз данных
 	 */
-	function getDatabases() {
+	public static function getDatabases()
+    {
 		global $connection;
 		$db_list = mysqli_query($connection, 'SHOW DATABASES');
 		$array = array();

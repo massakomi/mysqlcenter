@@ -47,7 +47,7 @@ class MSCenter {
 	 * Конструктор, для начала анализа скорости
 	 * @access private
 	 */
-	function MSCenter() {
+	function __construct() {
 		$this->timer = round(array_sum(explode(" ", microtime())), 10);
 	}
 	
@@ -120,6 +120,7 @@ class MSCenter {
 		//$this->query('SET collation_server = '.MS_COLLATION);
 		$this->query('SET NAMES "'.MS_CHARACTER_SET.'"');
 		$this->query('SET character_set_server = '.MS_CHARACTER_SET);
+		$this->query('SET sql_mode=""');
 		return $this->db;
 	}
 	
@@ -265,6 +266,7 @@ showhide("'.$messageId.'");
 		}
 		$this->queries []= $sql;
 		$result = mysqli_query($connection, $sql);
+        $this->error = mysqli_error($connection);
 		if ($result === false) {
             msclog('query()', $sql);
         }

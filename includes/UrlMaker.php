@@ -16,6 +16,14 @@ class UrlMaker {
 	 */
 	var $url;
 
+	/**
+	 * Конструктор. Определяет $this->url
+	 * @access private
+	 */
+	function __construct() {
+		$this->url = $_SERVER['REQUEST_URI'];
+	}
+
 
 	/**
 	 * Основная функция для создания URL
@@ -90,17 +98,9 @@ class UrlMaker {
 	}
 	
 	/**
-	 * Конструктор. Определяет $this->url
-	 * @access private
-	 */
-	function UrlMaker() {
-		$this->url = $_SERVER['REQUEST_URI'];
-	}
-	
-	/**
 	 * Функция редактирует URL добавляя/заменяя значение переменной name на value
 	 */
-	function edit($url, $name, $value) {
+	public static function edit($url, $name, $value) {
 	  $url = str_replace("&amp;", "&", $url);
 	  $first = strpos($url, ($name."="));
 	

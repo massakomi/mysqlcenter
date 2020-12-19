@@ -11,7 +11,7 @@ class PageLayout {
 	/**
 	 * Констркутор
 	 */
-	function PageLayout() {
+	function __construct() {
 		global $msc;		
 	}
 
@@ -133,7 +133,7 @@ class PageLayout {
 				'базы данных' => array('db_list', ''),
 				'статус'      => array('server_status', ''),
 				'переменные'  => array('server_variables', ''),
-				'кодировки'   => array('server_collations', ''),
+				//'кодировки'   => array('server_collations', ''),
 				'инфо'        => array('server_users', ''),    
 			), $dbMenuGlobal);
 		
