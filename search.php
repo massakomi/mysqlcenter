@@ -9,17 +9,6 @@
  * + обработка запроса, с окончаниями
  */
 
-
-/*
-SELECT *
-FROM `da_files`
-WHERE `file_path` LIKE CONVERT( _utf8 '%vote.css%'
-USING cp1251 )
-COLLATE cp1251_general_ci
-LIMIT 0 , 30
-
-*/
-
 // селектор таблиц мульти
 classLoad('DatabaseManager');
 function getTableMultySelector($extra) {
@@ -50,14 +39,14 @@ if (GET('table') != null) {
 		$msc->pageTitle = 'Найти и заменить';
     	$sql = 'UPDATE `'.$msc->table.'` SET '.POST('field').' = REPLACE(`'.POST('field').'`, "'.POST('search_for').'", "'.POST('replace_in').'")';
     	if ($msc->query($sql)) {
-    		$c = mysqli_affected_rows();
+    		$c = mysqli_affected_rows($connection);
     		if ($c > 0) {
     			return $msc->addMessage('Таблица изменена, затронуто рядов: '.$c, $sql, MS_MSG_SUCCESS);
     		} else {
     			return $msc->addMessage('Ничего не найдено и не заменено', $sql, MS_MSG_NOTICE);
     		}
     	} else {
-    		return $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
+    		return $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT);
     	}
 	}
 	$fields = getFields(GET('table'), true);
@@ -76,13 +65,13 @@ if (GET('table') != null) {
         $msc->pageTitle = "Поиск - база данных $msc->db";
         
 		$t = new Table('contentTable');
-		$t -> makeRowHead('Таблица', 'Найдено');
-		$t -> setColClass('', 'text-align:right');
+		$t->makeRowHead('Таблица', 'Найдено');
+		$t->setColClass('', 'text-align:right');
 		$founded = 0;
 		$foundedTotal = 0;
 		foreach ($array as $table) {
 			$fields = getFields($table, true);
-			$founds = array();
+			$founds = [];
 			foreach ($fields as $field) {
                 if (stristr($field, $queryField)) {
                     $founds []= $field;
@@ -94,21 +83,16 @@ if (GET('table') != null) {
 			if (count($founds) > 0) {
 				$founded ++;
 			    $table = "<a href='$DTSquery'><b>$table</b></a>";
-				$t -> makeRow(array($table, implode(', ', $founds)), " style='color:black'");
-			} else {
-			 //$table = "<a href='$DTSquery' style='color:#cccccc'>$table</a>";
-                //$t -> makeRow(array($table, '-'), "");
-      }
+				$t -> makeRow([$table, implode(', ', $founds)], " style='color:black'");
+			}
 		}
 		echo $t -> make();
 		
-    }
-	
-	else if (strlen($query) > 0) {
+    } elseif (strlen($query) > 0) {
 		$msc->pageTitle = "Поиск: '$query'";
 		if ($array == null || count($array) == 0) {
 			if ($msc->table != null) {
-				$array = array($msc->table);
+				$array = [$msc->table];
 				$msc->pageTitle = "Поиск - таблица $msc->table";
 			} else {
 				$array = DatabaseManager::getTables();
@@ -136,9 +120,7 @@ if (GET('table') != null) {
 					$founded ++;
 					$DTSquery = MS_URL.'?db='.$msc->db.'&table='.$table.'&s=tbl_data';
 					$t -> makeRow("<b>$table</b>", "<a href='$DTSquery&query=$query'><b>$row->c</b></a>");
-				} else {
-					//$t -> makeRow(array($table, $row->c), " style='color:#cccccc'");
-				}				
+				}
 			}
 		}
 		$msc->pageTitle .= " (найдено <b>$founded</b>)";
@@ -148,4 +130,3 @@ if (GET('table') != null) {
 	// HTML форма
 	include(MS_DIR_TPL . 'search.htm.php');	
 }
-?>

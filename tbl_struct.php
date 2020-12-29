@@ -22,7 +22,7 @@ if (GET('action') == 'add_key') {
         if ($keyName != '') {
             $keyDefinition .= ' `'.$keyName.'`';
         }
-        $keyFields = array();
+        $keyFields = [];
         foreach ($_POST['field'] as $key => $fieldName) {
             if ($fieldName == '') {
                 continue;
@@ -41,7 +41,7 @@ if (GET('action') == 'add_key') {
 		}
     }
     if ($returnInAdd) {
-        $fieldRows = array('' => '');
+        $fieldRows = ['' => ''];
         foreach ($fields as $field) {
             $fieldRows [$field->Field]= "$field->Field [$field->Type]";
         }
@@ -77,9 +77,9 @@ $table -> setInterlace('', '#eeeeee');
 
 // Создание рядов
 $msquery = 'db='.$msc->db.'&table='.$msc->table.'&s=tbl_struct';
-$fieldNames = array();
+$fieldNames = [];
 $fields = array_values($fields);
-$tableAddStr = array('array(');
+$tableAddStr = ['array('];
 foreach ($fields as $k => $v) {
 	$fieldNames []= $v->Field;
 	$urlDelete = $msquery . '&field=' . $v->Field;
@@ -88,7 +88,7 @@ foreach ($fields as $k => $v) {
 	if ($v->Key == 'PRI') {
 		$key = '<img src="'.MS_DIR_IMG.'acl.gif" alt="" border="0" />';
 	}
-	$table -> makeRow(array(
+	$table -> makeRow([
 		'<input name="field[]" id="field'.$k.'" type="checkbox" value="'.$v->Field.'" class="cb">',
 		$v->Field,
 		wordwrap($v->Type, 70, '<br />', true),
@@ -99,7 +99,7 @@ foreach ($fields as $k => $v) {
 		// ссылки
 		'<a href="'.$umaker->make('s', 'tbl_add', 'field', urlencode($v->Field)).'" title="Редактировать ряд"><img src="'.MS_DIR_IMG.'edit.gif" alt="" /></a>',
 		'<a href="#" onClick="msQuery(\'deleteField\', \''.$urlDelete.'&id=f-'.urlencode($v->Field).'\'); return false" title="Удалить ряд"><img src="'.MS_DIR_IMG.'close.png" alt="" /></a>'
-		),
+    ],
 		' id="f-'.$v->Field.'"'
 	);
 	$tableAddStr []= "&nbsp;&nbsp;&nbsp;&nbsp;'".$v->Field."' => ,";

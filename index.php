@@ -7,9 +7,9 @@
  *	Центральный скрипт для менеджера БД
  */
 
-if (file_exists('Z:/home/my/quellina/Debugger.php')) {
+if (file_exists('Debugger.php')) {
     define('DEBUGGER_ONLY', 1);
-    include_once 'Z:/home/my/quellina/Debugger.php';
+    include_once 'Debugger.php';
     global $debugger;
     $debugger = new Debugger();
 }
@@ -23,6 +23,3 @@ $umaker = new UrlMaker();
 require_once DIR_MYSQL . 'includes/PageLayout.php';
 $pagel = new PageLayout;
 $pagel->display();
-
-if (isset($debugger)) $debugger->queryAnalise();
-?>

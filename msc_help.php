@@ -8,9 +8,9 @@ if (GET('id') == '') {
 	$result = $msc->query('SELECT * FROM mysql.help_category ORDER BY name');
 	$table = new Table('contentTable');
 	$table -> setInterlace('', '#eeeeee');
-	$headers = array();
+	$headers = [];
 	while ($o = mysqli_fetch_object($result)) {
-		$data = array();
+		$data = [];
 		if (count($headers) == 0) {
 			foreach ($o as $k => $v) {
 				$headers []= $k;
@@ -32,9 +32,9 @@ if (GET('id') == '') {
 	$result = $msc->query('SELECT * FROM mysql.help_topic WHERE help_category_id = ' . GET('id'));
 	$table = new Table('contentTable');
 	$table -> setInterlace('', '#eeeeee');
-	$headers = array();
+	$headers = [];
 	while ($o = mysqli_fetch_object($result)) {
-		$data = array();
+		$data = [];
 		if (count($headers) == 0) {
 			foreach ($o as $k => $v) {
 				$headers []= $k;
@@ -49,4 +49,3 @@ if (GET('id') == '') {
 	echo $table->make();		
 }		
 
-?>

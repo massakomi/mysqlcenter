@@ -48,7 +48,7 @@ class ActionProcessor {
 
 		$db  = $this->param('db');
 		$tbl = $this->param('table');
-		
+
 		// Если указана БД, сразу её выбираем. Но дальше в запросах, всё равно проверяем,
 		// может БД требуется, но пустая, значит ошибка
 		// $db          - та, с которой производятся действия
@@ -76,38 +76,38 @@ class ActionProcessor {
 		// Данные из POST должны считываться самостоятельно
 
 		switch ($queryMode) {
-		
+
 		case 'sqlQuery'    :
 
     	$mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
     	if (!$msc->selectDb($db)) {
     		return $msc->addMessage('Не смог выбрать базу данных "'.$db.'"', null, MS_MSG_FAULT);;
     	}
-		
+
       $file = 'Z:/marketmixer1.sql';
 			//echo 'alert(1);';
-			
+
     	if (!file_exists($file)) {
     		return $msc->addMessage('Файл "'.$file.'" не найден ', null, MS_MSG_FAULT);
     	}
-    	
+
 			echo '
       insertBefore("sqlQueryForm", "h2", "sqlTitleDiv");
 			remove(get("sqlQueryForm"));
       get("sqlTitleDiv").innerHTML = "<b>Выполняем запросы из файла '.$file.'<b>";
-			
+
       insertAfter("sqlTitleDiv", "DIV", "sqlQueryDiv");
       get("sqlQueryDiv").style.border = "1px solid #ccc";
       get("sqlQueryDiv").style.padding = "10px";
       get("sqlQueryDiv").style.marginTop = "10px";
-      
+
       insertAfter("sqlTitleDiv", "DIV", "sqlCounterDiv");
       get("sqlCounterDiv").style.border = "1px solid #ccc";
       get("sqlCounterDiv").style.padding = "10px";
       get("sqlCounterDiv").style.marginTop = "10px";
       ';
       //addAssign($id, $param, $value);
-    	
+
       function addSqlAjaxLog($txt) {
         echo "\n".'get("sqlQueryDiv").innerHTML = "<div>'.$txt.'</div>" + get("sqlQueryDiv").innerHTML;';
       }
@@ -116,12 +116,12 @@ class ActionProcessor {
 
 
       //$sql = file_get_contents($file);
-      
+
       //addSqlAjaxLog('размер файла '.strpos($file, ";\r\n"));
     	break;
-    	
-			
-			
+
+
+
         	//$msc->logInFile($sql);
         	$sql = str_replace("\r\n", "\n", $sql);
         	$array = explode(";\n", $sql);
@@ -152,12 +152,12 @@ class ActionProcessor {
         	$mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
         	$msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
 
-			
+
 			break;
-			
+
 		// операции с таблицами
 		// в запросе обязательно должна быть указана БД и таблица
-	
+
 		case 'tableDelete'    :
 			if ($dbt->tableAction($db, $tbl, 'DROP')) {
 				$msc->page = 'tbl_list';
@@ -166,7 +166,7 @@ class ActionProcessor {
 				}
 			}
 			break;
-	
+
 		case 'tableTruncate'  :
 			if ($dbt->tableAction($db, $tbl, 'TRUNCATE')) {
 				if ($isAjax) {
@@ -175,33 +175,33 @@ class ActionProcessor {
 				}
 			}
 			break;
-	
+
 		case 'tableRename':
 			if ( $dbt->tableAction($db, $tbl, 'RENAME', $this->param('newName')) ) {
 				if ($isAjax) {
-					addAssign($this->param('id'), 'innerHTML', $this->param('newName'));
+                    addHtml($this->param('id'), $this->param('newName'));
 				}
 				$msc->table = $this->param('newName');
 			}
 			break;
-	
+
 		case 'tableMove':
 			$dbt->queryCheck($db, $tbl, $this->param('newName'), $this->param('newDB'));
 			if ($dbt->copyTable($db, $tbl, true, true, $this->param('newName'), $this->param('newDB'))) {
 				$dbt->tableAction($db, $tbl, 'DROP');
 			}
 			break;
-	
+
 		// Копирование в другую БД
 		case 'tableCopyTo';
 			$dbt->copyTable($db, $tbl, true, true, $this->param('newName'), $this->param('newDB'));
 			break;
-	
+
 		// Изменение кодировки
 		case 'tableCharset';
 			$dbt->tableAction($db, $tbl, 'CHARSET', $this->param('charset'));
 			break;
-			
+
 		// Изменение опций
 		case 'tableOptions';
 			if (count($_POST) == 0) {
@@ -216,10 +216,10 @@ class ActionProcessor {
 			if ($msc->query($sql)){
 				return $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
 			} else {
-				return $msc->addMessage('Ошибка изменения таблицы', $sql, MS_MSG_FAULT, mysqli_error());
+				return $msc->addMessage('Ошибка изменения таблицы', $sql, MS_MSG_FAULT);
 			}
 			break;
-			
+
 		// Коммент
 		case 'tableComment';
 			// !!! внимание, некоторые действия должны выполнятся только с POSTa
@@ -228,8 +228,8 @@ class ActionProcessor {
 				break;
 			}
 			$dbt->tableAction($db, $tbl, 'COMMENT', $this->param('comment'));
-			break;			
-	
+			break;
+
 		// Порядок
 		case 'tableOrder';
 			if (count($_POST) == 0) {
@@ -237,14 +237,14 @@ class ActionProcessor {
 			}
 			$dbt->tableAction($db, $tbl, 'ORDER', '`'.$this->param('field').'` '.$this->param('order'));
 			break;
-			
+
 		case 'tableCheck':    $dbt->tableAction($db, $tbl, 'CHECK');     break;
 		case 'tableAnalize':  $dbt->tableAction($db, $tbl, 'ANALYZE');   break;
 		case 'tableRepair':   $dbt->tableAction($db, $tbl, 'REPAIR');    break;
 		case 'tableOptimize': $dbt->tableAction($db, $tbl, 'OPTIMIZE');  break;
 		case 'tableFlush':    $dbt->tableAction($db, $tbl, 'FLUSH');     break;
-	
-		// массовые действия с таблицами	
+
+		// массовые действия с таблицами
 		case 'delete_all' :
 		case 'truncate_all' :
 		case 'copy_all' :
@@ -252,7 +252,7 @@ class ActionProcessor {
 			if ($a == false) {
 				break;
 			}
-			$db = $db;		
+			$db = $db;
 			$dbt->queryCheck($db);
 			$cs = (POST('copy_struct') != '');
 			$cd = (POST('copy_data') != '');
@@ -264,12 +264,12 @@ class ActionProcessor {
 				} else if ($queryMode == 'copy_all') {
 					$dbt->copyTable($db, $t, $cs, $cd);
 				}
-			}		
+			}
 			break;
-			
-			
+
+
 		// операции с БД
-	
+
 		// удаление баз данных (массово + единично)
 		case 'dbDelete'       :
 			if ($this->param('dbMulty')) {
@@ -289,13 +289,13 @@ class ActionProcessor {
 				$msc->page = 'db_list';
 			}
 			break;
-	
+
 		case 'dbTruncate'     :
 			if ($dbm->DatabaseTruncate($db) && $isAjax) {
 				addAlert('База данных очищена');
 			}
 			break;
-			
+
 		case 'dbHide'     :
 			if ($this->param('action') == 'show') {
                 $msc->query('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("'.$db.'", 1)');
@@ -305,25 +305,25 @@ class ActionProcessor {
 				addAssign($this->param('id'), 'style', 'color:#ccc');
             }
 			break;
-	
+
 		case 'dbTablesDelete' :
 			if ($dbm->DatabaseTruncate($db, true) && $isAjax) {
 				addAlert('База данных очищена');
 			}
 			break;
-	
+
 		case 'dbCreate'       :
 			if ($dbm->DatabaseAction($this->param('dbName'), 'CREATE')) {
 				$msc->db = $this->param('dbName');
 				$msc->selectDb($msc->db);
 			}
 			break;
-	
+
 		case 'dbCollate'       :
 		case 'dbCharset'       :
 			$dbm->DatabaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset');
 			break;
-	
+
 		// массово + единично
 		case 'dbRename'       :
 		case 'dbCopy'         :
@@ -346,7 +346,7 @@ class ActionProcessor {
 			$struct = true;
 			if (POST('option') != null) {
 				$data = (POST('option') != 'struct');
-				$struct = (POST('option') != 'data');			
+				$struct = (POST('option') != 'data');
 			}
 			if (count($newName) > 0 && count($databases) == count($newName)) {
 				foreach ($databases as $k => $db) {
@@ -358,35 +358,35 @@ class ActionProcessor {
 				}
 			}
 			break;
-	
+
 		// операции с рядами
-	
+
 		case 'deleteRow':
 			$dbr->rowDelete($db, $tbl, $this->param('row'));
 			if ($isAjax) {
 				addRemove($this->param('id'));
 			}
 			break;
-	
+
 		case 'copyRow':
 			$dbr->rowCopy($db, $tbl, $this->param('row'));
 			if ($isAjax) {
 				addAlert('Ряд скопирован');
 			}
 			break;
-	
+
 		case 'rowsAdd':
 			require_once DIR_MYSQL . 'includes/tbl_change.inc.php';
 			processRowsEdit(1);
 			break;
-			
+
 		case 'rowsEdit':
 			require_once DIR_MYSQL . 'includes/tbl_change.inc.php';
 			processRowsEdit(0);
 			break;
-		
+
 		// массовые действия с рядами
-		
+
 		case 'deleteRows' :
 		case 'copyRows' :
 			$a = $this->param('row');
@@ -399,10 +399,10 @@ class ActionProcessor {
 			} else if ($queryMode == 'deleteRows') {
 				$dbr->rowDelete($db, $tbl, implode(' OR ', $a), count($a));
 			}
-			break;		
-	
+			break;
+
 		// операции с полями
-	
+
 		case 'deleteField' :
 			$dbm->queryCheck($db, $tbl, $this->param('field'));
 			$sql = "ALTER TABLE `$tbl` DROP " . $this->param('field');
@@ -412,7 +412,7 @@ class ActionProcessor {
 				$msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, mysqli_error());
 			}
 			break;
-		
+
 		// операции с ключами
 
 		case 'deleteKey' :
@@ -429,39 +429,39 @@ class ActionProcessor {
     			}
             }
 			break;
-		
+
 		default:	//$msc->addMessage('Неизвестный запрос: '.$queryMode, null, MS_MSG_NOTICE);
-	
+
 		}
 
-		
+
 		//$objResponse->addConfirmCommands(1, 'Тест addConfirmCommands');
-	
-		
+
+
 		//$objResponse->addAppend('testId', 'innerHTML', ' + Тест addAppend');
 		//$objResponse->addPrepend('testId', 'innerHTML', ' - Тест addPrepend');
 		//$objResponse->addReplace('testId', 'innerHTML', '+', '+ Тест Replace');
 		//$objResponse->addClear('testId', 'innerHTML');
-		
-	
+
+
 		//$objResponse->addRedirect('/engine/mysqladmin/?s=_test&action=1');
-	
+
 		//$objResponse->addScript('alert(5);');
 		// $objResponse->addScriptCall("myJSFunction", "arg 1", "arg 2", 12345);
 		// $objResponse->addIncludeScript($sFileName)
-	
+
 		// $objResponse->addCreate($sParent, $sTag, $sId, $sType="")
 		// $objResponse->addInsert($sBefore, $sTag, $sId)
 		// $objResponse->addInsertAfter($sAfter, $sTag, $sId)
-	
+
 		// $objResponse->addCreateInput($sParent, $sType, $sName, $sId)
 		// $objResponse->addInsertInput($sBefore, $sType, $sName, $sId)
 		// $objResponse->addInsertInputAfter($sAfter, $sType, $sName, $sId)
-	
+
 		// $objResponse->addEvent($sTarget,$sEvent,$sScript)
 		// $objResponse->addHandler($sTarget,$sEvent,$sHandler)
-		// $objResponse->addRemoveHandler($sTarget,$sEvent,$sHandler)		
-	}	
+		// $objResponse->addRemoveHandler($sTarget,$sEvent,$sHandler)
+	}
 }
 /**
  * alert-аналог для ajax
@@ -487,5 +487,6 @@ function addRemove($id) {
 function addAssign($id, $param, $value) {
     echo "\n".'get("'.$id.'").setAttribute("'.$param.'", "'.$value.'");';
 }
-
-?>
+function addHtml($id, $value) {
+    echo "\n".'get("'.$id.'").innerHTML = "'.$value.'";';
+}

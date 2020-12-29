@@ -9,6 +9,7 @@ $msc->pageTitle = 'Переменные сервера ('.$vi.')';
 /**
  * Sends the queries and buffers the results
  */
+$serverVars = $serverVarsGlobal = [];
 if ($vi >= 40003) {
 	$res = $msc->query('SHOW SESSION VARIABLES');
 	while ($row = mysqli_fetch_array($res)) {

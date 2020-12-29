@@ -22,7 +22,7 @@ if ($rootpass == '') {
 }
 
 // Проверяем, может уже есть такой пользователь
-$sql = 'SELECT * FROM user WHERE User="'.$username.'"';
+$sql = 'SELECT * FROM mysql.user WHERE User="'.$username.'"';
 $result = $msc->query($sql);
 if ($result) {
   $msc->addMessage('Пользователь с именем "'.$username.'" уже существует', '', MS_MSG_NOTICE);

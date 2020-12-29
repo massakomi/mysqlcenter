@@ -24,4 +24,3 @@ foreach ($tables_array as $k => $v) {
 }
 $tables_rows .= '</ul>';
 include(MS_DIR_TPL . 'import.htm.php');
-?>

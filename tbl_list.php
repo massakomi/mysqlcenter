@@ -28,7 +28,7 @@ if (GET('action') == 'full') {
 	return;
 
 // Исследование структуры
-} else if (GET('action') == 'structure') {
+} elseif (GET('action') == 'structure') {
 
 ?>
 <style>
@@ -45,7 +45,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
 <?php
     $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
 
-    $fieldVariants = array();
+    $fieldVariants = [];
     foreach ($tables as $k => $v) {
         $fieldVariants [$v->Name]= $v->Name;
         $variant = preg_replace('~[s_]$~', '', $v->Name);
@@ -115,7 +115,6 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
         echo '</tr>';
         
         if ($table->Rows > 0) {
-            
             $result = $msc->query('SELECT * FROM '.$table->Name.' LIMIT 3');
             while ($row = mysqli_fetch_object($result)) {
                 echo '<tr class="info">';
@@ -185,13 +184,13 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
 	$sumRows  = 0;
 	$action = POST('act');
 	foreach ($tables as $o) {
-        if (isset($_GET['makeMyIsam'])) {
+        /*if (isset($_GET['makeMyIsam'])) {
             if ($o->Engine == 'MyISAM') continue;
-            	echo '<br>'.$o->Name.' '.$o->Rows;
-                $msc->query('ALTER TABLE `'.$o->Name.'` ENGINE = MyISAM');
-                echo mysqli_error();
-        }
-if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
+            echo '<br>'.$o->Name.' '.$o->Rows;
+            $msc->query('ALTER TABLE `'.$o->Name.'` ENGINE = MyISAM');
+            echo mysqli_error();
+        }*/
+        if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
         
         if ($action == 'analyze' || $action == 'check' || $action == 'flush' || $action == 'repair'
             || $action == 'optimize') {
@@ -199,7 +198,7 @@ if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
     		if ($msc->query($sql)) {
     			$msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
     		} else {
-    			$msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT, mysqli_error());
+    			$msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
     		}
         }
 
@@ -226,27 +225,29 @@ if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
 			$valueName ='<span style="color:#aaa">'.$valueName.'</span>';
 		}		
 		// Определение размера таблицы
-		$size = MSC_roundZero(($o->Data_length + $o->Index_length) / 1024, 1);		
+		$size = MSC_roundZero(($o->Data_length + $o->Index_length) / 1024, 1);
 		$sumSize += $size;
 		$sumRows += $o->Rows;
 		// Сборка значения рядов
 		$msquery = "db=$msc->db&table=$o->Name";
 		$idRow = "row$sumTable";
-		$idChbx = "table_" . $o->Name;				
+		$idChbx = "table_" . $o->Name;
+		$engine = $o->Engine == 'MyISAM' ? '<span style="color:#ccc">MyISAM</span>' : $o->Engine;
 		$rowValues = array(
 			'<input name="table[]" type="checkbox" value="'.$o->Name.'" id="'.$idChbx.'" class="cb" '.
                 'onclick="checkboxer('.$sumTable.', \'#row\');">',
-			'<label title="'.$o->Comment.' / '.$o->Collation.'" for="'.$idChbx.'" ondblclick="if (a=prompt(\'Новое имя\', \''.$o->Name.'\')) {msQuery(\'tableRename\', \''.$msquery.'&newName=\' + a + \'&id='.$idRow.'-1\'); }">'.$valueName.'</label>',
-			'<a href="'.$umaker->make('table', $o->Name, 's', 'tbl_data').'" title="Обзор таблицы"><img src="'.MS_DIR_IMG.'actions.gif" alt="" border=0 /></a>',
-			'<a href="'.$umaker->make('table', $o->Name, 's', 'tbl_struct').'" title="Структура таблицы"><img src="'.MS_DIR_IMG.'generate.png" alt="" border=0 /></a>',
-			'<a href="#" onClick="msQuery(\'tableTruncate\', \''.$msquery.'&id='.$idRow.'-8&id2='.$idRow.'-9\'); return false" title="Очистить таблицу"><img src="'.MS_DIR_IMG.'delete.gif" alt="" border=0 /></a>',
-			'<a href="#" onClick="msQuery(\'tableDelete\', \''.$msquery.'&id='.$idRow.'\'); return false" title="Удалить таблицу"><img src="'.MS_DIR_IMG.'close.png" alt="" border=0 /></a>',
+			'<label for="'.$idChbx.'">'.$valueName.'</label>',
+			'<a href="'.$umaker->make('table', $o->Name, 's', 'tbl_data').'" title="Обзор таблицы"><img src="'.MS_DIR_IMG.'actions.gif" alt="" /></a>',
+			'<a href="'.$umaker->make('table', $o->Name, 's', 'tbl_struct').'" title="Структура таблицы"><img src="'.MS_DIR_IMG.'generate.png" alt="" /></a>',
+			'<a href="#" onClick="msQuery(\'tableTruncate\', \''.$msquery.'&id='.$idRow.'-8&id2='.$idRow.'-9\'); return false" title="Очистить таблицу"><img src="'.MS_DIR_IMG.'delete.gif" alt="" /></a>',
+			//'<a href="#" onClick="msQuery(\'tableDelete\', \''.$msquery.'&id='.$idRow.'\'); return false" title="Удалить таблицу"><img src="'.MS_DIR_IMG.'close.png" alt="" /></a>',
+            '<img src="'.MS_DIR_IMG.'close.png" data-action="tableDelete" title="Удалить таблицу" alt="" />',
 			$o->Rows,
 			$size,
 			$updateTime,
 			$o->Auto_increment,
-			$o->Engine == 'MyISAM' ? '<span style="color:#ccc">MyISAM</span>' : $o->Engine,
-			'<span style="color:#aaa">'.substr($o->Collation, 0, strpos($o->Collation, '_')).'</span>'
+			'<span>'.$engine.'</span>',
+			'<span title="'.$o->Collation.'" style="color:#aaa">'.substr($o->Collation, 0, strpos($o->Collation, '_')).'</span>'
 		);
 		// Сборка атрибуты рядов
 		$rowAttr = array();
@@ -281,4 +282,3 @@ if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
 }
 
 include(MS_DIR_TPL . 'tbl_list.htm.php');
-?>

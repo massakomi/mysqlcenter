@@ -20,7 +20,7 @@ get = function (id) {
 
 /**
  * Копирует последний ряд таблицы вниз
- * @param  string  id таблицы
+ * @param  tableId string   id таблицы
  * @return object Вставленная строка
  */
 function addRow(tableId, from='last', after=true) {
@@ -52,13 +52,13 @@ function addRow(tableId, from='last', after=true) {
  * Вставляет элемент после другого элемента
  */
 function insertAfter (sAfterId, sTag, sId){
-	var objSibling = get(sAfterId);
+	let objSibling = get(sAfterId);
 	objElement = document.createElement(sTag);
 	objElement.setAttribute('id',sId);
 	objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling);
 }
 function insertBefore (sAfterId, sTag, sId){
-	var objSibling = get(sAfterId);
+	let objSibling = get(sAfterId);
 	objElement = document.createElement(sTag);
 	objElement.setAttribute('id',sId);
 	objSibling.parentNode.insertBefore(objElement, objSibling);
@@ -68,8 +68,8 @@ function insertBefore (sAfterId, sTag, sId){
  * Удаляет ряд таблицы с конца
  */
 function removeRow(tableId) {
-	var r = get(tableId).rows;
-	if (r.length == 1) {
+	let r = get(tableId).rows;
+	if (r.length === 1) {
         return false;
     }
 	remove(r[r.length - 1]);
@@ -93,7 +93,7 @@ function remove(objElement)	{
  */
 function checkEmpty(forma, fieldName) {
 	var val = forma[fieldName].value;
-	if (trim(val) == '') {
+	if (trim(val) === '') {
 		forma[fieldName].select();
 		alert('Поле пустое');
 		forma[fieldName].focus();
@@ -113,7 +113,7 @@ function trim(s) {
 	return s.replace(/^[\s\t\r\n]+/, '')
 }
 function str_replace(srch, repl, str) {
-	while (str.indexOf(srch) != -1) {
+	while (str.indexOf(srch) !== -1) {
 		str = str.replace(srch, repl)
 	}
     return str
@@ -127,10 +127,10 @@ function showhide(id) {
     if (typeof(id) != 'object') {
         id = get(id);
     }
-	if (id.style.display == '') {
+	if (id.style.display === '') {
 		id.style.display = 'block';
 	}
-	if (id.style.display == 'none') {
+	if (id.style.display === 'none') {
 		id.style.display = 'block';
 	} else {
 		id.style.display = 'none';
@@ -170,18 +170,6 @@ function absPosition(obj) {
 		obj = obj.offsetParent;
 	}
 	return {x:this.x, y:this.y, w:this.w, h:this.h};
-}
-
-/**
- * Координта мышки в данный момент
- */
-function getCurs(e) {
-	oCanvas = document.getElementsByTagName(
-	(document.compatMode && document.compatMode == "CSS1Compat") ? "HTML" : "BODY"
-	)[0];
-	x = window.event ? event.clientX + oCanvas.scrollLeft : e.pageX;
-	y = window.event ? event.clientY + oCanvas.scrollTop : e.pageY;
-	return {x:x, y:y}
 }
 
 /**

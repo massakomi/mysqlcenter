@@ -7,17 +7,17 @@
 <?php echo $contentMain?>
 
 <div class="chbxAction">
-  <img src="<?php echo MS_DIR_IMG?>arrow_ltr.png" alt="" border="0" align="absmiddle" />
+  <img src="<?php echo MS_DIR_IMG?>arrow_ltr.png" alt=""  />
   <a href="#" onClick="chbx_action('formTableList', 'check', 'table[]'); return false" id="chooseAll">выбрать все</a>  &nbsp;  
   <a href="#" onClick="chbx_action('formTableList', 'uncheck', 'table[]'); return false">очистить</a>
 </div>
 
 <div class="imageAction">
   <u>Выбранные</u>
-  <img src="<?php echo MS_DIR_IMG?>close.png" alt="" border="0" onClick="msImageAction('formTableList', 'delete_all')" />
-  <img src="<?php echo MS_DIR_IMG?>delete.gif" alt="" border="0" onClick="msImageAction('formTableList', 'truncate_all')" />
-  <img src="<?php echo MS_DIR_IMG?>copy.gif" alt="" border="0" onClick="msImageAction('formTableList', 'copy_all')" />
-  <img src="<?php echo MS_DIR_IMG?>b_tblexport.png" alt="" border="0" onClick="msImageAction('formTableList', 'export_all', '<?php echo MS_URL?>?db=<?php echo $msc->db?>&s=export')" />
+  <img src="<?php echo MS_DIR_IMG?>close.png" alt="" onClick="msImageAction('formTableList', 'delete_all')" />
+  <img src="<?php echo MS_DIR_IMG?>delete.gif" alt="" onClick="msImageAction('formTableList', 'truncate_all')" />
+  <img src="<?php echo MS_DIR_IMG?>copy.gif" alt="" onClick="msImageAction('formTableList', 'copy_all')" />
+  <img src="<?php echo MS_DIR_IMG?>b_tblexport.png" alt="" onClick="msImageAction('formTableList', 'export_all', '<?php echo MS_URL?>?db=<?php echo $msc->db?>&s=export')" />
 
   <a href="?db=<?php echo $msc->db?>&makeMyIsam=1">Конвертировать все в MyIsam</a>
   
@@ -50,3 +50,13 @@
 </form>
 <?php } ?>
 
+<script>
+$('.tbl label').on('click', function() {
+    let table = this.innerHTML;
+    let newName = prompt('Новое имя', this.innerHTML)
+    if (newName) {
+        let q = 'db=<?=$_GET['db']?>&s=<?=$_GET['s']?>&table='+table+'&newName=' + newName + '&id='+$(this).parent().attr('id');
+        msQuery('tableRename', q);
+    }
+})
+</script>

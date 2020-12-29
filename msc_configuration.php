@@ -16,7 +16,7 @@ if (GET('action') == 'restore') {
 
 if (count($_POST) > 0) {
     $data = file(MS_CONFIG_FILE);
-    $newFileContent = array();
+    $newFileContent = [];
     $changed = false;
     foreach ($data as $k => $line) {
     	if (empty($line) || substr_count($line, '|') < 3) {
@@ -28,11 +28,9 @@ if (count($_POST) > 0) {
                 $value = intval(POST($name));
                 $changed = true;
             }
-        } else {
-        	if (isset($_POST[$name]) && POST($name) != $value) {
-                $value = POST($name);
-                $changed = true;
-            }
+        } elseif (isset($_POST[$name]) && POST($name) != $value) {
+            $value = POST($name);
+            $changed = true;
         }
     	$newFileContent []= "$name|$title|$value|$type";
     }
@@ -68,4 +66,3 @@ foreach ($data as $k => $line) {
 
 include MS_DIR_TPL.'config.html';
 $msc->pageTitle = 'Настройка MySQL Center';
-?>

@@ -15,7 +15,7 @@ while ($row = mysqli_fetch_assoc($res)) {
 echo '<h3>Пользователи</h3>';
 $res = $msc->query('SELECT * FROM mysql.user');
 $table = new Table('contentTable');
-$data = array();
+$data = [];
 while ($row = mysqli_fetch_assoc($res)) {
 	foreach ($row as $k => $v) {
 		if (!isset($data [$k])) {
@@ -78,12 +78,4 @@ while ($row = mysqli_fetch_assoc($res)) {
 echo 'SHOW ENGINES displays status information about the server\'s storage engines. This is particularly useful for checking whether a storage engine is supported, or to see what the default engine is.';
 echo $table -> make();
 
-
-/*
-$res = $msc->query("
-GRANT ALL
-    ON *
-    TO zorro IDENTIFIED BY 'zorro'
-");
-echo $msc->error;*/
 

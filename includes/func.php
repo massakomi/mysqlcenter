@@ -676,7 +676,7 @@ function formatSize($bytes) {
  * @param integer Количество знаков после точки, которое надо дозаполнить нулями
  * @return string Строковое значение числа
  */
-function MSC_roundZero($number, $precision){
+function MSC_roundZero(float $number, int $precision):int {
 	$number = round($number, $precision);
 	if (strchr($number,".")){
 		$begin = strpos($number, ".");
