@@ -1043,7 +1043,7 @@ function execSql($db, &$sql, $log=true) {
 		}
 		$c ++;
 		if (!$msc->query($q)) {
-			$errors []= mysqli_error();
+			$errors []= $msc->error.' ('.substr($q, 0, 100).')';
 		} else {
 			$affected += mysqli_affected_rows();
 		}

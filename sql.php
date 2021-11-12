@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
@@ -7,7 +7,7 @@
  * SQL запрос в БД
  */
 
-$mysql_charsets = getCharsetArray();		
+$mysql_charsets = getCharsetArray();
 
 $msc->pageTitle = 'SQL запрос в БД';
 
@@ -82,11 +82,11 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 				}
 				zip_close($zip);
 			}
-			
+
         } else if (POST('compress') == 'csv') {
-        
+
             $fields = getFields('');
-        
+
             $data = file_get_contents($_FILES['sqlFile']['tmp_name']);
             $data = iconv('windows-1251', 'utf-8', $data);
 			$data = explode("\n", $data);
@@ -97,9 +97,9 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             	$row = array_map('mysqli_escape_stringx', explode(';', trim($v)));
                 echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("'.implode('","', $row).'");';
             }
-			
+
         } else if (POST('compress') == 'excel') {
-        
+
             include_once 'includes/excel_reader.php';
 
             $data = new Spreadsheet_Excel_Reader($_FILES['sqlFile']['tmp_name'], false);
@@ -108,9 +108,9 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             	echo '<a href="?sheet='.$k.'">'.$v['name'].'</a> &nbsp; ';
             }
             // excel_reader.php
-            
+
             $sheet = 1;
-            
+
             echo '<br /><br />';
         	//echo '<pre>'; print_r($data->sheets[$_GET['sheet']]); echo '</pre>';
         	//$sheet = array();
@@ -140,9 +140,9 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             unset($data->sheets[$sheet]['cells']);
 
             echo '<pre>'; print_r($data->sheets[$sheet]); echo '</pre>';
-            
-            
-            
+
+
+
 		} else {
 			$mime = '';
 			if (POST('compress') == '') {
@@ -159,7 +159,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 		//echo substr_count($s, 'ENGINE=InnoDB');
 		$s = str_replace('ENGINE=InnoDB', 'ENGINE=MyISAM', $s);
 		//echo '-'.substr_count($s, 'ENGINE=InnoDB');
-		//exit;
+		//exit; 
 		$log = strlen($s) < 10000;
 		execSql(GET('db'), $s, $log);
 		if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {

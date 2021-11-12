@@ -80,7 +80,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
 
         echo '<h4>'.$table->Name.' <span style="color:#aaa">'.$table->Rows.'</span></h4>';
         $fields = getFields($table->Name);
-        
+
 
         echo '<table class="optionstable">';
 
@@ -113,7 +113,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
             echo '<th style="'.$st.'" title="'.$tt.'">'.$f->Field.'</th>';
         }
         echo '</tr>';
-        
+
         if ($table->Rows > 0) {
             $result = $msc->query('SELECT * FROM '.$table->Name.' LIMIT 3');
             while ($row = mysqli_fetch_object($result)) {
@@ -125,22 +125,22 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
             }
         }
 
-        
-        
+
+
         /*
         echo '<tr class="info">';
         foreach ($fields as $v) {
         	echo '<td>'.$v->Type.'</td>';
         }
         echo '</tr>';
-        
+
         echo '<tr class="info">';
         foreach ($fields as $v) {
         	echo '<td>'.$v->Key.'</td>';
         }
         echo '</tr>';
         */
-        
+
  /*
             [Field] => id
             [Type] => int(11) unsigned
@@ -150,11 +150,11 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
             [Extra] => auto_increment
  */
         echo '</table>';
-        
+
         if (count($comparedTables) > 0) {
         	echo ' &nbsp; -> &nbsp;'.implode(' &nbsp; -> &nbsp;', $comparedTables);
         }
-        
+
         /*
         foreach ($fields as $f) {
             echo '<span class="field">'.$f->Field.'</span> ';
@@ -167,7 +167,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
 // Полная таблица
 } else {
     $msc->pageTitle = 'Список таблиц базы данных "'.$msc->db.'" ';
-	// Определение фильтра даты по ПОСТу	
+	// Определение фильтра даты по ПОСТу
 	$time = 0;
 	if (POST('ds_year') != null) {
 		$_POST['ds_month'] = 1 + $_POST['ds_month'];
@@ -191,7 +191,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
             echo mysqli_error();
         }*/
         if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
-        
+
         if ($action == 'analyze' || $action == 'check' || $action == 'flush' || $action == 'repair'
             || $action == 'optimize') {
             $sql = strtoupper($action).' TABLE `'.$o->Name.'`';
@@ -223,7 +223,7 @@ TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2p
 		$valueName =$o->Name;
 		if ($o->Rows == 0) {
 			$valueName ='<span style="color:#aaa">'.$valueName.'</span>';
-		}		
+		}
 		// Определение размера таблицы
 		$size = MSC_roundZero(($o->Data_length + $o->Index_length) / 1024, 1);
 		$sumSize += $size;

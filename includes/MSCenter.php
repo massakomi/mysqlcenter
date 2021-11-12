@@ -279,7 +279,7 @@ showhide("' . $messageId . '");
         }
         $this->queries [] = $sql;
         $result = mysqli_query($connection, $sql);
-        $this->error = mysqli_error($connection);
+        $this->error = $connection->error;
         if ($result === false) {
             msclog('query()', $sql);
         }
