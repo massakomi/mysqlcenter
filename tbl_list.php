@@ -14,6 +14,8 @@ if (!defined('DIR_MYSQL')) {
 }//$dbm = new DatabaseManager;
 
 
+var_dump('react'); exit;
+
 
 $tables = DatabaseTable::getCashedTablesArray();
 
