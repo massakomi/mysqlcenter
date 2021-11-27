@@ -77,7 +77,19 @@ class ActionProcessor {
 
 		switch ($queryMode) {
 
-		case 'sqlQuery'    :
+            case 'querysql'    :
+
+                $data = [];
+                $res = $msc->query($_POST['sql']);
+                while ($row = mysqli_fetch_array($res)) {
+                    $data[$row[0]] = $row[1];
+                }
+
+                exit(json_encode($data));
+                break;
+
+
+            case 'sqlQuery'    :
 
     	$mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
     	if (!$msc->selectDb($db)) {

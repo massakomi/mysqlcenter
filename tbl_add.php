@@ -412,7 +412,7 @@ if ($msc->table == null) {
 	include(MS_DIR_TPL . 'tbl_edit.htm.php');
 	
 // Добавление полей
-} else if (POST('action') == 'fieldsAdd') {
+} elseif (POST('action') == 'fieldsAdd') {
 	$fieldsCount = isset($_POST['name']) ? count($_POST['name']) : POST('fieldsNum', GET('fieldsNum', MS_FIELDS_COUNT));
   if (is_array(POST('name'))) {
   	$cont = MSC_DrawFields();
@@ -428,7 +428,7 @@ if ($msc->table == null) {
 	include(MS_DIR_TPL . 'tbl_edit.htm.php');
 
 // Удаление множества полей через POST (удаление одиночных полей через ajax)
-} else if (POST('action') == 'fieldsDelete' && isset($_POST['field']) && count($_POST['field']) > 0) {
+} elseif (POST('action') == 'fieldsDelete' && isset($_POST['field']) && count($_POST['field']) > 0) {
     // если в таблице осталось только 1 поле, то удаляем таблицу
     if (count($fields) == 1) {
         $sql = 'DROP TABLE `'.$msc->table.'`';
@@ -453,7 +453,7 @@ if ($msc->table == null) {
 	$edited = array();
 	if (GET('field') != '') {
 		$edited []= stripslashes(urldecode(GET('field')));
-	} else if (isset($_POST['field']) && count($_POST['field']) > 0) {
+	} elseif (isset($_POST['field']) && count($_POST['field']) > 0) {
 		$edited = $_POST['field'];
 	}
     // собираем только те поля, которые реально существуют в таблице

@@ -192,6 +192,7 @@ function check(obj, message) {
  * Групповые действия с чекбоксами
  */
 function chbx_action(form_name, action, mask=false) {
+
     var add = '';
     if (mask) {
     	add = '[name="'+mask+'"]'

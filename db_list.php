@@ -89,6 +89,23 @@ $showFullInfo = ((MS_DB_FULL_INFO && !isset($_GET['mode'])) || GET('mode') == 'f
  * Отображаем список баз данных с полной информацией
  */
 if ($showFullInfo) {
+    //$dbs = array_slice($dbs, 0, 1);
+    foreach ($dbs as $j => $db) {
+        $dbItem = [
+            'name' => $db,
+            'extra' => []
+        ];
+        $result = $msc->query('SHOW TABLE STATUS FROM `' . $db . '`');
+        if ($result) {
+            while ($row = mysqli_fetch_object($result)) {
+                $dbItem ['extra'][]= $row;
+            }
+        }
+        $dbs [$j] = $dbItem;
+    }
+
+
+    /*
     $table->makeRowHead('&nbsp;', 'Название', '&nbsp;', 'Таблиц', 'Обновлено', 'Рядов', 'Размер');
     $countTotalTables = $countTotalSize = $countTotalRows = 0;
     foreach ($dbs as $j => $db) {
@@ -143,19 +160,22 @@ if ($showFullInfo) {
         '',
         $countTotalRows,
         $countTotalSize > 1024 ? round($countTotalSize/1024, 1).' мб' : $countTotalSize.' кб'
-    );    
+    );
+    */
 
 /**
  * Отображаем список баз данных с краткой информацией
  */
 } else {
-    $table->makeRowHead('&nbsp;', 'Название', '&nbsp;');
+    //$table->makeRowHead('&nbsp;', 'Название', '&nbsp;');
+
     $hidden = array();
     if ($mscExists = in_array('mysqlcenter', $dbs)) {
         include_once 'includes/MSTable.php';
     	$hidden = MSTable::getHiddensArray();
     }
-    foreach ($dbs as $j => $db) {
+
+    /*foreach ($dbs as $j => $db) {
         $st = '';
 
         $idRow = "db$db";
@@ -171,11 +191,11 @@ if ($showFullInfo) {
         $table->makeRow(
             '<input name="databases[]" type="checkbox" value="'.$db.'" class="cb">',
             '<a href="'.$umaker->make('db', $db, 's', 'tbl_list').'" title="Структура БД" id="'.$idRow.'"'.$st.'>'.$db.'</a>',
-			/* Добавляем в комментарий имя БД, чтобы в автотестах определить, куда кликать при проверке удаления */       
+			// Добавляем в комментарий имя БД, чтобы в автотестах определить, куда кликать при проверке удаления
             '<a href="#" onclick="'.$ms.'" title="Удалить '.$db.'"><img src="'.MS_DIR_IMG.'close.png" alt="" border="0" /></a> &nbsp; <a href="'.$umaker->make('db', $db, 's', 'actions').'" title="Изменить"><img src="'.MS_DIR_IMG.'edit.gif" alt="" border="0" /></a>'.$add
 			
         );
-    }
+    }*/
 }
 
 include_once(MS_DIR_TPL . 'db_list.htm.php');

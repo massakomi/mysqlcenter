@@ -1,69 +1,69 @@
 
-/* Основные стили для шаблона, используются глобально во всех страницах*/
+/* РћСЃРЅРѕРІРЅС‹Рµ СЃС‚РёР»Рё РґР»СЏ С€Р°Р±Р»РѕРЅР°, РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РіР»РѕР±Р°Р»СЊРЅРѕ РІРѕ РІСЃРµС… СЃС‚СЂР°РЅРёС†Р°С…*/
 
 BODY {font-size:12px; font-family:Arial; }
 
-/* Каркасная таблица */
+/* РљР°СЂРєР°СЃРЅР°СЏ С‚Р°Р±Р»РёС†Р° */
 TABLE.outerTable TD { vertical-align:top;}
 TABLE.outerTable H1 { margin:0; font-size:18px; padding:0; line-height:100%}
 
-/* Меню главное */
+/* РњРµРЅСЋ РіР»Р°РІРЅРѕРµ */
 DIV.globalMenu { display:inline; }
 DIV.globalMenu A, .globalMenu A.cur { margin:0 10px 0 0; text-decoration:none}
 DIV.globalMenu A:hover { text-decoration:underline}
 DIV.globalMenu .delim {  margin:0 10px 0 0; text-decoration:none; }
 DIV.globalMenu A.cur { text-decoration:underline; margin:0 10px 0 0;}
 
-/* Меню цепочка */
+/* РњРµРЅСЋ С†РµРїРѕС‡РєР° */
 SPAN.menuChain A { text-decoration:none}
 SPAN.menuChain A:hover { }
 
-/* Меню таблиц */
+/* РњРµРЅСЋ С‚Р°Р±Р»РёС† */
 DIV.menuTables A { font-size:10px; text-decoration:none; line-height:120%; display:block}
 DIV.menuTables A:hover { text-decoration:underline}
 DIV.menuTables A.cur { }
 DIV.menuTables .t1 { margin-left:5px; }
 DIV.menuTables .t2 { }
 
-/* Меню баз данных */
+/* РњРµРЅСЋ Р±Р°Р· РґР°РЅРЅС‹С… */
 DIV#dbHiddenMenu { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid #aaa}
 DIV#dbHiddenMenu A { font-size:12px}
 DIV#dbHiddenMenu A:hover {color:black}
 
-/* Блок запросов */
+/* Р‘Р»РѕРє Р·Р°РїСЂРѕСЃРѕРІ */
 DIV#queryPopupBlock { display:none; padding:5px; position:absolute; left:500px; top:65px; background-color:#FFFFFF; border:1px solid black}
 
-/* Форма поиска в футере */
+/* Р¤РѕСЂРјР° РїРѕРёСЃРєР° РІ С„СѓС‚РµСЂРµ */
 FORM.formSearch { display:inline; margin:0; padding:0}
 FORM.formSearch INPUT { font-size:12px; padding:2px}
 FORM.formSearch INPUT.img { margin:0; border:0; vertical-align:middle}
 
-/* Блок страницы */
+/* Р‘Р»РѕРє СЃС‚СЂР°РЅРёС†С‹ */
 DIV.pageBlock { padding:5px; margin: 5px 0; }
 DIV.pageBlock B A { text-decoration:none; }
 
-/* Форма SQL запроса всплывающая */
+/* Р¤РѕСЂРјР° SQL Р·Р°РїСЂРѕСЃР° РІСЃРїР»С‹РІР°СЋС‰Р°СЏ */
 FORM.popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px}
 FORM.popupGeneralForm TEXTAREA { font-size:12px; width:800px; padding:5px; display:block;}
 FORM.popupGeneralForm INPUT { text-align:right; margin:5px 0 }
 
-/* Таблица сообщения */
+/* РўР°Р±Р»РёС†Р° СЃРѕРѕР±С‰РµРЅРёСЏ */
 TABLE.globalMessage { margin:5px 0; border-collapse:collapse; empty-cells:show}
 TABLE.globalMessage td, .globalMessage th { padding: 5px; font-size:12px;}
 TABLE.globalMessage th {text-align:left; }
 TABLE.globalMessage .sqlQuery { font-size:10px; font-weight:bold; margin:2px 10px; white-space:pre}
 TABLE.globalMessage .mysqlError { font-size:10px; font-weight:bold; }
 
-/* Отображения времени выполнения */
+/* РћС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІСЂРµРјРµРЅРё РІС‹РїРѕР»РЅРµРЅРёСЏ */
 SPAN.hiddenText { }
-/* Для ссылок */
+/* Р”Р»СЏ СЃСЃС‹Р»РѕРє */
 A.hiddenSmallLink { text-decoration:none; font-size:10px}
 
 
-/* Прочие стили */
+/* РџСЂРѕС‡РёРµ СЃС‚РёР»Рё */
 
 
-/* Таблица основная */
+/* РўР°Р±Р»РёС†Р° РѕСЃРЅРѕРІРЅР°СЏ */
 TABLE.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
 TABLE.contentTable TD { padding: 3px; font-size:12px}
 TABLE.contentTable TH { padding: 3px; font-size:12px; text-align:left; white-space:nowrap}
@@ -75,7 +75,7 @@ TABLE.contentTable .num { width:80px; text-align:right;}
 TABLE.contentTable .rig { text-align:right;}
 TABLE.contentTable A { text-decoration:none}
 
-/* Таблица с формой */
+/* РўР°Р±Р»РёС†Р° СЃ С„РѕСЂРјРѕР№ */
 FORM.tableFormEdit { margin:10px 0}
 FORM.tableFormEdit TABLE { border-collapse:collapse; empty-cells:show}
 FORM.tableFormEdit TD { padding: 2px 2px; font-size:12px; white-space:nowrap; vertical-align:middle}
@@ -89,7 +89,7 @@ FORM.tableFormEdit .submit { display:block; margin:5px 0}
 FORM.tableFormEdit TEXTAREA#sqlContent { font-size:12px; width:99%; padding:5px }
 FORM.tableFormEdit TD.inner { padding: 0; }
 
-/* Таблица экспорт и поиск */
+/* РўР°Р±Р»РёС†Р° СЌРєСЃРїРѕСЂС‚ Рё РїРѕРёСЃРє */
 TABLE.tableExport { border-collapse:collapse; empty-cells:show; width:100%; line-height:180%;}
 TABLE.tableExport td, .tableExport th { font-size:14px; white-space:nowrap; padding:5px}
 TABLE.tableExport .sel { font-size:14px; height:150px}
@@ -97,13 +97,13 @@ TABLE.tableExport .hs { font-size:12px; text-decoration:none; margin:0 5px}
 TABLE.tableExport .l2 { margin:0 0 0 24px}
 TABLE.tableExport .ta { font-size:10px}
 
-/* Общая форма внтури FIELDSET actionsdb actions */
+/* РћР±С‰Р°СЏ С„РѕСЂРјР° РІРЅС‚СѓСЂРё FIELDSET actionsdb actions */
 FIELDSET.msGeneralForm { margin:20px 0; padding: 10px}
 FIELDSET.msGeneralForm FORM { margin:0;}
 FIELDSET.msGeneralForm LEGEND { font-size:14px; }
 FIELDSET.msGeneralForm INPUT.submit { display:block; margin-top:5px;}
 
-/* Блок с картинками сабмит: db_list, tbl_data, tbl_struct, tbl_list */
+/* Р‘Р»РѕРє СЃ РєР°СЂС‚РёРЅРєР°РјРё СЃР°Р±РјРёС‚: db_list, tbl_data, tbl_struct, tbl_list */
 DIV.imageAction { margin:20px 0}
 DIV.imageAction IMG, DIV.imageAction INPUT{ margin:0 0 0 20px; vertical-align:text-top }
 DIV.imageAction IMG {cursor:pointer}
@@ -112,3 +112,7 @@ DIV.chbxAction {font-size:12px; margin:5px;}
 IMG.helpimg {cursor:pointer}
 
 #msAjaxQueryDiv {position: fixed; right: 0; bottom: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
+
+.mb-5 {margin-bottom: 5px;}
+.mt-10 {margin-top: 10px}
+.mt-20 {margin-top: 20px}

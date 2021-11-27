@@ -32,6 +32,7 @@ if (!defined('DIR_MYSQL')) {
 $array = POST('table');
 $query = POST('query');
 $queryField = POST('queryField');
+$listTables = DatabaseManager::getTables();
 
 // 1. Режим поиска по таблице
 if (GET('table') != null) {

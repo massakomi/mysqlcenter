@@ -3,49 +3,66 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
 
-
 if (GET('id') == '') {			
 	$result = $msc->query('SELECT * FROM mysql.help_category ORDER BY name');
-	$table = new Table('contentTable');
-	$table -> setInterlace('', '#eeeeee');
-	$headers = [];
-	while ($o = mysqli_fetch_object($result)) {
-		$data = [];
-		if (count($headers) == 0) {
-			foreach ($o as $k => $v) {
-				$headers []= $k;
-			}
-			$table->makeRow($headers);
-		}
-		foreach ($o as $k => $v) {
-			if ($k == 'name') {
-				$v = "<a href='?s=msc_help&id=$o->help_category_id'>$v</a>";
-			}
-			$data []= $v;
-		}
-		$table->makeRow($data);
-	}
-	echo $table->make();		
-	
+    $data = [];
+    while ($o = mysqli_fetch_object($result)) {
+        $data []= $o;
+    }
 } else {
 
 	$result = $msc->query('SELECT * FROM mysql.help_topic WHERE help_category_id = ' . GET('id'));
-	$table = new Table('contentTable');
-	$table -> setInterlace('', '#eeeeee');
-	$headers = [];
-	while ($o = mysqli_fetch_object($result)) {
-		$data = [];
-		if (count($headers) == 0) {
-			foreach ($o as $k => $v) {
-				$headers []= $k;
-			}
-			$table->makeRow($headers);
-		}
-		foreach ($o as $k => $v) {
-			$data []= $v;
-		}
-		$table->makeRow($data);
-	}
-	echo $table->make();		
-}		
+	$data = [];
+    while ($o = mysqli_fetch_object($result)) {
+        $data []= $o;
+    }
+}
+?>
 
+<script type="text/javascript">
+
+    /*class PrintTable {
+      constructor() {
+
+      }
+      get test() {
+        return 1
+      }
+    }
+
+
+    table = new PrintTable()
+    console.log(table.test)*/
+
+  function printTable(data) {
+    let output = '<table class="contentTable">'
+    let headersPrinted = false
+    for (let item of data) {
+      if (!headersPrinted) {
+        output += '<tr>'
+        for (let column of Object.keys(item)) {
+          output += `<th>${column}</th>`
+        }
+        output += '</tr>'
+        headersPrinted = 1
+      }
+      output += '<tr>'
+      for (let column of Object.keys(item)) {
+        let value = item[column]
+        if (column == 'name') {
+          value = `<a href="?s=msc_help&id=${item.help_category_id}">${item.name}</a>`
+        }
+        output += `<td>${value}</td>`
+      }
+    }
+    output += '</table>'
+    document.write(output)
+  }
+
+  let data = <?=json_encode($data)?>;
+  printTable(data)
+
+
+
+
+</script>

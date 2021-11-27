@@ -198,6 +198,8 @@ if ($msc->table == '') {
     $dbInfo = $dbInfo[0];
     $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
     $charsetSelector = getCharsetSelector(substr($dbInfo['collation'], 0, strpos($dbInfo['collation'], '_')));
+    //$charsetList = getCharsetArray(true);
+    $charsetList = getCharsetArray();
 
 	include(MS_DIR_TPL . 'actionsdb.htm.php');
 	

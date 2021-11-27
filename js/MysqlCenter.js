@@ -54,7 +54,8 @@ function msQuery(mode, query='') {
 	}
     query = query.replace(/^\?/, '')
 
-    xajax(query+'&'+'mode='+mode)
+	alert(query+'&'+'mode='+mode)
+    //xajax(query+'&'+'mode='+mode)
 
 	return false;
 }
