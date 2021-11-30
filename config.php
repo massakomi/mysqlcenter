@@ -140,7 +140,7 @@ require_once  dirname(__FILE__).'/includes/DatabaseTable.php';
 // DEFINES
 
 // Настройки
-define('MS_APP_NAME',         'MySQL Center');
+define('MS_APP_NAME',         'MySQL React');
 define('MS_APP_VERSION',      substr('$Revision: 1.124 $', 10, 6));
 
 // Настройки 2

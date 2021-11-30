@@ -5,71 +5,146 @@
     TABLE.optionstable {empty-cells:show; border-collapse:collapse;}
     TABLE.optionstable TH {background-color: #eee}
     TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2px 4px; vertical-align: top;}
+    .grey {color:#aaa}
 </style>
-<?php
-$msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
-
-$fieldVariants = [];
-foreach ($tables as $k => $v) {
-    $fieldVariants [$v->Name]= $v->Name;
-    $variant = preg_replace('~[s_]$~', '', $v->Name);
-    $fieldVariants [$variant]= $v->Name;
-    $fieldVariants ['id_'.$variant]= $v->Name;
-    $fieldVariants [$variant.'_id']= $v->Name;
-}
-
-foreach ($tables as $table) {
-    echo '<h4>'.$table->Name.' <span style="color:#aaa">'.$table->Rows.'</span></h4>';
-    $fields = getFields($table->Name);
 
 
-    echo '<table class="optionstable">';
 
-    echo '<tr>';
-    $comparedTables = array();
-    foreach ($fields as $f) {
-        if (array_key_exists($f->Field, $fieldVariants) && $fieldVariants[$f->Field] != $table->Name) {
-            $comparedTables []= $fieldVariants[$f->Field];
-        }
-        $st = $tt = '';
-        if ($f->Key == 'PRI') {
-            if ($f->Extra != '') {
-                $st .= 'background-color:#FF6600;';
-                $tt .= 'priAI';
-            } else {
-                $st .= 'background-color:#FFCC00;';
-                $tt .= 'pri';
-            }
-        }
-        if ($f->Key == 'MUL') {
-            $st .= 'background-color:#66CC99;';
-            $tt .= 'index';
-        }
-        if ($f->Null != 'NO') {
-            $st .= ';color:#aaa;';
-            $tt .= ' null';
+<div id="root"></div>
+
+<!-- Load React. -->
+<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+
+<script type="text/babel">
+
+  class TableField extends React.Component {
+
+    render() {
+
+      let field = this.props.field
+      let style = [];
+      let title = '';
+
+      if (field.Key == 'PRI') {
+        if (field.Extra != '') {
+          style.push({backgroundColor: '#FF6600'})
+          title += 'priAI';
         } else {
-            $tt .= ' not null';
+          style.push({backgroundColor: '#FFCC00'})
+          title += 'pri';
         }
-        echo '<th style="'.$st.'" title="'.$tt.'">'.$f->Field.'</th>';
-    }
-    echo '</tr>';
+      }
+      if (field.Key == 'MUL') {
+        style.push({backgroundColor: '#66CC99'})
+        title += 'index';
+      }
+      if (field.Null != 'NO') {
+        style.push({color: '#aaa'})
+        title += ' null';
+      } else {
+        title += ' not null';
+      }
 
-    if ($table->Rows > 0) {
-        $result = $msc->query('SELECT * FROM '.$table->Name.' LIMIT 3');
-        while ($row = mysqli_fetch_object($result)) {
-            echo '<tr class="info">';
-            foreach ($row as $v) {
-                echo '<td>'.wordwrap( mb_substr(strip_tags($v), 0, 100), 50, '<br />', true).'</td>';
-            }
-            echo '</tr>';
+      style = Object.fromEntries(style)
+      return (
+          <th style={style} title={title}>
+            {field.Field}
+          </th>
+      );
+    }
+  }
+
+  class TableData extends React.Component {
+
+    strip_tags(item) {
+      var div = document.createElement("div");
+      div.innerHTML = item;
+      return div.textContent || div.innerText || "";
+    }
+
+    // TODO wordwrap( mb_substr(strip_tags($v), 0, 100), 50, '<br />', true)
+    wrap = (s) => s
+
+    render() {
+      const listItems = Object.values(this.props.data).map((items, key) => {
+        return (
+            <tr key={key + "index"} className="info">
+              {Object.values(items).map((item, key) => {
+
+                item = this.wrap(this.strip_tags(item))
+
+                return <td key={key + "tds"}>{item}</td>
+              })}
+            </tr>
+        )
+      });
+
+      return listItems
+    }
+  }
+
+  class App extends React.Component {
+
+    render() {
+
+      let fieldVariants = {}
+      for (const v of this.props.tables) {
+        fieldVariants[v.Name] = v.Name
+        let variant = v.Name.replace(/[s_]$/, '')
+        fieldVariants[variant] = v.Name
+        fieldVariants['id_'+variant] = v.Name
+        fieldVariants[variant+'_id'] = v.Name
+      }
+
+      const listItems = Object.values(this.props.tables).map((table) => {
+        let fields = table.fields
+
+        let comparedTables = []
+        Object.values(fields).map((field) => {
+          if (field.Field in fieldVariants && fieldVariants[field.Field] != table.Name) {
+            comparedTables.push(fieldVariants[field.Field])
+          }
+        })
+        let after = '';
+        if (comparedTables.length) {
+          after = <div>{comparedTables.join(' &nbsp; -> &nbsp;')}</div>
         }
-    }
 
-    echo '</table>';
+        return (
+            <div key={table.Name.toString()}>
+                <h4>{table.Name} <span className="grey">{table.Rows}</span></h4>
+                <table className="optionstable">
+                  <tbody>
+                  <tr>
+                  {Object.values(fields).map((field) => {
+                    return <TableField key={field.Field} field={field} />
+                  })}
+                  </tr>
+                  <TableData data={table.data} />
+                  </tbody>
+                </table>
+              {after}
+            </div>
+        )
+      });
 
-    if (count($comparedTables) > 0) {
-        echo ' &nbsp; -> &nbsp;'.implode(' &nbsp; -> &nbsp;', $comparedTables);
+      return (
+          <div>
+            {listItems}
+          </div>
+      );
     }
-}
-return;
+  }
+
+  let tables = <?=json_encode($tables)?>
+
+  ReactDOM.render(
+      <App tables={tables} />,
+      document.getElementById('root')
+  );
+
+</script>

@@ -132,6 +132,8 @@ if ($msc->page == 'exportSp') {
 	// Отображение формы экспорта
 		$cSet = $msct->getSetInfo(GET('set'));
 		$setsArray = $msct->getSetsArray();
+
+
 		$table = new Table('contentTable');
 		$table->setInterlace('', '#eeeeee');
 		$table->makeRowHead('Таблица', 'Структ', 'Данные', 'Поле', 'Диапазон', 'WHERE');
@@ -177,20 +179,21 @@ if ($msc->page == 'exportSp') {
 			// Создание ряда
 			$valueTable = $o->Name;
 			if ($checkedData == null && $checkedStruct == null) {
-				$valueTable = '<span style="color:#aaa">'.$valueTable.'</span>';
+				$valueTable = '<span style={{color: \'#aaa\'}}>'.$valueTable.'</span>';
 			} else {
 				$valueTable = '<b>'.$valueTable.'</b>';
 			}			
 			$i ++;
 			$table->makeRow(array(
-				'<label for="row'.$i.'">'.$valueTable.'</label>',
-				'<input name="struct['.$i.']" type="checkbox" value="1" id="row'.$i.'" class="cb"'.$checkedStruct.'><input name="table['.$i.']" type="hidden" value="'.$o->Name.'">',
-				'<input name="data['.$i.']" type="checkbox" value="1" id="row2'.$i.'" class="cb"'.$checkedData.'>',
-				'<select name="field['.$i.']">'.draw_array_options($fnames, '', $pKey).'</select>',
-				'<input name="from['.$i.']" type="text" size="5" value="1"> - <input name="to['.$i.']" type="text" size="5" value="'.$valueMax.'">',
-				'<input name="where['.$i.']" type="text" size="40" value="'.$where.'">'
+				'<label htmlFor="row'.$i.'">'.$valueTable.'</label>',
+				'<input name="struct['.$i.']" type="checkbox" value="1" id="row'.$i.'" className="cb"'.$checkedStruct.' /><input name="table['.$i.']" type="hidden" value="'.$o->Name.'" />',
+				'<input name="data['.$i.']" type="checkbox" value="1" id="row2'.$i.'" className="cb"'.$checkedData.' />',
+				'<select name="field['.$i.']" defaultValue="'.$pKey.'">'.draw_array_options($fnames, '').'</select>',
+				'<input name="from['.$i.']" type="text" size="5" defaultValue="1" /> - <input name="to['.$i.']" type="text" size="5" defaultValue="'.$valueMax.'" />',
+				'<input name="where['.$i.']" type="text" size="40" defaultValue="'.$where.'" />'
 			));
 		}
+
 		include(MS_DIR_TPL . 'exportSp.html');
 	}
 	
@@ -201,6 +204,7 @@ if ($msc->page == 'exportSp') {
 
 	$exportDb = POST('export_db');
 	$array = POST('export_table');
+    $optionsSelected = [];
 	// 3.2.1. Создание
 	if (count($array) > 0 || count($exportDb) > 0) {					
 		// создание дампа
@@ -240,7 +244,7 @@ USE `'.$db.'`;'."\r\n"."\r\n";
 	}
 	// 3.2.2. HTML форма экспорта
 	else {		
-		$structChecked = ' checked="checked"';
+		$structChecked = ' defaultChecked';
 		$whereCondition = null;
 		$tableSelectMult = null;			
 		// 3.2.2.1. только если указана в запросе!
@@ -250,11 +254,13 @@ USE `'.$db.'`;'."\r\n"."\r\n";
 			$tables = isset($_POST['table']) ? $_POST['table'] : array();
 			if (is_null($tables) || count($tables) == 0) {
 				if ($msc->table == '') {
-					$tables = $tablesAll;
+                    $optionsSelected = $tablesAll;
 				} else {
-					$tables = array();
+                    $optionsSelected = array($msc->table);
 				}			
-			}
+			} else {
+                $optionsSelected = $tables;
+            }
 			// массив рядов из обзора таблицы		
 			if (POST('rowMulty') != '') {
 				$_POST['row'] = array_map('urldecode', array_map('stripslashes', $_POST['row']));
@@ -265,30 +271,32 @@ USE `'.$db.'`;'."\r\n"."\r\n";
 			if ($whereCondition != null) {				
 				$structChecked = null;
 			}
-			foreach ($tablesAll as $t){
+            $optionsData = $tablesAll;
+			/*foreach ($tablesAll as $t){
 				if (in_array($t, $tables) || $t == $msc->table) {
 					$tableSelectMult .= "<option selected='selected'>$t</option>";
 					continue;
 				} else {
 					$tableSelectMult .= "<option>$t</option>";
 				}
-			}
+			}*/
 		}			
 		// 3.2.2.2. Если бд не указана, то список БД
 		else {
 			$selectMultName  = 'export_db[]';
 			$dbAll = Server::getDatabases();
-			$dbSelected = POST('databases');
-			if ($dbSelected == '' || count($dbSelected)== 0) {
-				$dbSelected = array();
+            $optionsSelected = POST('databases');
+			if ($optionsSelected == '' || count($optionsSelected)== 0) {
+                $optionsSelected = array();
 			}
-			foreach ($dbAll as $t){
+			$optionsData = $dbAll;
+			/*foreach ($dbAll as $t){
 				if (in_array($t, $dbSelected)) {
 					$tableSelectMult .= "<option selected>$t</option>";
 				} else {
 					$tableSelectMult .= "<option>$t</option>";
 				}				
-			}
+			}*/
 		}
 		include(MS_DIR_TPL . 'export.htm.php');
 	}

@@ -133,10 +133,8 @@ class DatabaseTable extends DatabaseInterface {
 	 *
 	 * @return string
 	 */
-	function insertDetailsTable() {
+	function insertDetailsTable($return=false) {
 		global $msc;
-		$sql = 'SHOW TABLE STATUS LIKE "'.$this->tableb.'"';
-		$result = $msc->query($sql);
 		$comments = array(
             'Engine' => ' title="Тип хранилища"',
             'Version' => ' title="Версия .frm файла таблицы"',
@@ -155,6 +153,16 @@ class DatabaseTable extends DatabaseInterface {
             'Create_options' => ' title="Дополнительные опции, заданные при создании таблицы через CREATE TABLE."',
             'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может получить доступ к информации о таблице"'
         );
+        $sql = 'SHOW TABLE STATUS LIKE "'.$this->tableb.'"';
+		if ($return) {
+            $result = $msc->getData($sql);
+            foreach ($comments as $k => &$v) {
+                $v = str_replace('"', '', $v);
+                $v = str_replace(' title=', '', $v);
+            }
+		    return [$comments, $result];
+		}
+        $result = $msc->query($sql);
 		return MSC_printObjectTable($result, true, '', $comments);
 	}
 	

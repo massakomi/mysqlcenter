@@ -290,6 +290,18 @@ showhide("' . $messageId . '");
     }
 
     /**
+     * @param $sql
+     * @param null $result
+     * @return array
+     */
+    public function getData($sql, $result = null)
+    {
+        $res = $this->query($sql);
+        $data = mysqli_fetch_all($res, MYSQLI_ASSOC);
+        return $data;
+    }
+
+    /**
      * Перехватывает запрос и сохраняет его в файле
      *
      * @access private

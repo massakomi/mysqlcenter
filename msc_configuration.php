@@ -47,10 +47,12 @@ if (count($_POST) > 0) {
     }
 }
 
+$data = file(MS_CONFIG_FILE);
+
+/*
 $table = new Table();
 $table->setInterlaceClass('', 'interlace');
 $table->makeRowHead('Параметр', 'Значение');
-$data = file(MS_CONFIG_FILE);
 foreach ($data as $k => $line) {
     if (empty($line) || substr_count($line, '|') < 3) {
         continue;
@@ -62,7 +64,8 @@ foreach ($data as $k => $line) {
     } else {
         $table->makeRow($title, '<input type="text" name="'.$name.'" value="'.$value.'">');
     }
-}
+}*/
 
 include MS_DIR_TPL.'config.html';
+
 $msc->pageTitle = 'Настройка MySQL Center';

@@ -31,6 +31,7 @@ if (GET('action') == 'add_key') {
             $keyFields []= '`'.$fieldName.'`'. ($fieldSize > 0 ? "($fieldSize)" : '');
         }
         $sql = 'ALTER TABLE '.$msc->table.' ADD '.$keyDefinition.' ('.implode(',', $keyFields).')';
+        //var_dump($sql); exit;
 		if ($msc->query($sql, $msc->db)) {
             $returnInAdd = false;
             // обновляем массив полей
@@ -70,41 +71,17 @@ if (GET('print') == '1') {
 	exit;
 }
 
-// Создание таблицы
-$table = new Table('contentTable');
-$table -> makeRowHead('&nbsp;', 'Поле', 'Тип', 'NULL', 'По умолчанию', 'Ключ', 'Дополнительно', '&nbsp;', '&nbsp;');
-$table -> setInterlace('', '#eeeeee');
+$dataKeys = $msc->table != '' ? $msc->getData('SHOW KEYS FROM `'.$msc->table.'`') : [];
 
-// Создание рядов
-$msquery = 'db='.$msc->db.'&table='.$msc->table.'&s=tbl_struct';
-$fieldNames = [];
+// Массив полей, распечатка массива
 $fields = array_values($fields);
 $tableAddStr = ['array('];
 foreach ($fields as $k => $v) {
-	$fieldNames []= $v->Field;
-	$urlDelete = $msquery . '&field=' . $v->Field;
-	// ключ
-	$key = $v->Key;
-	if ($v->Key == 'PRI') {
-		$key = '<img src="'.MS_DIR_IMG.'acl.gif" alt="" border="0" />';
-	}
-	$table -> makeRow([
-		'<input name="field[]" id="field'.$k.'" type="checkbox" value="'.$v->Field.'" class="cb">',
-		$v->Field,
-		wordwrap($v->Type, 70, '<br />', true),
-		$v->Null,
-		$v->Default,
-		$key,
-		$v->Extra,
-		// ссылки
-		'<a href="'.$umaker->make('s', 'tbl_add', 'field', urlencode($v->Field)).'" title="Редактировать ряд"><img src="'.MS_DIR_IMG.'edit.gif" alt="" /></a>',
-		'<a href="#" onClick="msQuery(\'deleteField\', \''.$urlDelete.'&id=f-'.urlencode($v->Field).'\'); return false" title="Удалить ряд"><img src="'.MS_DIR_IMG.'close.png" alt="" /></a>'
-    ],
-		' id="f-'.$v->Field.'"'
-	);
-	$tableAddStr []= "&nbsp;&nbsp;&nbsp;&nbsp;'".$v->Field."' => ,";
+    $tableAddStr []= "&nbsp;&nbsp;&nbsp;&nbsp;'".$v->Field."' => ,";
 }
 $tableAddStr []= ")";
-$contentMain = $table -> make();
+$tableAddStr = implode('<br />', $tableAddStr);
+
+$data = $dbt->insertDetailsTable($return=1);
 
 include(MS_DIR_TPL . 'tbl_struct.htm.php');

@@ -14,8 +14,6 @@ if (!defined('DIR_MYSQL')) {
 }//$dbm = new DatabaseManager;
 
 
-var_dump('react'); exit;
-
 
 $tables = DatabaseTable::getCashedTablesArray();
 
@@ -31,6 +29,11 @@ if (GET('action') == 'full') {
 
 // Исследование структуры
 } elseif (GET('action') == 'structure') {
+    $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
+    foreach ($tables as $key => $table) {
+        $tables [$key]->fields = getFields($table->Name);
+        $tables [$key]->data = $msc->getData('SELECT * FROM '.$table->Name.' LIMIT 3');
+    }
     return include(MS_DIR_TPL . 'tbl_struct_view.htm.php');
 
 // Полная таблица
@@ -48,41 +51,46 @@ if (GET('action') == 'full') {
 	$table->setColClass(null, 'tbl', null, null, null, null, 'rig', 'rig', null, 'num', null, 'rig');
 	$table->makeRowHead('&nbsp;', '<b>Таблица</b>', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '<b>Рядов</b>',
     '<b>Размер</b>', '<b>Дата обновления</b>', '<b>Ai</b>', 'Engine', 'Cp');
-	$sumTable = 0;
-	$sumSize  = 0;
-	$sumRows  = 0;
 	$action = POST('act');
-	foreach ($tables as $o) {
+	foreach ($tables as $key => $o) {
         /*if (isset($_GET['makeMyIsam'])) {
             if ($o->Engine == 'MyISAM') continue;
             echo '<br>'.$o->Name.' '.$o->Rows;
             $msc->query('ALTER TABLE `'.$o->Name.'` ENGINE = MyISAM');
             echo mysqli_error();
         }*/
-        if ($_GET['drop']) echo 'DROP TABLE `'.$o->Name.'`;<br />';
+        if ($_GET['drop']) echo 'DROP TABLE `' . $o->Name . '`;<br />';
 
         if ($action == 'analyze' || $action == 'check' || $action == 'flush' || $action == 'repair'
             || $action == 'optimize') {
-            $sql = strtoupper($action).' TABLE `'.$o->Name.'`';
-    		if ($msc->query($sql)) {
-    			$msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
-    		} else {
-    			$msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
-    		}
+            $sql = strtoupper($action) . ' TABLE `' . $o->Name . '`';
+            if ($msc->query($sql)) {
+                $msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
+            } else {
+                $msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
+            }
         }
 
-  		// Фильтровка таблиц по дате
-		$updateTime = null;
-		if ($o->Update_time > 0) {
-			$updateTime = strtotime($o->Update_time);
-			if ($time > 0 && $updateTime < $time) {
-				continue;
-			}
-		}
+        // Фильтровка таблиц по дате
+        $updateTime = null;
+        if ($o->Update_time > 0) {
+            $updateTime = strtotime($o->Update_time);
+            if ($time > 0 && $updateTime < $time) {
+                unset($tables[$key]);
+            }
+        }
+    }
+
+    $sumTable = 0;
+    $sumSize  = 0;
+    $sumRows  = 0;
+    foreach ($tables as $o) {
 		// Увеличение счётчика видимых таблиц
 		$sumTable ++;
 		// Форматирование даты
-		if ($updateTime != null) {
+        $updateTime = null;
+        if ($o->Update_time > 0) {
+            $updateTime = strtotime($o->Update_time);
 			$updateTime = date2rusString(MS_DATE_FORMAT, $updateTime);
 			if (strpos($updateTime, 'дня') !== false || strpos($updateTime, 'ера') !== false) {
 				$updateTime = "<b>$updateTime</b>";

@@ -1,18 +1,87 @@
-		<style>
-		.contentTable { white-space:nowrap}
-		</style>
-		<form method="post" action="">
-			<input type="hidden" name="exportSpecial" value="1">	
-			<?php include DIR_MYSQL . 'tpl/exportOptions.htm.php'; ?>	
-			<p><input type="submit" value="Выполнить" /></p>
-			<?php echo plDrawSelector($setsArray, ' onChange="location=\'?db='.$msc->db.'&s='.$msc->page.'&set=\'+this.options[this.selectedIndex].value"', GET('set'), '			', true, '<option value=0>Загрузить установку</option>')?>			
-			<input type="submit" name="save" value="Сохранить изменения"/>
-			<input type="submit" name="new" value="Создать новую установку" onClick="if (m = prompt('Введите имя для установки', 'Новая')) {this.value = m; } else {return false;}" />
-			<input type="submit" name="delete" value="Удалить установку"/>
-			<?php echo $table->make()?>
-		</form>
-		<script language="javascript">
-		function updateCheckeds(object, num) {
-			$('row2'+num).checked = object.checked;
+<?php
+include DIR_MYSQL . 'tpl/exportOptions.htm.php';
+?>
+
+<!--
+<style>
+.contentTable { white-space:nowrap}
+</style>
+
+<?php
+// echo plDrawSelector($setsArray, ' onChange="location=\'?db='.$msc->db.'&s='.$msc->page.'&set=\'+this.options[this.selectedIndex].value"', GET('set'), '			', true, '<option value=0>Загрузить установку</option>')
+?>-->
+
+<script language="javascript">
+/*function updateCheckeds(object, num) {
+	$('row2'+num).checked = object.checked;
+}*/
+var setSelected = 'GET(\'set\')';
+var setsArray = <?=json_encode($setsArray)?>;
+setsArray.unshift('Загрузить установку')
+</script>
+
+
+<div id="root"></div>
+
+<!-- Load React. -->
+<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+
+
+
+<script type="text/babel">
+
+	class App extends React.Component {
+
+		constructor(props) {
+			super(props);
+			this.state = {value: 'wait'};
 		}
-		</script>
+
+		createSet = () => {
+          var m = prompt('Введите имя для установки', 'Новая')
+          if (m) {
+            this.target.value = m;
+          } else {
+            return false;
+          }
+        }
+
+        selectSet = () => {
+           window.location = '?db=<?=$msc->db?>&s=<?=$msc->page?>&set=' + this.target.options[this.target.selectedIndex].value
+        }
+
+		render() {
+			return (
+				<form method="post" action="">
+					<input type="hidden" name="exportSpecial" value="1" />
+                    <ExportOptions />
+                    <p><input type="submit" value="Выполнить" /></p>
+                      <select onChange={this.selectSet} defaultValue={this.props.options.setSelected}>
+                        {Object.values(this.props.options.setsArray).map((v) =>
+                            <option key={v.toString()}>{v}</option>
+                        )}
+                      </select>
+                    <input type="submit" name="save" value="Сохранить изменения" />
+                    <input type="submit" name="new" value="Создать новую установку" onClick={this.createSet} />
+                    <input type="submit" name="delete" value="Удалить установку" />
+                  <?php echo $table->make() ?>
+				</form>
+			);
+		}
+	}
+
+
+	let options = {
+		'setsArray': setsArray,
+      'setSelected': setSelected
+	}
+	ReactDOM.render(
+			<App options={options}/>,
+			document.getElementById('root')
+	);
+
+</script>

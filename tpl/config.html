@@ -1,6 +1,60 @@
-<form method="post" class="tableFormEdit" action="?s=msc_configuration">
-	<?php echo $table->make()?>
-	<input type="submit" value="Изменить" class="submit" />
+<div id="root"></div>
 
-	<a href="?s=msc_configuration&action=restore">Восстановить значения по умолчанию</a>
-</form>
+<!-- Load React. -->
+<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+<script src="/js/react.development.js" crossorigin></script>
+<script src="/js/react-dom.development.js" crossorigin></script>
+<script src="/js/react-babel.min.js"></script>
+
+<script type="text/babel">
+
+	class App extends React.Component {
+
+		render() {
+
+			const trs = Object.values(this.props.data).map((item) => {
+				if (!item.includes('|')) {
+					return;
+				}
+				let [name, title, value, type] = item.split('|')
+				let input = ''
+				if (type.includes('boolean')) {
+					input = <input type="checkbox" name="{name}" value="1" defaultChecked={value != 0} />
+				} else {
+					input = <input type="text" name={name} defaultValue={value} />
+				}
+				return (
+					<tr key={item.toString()}>
+						<td>{title}</td>
+						<td>{input}</td>
+					</tr>
+				)
+
+			});
+
+			return (
+				<form method="post" className="tableFormEdit" action="?s=msc_configuration">
+					<table>
+						<thead>
+						<tr>
+							<th>Параметр</th>
+							<th>Значение</th>
+						</tr>
+						</thead>
+						<tbody>{trs}</tbody>
+					</table>
+					<input type="submit" value="Изменить" className="submit"/>
+					<a href="?s=msc_configuration&action=restore">Восстановить значения по умолчанию</a>
+				</form>
+			);
+		}
+	}
+
+	let data = <?=json_encode($data)?>;
+
+	ReactDOM.render(
+			<App data={data} />,
+			document.getElementById('root')
+	);
+
+</script>
