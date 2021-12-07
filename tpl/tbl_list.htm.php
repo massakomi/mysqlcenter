@@ -91,11 +91,11 @@
       return (
           <tr key={table.Name} id={idRow}>
             <td id={'row'+sumTable+'-0'}><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" onClick={checkboxer.bind(this, sumTable, '#row')} /></td>
-            <td id={'row'+sumTable+'-1'} className="tbl"><label htmlFor={idChbx}>{valueName}</label></td>
+            <td id={'row'+sumTable+'-1'} className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name, 'row'+sumTable+'-1')}>{valueName}</label></td>
             <td id={'row'+sumTable+'-2'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_data'} title="Обзор таблицы"><img src="<?=MS_DIR_IMG?>actions.gif" alt="" /></a></td>
             <td id={'row'+sumTable+'-3'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_struct'} title="Структура таблицы"><img src="<?=MS_DIR_IMG?>generate.png" alt="" /></a></td>
             <td id={'row'+sumTable+'-4'}><a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Очистить таблицу"><img src="<?=MS_DIR_IMG?>delete.gif" alt="" /></a></td>
-            <td id={'row'+sumTable+'-5'}><img src="<?=MS_DIR_IMG?>close.png" data-action="tableDelete" title="Удалить таблицу" alt="" /></td>
+            <td id={'row'+sumTable+'-5'}><a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Удалить таблицу"><img src="<?=MS_DIR_IMG?>close.png" alt="" /></a></td>
             <td id={'row'+sumTable+'-6'} className="rig">{table.Rows}</td>
             <td id={'row'+sumTable+'-7'} className="rig">{this.formatSize(size)}</td>
             <td id={'row'+sumTable+'-8'}>{updateTime}</td>
@@ -115,6 +115,14 @@
         return (bytes / Math.pow(1024, 2)).toFixed(2) + ' Mb';
       } else if (bytes < Math.pow(1024, 4)) {
         return (bytes / Math.pow(1024, 3)).toFixed(2) + ' Gb';
+      }
+    }
+
+    renameTable(tableOld, id, e) {
+      let newName = prompt('Новое имя', tableOld)
+      if (newName) {
+        let q = 'db=<?=$msc->db?>&s=tbl_list&table='+tableOld+'&newName=' + newName + '&id='+id;
+        msQuery('tableRename', q);
       }
     }
 
@@ -166,7 +174,7 @@
 </script>
 
 <?php
-echo $contentMain
+//echo $contentMain
 ?>
 
 
@@ -273,14 +281,3 @@ echo $contentMain
     table.contentTable tr:nth-child(odd) {background-color: #eee;}
 </style>
 
-
-<script>
-$('.tbl label').on('click', function() {
-    let table = this.innerHTML;
-    let newName = prompt('Новое имя', this.innerHTML)
-    if (newName) {
-        let q = 'db=<?=$_GET['db']?>&s=<?=$_GET['s']?>&table='+table+'&newName=' + newName + '&id='+$(this).parent().attr('id');
-        msQuery('tableRename', q);
-    }
-})
-</script>

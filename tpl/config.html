@@ -19,7 +19,7 @@
 				let [name, title, value, type] = item.split('|')
 				let input = ''
 				if (type.includes('boolean')) {
-					input = <input type="checkbox" name="{name}" value="1" defaultChecked={value != 0} />
+					input = <input type="checkbox" name={name} value="1" defaultChecked={value != 0} />
 				} else {
 					input = <input type="text" name={name} defaultValue={value} />
 				}

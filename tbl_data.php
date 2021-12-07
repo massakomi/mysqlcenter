@@ -244,7 +244,7 @@ while ($row = mysqli_fetch_object($result)) {
 	$j ++;
 }
 
-$links = getLinks($count, $part);
+//$links = getLinks($count, $part);
 if ($count != $j) {
 	$msc->pageTitle = "Таблица: $msc->table ($j строк из $count всего)";
 } else {

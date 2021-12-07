@@ -6,8 +6,8 @@ textcut|Text поля обрезка|100|integer
 dbfullinfo|Полная инфо о базах данных по умолчанию|0|boolean
 datetimeformat|Формат даты и времени|d.m.Y H:i|string
 fieldsmax|Количество полей при создании таблицы по умолчанию|3|integer
-showtablecompare|Блок "Сравнить таблицу с ..." показать|0|boolean
-showtableupdated|Блок "Показать таблицы обновлённые ..." показать|1|boolean
+showtablecompare|Блок "Сравнить таблицу с ..." показать|1|boolean
+showtableupdated|Блок "Показать таблицы обновлённые ..." показать|0|boolean
 nulldesign|HTML код, отображаемый на месте NULL-значения в таблице|<i>NULL</i>|string
 showmessages|Показывать сообщения|1|boolean
 hidemessages|Скрывать сообщения по умолчанию|0|boolean

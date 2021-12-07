@@ -5,6 +5,7 @@
 <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script type="text/babel" src="/js/components.js"></script>
 
 
 <script type="text/babel">
@@ -40,31 +41,6 @@
             {rows}
             </tbody>
           </table>
-      );
-    }
-  }
-
-
-  class CharsetSelector extends React.Component {
-
-    constructor(props) {
-      super(props);
-    }
-
-    render() {
-
-      let opts = [], i = 0
-      for (let charset in this.props.charsets) {
-        let title = null;
-        let info = this.props.charsets[charset]
-        if (typeof info == 'object') {
-          title = info.Description + ' (default: '+info['Default collation']+')'
-        }
-        opts.push(<option key={i++} title={title}>{charset}</option>)
-      }
-
-      return (
-          <select name="charset" defaultValue="utf8">{opts}</select>
       );
     }
   }

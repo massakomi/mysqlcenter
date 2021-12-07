@@ -239,13 +239,16 @@ showhide("' . $messageId . '");
      * @param integer тип сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @return boolean
      */
-    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE)
+    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error='')
     {
+        if (!$error) {
+            $error = mysqli_error();
+        }
         if ($sql != '') {
             $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . mysqli_affected_rows() . '</span>';
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200, "\r\n") . ';' . $aff . '</div>';
-            if (mysqli_error() != null) {
-                $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . mysqli_error() . '</div>';
+            if ($error != null) {
+                $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
             }
         }
         $colors = array(

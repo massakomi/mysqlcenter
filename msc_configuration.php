@@ -15,6 +15,7 @@ if (GET('action') == 'restore') {
 }
 
 if (count($_POST) > 0) {
+
     $data = file(MS_CONFIG_FILE);
     $newFileContent = [];
     $changed = false;
@@ -46,7 +47,7 @@ if (count($_POST) > 0) {
         $msc->addMessage('Нечего обновлять');
     }
 }
-
+var_dump(MS_CONFIG_FILE);
 $data = file(MS_CONFIG_FILE);
 
 /*

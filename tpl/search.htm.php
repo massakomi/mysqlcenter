@@ -29,7 +29,7 @@
     }
 
     componentDidMount() {
-      console.log('mount')
+      //console.log('mount')
       document.querySelector('#queryAll').focus()
     }
 
@@ -47,9 +47,10 @@
       // можно стейты назначить и тут, а не в конструкторе, если они все равно приходят
       this.setState({'query': this.props.options.query})
       this.setState({'queryField': this.props.options.queryField})
-      console.log('will mount')
+      //console.log('will mount')
     }
-    componentWillUnmount() {
+
+    /*componentWillUnmount() {
       console.log('unmount')
     }
 
@@ -61,7 +62,7 @@
     }
     componentDidCatch(error, info) {
       console.log('catch')
-    }
+    }*/
 
 
     render() {

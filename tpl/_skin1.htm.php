@@ -10,7 +10,6 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>'."\n";?>
     <script type="text/javascript" language="javascript">
     /*$.noConflict();*/
     </script>
-    <script language="JavaScript" src="<?php echo MS_DIR_JS?>FrameWork.js?<?=filemtime(MS_DIR_JS.'FrameWork.js')?>"></script>
     <script language="JavaScript" src="<?php echo MS_DIR_JS?>MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
     <script language="javascript">
     var debug = '1';
@@ -116,80 +115,47 @@ if (function_exists('memory_get_peak_usage')) {
 ?>$
   <strong><a href="?s=logout">Выход</a></strong>
 </div>
-<script language="javascript">
-hideTimeout = null;
-$('#appNameId').mouseover(function () {
-	$('#dbHiddenMenu').show();
-})
-function menuHidder(e) {
-  var w = parseInt($('#dbHiddenMenu').width());
-  if (e.pageX > w) {
-  	hideTimeout = setTimeout(function() {
-  		$('#dbHiddenMenu').hide()
-  	}, 300);
-  }
-}
 
-$('#dbHiddenMenu').mouseout(menuHidder);
+<?php
+$files = [];
+$a =[...glob('*.php'), ...glob('tpl/*.php'), ...glob('tpl/*.htm')];
+foreach ($a as $k => $v) {
+    $content = file_get_contents($v);
 
-$('#dbHiddenMenu').mouseover(function (e) {
-	if (hideTimeout != null) {
-		clearInterval(hideTimeout);
-	}
-})
-$('#dbHiddenMenu').on('click', function (e) {
-    $('#dbHiddenMenu').hide();
-})
-$('#queryPopupBlock').hide()
-
-
-
-// Определяет активность клавиши CTRL
-var globalCtrlKeyMode = false;
-var key = {
-	needkey:function(e) {
-		var code;
-		if (!e) var e = window.event;
-		if (e.keyCode) code = e.keyCode;
-		else if (e.which) code = e.which;
-        if (globalCtrlKeyMode == true) {
-            globalCtrlKeyMode = false;
-        }
-		if (e.ctrlKey == true && e.type == 'keydown') {
-            globalCtrlKeyMode = true;
-        }
-	}
-}
-if (document.getElementById) {
-	document.onkeydown = key.needkey;
-	document.onkeyup = key.needkey;
-}
-
-// Мультиселектор чекбоксов. Указать индекс чекбокса и селектор элемента где он находится
-// <input name="table[]" type="checkbox" value="1" onclick="checkboxer(5, '#row');">
-var globalCheckboxLastIndex = null;
-function checkboxer(index, selector) {
-    if (globalCheckboxLastIndex == null) {
-    	globalCheckboxLastIndex = index;
-    	//return true;
-    } else if (globalCtrlKeyMode && index != globalCheckboxLastIndex) {
-    	var from = globalCheckboxLastIndex > index ? index : globalCheckboxLastIndex;
-    	var to = globalCheckboxLastIndex > index ? globalCheckboxLastIndex : index;
-        // Добавляем класс если надо
-    	var addClass = null;
-        if (jQuery(selector+from).hasClass('selectedRow') || jQuery(selector+to).hasClass('selectedRow')) {
-        	var addClass = 'selectedRow';
-        }
-        for (var i = from; i <= to; i ++) {
-            var o = jQuery(selector+i+' input');
-           	o.attr('checked', true);
-            if (addClass != null) {
-            	jQuery(selector+i).addClass(addClass);
-            }
-        }
+    preg_match_all('~<\?[^=].*?\?>~is', $content.'?>', $b);
+    $lengthPhp = 0;
+    foreach ($b[0] as $r) {
+        $lengthPhp += mb_strlen($r);
     }
+
+    preg_match_all('~<script?.*?/script>~is', $content, $b);
+    $lengthScripts = 0;
+    foreach ($b[0] as $r) {
+        $lengthScripts += mb_strlen($r);
+    }
+
+    $length = mb_strlen($content);
+    $files []= [
+        'file' => $v,
+        'php' => round($lengthPhp/$length*100, 0),
+        'scripts' => round($lengthScripts/$length*100, 0),
+        'html' =>  round(($length - $lengthPhp - $lengthScripts)/$length*100, 0),
+    ];
 }
 
+echo printTable($files, [
+    'htmlspecialchars' => 0,
+    'class' => 'tt',
+    'headers' => 1,
+    'callbackValue' => function($header, $value) {
+        /*if ($header == 'login') {
+            $value = '<a href="?page=logs&login='.$value.'">'.$value.'</a>';
+        }*/
+        return $value;
+    }
+]);
+?>
 
-</script>
+
+
 </html>

@@ -77,7 +77,7 @@ function processRowsEdit($editType) {
 			$msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
 			$countInsert ++;
 		} else {
-			$msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, mysqli_error());
+			$msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, $msc->error);
 		}
 	}
 	if ($countInsert == 0) {

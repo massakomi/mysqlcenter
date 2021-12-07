@@ -214,7 +214,7 @@
               {this.props.options.dataKeys.map((v) => {
                   let href = "?s=tbl_struct&action=deleteKey&key="+v.Key_name+"&field="+v.Column_name
                   return (
-                      <tr key={v.Key_name}>
+                      <tr key={v.Key_name + v.Seq_in_index}>
                         <td><a href={href} onClick={this.checkDelete}><img src={this.props.options.dirImage + "close.png"} alt="" border="0" /></a></td>
                           {Object.values(v).map((value, key) =>
                               <td key={key + "index"}>{value}</td>

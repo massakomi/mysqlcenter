@@ -214,8 +214,10 @@ if ($msc->table == '') {
     }
     
 
-    $charsetSelector = getCharsetSelector($charset);
-    
-	include(MS_DIR_TPL . 'actions.htm.php');
+    //$charsetSelector = getCharsetSelector($charset);
+    $charsetList = getCharsetArray();
+    $dbs = Server::getDatabases();
+
+    include(MS_DIR_TPL . 'actions.htm.php');
 }
 ?>
