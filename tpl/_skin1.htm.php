@@ -1,6 +1,3 @@
-<?php
-header("Content-Type: text/html; charset=utf-8");
-echo '<?xml version="1.0" encoding="UTF-8" ?>'."\n";?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -115,6 +112,10 @@ if (function_exists('memory_get_peak_usage')) {
 ?>$
   <strong><a href="?s=logout">Выход</a></strong>
 </div>
+
+<script type="text/javascript">
+  mysqlCenterInit()
+</script>
 
 <?php
 $files = [];

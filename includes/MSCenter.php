@@ -102,9 +102,9 @@ class MSCenter
                 setcookie('mc_db', GET('db'), time() + 3600 * 24 * 14, '/');
             }
             $this->db = GET('db');
-        } else if (!empty($_SESSION['db'])) {
+        } elseif (!empty($_SESSION['db'])) {
             $this->db = $_SESSION['db'];
-        } else if (!empty($_COOKIE['mc_db'])) {
+        } elseif (!empty($_COOKIE['mc_db'])) {
             $this->db = $_COOKIE['mc_db'];
         } else {
             if ($this->db != DB_NAME) {
@@ -149,7 +149,7 @@ class MSCenter
     function getCurrentPage()
     {
         $defaultPage = 'tbl_list';
-        if (conf('tblliststart') == '0') {
+        if (conf('tblliststart') == '0' || !$this->db) {
             $defaultPage = 'db_list';
         }
         if ($this->page == null) {
@@ -172,14 +172,9 @@ class MSCenter
     }
 
     /**
-     * Возвращает блок накопленных за время выполнения скрипта сообщений
-     * @return string
+     * @return array
      */
-    function getMessages()
-    {
-        if (count($this->messages) == 0) {
-            return null;
-        }
+    function getMessagesData() {
         if ($this->allowRepeatMessages == '') {
             $messages = array_count_values($this->messages);
             $this->messages = array_unique($this->messages);
@@ -188,6 +183,19 @@ class MSCenter
                     $this->messages [$k] .= ' (' . $messages[$message] . ')';
                 }
             }
+        }
+        return $this->messages;
+    }
+
+    /**
+     * Возвращает блок накопленных за время выполнения скрипта сообщений
+     * @return string
+     */
+    function getMessages()
+    {
+        $messages = $this->getMessagesData();
+        if (count($messages) == 0) {
+            return null;
         }
         $messageId = "mid" . time();    // если много сообщений
         $s =
@@ -259,7 +267,17 @@ showhide("' . $messageId . '");
             MS_MSG_NOTICE => 'blue'
         );
         $color = isset($colors[$type]) ? $colors[$type] : 'black';
-        $this->messages[] = '<span style="color:' . $color . '">' . $text . '</span>';
+        if (isajax()) {
+            $this->messages[] = [
+                'text' => $text,
+                'type' => $type,
+                'color' => $color,
+                'error' => $error,
+                'sql' => $sql,
+            ];
+        } else {
+            $this->messages[] = '<span style="color:' . $color . '">' . $text . '</span>';
+        }
         if ($type == MS_MSG_ERROR || $type == MS_MSG_FAULT) {
             return false;
         }

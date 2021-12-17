@@ -83,11 +83,18 @@ class ActionProcessor
 
                 $data = [];
                 $res = $msc->query($_POST['sql']);
-                while ($row = mysqli_fetch_array($res)) {
-                    $data[$row[0]] = $row[1];
+
+                if ($_POST['type'] == 'pair-value') {
+                    while ($row = mysqli_fetch_array($res)) {
+                        $data[$row[0]] = $row[1];
+                    }
+                } else {
+                    while ($row = mysqli_fetch_assoc($res)) {
+                        $data[] = $row;
+                    }
                 }
 
-            exit(json_encode($data));
+                exit(json_encode($data));
             break;
 
 

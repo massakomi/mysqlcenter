@@ -1,40 +1,9 @@
-<?php 
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
- */
-
-if (GET('id') == '') {			
-	$result = $msc->query('SELECT * FROM mysql.help_category ORDER BY name');
-    $data = [];
-    while ($o = mysqli_fetch_object($result)) {
-        $data []= $o;
-    }
-} else {
-
-	$result = $msc->query('SELECT * FROM mysql.help_topic WHERE help_category_id = ' . GET('id'));
-	$data = [];
-    while ($o = mysqli_fetch_object($result)) {
-        $data []= $o;
-    }
-}
-?>
+<div id="root"></div>
 
 <script type="text/javascript">
 
-    /*class PrintTable {
-      constructor() {
-
-      }
-      get test() {
-        return 1
-      }
-    }
-
-
-    table = new PrintTable()
-    console.log(table.test)*/
-
-  function printTable(data) {
+  async function printTable(sql) {
+    let data = await querySql({sql, mode: 'querysql'}, 'json')
     let output = '<table class="contentTable">'
     let headersPrinted = false
     for (let item of data) {
@@ -56,13 +25,18 @@ if (GET('id') == '') {
       }
     }
     output += '</table>'
-    document.write(output)
+    $('#root').html(output)
   }
 
-  let data = <?=json_encode($data)?>;
-  printTable(data)
 
+    let id = new URLSearchParams(window.location.search).get('id');
+    let sql = '';
+    if (id) {
+      sql = `SELECT * FROM mysql.help_topic WHERE help_category_id = ${id}`
+    } else {
+      sql = 'SELECT * FROM mysql.help_category ORDER BY name';
+    }
 
-
+  printTable(sql)
 
 </script>

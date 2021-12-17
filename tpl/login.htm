@@ -3,8 +3,8 @@
 <title>Login to MysqlCenter</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <style>
-	p { margin:3px}
-	.message {color:#FF0000; padding:10px}
+    p { margin:3px}
+    .message {color:#FF0000; padding:10px}
 </style>
 </head>
 <body style="text-align:center">
@@ -18,29 +18,29 @@
 
 <script type="text/babel">
 
-	class App extends React.Component {
-		render() {
-			return (
-			<div>
-				<div className="message">
-					{this.props.message}
-				</div>
-				<form method="post">
-					<b>логин</b>
-					<p><input type="text" name="user" /></p>
-					<b>пароль</b>
-					<p><input type="password" name="pass" /></p>
-					<p style={{marginTop: '10px'}}><input type="submit" value="Enter" /></p>
-				</form>
-			</div>
-			);
-		}
-	}
+    class App extends React.Component {
+        render() {
+            return (
+            <div>
+                <div className="message">
+                    {this.props.message}
+                </div>
+                <form method="post">
+                    <b>логин</b>
+                    <p><input type="text" name="user" /></p>
+                    <b>пароль</b>
+                    <p><input type="password" name="pass" /></p>
+                    <p style={{marginTop: '10px'}}><input type="submit" value="Enter" /></p>
+                </form>
+            </div>
+            );
+        }
+    }
 
-	ReactDOM.render(
-		<App message="<?=$errorMessage?>" />,
-		document.getElementById('root')
-	);
+    ReactDOM.render(
+        <App message="<?=$errorMessage?>" />,
+        document.getElementById('root')
+    );
 
 </script>
 

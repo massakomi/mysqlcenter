@@ -1,38 +1,11 @@
 
-function querySql(params) {
-
-  return new Promise(function(resolve, reject) {
-    let query = new URLSearchParams(params);
-    let options = {
-      method: 'POST',
-      body: query,
-      headers: {'X-Requested-With': 'XMLHttpRequest'}
-    }
-
-    fetch('ajax.php', options)
-        .then(response => {
-          if (!response.ok) {
-            console.error(response.status +' ' + response.statusText)
-          } else {
-            return response.text();
-          }
-        })
-        .then(text => {
-          resolve(text)
-        })
-        .catch((error) => {
-          console.error(error)
-        });
-  });
-}
-
-
 class serverVarsPage {
 
   getAllVars() {
     let sql = 'SHOW SESSION VARIABLES';
     let mode = 'querysql'
-    let qs = querySql({sql, mode})
+    let type = 'pair-value'
+    let qs = querySql({sql, mode, type})
         .then((text) => {
           this.sessionVars = JSON.parse(text)
         })
@@ -43,7 +16,8 @@ class serverVarsPage {
   getGlobals() {
     let sql = 'SHOW GLOBAL VARIABLES';
     let mode = 'querysql'
-    let qs = querySql({sql, mode})
+    let type = 'pair-value'
+    let qs = querySql({sql, mode, type})
         .then((text) => {
           this.globalVars = JSON.parse(text)
         });

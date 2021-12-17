@@ -4,8 +4,12 @@
  */
 
 /**
- *	Центральный скрипт для менеджера БД
+ * Центральный скрипт для менеджера БД
  */
+
+spl_autoload_register(function ($class) {
+    include 'includes/' . $class . '.php';
+});
 
 if (file_exists('Debugger.php')) {
     define('DEBUGGER_ONLY', 1);
@@ -15,11 +19,11 @@ if (file_exists('Debugger.php')) {
 }
 
 define('DIR_MYSQL', './');
+
+$pagel = new PageLayout;
 require_once DIR_MYSQL . 'config.php';
 
 $actPro = new ActionProcessor;
 $umaker = new UrlMaker();
 
-require_once DIR_MYSQL . 'includes/PageLayout.php';
-$pagel = new PageLayout;
 $pagel->display();

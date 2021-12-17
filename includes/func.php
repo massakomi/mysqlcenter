@@ -21,72 +21,72 @@ function getFieldDefinition($type=null, $null=null, $default=null, $extra=null, 
             $param = strtolower($param);
             $$param = $value;
         }
-    	if (stristr($type, 'UNSIGNED')) {
-    		$extra .= ' UNSIGNED';
-    		$type   = str_ireplace('UNSIGNED', '', $type);
-    	}
-    	if (stristr($type, 'ZEROFILL')) {
-    		$extra .= ' ZEROFILL';
-    		$type = str_ireplace('ZEROFILL', '', $type);
-    	}
-    	if (preg_match('~\((.*)\)~U', $type, $length)) {
+        if (stristr($type, 'UNSIGNED')) {
+            $extra .= ' UNSIGNED';
+            $type   = str_ireplace('UNSIGNED', '', $type);
+        }
+        if (stristr($type, 'ZEROFILL')) {
+            $extra .= ' ZEROFILL';
+            $type = str_ireplace('ZEROFILL', '', $type);
+        }
+        if (preg_match('~\((.*)\)~U', $type, $length)) {
             $length = $length[1];
             $type = trim(str_replace('('.$length.')', '', $type));
         }
     }
     $type = strtoupper($type);
-	// особый тип, без доп. параметров
-	if ($type == 'SERIAL') {
-		return 'SERIAL';
-	}
-	if ($type == 'VARCHAR') {
+    // особый тип, без доп. параметров
+    if ($type == 'SERIAL') {
+        return 'SERIAL';
+    }
+    if ($type == 'VARCHAR') {
         if (!is_numeric($length) || $length > 255 || $length < 1) {
-    		$length = 255;
+            $length = 255;
         }
         $type .= "($length)";
-	} else if ($type == 'SET' || $type == 'ENUM') {
+    } else if ($type == 'SET' || $type == 'ENUM') {
         if (empty($length)) {
             return false;
         }
-		$type .= "($length)";
-	} else if ($type == 'FLOAT' || $type == 'DOUBLE') {
+        $type .= "($length)";
+    } else if ($type == 'FLOAT' || $type == 'DOUBLE') {
         if (empty($length)) {
             return false;
         } else {
-    		$length = str_replace('.', ',', $length);
+            $length = str_replace('.', ',', $length);
         }
-		$type .= "($length)";
-	} else if (is_numeric($length) && !stristr($type, 'text')) {
-		$type .= "($length)";
-	}
-	$field_info  = $type;
-	if (stristr($extra, 'UNSIGNED')) {
-		// это алиас
-		if ($type != 'BOOLEAN') {
-			$field_info .= ' UNSIGNED';
-		}
-		$extra = str_replace('UNSIGNED', '', $extra); // UNSIGNED - после типа поля
-	}
-	if (stristr($extra, 'ZEROFILL')) {
-		$field_info .= ' ZEROFILL';
-		$extra = str_replace('ZEROFILL', '', $extra);
-	}
-	if ($null != 'YES') {
-		$field_info .=  ' NOT NULL';
-	}
-	if (trim($extra) != null) {
-		$field_info .= ' '.$extra;
-	}
-	if ($default != null) {
-		if (is_numeric($default)) {
-			$field_info .=  ' DEFAULT '.intval($default);
-		} else {
-			$field_info .=  ' DEFAULT "'.$default.'"';
-		}
-	}
-	$field_info = str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
-	//pre($field_info);
-	return $field_info;
+        $type .= "($length)";
+    } else if (is_numeric($length) && !stristr($type, 'text')) {
+        $type .= "($length)";
+    }
+    $field_info  = $type;
+    if (stristr($extra, 'UNSIGNED')) {
+        // это алиас
+        if ($type != 'BOOLEAN') {
+            $field_info .= ' UNSIGNED';
+        }
+        $extra = str_replace('UNSIGNED', '', $extra); // UNSIGNED - после типа поля
+    }
+    if (stristr($extra, 'ZEROFILL')) {
+        $field_info .= ' ZEROFILL';
+        $extra = str_replace('ZEROFILL', '', $extra);
+    }
+    if ($null != 'YES') {
+        $field_info .=  ' NOT NULL';
+    }
+    if (trim($extra) != null) {
+        $field_info .= ' '.$extra;
+    }
+    if ($default != null) {
+        if (is_numeric($default)) {
+            $field_info .=  ' DEFAULT '.intval($default);
+        } else {
+            $field_info .=  ' DEFAULT "'.$default.'"';
+        }
+    }
+    $field_info = str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
+    //pre($field_info);
+    return $field_info;
 }
 
 /**
@@ -109,14 +109,14 @@ function dropPrimaryKey($tbl) {
         if (stristr($definition, 'auto_increment')) {
             $definition = str_ireplace('auto_increment', '', $definition);
             $sql = 'ALTER TABLE `'.$tbl.'` CHANGE '.$field.' '.$field.' '.$definition;
-			$msc->query($sql);
+            $msc->query($sql);
         }
         $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
-		if ($msc->query($sql)) {
-			return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
-		} else {
-			return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_error());
-		}
+        if ($msc->query($sql)) {
+            return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
+        } else {
+            return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_error());
+        }
     }
     return '';
 }
@@ -129,20 +129,20 @@ function dropPrimaryKey($tbl) {
  * @return array Числовое и строковое значение версии
  */
 function getServerVersion() {
-	global $msc;
-	$result = $msc->query('SELECT VERSION() AS version');
-	if ($result !== false) {
-		$row   = mysqli_fetch_array($result);
-		$match = explode('.', $row[0]);
-	}
-	if (!isset($row)) {
-		$vi = 32332;
-		$vs = '3.23.32';
-	} else{
-		$vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
-		$vs = $row[0];
-	}
-	return array($vi, $vs);
+    global $msc;
+    $result = $msc->query('SELECT VERSION() AS version');
+    if ($result !== false) {
+        $row   = mysqli_fetch_array($result);
+        $match = explode('.', $row[0]);
+    }
+    if (!isset($row)) {
+        $vi = 32332;
+        $vs = '3.23.32';
+    } else{
+        $vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
+        $vs = $row[0];
+    }
+    return array($vi, $vs);
 }
 
 /**
@@ -160,7 +160,7 @@ function getServerVersion() {
  * @return mixed Если есть ошибки в параметрах, то false, иначе если $type='' - mysql result, иначе массив.
  */
 function select($sql, $type='', $group='', $simple='') {
-	global $msc;
+    global $msc;
     $types = array(
         'assoc','object','array','row'
     );
@@ -219,7 +219,7 @@ function getTableKeys($table) {
         return array();
     }
     while ($row = mysqli_fetch_object($res)) {
-    	 if ($row->Key_name == 'PRIMARY') {
+         if ($row->Key_name == 'PRIMARY') {
             $keys [$row->Column_name][$row->Key_name]= 'PRI';
          } else {
             $keys [$row->Column_name][$row->Key_name]= $row->Non_unique == 0 ? 'UNI' : 'MUL';
@@ -241,21 +241,21 @@ function getFields($table, $onlyNames=false) {
     if (empty($table)) {
         return array();
     }
-	global $msc;
-	$a = array();
-	$table = str_replace('`', '``', $table );
-	$result = $msc->query('SHOW FIELDS FROM `'.$table.'`');	
-	if (!$result) {
-		return false;
-	}
-	while ($row = mysqli_fetch_object($result)) {
-		if ($onlyNames) {
-			$a []= $row->Field;
-		} else {
-			$a [$row->Field]= $row;
-		}
-	}
-	return $a;
+    global $msc;
+    $a = array();
+    $table = str_replace('`', '``', $table );
+    $result = $msc->query('SHOW FIELDS FROM `'.$table.'`');
+    if (!$result) {
+        return false;
+    }
+    while ($row = mysqli_fetch_object($result)) {
+        if ($onlyNames) {
+            $a []= $row->Field;
+        } else {
+            $a [$row->Field]= $row;
+        }
+    }
+    return $a;
 }
 
 /**
@@ -273,7 +273,7 @@ function getCharsetArray($extended=false) {
        $charsetList [$row['Charset']]= $extended ? $row : $row['Charset'];
     }
     ksort($charsetList);
-	return $charsetList;
+    return $charsetList;
 }
 
 /**
@@ -288,15 +288,15 @@ function getCharsetArray($extended=false) {
  */
 function processValueType($value, $type, $isNull) {
     global $connection;
-	if ($isNull) {
-		return 'NULL';
-	} else {
-		if (preg_match('~^[a-z]+int~iU', trim($type)) && !empty($value) && is_numeric($value)) {
-			return $value;
-		} else {
-			return '"' . mysqli_escape_stringx($value) . '"';
-		}
-	}
+    if ($isNull) {
+        return 'NULL';
+    } else {
+        if (preg_match('~^[a-z]+int~iU', trim($type)) && !empty($value) && is_numeric($value)) {
+            return $value;
+        } else {
+            return '"' . mysqli_escape_stringx($value) . '"';
+        }
+    }
 }
 
 function mysqli_escape_stringx($value)
@@ -315,11 +315,11 @@ function mysqli_escape_stringx($value)
  * @return mixed Значение параметра
  */
 function GET($name, $default=null) {
-	if (isset($_GET[$name])) {
-		return $_GET[$name];
-	} else {
-		return $default;
-	}
+    if (isset($_GET[$name])) {
+        return $_GET[$name];
+    } else {
+        return $default;
+    }
 }
 
 /**
@@ -398,21 +398,21 @@ function stripslashesRecursive($array) {
  * @return string HTML код селектора
  */
 function plDrawSelector($array, $attributes, $checked=null, $basetab='', $keyValue=true, $extra=null) {
-	$s = $basetab.'<select'.$attributes.'>'."\r\n".$extra;
-	$wasSelected = false; // флаг, чтобы 1 селектед только
-	foreach ($array as $k => $v) {
-		$sel = null;
-		if ($checked == $k && !$wasSelected) {
-			$sel = ' selected="selected"';
-			$wasSelected = true;
-		}
-		$val = '';
-		if ($keyValue) {
-			$val = ' value="'.$k.'"';
-		}
-		$s .= $basetab.'  <option'.$val.''.$sel.'>'.$v.'</option>'."\r\n";
-	}
-	return $s .= $basetab.'</select>'."\r\n"; 
+    $s = $basetab.'<select'.$attributes.'>'."\r\n".$extra;
+    $wasSelected = false; // флаг, чтобы 1 селектед только
+    foreach ($array as $k => $v) {
+        $sel = null;
+        if ($checked == $k && !$wasSelected) {
+            $sel = ' selected="selected"';
+            $wasSelected = true;
+        }
+        $val = '';
+        if ($keyValue) {
+            $val = ' value="'.$k.'"';
+        }
+        $s .= $basetab.'  <option'.$val.''.$sel.'>'.$v.'</option>'."\r\n";
+    }
+    return $s .= $basetab.'</select>'."\r\n";
 }
 
 /**
@@ -467,20 +467,20 @@ function plDrawDateSelector($time=null, $prf=null) {
  * @return string HTML код селектора
  */
 function draw_array_options($array, $opt = '', $selected_value = '') {
-	$s = '';
+    $s = '';
     if (!is_array($array)) {
-    	return '';
+        return '';
     }
-	foreach ($array as $k => $v) {
-		$opt == 'keys' ? $value = "value='$k'" : $value = '';
-		$opt == 'base' ? $v = basename($v) : true;
-		if (!empty($selected_value) && $v == $selected_value) {
-			$s .= "<option $value selected>$v</option>";
-		} else {
-			$s .= "<option $value>$v</option>";
-		}
-	}
-	return $s;
+    foreach ($array as $k => $v) {
+        $opt == 'keys' ? $value = "value='$k'" : $value = '';
+        $opt == 'base' ? $v = basename($v) : true;
+        if (!empty($selected_value) && $v == $selected_value) {
+            $s .= "<option $value selected>$v</option>";
+        } else {
+            $s .= "<option $value>$v</option>";
+        }
+    }
+    return $s;
 }
 
 
@@ -491,17 +491,17 @@ function draw_array_options($array, $opt = '', $selected_value = '') {
  * @return integer Размер в байтах
  */
 function getMaxUploadSize() {
-	if (!$filesize = ini_get('upload_max_filesize')) {
-		$filesize = "5M";
-	}
-	$max_upload_size = get_real_size($filesize);
-	if ($postsize = ini_get('post_max_size')) {
-		$postsize = get_real_size($postsize);
-		if ($postsize < $max_upload_size) {
-			$max_upload_size = $postsize;
-		}
-	}
-	return $max_upload_size;
+    if (!$filesize = ini_get('upload_max_filesize')) {
+        $filesize = "5M";
+    }
+    $max_upload_size = get_real_size($filesize);
+    if ($postsize = ini_get('post_max_size')) {
+        $postsize = get_real_size($postsize);
+        if ($postsize < $max_upload_size) {
+            $max_upload_size = $postsize;
+        }
+    }
+    return $max_upload_size;
 }
 
 
@@ -627,24 +627,24 @@ var_dump($zip_entry);
  * @return integer Размер файла в байтах
  */
 function get_real_size($size=0) {
-	if (!$size) {
-		return 0;
-	}
-	$scan['MB'] = 1048576;
-	$scan['Mb'] = 1048576;
-	$scan['M']  = 1048576;
-	$scan['m']  = 1048576;
-	$scan['KB'] = 1024;
-	$scan['Kb'] = 1024;
-	$scan['K']  = 1024;
-	$scan['k']  = 1024;
+    if (!$size) {
+        return 0;
+    }
+    $scan['MB'] = 1048576;
+    $scan['Mb'] = 1048576;
+    $scan['M']  = 1048576;
+    $scan['m']  = 1048576;
+    $scan['KB'] = 1024;
+    $scan['Kb'] = 1024;
+    $scan['K']  = 1024;
+    $scan['k']  = 1024;
     foreach (array_keys($scan) as $key) {
-		if ((strlen($size)>strlen($key))&&(substr($size, strlen($size) - strlen($key))==$key)) {
-			$size = substr($size, 0, strlen($size) - strlen($key)) * $scan[$key];
-			break;
-		}
-	}
-	return $size;
+        if ((strlen($size)>strlen($key))&&(substr($size, strlen($size) - strlen($key))==$key)) {
+            $size = substr($size, 0, strlen($size) - strlen($key)) * $scan[$key];
+            break;
+        }
+    }
+    return $size;
 }
 
 
@@ -677,16 +677,16 @@ function formatSize($bytes) {
  * @return string Строковое значение числа
  */
 function MSC_roundZero(float $number, int $precision):int {
-	$number = round($number, $precision);
-	if (strchr($number,".")){
-		$begin = strpos($number, ".");
-		$int = substr($number, 0, $begin);
-		$float = substr($number , $begin + 1);
-		$number = "$int.$float" . str_repeat("0", $precision - strlen($float));
-	} else {
-		$number = $number . "." . str_repeat("0", $precision);
-	}
-	return $number;
+    $number = round($number, $precision);
+    if (strchr($number,".")){
+        $begin = strpos($number, ".");
+        $int = substr($number, 0, $begin);
+        $float = substr($number , $begin + 1);
+        $number = "$int.$float" . str_repeat("0", $precision - strlen($float));
+    } else {
+        $number = $number . "." . str_repeat("0", $precision);
+    }
+    return $number;
 }
 
 
@@ -701,55 +701,55 @@ function MSC_roundZero(float $number, int $precision):int {
  * @return string HTML код таблицы
  */
 function MSC_printObjectTable($object, $first=false, $table=null, $attributes=array()) {
-	if (!is_object($table)) {
-		$table = new Table('contentTable');
-		$table->setInterlace('', '#eeeeee');
-	}
-	$headers = array();
-	$dataArray = array();
-	// Преобразование входного объекта/массива
-	if (!is_array($object)) {
-		while ($o = mysqli_fetch_assoc($object)) {
-			$dataArray []= $o;
-		}
-	} else {
-		$dataArray = $object;
-		unset($object);
-	}
-	// Если первый элемент массив, печатаем его
-	if (isset($dataArray[0])) {
-		foreach ($dataArray as $o) {
-			if ($first) {
-				foreach ($o as $k => $v) {
+    if (!is_object($table)) {
+        $table = new Table('contentTable');
+        $table->setInterlace('', '#eeeeee');
+    }
+    $headers = array();
+    $dataArray = array();
+    // Преобразование входного объекта/массива
+    if (!is_array($object)) {
+        while ($o = mysqli_fetch_assoc($object)) {
+            $dataArray []= $o;
+        }
+    } else {
+        $dataArray = $object;
+        unset($object);
+    }
+    // Если первый элемент массив, печатаем его
+    if (isset($dataArray[0])) {
+        foreach ($dataArray as $o) {
+            if ($first) {
+                foreach ($o as $k => $v) {
                     if (isset($attributes[$k])) {
                         $k = '<span'.$attributes[$k].'>'.$k.'</span>';
                     }
-					$table->makeRow($k, $v);
-				}
-				break;
-			}
-			$data = array();
-			if (count($headers) == 0) {
-				foreach ($o as $k => $v) {
-					$headers []= $k;
-					$data []= $v;
-				}
-				$table->makeRow($headers);
-				$table->makeRow($data);
-				continue;
-			}
-			foreach ($o as $k => $v) {
-				$data []= $v;
-			}
-			$table->makeRow($data);
-		}
-	} else {
-		$table->makeRow('Параметр', 'Значение');
-		foreach ($dataArray as $k => $v) {
-			$table->makeRow($k, $v);
-		}
-	}
-	return $table->make();
+                    $table->makeRow($k, $v);
+                }
+                break;
+            }
+            $data = array();
+            if (count($headers) == 0) {
+                foreach ($o as $k => $v) {
+                    $headers []= $k;
+                    $data []= $v;
+                }
+                $table->makeRow($headers);
+                $table->makeRow($data);
+                continue;
+            }
+            foreach ($o as $k => $v) {
+                $data []= $v;
+            }
+            $table->makeRow($data);
+        }
+    } else {
+        $table->makeRow('Параметр', 'Значение');
+        foreach ($dataArray as $k => $v) {
+            $table->makeRow($k, $v);
+        }
+    }
+    return $table->make();
 }
 
 /**
@@ -797,7 +797,7 @@ function pre($arrray, $html=false) {
     if ($html) {
         $a = htmlspecialchars($a);
     }
-	echo '<pre style="font-size:11px">' . $a . '</pre>';
+    echo '<pre style="font-size:11px">' . $a . '</pre>';
 }
 
 
@@ -810,21 +810,21 @@ function pre($arrray, $html=false) {
  */
 function msclog($message, $sql=null) {
     global $connection;
-	$logFile = 'error.log';
-	if (!file_exists($logFile)) {
-		$file = @fopen($logFile, 'w+');
-	} else {
-		$file = @fopen($logFile, 'a+');
-	}
-	$message = str_replace("\n", ' ', $message);
-	$sql     = str_replace("\n", ' ', $sql);
-	$time    = date('d.m.y H:i:s ');
-	$string  = "\n".$time.$message;
-	if ($sql != null) {
-		$string  .= '('.$sql.' '.mysqli_error($connection).')';
-	}
-	@fwrite($file, $string);
-	@fclose($file);
+    $logFile = 'error.log';
+    if (!file_exists($logFile)) {
+        $file = @fopen($logFile, 'w+');
+    } else {
+        $file = @fopen($logFile, 'a+');
+    }
+    $message = str_replace("\n", ' ', $message);
+    $sql     = str_replace("\n", ' ', $sql);
+    $time    = date('d.m.y H:i:s ');
+    $string  = "\n".$time.$message;
+    if ($sql != null) {
+        $string  .= '('.$sql.' '.mysqli_error($connection).')';
+    }
+    @fwrite($file, $string);
+    @fclose($file);
 }
 
 /**
@@ -835,24 +835,24 @@ function msclog($message, $sql=null) {
  */
 function mscErrorHandler($errno, $errstr, $errfile, $errline) {
     global $mscGlobalErrorsCash;
-	$logstr = $errstr.'['.$errfile.':'.$errline.']';
-	if (!isset($mscGlobalErrorsCash)) {
+    $logstr = $errstr.'['.$errfile.':'.$errline.']';
+    if (!isset($mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash = array();
     }
-	if (!in_array($logstr, $mscGlobalErrorsCash)) {
+    if (!in_array($logstr, $mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash []= $logstr;
     } else {
         return;
     }
-	if ($errno == 8) {
+    if ($errno == 8) {
         return;
     }
-	if (stristr($errstr, 'Unable to save result set')) {
+    if (stristr($errstr, 'Unable to save result set')) {
         $logstr  .= '('.mysqli_error().')';
     }
-	$errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
-	if (function_exists('msclog')) {
-    	msclog($errno.' '.$logstr);
+    $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
+    if (function_exists('msclog')) {
+        msclog($errno.' '.$logstr);
     }
 }
 
@@ -910,27 +910,27 @@ function date2rusString($format, $ldate) {
  * @return string Обработанное значение
  */
 function processRowValue($v, $type) {
-	if ($v === NULL) {
-		$v = MS_NULL_DESIGN;
-	} else {
-		// Тексты
-		if (stristr($type, 'blob')) {
-			$v = htmlspecialchars($v);;
-		}
-		if (stristr($type, 'text') || stristr($type, 'char')) {
-			$v = htmlspecialchars($v);
-		}
-		if (strlen($v) > MS_TEXT_CUT && GET('fullText') == '') {
-			$v = substr($v, 0, MS_TEXT_CUT) . ' ...';
-			//$v = wordwrap($v, 20, "<br />\r\n");
-		}
-		// дата
-		if (stristr($type, 'int') && strlen($v) == 10 && is_numeric($v)) {
-			$e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
-			$v = '<span class="dateString"'.$e.'>'.$v.'</span>';
-		}
-	}
-	return $v;
+    if ($v === NULL) {
+        $v = MS_NULL_DESIGN;
+    } else {
+        // Тексты
+        if (stristr($type, 'blob')) {
+            $v = htmlspecialchars($v);;
+        }
+        if (stristr($type, 'text') || stristr($type, 'char')) {
+            $v = htmlspecialchars($v);
+        }
+        if (strlen($v) > MS_TEXT_CUT && GET('fullText') == '') {
+            $v = substr($v, 0, MS_TEXT_CUT) . ' ...';
+            //$v = wordwrap($v, 20, "<br />\r\n");
+        }
+        // дата
+        if (stristr($type, 'int') && strlen($v) == 10 && is_numeric($v)) {
+            $e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
+            $v = '<span class="dateString"'.$e.'>'.$v.'</span>';
+        }
+    }
+    return $v;
 }
 
 
@@ -944,36 +944,36 @@ function processRowValue($v, $type) {
  * @return array  Массив заголовков
  */
 function getTableHeaders($fields, $sorts=true) {
-	global $umaker;
-	$headers   = array();
-	$pk = array();
-	$fieldsCount = count($fields);
-	$fieldsNames = array();
-	// фиксим урл после перехода со страницы
-	if (GET('s') != 'tbl_data') {
-		$umaker->url = UrlMaker::edit($_SERVER['REQUEST_URI'], 's', 'tbl_data');
-	}
-	foreach ($fields as $k => $v) {
-		$isWrapped = (
-		(
-			strchr($v->Type, 'int') ||
-			strchr($v->Type, 'enum') ||
-			strchr($v->Type, 'float')
-		) &&
-		MS_HEAD_WRAP &&
-		strlen($v->Field) > MS_HEAD_WRAP + 2 &&
-		$fieldsCount > 10 &&
-		GET('fullText') == ''
-		);
-		$u = $umaker->switcher('order', $v->Field.'-', $v->Field);
-		// HTML обработка
-		if ($isWrapped) {
-			$v->Field = wordwrap($v->Field, MS_HEAD_WRAP, '<br />', true);
-		}
-		$link = !$sorts ? $v->Field : "<a href='$u' class='sort' title='Сортировать'>$v->Field</a>";
-		$headers[]= $link;
-	}
-	return $headers;
+    global $umaker;
+    $headers   = array();
+    $pk = array();
+    $fieldsCount = count($fields);
+    $fieldsNames = array();
+    // фиксим урл после перехода со страницы
+    if (GET('s') != 'tbl_data') {
+        $umaker->url = UrlMaker::edit($_SERVER['REQUEST_URI'], 's', 'tbl_data');
+    }
+    foreach ($fields as $k => $v) {
+        $isWrapped = (
+        (
+            strchr($v->Type, 'int') ||
+            strchr($v->Type, 'enum') ||
+            strchr($v->Type, 'float')
+        ) &&
+        MS_HEAD_WRAP &&
+        strlen($v->Field) > MS_HEAD_WRAP + 2 &&
+        $fieldsCount > 10 &&
+        GET('fullText') == ''
+        );
+        $u = $umaker->switcher('order', $v->Field.'-', $v->Field);
+        // HTML обработка
+        if ($isWrapped) {
+            $v->Field = wordwrap($v->Field, MS_HEAD_WRAP, '<br />', true);
+        }
+        $link = !$sorts ? $v->Field : "<a href='$u' class='sort' title='Сортировать'>$v->Field</a>";
+        $headers[]= $link;
+    }
+    return $headers;
 }
 
 
@@ -984,9 +984,9 @@ function getTableHeaders($fields, $sorts=true) {
  * @param string Базовое имя файла без расширения в папке includes (предположительно - имя класса)
  */
 function classLoad($className) {
-	if (!class_exists($className)) {
-		require_once DIR_MYSQL . 'includes/' . $className.'.php';
-	}
+    if (!class_exists($className)) {
+        require_once DIR_MYSQL . 'includes/' . $className.'.php';
+    }
 }
 
 
@@ -1004,10 +1004,10 @@ function conf($param, $default='') {
         $mscConfigCash = array();
         $data = file(MS_CONFIG_FILE);
         foreach ($data as $k => $line) {
-        	if (empty($line) || substr_count($line, '|') < 3) {
-        		continue;
-        	}
-        	list($name, $title, $value, $type) = explode('|', trim($line));
+            if (empty($line) || substr_count($line, '|') < 3) {
+                continue;
+            }
+            list($name, $title, $value, $type) = explode('|', trim($line));
             $mscConfigCash [$name]= $value;
         }
     }
@@ -1022,42 +1022,42 @@ function conf($param, $default='') {
  * @param string SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
  */
 function execSql($db, &$sql, $log=true) {
-	global $msc;
-	$mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
-	if (!$msc->selectDb($db)) {
-		return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);;
-	}
-    if ($log) {
-    	$msc->logInFile($sql);
+    global $msc;
+    $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
+    if (!$msc->selectDb($db)) {
+        return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);;
     }
-	$sql = str_replace("\r\n", "\n", $sql);
-	$array = explode(";\n", $sql);
-	$errors = array();
-	$c = 0;
-	$affected = 0;
-	$count = count($array);
-	for ($i = 0; $i < $count; $i ++) {
-		$q = trim($array[$i]);
-		if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
-			continue;
-		}
-		$c ++;
-		if (!$msc->query($q)) {
-			$errors []= $msc->error.' ('.substr($q, 0, 100).')';
-		} else {
-			$affected += mysqli_affected_rows();
-		}
-	}
-	$fault = count($errors);
-	$succ = $c - $fault;
-	$info = " $succ запросов выполнено, $fault неудач. ";
-	if (count($errors) == 0) {
-		$msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
-	} else {
-		$msc->addMessage('Запросы выполнен с ошибками' . $info .'<br />'. implode('<br />', $errors), null, MS_MSG_FAULT);
-	}
-	$mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
-	$msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
+    if ($log) {
+        $msc->logInFile($sql);
+    }
+    $sql = str_replace("\r\n", "\n", $sql);
+    $array = explode(";\n", $sql);
+    $errors = array();
+    $c = 0;
+    $affected = 0;
+    $count = count($array);
+    for ($i = 0; $i < $count; $i ++) {
+        $q = trim($array[$i]);
+        if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
+            continue;
+        }
+        $c ++;
+        if (!$msc->query($q)) {
+            $errors []= $msc->error.' ('.substr($q, 0, 100).')';
+        } else {
+            $affected += mysqli_affected_rows();
+        }
+    }
+    $fault = count($errors);
+    $succ = $c - $fault;
+    $info = " $succ запросов выполнено, $fault неудач. ";
+    if (count($errors) == 0) {
+        $msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
+    } else {
+        $msc->addMessage('Запросы выполнен с ошибками' . $info .'<br />'. implode('<br />', $errors), null, MS_MSG_FAULT);
+    }
+    $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
+    $msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
 }
 
 
@@ -1135,4 +1135,11 @@ function printTable($offersData, $opts=[])
         echo '</tr>';
     }
     echo '</table>';
+}
+
+/**
+ * @return bool
+ */
+function isajax() {
+    return $_GET['ajax'];
 }
