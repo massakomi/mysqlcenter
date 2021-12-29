@@ -198,5 +198,33 @@ if ($showFullInfo) {
     }*/
 }
 
+if (isajax()) {
+    return [
+        'databases' => $dbs,
+        'hiddens' => $hidden,
+        'appName' => MS_APP_NAME,
+        'appVersion' => MS_APP_VERSION,
+        'dbHost' => DB_HOST,
+        'showFullInfo' => $showFullInfo,
+        'folder' => MS_DIR_IMG,
+        'url' => MS_URL,
+        'dbname' => $msc->db,
+        'phpversion' => phpversion(),
+        'mysqlVersion' => PMA_MYSQL_STR_VERSION,
+    ];
+}
+
 include_once(MS_DIR_TPL . 'db_list.htm.php');
+
+/*
+    let databases = <?=json_encode($dbs)?>;
+    let hiddens = <?=json_encode($hidden)?>;
+
+    ReactDOM.render(
+        <App appName="<?php echo MS_APP_NAME ?>" appVersion="<?php echo MS_APP_VERSION ?>" dbHost="<?php echo DB_HOST ?>" showFullInfo="<?=$showFullInfo?>" folder="<?=MS_DIR_IMG?>" url="<?=MS_URL?>"
+            dbname="<?php echo $msc->db ?>" phpversion="<?=phpversion()?>" mysqlVersion="<?=PMA_MYSQL_STR_VERSION?>" />,
+        document.getElementById('root')
+    );
+
+ * */
 ?>

@@ -60,6 +60,7 @@ function msQuery(mode, query='') {
   return false;
 }
 
+
 /*
   getAllVars() {
     let sql = 'SHOW SESSION VARIABLES';

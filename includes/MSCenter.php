@@ -112,14 +112,16 @@ class MSCenter
             }
             $this->db = DB_NAME;
         }
+        if (!$this->db && DB_NAME) {
+            $this->db = DB_NAME;
+        }
+        if (!$this->db) {
+            $this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error());
+            return $this->db = null;
+        }
         if (!$this->selectDb($this->db)) {
-            if (DB_NAME) {
-                $this->db = DB_NAME;
-            }
-            if (!$this->selectDb($this->db)) {
-                $this->addMessage('Ошибка при выборе базы данных "' . $this->db . '"', '', MS_MSG_FAULT, mysqli_error());
-                return $this->db = null;
-            }
+            $this->addMessage('Ошибка при выборе базы данных "' . $this->db . '"', '', MS_MSG_FAULT, mysqli_error());
+            return $this->db = null;
         }
         $this->query('SET collation_connection = ' . MS_COLLATION);
         //$this->query('SET collation_database = '.MS_COLLATION);
@@ -175,7 +177,7 @@ class MSCenter
      * @return array
      */
     function getMessagesData() {
-        if ($this->allowRepeatMessages == '') {
+        if ($this->allowRepeatMessages == '' && !isajax()) {
             $messages = array_count_values($this->messages);
             $this->messages = array_unique($this->messages);
             foreach ($this->messages as $k => $message) {
@@ -252,6 +254,7 @@ showhide("' . $messageId . '");
         if (!$error) {
             $error = mysqli_error();
         }
+        $textError = $text;
         if ($sql != '') {
             $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . mysqli_affected_rows() . '</span>';
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200, "\r\n") . ';' . $aff . '</div>';
@@ -268,15 +271,16 @@ showhide("' . $messageId . '");
         );
         $color = isset($colors[$type]) ? $colors[$type] : 'black';
         if (isajax()) {
-            $this->messages[] = [
-                'text' => $text,
+            $this->messages []= [
+                'text' => $textError,
                 'type' => $type,
                 'color' => $color,
                 'error' => $error,
                 'sql' => $sql,
+                'rows' => mysqli_affected_rows(),
             ];
         } else {
-            $this->messages[] = '<span style="color:' . $color . '">' . $text . '</span>';
+            $this->messages []= '<span style="color:' . $color . '">' . $text . '</span>';
         }
         if ($type == MS_MSG_ERROR || $type == MS_MSG_FAULT) {
             return false;

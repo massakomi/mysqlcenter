@@ -45,20 +45,30 @@
     }
   }
 
+  function FieldSet(props) {
+    return (
+      <fieldset className="msGeneralForm">
+        <legend>{props.title}</legend>
+        <form action={props.url + "&action=" + props.action} method="post" name={props.action}>
+        {props.children}
+        <input type="submit" value="Выполнить!" style={{marginLeft: '5px'}} />
+      </form>
+      </fieldset>
+    )
+  }
+
 
   class App extends React.Component {
 
-    constructor(props) {
-      super(props);
-      //this.state = {option: '<?=POST('option', 'all')?>'};
-      this.state = {option: 'all'};
-      this.onOptionChange = this.onOptionChange.bind(this)
+    fullinfo = () => {
+      fetch(this.props.url+'&ajax=1&action=fullinfo')
+        .then(response => response.json())
+        .then(json => this.setState({dbInfo: json.page.dbInfo}))
     }
 
-    onOptionChange(e) {
-      this.setState({
-        option: e.currentTarget.value
-      });
+    constructor(props) {
+      super(props);
+      this.state = {dbInfo: props.dbInfo};
     }
 
     render() {
@@ -68,49 +78,33 @@
 
       return (
           <div>
-            <fieldset className="msGeneralForm">
-              <legend>Переименовать базу данных в:</legend>
-              <form action={this.props.options.url + "&action=dbRename"} method="post" name="renameDBForm">
+            <FieldSet title="Переименовать базу данных в:" action="dbRename" {...this.props}>
                 <input name="newName" type="text" required defaultValue="<?php echo GET('db')?>" />
-                <input type="submit" value="Выполнить!" />
-              </form>
-            </fieldset>
-            <fieldset className="msGeneralForm">
-              <legend>Копировать базу данных в:</legend>
-              <form action={this.props.options.url + "&action=dbCopy"} method="post" onSubmit={this.checkEmpty} name="copyDBForm">
+            </FieldSet>
+            <FieldSet title="Копировать базу данных в:" action="dbCopy" {...this.props}>
                 <input name="newName" required type="text" defaultValue="<?php echo GET('db')?>_copy" /><br />
-                <input name="option" type="radio" value="struct" onChange={this.onOptionChange} checked={this.state.option === 'struct'} /> Только структуру  <br />
-                <input name="option" type="radio" value="all" onChange={this.onOptionChange} checked={this.state.option === 'all'} /> Структура и данные  <br />
-                <input name="option" type="radio" value="data" onChange={this.onOptionChange} checked={this.state.option === 'data'} /> Только данные  <br />
+                <input name="option" type="radio" value="struct" /> Только структуру  <br />
+                <input name="option" type="radio" value="all" defaultChecked /> Структура и данные  <br />
+                <input name="option" type="radio" value="data" /> Только данные  <br />
                 <input name="switch" type="checkbox" value="1" /> Перейти к скопированной БД <br /><br />
-                <input type="submit" value="Выполнить!" />
-              </form>
-            </fieldset>
-            <fieldset className="msGeneralForm">
-              <legend>Изменить кодировку базы данных:</legend>
-              <form action={this.props.options.url + "&action=dbCharset"} method="post" name="charsetDBForm">
-                <CharsetSelector charsets={this.props.options.charsets} />
-                <input type="submit" value="Выполнить!" />
-              </form>
-            </fieldset>
+            </FieldSet>
+            <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...this.props}>
+                <CharsetSelector charsets={this.props.charsets} />
+            </FieldSet>
             <fieldset className="msGeneralForm">
               <legend>Информация о базе данных</legend>
-              <TableObject data={this.props.options.dbInfo} className="contentTable" />
+              <TableObject data={this.state.dbInfo} className="contentTable" />
               <br />
-              <a href={this.props.options.url + "&action=fullinfo"}>Показать полную информацию</a>
+              <a href="#" onClick={this.fullinfo}>Показать полную информацию</a>
             </fieldset>
           </div>
       );
     }
   }
 
-  let options = {
-    'url': '<?php echo $DQuery?>',
-    'dbInfo': <?=json_encode($dbInfo)?>,
-    'charsets': <?=json_encode($charsetList)?>
-  }
+  let options = <?=json_encode($pageProps)?>;
   ReactDOM.render(
-      <App options={options}/>,
+      <App {...options}/>,
       document.getElementById('root')
   );
 

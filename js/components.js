@@ -17,7 +17,7 @@ class CharsetSelector extends React.Component {
     }
 
     return (
-        <select name="charset" defaultValue="utf8">{opts}</select>
+        <select name="charset" defaultValue={this.props.value ? this.props.value : 'utf8'}>{opts}</select>
     );
   }
 }
@@ -60,3 +60,35 @@ class HtmlSelector extends React.Component {
   }
 }
 
+
+function Messages(props) {
+
+  const MessageText = (item) => {
+    let extra = []
+    if (item.sql) {
+      extra.push(<div key="v1" className="sqlQuery">{item.sql}</div>)
+      if (item.rows) {
+        extra.push(<div key="v2" style={{color: '#ccc'}}>затронуто рядов: {item.rows}</div>)
+      }
+      if (item.error) {
+        extra.push(<div key="v3" className="mysqlError"><b>Ошибка:</b> {item.error}</div>)
+      }
+    }
+    return (<div style={{color: item.color}}>{item.text}{extra}</div>)
+  }
+
+  const CloseMessage = (e) => {
+    $(e.target).closest('tr').next().toggle()
+  }
+
+  return <div className="messages">{props.messages.map((item, key) =>
+    (
+      <table className="globalMessage" key={key}>
+        <tbody>
+        <tr><th>Сообщение <a href="#" className="hiddenSmallLink" style={{color: 'white'}} onClick={CloseMessage.bind(this)}>close</a></th></tr>
+        <tr><td>{MessageText(item)}</td></tr>
+        </tbody>
+      </table>
+    )
+  )}</div>
+}

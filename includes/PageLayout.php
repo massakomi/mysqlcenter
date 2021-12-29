@@ -79,7 +79,16 @@ class PageLayout
 
 
         if (isajax()) {
+
+            if (!$_GET['init']) {
+                $pageProps = include $currentHandler;
+            }
+            if (!$pageProps) {
+                $pageProps = [];
+            }
+
             $data = [
+                'page' => $pageProps,
                 'main' => [
                     'handler' => $currentHandler,
                     'page' => $msc->page,
@@ -106,6 +115,10 @@ class PageLayout
                 //'session_id' => session_id()
 
             ];
+
+            /*if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+                echo '<pre>'; print_r($_SERVER); echo '</pre>'; exit;
+            }*/
 
             exit(json_encode($data));
         }
@@ -236,11 +249,11 @@ class PageLayout
                 continue;
             }
             list($page, $action) = $array;
-            /*if (!empty($array[2])) {
+            if (!empty($array[2])) {
                 $curl = $array[2];
             } else {
                 $curl = $url;
-            }*/
+            }
             $extra = null;
             if (stristr($action, 'delete')) {
                 $extra = ' class="delete" onClick="check(this, \'удаление\'); return false"';

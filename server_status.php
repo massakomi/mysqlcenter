@@ -19,68 +19,81 @@
  * @version  1.2 - 18 July 2002
  */
 function PMA_formatByteDown($value, $limes = 6, $comma = 0) {
-	$dh       = pow(10, $comma);
-	$li       = pow(10, $limes);
-	$return_value = $value;
-	$unit     = $GLOBALS['byteUnits'][0];
-	for ( $d = 6, $ex = 15; $d >= 1; $d--, $ex-=3 ) {
-		if (isset($GLOBALS['byteUnits'][$d]) && $value >= $li * pow(10, $ex)) {
-			$value = round($value / ( pow(1024, $d) / $dh) ) /$dh;
-			$unit = $GLOBALS['byteUnits'][$d];
-			break 1;
-		} // end if
-	} // end for
+    $dh       = pow(10, $comma);
+    $li       = pow(10, $limes);
+    $return_value = $value;
+    $unit     = $GLOBALS['byteUnits'][0];
+    for ( $d = 6, $ex = 15; $d >= 1; $d--, $ex-=3 ) {
+        if (isset($GLOBALS['byteUnits'][$d]) && $value >= $li * pow(10, $ex)) {
+            $value = round($value / ( pow(1024, $d) / $dh) ) /$dh;
+            $unit = $GLOBALS['byteUnits'][$d];
+            break 1;
+        } // end if
+    } // end for
 
-	if ($unit != $GLOBALS['byteUnits'][0]) {
-		$return_value = number_format($value, $comma, '.', ',');
-	} else {
-		$return_value = number_format($value, 0, '.', ',');
-	}
-	return array($return_value, $unit);
+    if ($unit != $GLOBALS['byteUnits'][0]) {
+        $return_value = number_format($value, $comma, '.', ',');
+    } else {
+        $return_value = number_format($value, 0, '.', ',');
+    }
+    return array($return_value, $unit);
 }
 
-
-$msc->pageTitle = 'Статус сервера';
+$msc->pageTitle = 'Список процессов';
 
 $kill = GET('kill');
 // Kills a selected process
 if (!empty($kill)) {
-	if ($msc->query('KILL ' . $kill)) {
-		$message = sprintf($strThreadSuccessfullyKilled, $kill);
-	} else {
-		$message = sprintf($strCouldNotKill, $kill);
-	}
+    if ($msc->query($sql = 'KILL ' . $kill)) {
+        $msc->addMessage('Успешно удалено');
+    } else {
+        $msc->addMessage('Ошибка остановки', $sql, MS_MSG_ERROR, $msc->error);
+    }
+    if (isajax()) {
+        return [
+                'exec' => 1
+        ];
+    }
 }
 
-
-echo '<b>Список процессов</b>';
 // Sends the query and buffers the result
 $serverProcesses = array();
 $sql_query = 'SHOW FULL PROCESSLIST';
 $res = $msc->query($sql_query);
 while ($row = mysqli_fetch_assoc($res)) {
-	 $serverProcesses[] = $row;
+     $serverProcesses[] = $row;
 }
+
+if (isajax()) {
+    return [
+        'serverProcesses' => $serverProcesses
+    ];
+}
+
 unset($res);
 unset($row);
 // Displays the page
 $table = new Table('contentTable');
 $table ->makeRowHead('<a href="&full" title="полные или пустые запросы"><img src="'.MS_DIR_IMG.'s_fulltext.png" width="50" height="20" border="0" alt="" /></a>',	'id',	'user',	'host',	'db',	'command', 'time',	'status',	'sqlQuery');
 foreach ($serverProcesses as $name => $value) {
-	$table ->makeRow(
-	'<a href="'.$_SERVER['REQUEST_URI'].'&kill=' . $value['Id'] . '">Убить</a>',
-	$value['Id'],
-	$value['User'],
-	$value['Host'],
-	(empty($value['db']) ? '<i>нет</i>' : $value['db']),
-	$value['Command'],
-	$value['Time'],
-	(empty($value['State']) ? '---' : $value['State']),
-	(empty($value['Info']) ? '---' : $value['Info'])
-	);
+    $table ->makeRow(
+    '<a href="'.$_SERVER['REQUEST_URI'].'&kill=' . $value['Id'] . '">Убить</a>',
+    $value['Id'],
+    $value['User'],
+    $value['Host'],
+    (empty($value['db']) ? '<i>нет</i>' : $value['db']),
+    $value['Command'],
+    $value['Time'],
+    (empty($value['State']) ? '---' : $value['State']),
+    (empty($value['Info']) ? '---' : $value['Info'])
+    );
 }
+
+echo '<b>Список процессов</b>';
 echo $table -> make();
 
+
+return;
 
 /**
  * Sends the query and buffers the result

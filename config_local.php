@@ -12,4 +12,3 @@ define('DB_NAME',       '');
 define('MS_LOG_ALLOW',    1);
 
 define('MSC_LOCAL_USE', 1);
-?>

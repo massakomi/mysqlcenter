@@ -201,6 +201,15 @@ if ($msc->table == '') {
     //$charsetList = getCharsetArray(true);
     $charsetList = getCharsetArray();
 
+    $pageProps = [
+        'url' => $DQuery,
+        'dbInfo' => $dbInfo,
+        'charsets' => $charsetList
+    ];
+    if (isajax()) {
+        return $pageProps;
+    }
+
 	include(MS_DIR_TPL . 'actionsdb.htm.php');
 	
 } else {
@@ -211,12 +220,30 @@ if ($msc->table == '') {
     $charset = null;
     if ($row = mysqli_fetch_object($result)) {
         $charset = substr($row->Collation, 0, strpos($row->Collation, '_'));
+    } else {
+        $msc->notice('Таблица не найдена');
+        return;
     }
-    
 
     //$charsetSelector = getCharsetSelector($charset);
     $charsetList = getCharsetArray();
     $dbs = Server::getDatabases();
+
+    $pageProps = [
+        'url' => $DTQuery,
+        'table' => $_GET['table'],
+        'db' => $_GET['db'],
+        'ai' => $row->Auto_increment ?: '',
+        'checksum' => $row->Checksum ?: '',
+        'comment' => $row->Comment ?: '',
+        'charset' => $row->Collation ? explode('_', $row->Collation)[0] : '',
+        'charsets' => $charsetList,
+        'dbs' => $dbs,
+        'fields' => getFields($msc->table, true),
+    ];
+    if (isajax()) {
+        return $pageProps;
+    }
 
     include(MS_DIR_TPL . 'actions.htm.php');
 }
