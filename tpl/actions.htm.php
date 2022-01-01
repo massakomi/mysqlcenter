@@ -1,11 +1,5 @@
 <div id="root"></div>
 
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="/js/react.development.js" crossorigin></script>
-<script src="/js/react-dom.development.js" crossorigin></script>
-<script src="/js/react-babel.min.js"></script>
-<script type="text/babel" src="/js/components.js"></script>
-
 <script type="text/babel">
 
   class App extends React.Component {
@@ -56,9 +50,9 @@
                 <fieldset className="msGeneralForm">
                   <legend>Переместить таблицы в (база данных.таблица):</legend>
                   <form>
-                    <HtmlSelector data={this.props.dbs} name="newDB" auto="false" value="<?=$msc->db?>" />
+                    <HtmlSelector data={this.props.dbs} name="newDB" auto="false" value={this.props.db} />
                     .
-                    <input name="newName" required type="text" defaultValue="<?php echo GET('table')?>" />
+                    <input name="newName" required type="text" defaultValue={this.props.table} />
                     <input type="submit" onClick={this.tableAction.bind(this, "tableMove")} value="Выполнить!" className="submit" />
                   </form>
                 </fieldset>
@@ -68,7 +62,7 @@
                   <form>
                     <HtmlSelector data={this.props.dbs} value={this.props.db} name="newDB" auto="false" />
                     .
-                    <input name="newName" type="text" required defaultValue="<?php echo GET('table')?>" />
+                    <input name="newName" type="text" required defaultValue={this.props.table} />
                     <input type="submit" onClick={this.tableAction.bind(this, "tableCopyTo")} value="Выполнить!" className="submit" />
                   </form>
                 </fieldset>

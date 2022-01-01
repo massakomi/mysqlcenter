@@ -1,12 +1,4 @@
-
 <div id="root"></div>
-
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="/js/react.development.js" crossorigin></script>
-<script src="/js/react-dom.development.js" crossorigin></script>
-<script src="/js/react-babel.min.js"></script>
-<script type="text/babel" src="/js/components.js"></script>
-
 
 <script type="text/babel">
 
@@ -180,8 +172,8 @@
       return (
           <form action="" method="post" name="rowsForm" id="rowsForm" className="tableFormEdit">
             <input type="hidden" name="action" value="rowsAdd" />
-            <img src="<?php echo MS_DIR_IMG?>nolines_plus.gif" alt="" border="0" onClick={this.addDataRow.bind(this, 1)} title="Добавить поле" style={{cursor: 'pointer'}} />
-            <img src="<?php echo MS_DIR_IMG?>nolines_minus.gif" alt="" border="0" onClick={this.addDataRow.bind(this, -1)} title="Удалить поле" style={{cursor: 'pointer'}} /><br />
+            <img src={`${this.props.dirImage}nolines_plus.gif`} alt="" border="0" onClick={this.addDataRow.bind(this, 1)} title="Добавить поле" style={{cursor: 'pointer'}} />
+            <img src={`${this.props.dirImage}nolines_minus.gif`} alt="" border="0" onClick={this.addDataRow.bind(this, -1)} title="Удалить поле" style={{cursor: 'pointer'}} /><br />
             <table id="tableDataAdd">
                 <tbody>
                 {outerRows}
@@ -280,12 +272,7 @@
 
 <script type="text/babel">
 
-  let options = {
-    'fields': <?=json_encode($fields)?>,
-    'tableData': <?=json_encode($tableData)?>,
-    'msRowsInsert': <?=(int)MS_ROWS_INSERT?>,
-    'isAdd': <?=$isAdd ? 'true' : 'false'?>
-  }
+  let options = <?=json_encode($pageProps)?>;
 
   if (options.isAdd) {
     ReactDOM.render(
@@ -298,25 +285,13 @@
         document.getElementById('root')
     );
   }
-</script>
-
-
-
-
-
-
-
-
-<script language="javascript">
 
   function changeCurrentPage(obj) {
     if (obj.target) {
       obj = obj.target
     }
-    get('rowsForm').action = '?s='+obj.value+'&table=<?php echo $msc->table ?>&db=<?php echo $msc->db ?>';
+    get('rowsForm').action = `?s=${obj.value}&table=${options.table}&db=${options.db}`;
   }
-
-
 
   /**
    * Назначает события функций processNullInput / processNull

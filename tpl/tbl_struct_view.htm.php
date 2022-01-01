@@ -1,23 +1,4 @@
-<style>
-    H4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
-    SPAN.field {font-size:16px; padding:0 5px; border:1px solid #ccc; line-height:150%}
-    TR.info TD {color:#aaa}
-    TABLE.optionstable {empty-cells:show; border-collapse:collapse;}
-    TABLE.optionstable TH {background-color: #eee}
-    TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2px 4px; vertical-align: top;}
-    .grey {color:#aaa}
-</style>
-
-
-
 <div id="root"></div>
-
-<!-- Load React. -->
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
 
 <script type="text/babel">
 
@@ -72,7 +53,7 @@
     render() {
       const listItems = Object.values(this.props.data).map((items, key) => {
         return (
-            <tr key={key + "index"} className="info">
+            <tr key={key + "index"} className="info grey">
               {Object.values(items).map((item, key) => {
 
                 item = this.wrap(this.strip_tags(item))
@@ -140,10 +121,9 @@
     }
   }
 
-  let tables = <?=json_encode($tables)?>
-
+  let options = <?=json_encode($pageProps)?>;
   ReactDOM.render(
-      <App tables={tables} />,
+      <App {...options} />,
       document.getElementById('root')
   );
 

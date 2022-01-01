@@ -1,11 +1,5 @@
 <div id="root"></div>
 
-<!-- Load React. -->
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="/js/react.development.js" crossorigin></script>
-<script src="/js/react-dom.development.js" crossorigin></script>
-<script src="/js/react-babel.min.js"></script>
-
 <script type="text/babel">
 
   class App extends React.Component {
@@ -36,8 +30,8 @@
 
               <br /><br />
 
-              <img src="<?php echo MS_DIR_IMG?>nolines_plus.gif" alt="" border="0" onClick={this.addRow.bind(this, 'tableFormEdit', 'last')} title="Добавить поле" style={{cursor: 'pointer'}}  />
-              <img src="<?php echo MS_DIR_IMG?>nolines_minus.gif" alt="" border="0" onClick={this.removeRow.bind(this, 'tableFormEdit')}  title="Удалить поле" style={{cursor: 'pointer'}} /><br />
+              <img src={`${this.props.dirImage}nolines_plus.gif`} alt="" border="0" onClick={this.addRow.bind(this, 'tableFormEdit', 'last')} title="Добавить поле" style={{cursor: 'pointer'}}  />
+              <img src={`${this.props.dirImage}nolines_minus.gif`} alt="" border="0" onClick={this.removeRow.bind(this, 'tableFormEdit')}  title="Удалить поле" style={{cursor: 'pointer'}} /><br />
 
               <table id="tableFormEdit">
                   <tbody>
@@ -63,10 +57,9 @@
     }
   }
 
-  let fieldRows = <?=json_encode($fieldRows)?>;
-
+  let options = <?=json_encode($pageProps)?>;
   ReactDOM.render(
-      <App fieldRows={fieldRows} keyName="<?=POST('keyName')?>" postType="<?=POST('keyType')?>" />,
+      <App {...options} />,
       document.getElementById('root')
   );
 

@@ -14,6 +14,12 @@
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>page.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>color.white.css" />
     <link rel="shortcut icon" href="/favicon.ico"/>
+
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script src="/js/react.development.js" crossorigin></script>
+    <script src="/js/react-dom.development.js" crossorigin></script>
+    <script src="/js/react-babel.min.js"></script>
+    <script type="text/babel" src="/js/components.js"></script>
 </head>
 <body>
 <div class="pageBlock">
@@ -97,7 +103,7 @@ foreach ($msc->queries as $query) {
 
 <div class="pageBlock">  
 	<?php echo $this->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
-  &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
   <strong>Хост:</strong> <?php echo DB_HOST ?> &nbsp;&nbsp;
   <strong>Пользователь:</strong> <?php echo DB_USERNAME_CUR ?> &nbsp;&nbsp;
 <?php
@@ -116,47 +122,4 @@ if (function_exists('memory_get_peak_usage')) {
 <script type="text/javascript">
   mysqlCenterInit()
 </script>
-
-<?php
-$files = [];
-$a =[...glob('*.php'), ...glob('tpl/*.php'), ...glob('tpl/*.htm')];
-foreach ($a as $k => $v) {
-    $content = file_get_contents($v);
-
-    preg_match_all('~<\?[^=].*?\?>~is', $content.'?>', $b);
-    $lengthPhp = 0;
-    foreach ($b[0] as $r) {
-        $lengthPhp += mb_strlen($r);
-    }
-
-    preg_match_all('~<script?.*?/script>~is', $content, $b);
-    $lengthScripts = 0;
-    foreach ($b[0] as $r) {
-        $lengthScripts += mb_strlen($r);
-    }
-
-    $length = mb_strlen($content);
-    $files []= [
-        'file' => $v,
-        'php' => round($lengthPhp/$length*100, 0),
-        'scripts' => round($lengthScripts/$length*100, 0),
-        'html' =>  round(($length - $lengthPhp - $lengthScripts)/$length*100, 0),
-    ];
-}
-
-echo printTable($files, [
-    'htmlspecialchars' => 0,
-    'class' => 'tt',
-    'headers' => 1,
-    'callbackValue' => function($header, $value) {
-        /*if ($header == 'login') {
-            $value = '<a href="?page=logs&login='.$value.'">'.$value.'</a>';
-        }*/
-        return $value;
-    }
-]);
-?>
-
-
-
 </html>

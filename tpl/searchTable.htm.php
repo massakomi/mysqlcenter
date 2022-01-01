@@ -1,11 +1,5 @@
-<style type="text/css">
-    [name="search_for"], [name="replace_in"], [name="where"] {width: 95%}
-    #search_table select, .mr10 {margin-right: 10px}
-</style>
 
 <div id="search_table"></div>
-
-<script type="text/babel" src="/js/components.js"></script>
 
 <script type="text/babel">
 
@@ -17,6 +11,7 @@
     }
 
     sendGet = (e) => {
+      e.preventDefault();
       window.location = e.target.action + '&where=' + e.target.elements[0].value;
     }
 
@@ -26,19 +21,19 @@
 
     render() {
 
-      let fields = <?=json_encode($fields)?>;
+      let fields = this.props.fields;
       fields.unshift('[поля]')
-      let opers = <?=json_encode(['[операнды]', ' = ', ' != ', ' < ', ' > ', 'IS NULL',
-          ' LIKE "%%" ', ' LIKE "%" ', ' LIKE "" ', ' NOT LIKE "" ',
-          ' REGEXP "^fo" '])?>;
-      let funcs = <?=json_encode(['[функции]', 'UPPER()', 'LOWER()', 'TRIM()', 'SUBSTRING()', 'REPLACE()', 'REPEAT()'])?>
+      let opers = ['[операнды]', ' = ', ' != ', ' < ', ' > ', 'IS NULL',
+        ' LIKE "%%" ', ' LIKE "%" ', ' LIKE "" ', ' NOT LIKE "" ',
+        ' REGEXP "^fo" '];
+      let funcs = ['[функции]', 'UPPER()', 'LOWER()', 'TRIM()', 'SUBSTRING()', 'REPLACE()', 'REPEAT()']
 
       return (
           <div>
             <fieldset className="msGeneralForm">
             <legend>Добавить к условию WHERE</legend>
-            <form action="<?php echo $umaker->make('s', 'tbl_data')?>" method="get" onSubmit={this.sendGet}>
-              <input name="where" type="text" id="where" />
+            <form action={umaker({s: 'tbl_data'})} method="get" onSubmit={this.sendGet}>
+              <input name="where" type="text" id="where" className="w95" />
               <input type="submit" value="Выполнить!" className="submit mr10" style={{display: 'inline'}} />
               <span className="mr10">вставить</span>
 
@@ -56,11 +51,11 @@
                   <tbody>
                   <tr>
                     <td width="100">Найти</td>
-                    <td><input name="search_for" type="text" defaultValue="<?php echo POST('search_for')?>" /></td>
+                    <td><input name="search_for" className="w95" type="text" defaultValue={this.props.search_for} /></td>
                   </tr>
                   <tr>
                     <td width="100">Заменить</td>
-                    <td><input name="replace_in" type="text" defaultValue="<?php echo POST('replace_in')?>" /></td>
+                    <td><input name="replace_in" className="w95" type="text" defaultValue={this.props.replace_in} /></td>
                   </tr>
                   <tr>
                     <td width="100">Поле</td>
@@ -76,9 +71,7 @@
     }
   }
 
-  let options = {
-    'fields': <?=json_encode($fields)?>
-  }
+  let options = <?=json_encode($pageProps)?>;
   ReactDOM.render(
       <SearchTable {...options} />,
       document.getElementById('search_table')

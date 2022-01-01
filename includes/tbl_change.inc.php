@@ -12,77 +12,77 @@
  * @param integer Тип редактирования: 0-update, 1-insert
  */
 function processRowsEdit($editType) {
-	global $msc;
-	if (POST('option') == 'insert') {
-		$editType = 1;
-	}
-	$countInsert = 0;
-	$fields = array_values(getFields($msc->table));
-	if ($editType == 1) {
-		$arrayFields = array();
-		foreach ($fields as $v) {
-			if (POST('option') == 'insert' && $v->Extra != null) {
-				continue;
-			}
-			$arrayFields []= $v->Field;
-		}
-	}
-	$lang = array(
-		array('Данные обновлены', 'Данные добавлены'),
-		array('Ошибка при обновлении ряда', 'Ошибка при добавлении ряда'),
-		array('Ничего не обновилось', 'Ничего не добавилось')
-	);
-	$rows = POST('row');
-	$_POST['cond'] =  POST('cond');
-	foreach ($rows as $numRow => $data) {
-		if ($editType == 0) {
-			$where  = urldecode($_POST['cond'][$numRow]);
-			$result = $msc->query('SELECT * FROM `'.$msc->table.'` WHERE '.$where);
-			$cValue = mysqli_fetch_object($result);
-		}
-		$arrayValues = array();
-		$countEmpty = 0;
-		foreach ($data as $key => $value) {
-			$default = $fields[$key]->Default;
-			if ($default == $value) {
-				$countEmpty ++;
-			}
-			$type = $fields[$key]->Type;
+    global $msc;
+    if (POST('option') == 'insert') {
+        $editType = 1;
+    }
+    $countInsert = 0;
+    $fields = array_values(getFields($msc->table));
+    if ($editType == 1) {
+        $arrayFields = array();
+        foreach ($fields as $v) {
+            if (POST('option') == 'insert' && $v->Extra != null) {
+                continue;
+            }
+            $arrayFields []= $v->Field;
+        }
+    }
+    $lang = array(
+        array('Данные обновлены', 'Данные добавлены'),
+        array('Ошибка при обновлении ряда', 'Ошибка при добавлении ряда'),
+        array('Ничего не обновилось', 'Ничего не добавилось')
+    );
+    $rows = POST('row');
+    $_POST['cond'] =  POST('cond');
+    foreach ($rows as $numRow => $data) {
+        if ($editType == 0) {
+            $where  = urldecode($_POST['cond'][$numRow]);
+            $result = $msc->query('SELECT * FROM `'.$msc->table.'` WHERE '.$where);
+            $cValue = mysqli_fetch_object($result);
+        }
+        $arrayValues = array();
+        $countEmpty = 0;
+        foreach ($data as $key => $value) {
+            $default = $fields[$key]->Default;
+            if ($default == $value) {
+                $countEmpty ++;
+            }
+            $type = $fields[$key]->Type;
             if ($_POST['func'][$numRow][$key] != '') {
                 $value = call_user_func($_POST['func'][$numRow][$key], $value);
                 $type = 'varchar';
             }
-			$isNull = isset($_POST['isNull'][$numRow][$key]);
-			if ($editType == 0) {
-				$field = $fields[$key]->Field;
-				if ($value != $cValue->$field) {
-					$arrayValues []= '`'.$field. '`='.processValueType($value, $type, $isNull);
-				}
-			} else {
-				if (POST('option') == 'insert' && $fields[$key]->Extra != null) {
-					continue;
-				}
-				$arrayValues []= processValueType($value, $type, $isNull);
-			}
-		}
-		if ($countEmpty == count($data) || count($arrayValues) == 0) {
-			continue;
-		}
-		if ($editType == 0) {
-			$sql = 'UPDATE `'.$msc->table.'` SET '.implode(', ', $arrayValues).' WHERE '.$where;
-		} else {
-			$sql = 'INSERT INTO `'.$msc->table.'` (`'.implode('`, `', $arrayFields).'`) VALUES ('.implode(', ', $arrayValues).')';
-		}
-		if ($msc->query($sql)) {
-			$msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
-			$countInsert ++;
-		} else {
-			$msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, $msc->error);
-		}
-	}
-	if ($countInsert == 0) {
-		$msc->addMessage($lang[2][$editType]);
-	}
+            $isNull = isset($_POST['isNull'][$numRow][$key]);
+            if ($editType == 0) {
+                $field = $fields[$key]->Field;
+                if ($value != $cValue->$field) {
+                    $arrayValues []= '`'.$field. '`='.processValueType($value, $type, $isNull);
+                }
+            } else {
+                if (POST('option') == 'insert' && $fields[$key]->Extra != null) {
+                    continue;
+                }
+                $arrayValues []= processValueType($value, $type, $isNull);
+            }
+        }
+        if ($countEmpty == count($data) || count($arrayValues) == 0) {
+            continue;
+        }
+        if ($editType == 0) {
+            $sql = 'UPDATE `'.$msc->table.'` SET '.implode(', ', $arrayValues).' WHERE '.$where;
+        } else {
+            $sql = 'INSERT INTO `'.$msc->table.'` (`'.implode('`, `', $arrayFields).'`) VALUES ('.implode(', ', $arrayValues).')';
+        }
+        if ($msc->query($sql)) {
+            $msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
+            $countInsert ++;
+        } else {
+            $msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, $msc->error);
+        }
+    }
+    if ($countInsert == 0) {
+        $msc->addMessage($lang[2][$editType]);
+    }
 }
 
 /**
@@ -97,29 +97,29 @@ function processRowsEdit($editType) {
  * @param integer Номер поля
  * @param array Массив полей таблицы
  */
-function addRow(&$table, $name, $value, $j, $i, $fields) {
-	if ($value == 'CURRENT_TIMESTAMP') {
-		$value = null;
-	}
-	$null = '&nbsp;';
-	$attr = null;
-	//pre($fields[$name]);
-	$type = str_replace(',', ', ', $fields[$name]->Type);
-	if ($fields[$name]->Null) {
-		// если нулл, то отмечаем
-		$checked = null;
-		if ($value == null && $fields[$name]->Null == 'YES') {
-			$checked = ' checked="checked"';
-		}
-		$null = '<input name="isNull['.$j.']['.$i.']" type="checkbox" value="1"'.$checked.'/>';
-	}
-	$table -> makeRow(
-		'<b class="field">'.$name.'</b><br />'.wordwrap($type, 100, '<br />'),
-		$null,
-		MSC_InsertInput($j, $type, $value, false, $attr, $i),
-		plDrawSelector(array('','md5'), ' name="func['.$j.']['.$i.']"', '', '', false)
-	);
-}
+/*function addRow(&$table, $name, $value, $j, $i, $fields) {
+    if ($value == 'CURRENT_TIMESTAMP') {
+        $value = null;
+    }
+    $null = '&nbsp;';
+    $attr = null;
+    //pre($fields[$name]);
+    $type = str_replace(',', ', ', $fields[$name]->Type);
+    if ($fields[$name]->Null) {
+        // если нулл, то отмечаем
+        $checked = null;
+        if ($value == null && $fields[$name]->Null == 'YES') {
+            $checked = ' checked="checked"';
+        }
+        $null = '<input name="isNull['.$j.']['.$i.']" type="checkbox" value="1"'.$checked.'/>';
+    }
+    $table -> makeRow(
+        '<b class="field">'.$name.'</b><br />'.wordwrap($type, 100, '<br />'),
+        $null,
+        MSC_InsertInput($j, $type, $value, false, $attr, $i),
+        plDrawSelector(array('','md5'), ' name="func['.$j.']['.$i.']"', '', '', false)
+    );
+}*/
 
 /**
  * Возвращает поле формы в зависимости от номера и типа поля
@@ -134,7 +134,7 @@ function addRow(&$table, $name, $value, $j, $i, $fields) {
  * @param string Номер вставляемой записи
  * @return string HTML код поля формы
  */
-function MSC_InsertInput($i, $type, $value=null, $diffLength=true, $attr=null, $j=null) {
+/*function MSC_InsertInput($i, $type, $value=null, $diffLength=true, $attr=null, $j=null) {
     //$value = $type;
     global $msc;
     $length = null;
@@ -150,7 +150,7 @@ function MSC_InsertInput($i, $type, $value=null, $diffLength=true, $attr=null, $
             array_unshift($items[2], '');
             // убираем двойные пробелы
             foreach ($items[2] as $k => $v) {
-            	$items[2][$k] = preg_replace('~\s+~i', ' ', $v);
+                $items[2][$k] = preg_replace('~\s+~i', ' ', $v);
             }
             $value = preg_replace('~\s+~i', ' ', $value);
             $attr = str_replace('onkeyup', 'onchange', $attr);
@@ -208,6 +208,5 @@ function MSC_InsertInput($i, $type, $value=null, $diffLength=true, $attr=null, $
     }
     $value = htmlspecialchars($value);
     return '<input name="row['.$i.']['.$j.']" type="text" size="'.$size.'" value="'.$value.'" class="si"'.$attr.'/>';
-}
+}*/
 
-?>

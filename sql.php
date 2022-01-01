@@ -62,11 +62,6 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             //$sheet = array();
 
             echo '
-            <style>
-            TABLE.optionstable {empty-cells:show; border-collapse:collapse;}
-            TABLE.optionstable TH {background-color: #eee}
-            TABLE.optionstable TH, TABLE.optionstable TD {border:1px solid #ccc; padding: 2px 4px; vertical-align: top;}
-            </style>
             <table class="optionstable">';
             foreach ($data->sheets[$sheet]['cells'] as $cell => $values) {
                 //$sheet [][]= ;
@@ -93,7 +88,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             $mime = '';
             if (POST('compress') == '') {
                 $mime = 'text/plain';
-            } else if (POST('compress') == 'gzip') {
+            } elseif (POST('compress') == 'gzip') {
                 $mime = 'application/x-gzip';
             }
             $s = readZipFile($_FILES['sqlFile']['tmp_name'], $mime);
@@ -102,10 +97,6 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
         if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
             $msc->query("SET NAMES '".POST('sqlFileCharset')."'");
         }
-        //echo substr_count($s, 'ENGINE=InnoDB');
-        $s = str_replace('ENGINE=InnoDB', 'ENGINE=MyISAM', $s);
-        //echo '-'.substr_count($s, 'ENGINE=InnoDB');
-        //exit;
         $log = strlen($s) < 10000;
         execSql(GET('db'), $s, $log);
         if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {

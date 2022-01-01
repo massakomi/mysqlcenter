@@ -202,6 +202,7 @@ if ($msc->table == '') {
     $charsetList = getCharsetArray();
 
     $pageProps = [
+        'db' => $_GET['db'],
         'url' => $DQuery,
         'dbInfo' => $dbInfo,
         'charsets' => $charsetList
@@ -247,4 +248,3 @@ if ($msc->table == '') {
 
     include(MS_DIR_TPL . 'actions.htm.php');
 }
-?>

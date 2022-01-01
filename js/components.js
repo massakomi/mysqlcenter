@@ -32,7 +32,7 @@ class HtmlSelector extends React.Component {
     if (this.props.auto) {
       let value = e.target.options[e.target.selectedIndex].value
       if (value) {
-        console.log(value)
+        window.location = value
       }
     }
   }
@@ -91,4 +91,83 @@ function Messages(props) {
       </table>
     )
   )}</div>
+}
+
+
+/**
+ * (для tbl_data и tbl_compare) Получить массив заголовков для таблицы данных. Заголовки для таблиц данных
+ * формируются особым образом, с переносом.
+ *
+ * @package data view
+ * @param array   Массив SQL объектов-полей (SHOW FIELDS...)
+ * @param boolean С возможностью сортировки или без
+ * @return array  Массив заголовков
+ */
+function getTableHeaders(fields, sortEnabled=true, headWrap=false) {
+  let headers = [];
+  let pk = [];
+  let fieldsCount = Object.keys(fields).length;
+  Object.keys(fields).forEach(function(k) {
+    let v = fields[k]
+    let isWrapped = v.Type.match(/(int|enum|float)/i) !== null
+    if (!headWrap || v.Field.length <= headWrap) {
+      isWrapped = false
+    }
+    if (fieldsCount <= 10) {
+      isWrapped = false
+    }
+    if (new URL(location.href).searchParams.get('fullText') === '1') {
+      isWrapped = false
+    }
+    let u = umaker({s: 'tbl_data', order: v.Field+"-"}, {order: v.Field})
+    let link = v.Field;
+    if (isWrapped) {
+      v.Field = wordwrap(v.Field, headWrap, "\n", true);
+      v.Field = v.Field.split("\n")
+      let f = []
+      let i = 0
+      for (let x of v.Field) {
+        f.push(<span key={i}>{x}<br /></span>)
+        i ++
+      }
+      v.Field = f
+    }
+    if (sortEnabled) {
+      link = <a href={u} className='sort' title='Сортировать' key={k}>{v.Field}</a>
+    }
+    headers.push(link)
+  })
+  return headers;
+}
+/**
+ * (для tbl_data и tbl_compare) Обрабатывает значения полей базы данных перед выводом их в виде таблицы.
+ * Обработка заключается в: для текстовых - htmlspecialchars+обрезка, для даты - отображение в поле id=tblDataInfoId
+ * для нулевых значений - значение возвращается оформленным курсивом.
+ *
+ * @package data view
+ * @param string Значение
+ * @param string Тип поля
+ * @return string Обработанное значение
+ */
+function processRowValue(v, type, textCut) {
+  if (v === null) {
+    v = <i>NULL</i>
+  } else {
+    // Тексты
+    if (type.match(/(blob|text|char)/i)) {
+      v = htmlspecialchars(v)
+    }
+    if (v.length > textCut) {
+      let fullText = new URL(location.href).searchParams.get('fullText');
+      if (fullText == '') {
+        v = v.substr(0, textCut)
+      }
+    }
+    // дата
+    if (type.match(/(int)/i) && v.length == 10 && $.isNumeric(v)) {
+      //$e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
+      //$v = '<span className="dateString"'.$e.'>'.$v.'</span>';
+    }
+  }
+  return v
 }

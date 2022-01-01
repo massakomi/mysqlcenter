@@ -1,11 +1,5 @@
 <div id="root"></div>
 
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="/js/react.development.js" crossorigin></script>
-<script src="/js/react-dom.development.js" crossorigin></script>
-<script src="/js/react-babel.min.js"></script>
-
-
 <script type="text/babel">
 
   class App extends React.Component {
@@ -20,7 +14,7 @@
           <div>
             <b>1. Выберите таблицу, в которую импортируются данные</b><br />
             <ul>
-              {Object.values(this.props.data).map((table) =>
+              {Object.values(this.props.tables).map((table) =>
                   <li key={table}>{table == this.props.table ?
                       <b style={{fontSize: '16px', color: 'red'}}>{table}</b> :
                       <a href={this.props.url.replace('%table%', table)}>{table}</a> }
@@ -45,10 +39,10 @@
     }
   }
 
-  let data = <?=json_encode($tables_array)?>
+  let options = <?=json_encode($pageProps)?>;
 
   ReactDOM.render(
-      <App data={data} table="<?=GET('table')?>" url="<?=$umaker->make('table', '%table%')?>" />,
+      <App {...options} />,
       document.getElementById('root')
   );
 

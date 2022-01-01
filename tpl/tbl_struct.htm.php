@@ -1,12 +1,5 @@
 <div id="root"></div>
 
-<!-- Load React. -->
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
-
 <script type="text/babel">
 
 
@@ -85,7 +78,7 @@
              <td>{v.Default}</td>
              <td>{key}</td>
              <td>{v.Extra}</td>
-             <td><a href={"?s=tbl_add&field="+encodeURIComponent(v.Field)} title="Редактировать ряд"><img src={this.props.dirImage + "edit.gif"} alt="" /></a></td>
+             <td><a href={`?s=tbl_add&table=${this.props.table}&field=`+encodeURIComponent(v.Field)} title="Редактировать ряд"><img src={this.props.dirImage + "edit.gif"} alt="" /></a></td>
              <td><a href="#" onClick={this.deleteField.bind(this, v.Field)} title="Удалить ряд"><img src={this.props.dirImage + "close.png"} alt="" /></a></td>
           </tr>
         )
@@ -248,7 +241,3 @@
   );
 
 </script>
-
-<style>
-    .print_r {color:#666; border:1px solid #ccc; padding:10px;}
-</style>

@@ -59,10 +59,6 @@
 
   class TableList extends React.Component {
 
-    /*checkboxer = () => {
-
-    }*/
-
     image(src) {
       return <img src={this.props.dirImage + src} alt="" />
     }
@@ -93,7 +89,7 @@
       this.sumSize += parseInt(size);
       this.sumRows += parseInt(table.Rows);
       // Сборка значения рядов
-      let msquery = "db=<?=$msc->db?>&table="+table.Name;
+      let msquery = `db=${this.props.db}&table=${table.Name}`;
       let idRow = "row" + sumTable;
       let idChbx = 'table_' + table.Name
       let engine = table.Engine === 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
@@ -102,8 +98,8 @@
           <tr key={table.Name} id={idRow}>
             <td id={'row'+sumTable+'-0'}><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" onClick={checkboxer.bind(this, sumTable, '#row')} /></td>
             <td id={'row'+sumTable+'-1'} className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name, 'row'+sumTable+'-1')}>{valueName}</label></td>
-            <td id={'row'+sumTable+'-2'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_data'} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
-            <td id={'row'+sumTable+'-3'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_struct'} title="Структура таблицы">{this.image("generate.png")}</a></td>
+            <td id={'row'+sumTable+'-2'}><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
+            <td id={'row'+sumTable+'-3'}><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{this.image("generate.png")}</a></td>
             <td id={'row'+sumTable+'-4'}>
               <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Очистить таблицу">{this.image("delete.gif")}</a>
             </td>
@@ -111,7 +107,7 @@
               <a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Удалить таблицу">{this.image("close.png")}</a>
             </td>
             <td id={'row'+sumTable+'-6'} className="rig">{table.Rows}</td>
-            <td id={'row'+sumTable+'-7'} className="rig">{this.formatSize(size)}</td>
+            <td id={'row'+sumTable+'-7'} className="rig">{formatSize(size)}</td>
             <td id={'row'+sumTable+'-8'}>{updateTime}</td>
             <td id={'row'+sumTable+'-9'} className="num">{table.Auto_increment}</td>
             <td id={'row'+sumTable+'-10'}><span>{engine}</span></td>
@@ -120,22 +116,12 @@
       )
     }
 
-    formatSize(bytes) {
-      if (bytes < Math.pow(1024, 1)) {
-        return bytes + " b";
-      } else if (bytes < Math.pow(1024, 2)) {
-        return (bytes / Math.pow(1024, 1)).toFixed(2) + ' Kb';
-      } else if (bytes < Math.pow(1024, 3)) {
-        return (bytes / Math.pow(1024, 2)).toFixed(2) + ' Mb';
-      } else if (bytes < Math.pow(1024, 4)) {
-        return (bytes / Math.pow(1024, 3)).toFixed(2) + ' Gb';
-      }
-    }
+
 
     renameTable(tableOld, id, e) {
       let newName = prompt('Новое имя', tableOld)
       if (newName) {
-        let q = 'db=<?=$msc->db?>&s=tbl_list&table='+tableOld+'&newName=' + newName + '&id='+id;
+        let q = `db=${this.props.db}&s=tbl_list&table=${tableOld}&newName=${newName}&id=${id}`;
         msQuery('tableRename', q);
       }
     }
@@ -148,7 +134,7 @@
       let trs = tables.map((table, key) => this.renderRow(table, key))
 
       return (
-          <table className="contentTable">
+          <table className="contentTable interlaced">
             <thead>
             <tr>
               <th>&nbsp;</th>
@@ -174,7 +160,7 @@
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td className="rig">{Number(this.sumRows).toFixed(0)}</td>
-              <td className="rig">{this.formatSize(this.sumSize)}</td>
+              <td className="rig">{formatSize(this.sumSize)}</td>
               <td>&nbsp;</td>
               <td className="num">&nbsp;</td>
               <td>&nbsp;</td>
@@ -187,14 +173,7 @@
 
 </script>
 
-
 <div id="root"></div>
-
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="/js/react.development.js" crossorigin></script>
-<script src="/js/react-dom.development.js" crossorigin></script>
-<script src="/js/react-babel.min.js"></script>
-
 
 <script type="text/babel">
 
@@ -254,7 +233,7 @@
               <input type="hidden" name="tableMulty" value="1" />
               <input type="hidden" name="action" value="" />
 
-              <TableList tables={this.state.tables} dirImage={this.props.dirImage} />
+              <TableList tables={this.state.tables} dirImage={this.props.dirImage} db={this.props.db} />
 
               <div className="chbxAction">
                 <img src={this.image("arrow_ltr.png")} alt=""  />
@@ -307,12 +286,3 @@
   );
 
 </script>
-
-
-<style type="text/css">
-    form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left:3px}
-    .links-block {padding:10px 0; margin-bottom:10px; font-size:14px;}
-    .links-block a + a {margin-left: 10px}
-    table.contentTable tr:nth-child(odd) {background-color: #eee;}
-</style>
-

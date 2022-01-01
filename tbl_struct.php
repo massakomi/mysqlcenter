@@ -47,6 +47,17 @@ if (GET('action') == 'add_key') {
             $fieldRows [$field->Field]= "$field->Field [$field->Type]";
         }
         $msc->pageTitle = 'Добавить ключи к таблице "'.$msc->table.'"';
+
+        $pageProps = [
+            'fieldRows' => $fieldRows,
+            'keyName' => POST('keyName'),
+            'postType' => POST('keyType'),
+            'dirImage' => MS_DIR_IMG,
+        ];
+        if (isajax()) {
+            return $pageProps;
+        }
+
         include 'tpl/tbl_key_add.htm.php';
         return;
     }

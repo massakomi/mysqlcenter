@@ -131,74 +131,19 @@ if ($msc->page == 'exportSp') {
     if ($drawForm) {
     // Отображение формы экспорта
         $cSet = $msct->getSetInfo(GET('set'));
-
-        //$table = new Table('contentTable');
-        //$table->setInterlace('', '#eeeeee');
-        //$table->makeRowHead('Таблица', 'Структ', 'Данные', 'Поле', 'Диапазон', 'WHERE');
         $result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db);
-        //$i = 0;
         $data = [];
         while ($o = mysqli_fetch_object($result)) {
             $o->Fields = getFields($o->Name);
             $data []= $o;
-            /*$tprefix = substr($o->Name, 0, strpos($o->Name, '_', $start));
-            $checkedStruct = null;
-            $checkedData = ' checked';
-            $valueMax = null;
-            $where = null;
-
-            // Определение видимости таблицы
-            if (!array_key_exists($o->Name, $cSet)) {
-                $checkedData = null;
-                //continue;
-            } else {
-                // Определение необхдоимости экспорта данных и стр-ры
-                if ($cSet[$o->Name]->struct == 1) {
-                    $checkedStruct = ' checked';
-                }
-                if ($cSet[$o->Name]->data != 1) {
-                    $checkedData = null;
-                }
-                // Определение верхнего значение PK
-                $valueMax = $cSet[$o->Name]->pk_top == 0 ? null : $cSet[$o->Name]->pk_top;
-                $where    = $cSet[$o->Name]->where_sql;
-            }
-
-            // Определение ключевого поля и создание массива полей
-            $fields = getFields($o->Name);
-            $pKey = '';
-            $fnames = array();
-            foreach ($fields as $k => $v) {
-                $fnames []= $v->Field;
-                if (strchr($v->Key, 'PRI') && $pKey == 0) {
-                    $pKey = $v->Field;
-                }
-            }
-            if (isset($primaryFields[$o->Name])) {
-                $pKey = $primaryFields[$o->Name];
-            }
-            // Создание ряда
-            $valueTable = $o->Name;
-            if ($checkedData == null && $checkedStruct == null) {
-                $valueTable = '<span style={{color: \'#aaa\'}}>'.$valueTable.'</span>';
-            } else {
-                $valueTable = '<b>'.$valueTable.'</b>';
-            }
-            $i ++;
-            $table->makeRow(array(
-                '<label htmlFor="row'.$i.'">'.$valueTable.'</label>',
-                '<input name="struct['.$i.']" type="checkbox" value="1" id="row'.$i.'" className="cb"'.$checkedStruct.' /><input name="table['.$i.']" type="hidden" value="'.$o->Name.'" />',
-                '<input name="data['.$i.']" type="checkbox" value="1" id="row2'.$i.'" className="cb"'.$checkedData.' />',
-                '<select name="field['.$i.']" defaultValue="'.$pKey.'">'.draw_array_options($fnames, '').'</select>',
-                '<input name="from['.$i.']" type="text" size="5" defaultValue="1" /> - <input name="to['.$i.']" type="text" size="5" defaultValue="'.$valueMax.'" />',
-                '<input name="where['.$i.']" type="text" size="40" defaultValue="'.$where.'" />'
-            ));
-            */
         }
         $pageProps = [
+            'dirImage' => MS_DIR_IMG,
+            'structChecked' => true,
             'data' => $data,
             'configSet' => $cSet,
-            'setsArray' => $msct->getSetsArray()
+            'setsArray' => $msct->getSetsArray(),
+            'fields' => $_GET['table'] ? getFields($_GET['table'], true) : [],
         ];
         if (isajax()) {
             return $pageProps;
@@ -294,10 +239,13 @@ USE `'.$db.'`;'."\r\n"."\r\n";
             $optionsData = $dbAll;
         }
         $pageProps = [
+            'dirImage' => MS_DIR_IMG,
+            'structChecked' => $structChecked,
             'whereCondition' => $whereCondition,
             'selectMultName' => $selectMultName,
             'optionsData' => $optionsData,
-            'optionsSelected' => $optionsSelected
+            'optionsSelected' => $optionsSelected,
+            'fields' => $_GET['table'] ? getFields($_GET['table'], true) : [],
         ];
         if (isajax()) {
             return $pageProps;

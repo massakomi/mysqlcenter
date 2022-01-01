@@ -8,7 +8,7 @@
  */
 
 if (!defined('DIR_MYSQL')) {
-	exit('Hacking attempt');
+    exit('Hacking attempt');
 }
 
 /**
@@ -16,13 +16,13 @@ if (!defined('DIR_MYSQL')) {
  *
  * @param array Массив в виде простых чисел (сколько полей надо создать), либо пустое значение, если из POST
  */
-function MSC_DrawFields($array='') {
+/*function MSC_DrawFields($array='') {
     global $msc;
     
     // получение массива из post
     if (empty($array)) {
-       	$array = array();
-       	foreach ($_POST['name'] as $key => $name) {
+        $array = array();
+        foreach ($_POST['name'] as $key => $name) {
             if (empty($name)) {
                 continue;
             }
@@ -174,7 +174,7 @@ function MSC_DrawFields($array='') {
         " id='tableFormEditTr$k'");
     }
     return $table->make();
-}
+}*/
 
 // Получаем начальную инфо о полях таблицы
 $fields = getFields($msc->table);
@@ -183,9 +183,9 @@ $fields = getFields($msc->table);
 $names = POST('name');
 if (is_array($names) && count($names) > 0 && POST('action') != '') {
     // Ключи
-	$uk = isset($_POST['uni']) ? $_POST['uni'] : array();
-	$mk = isset($_POST['mul']) ? $_POST['mul'] : array();
-	if (POST('action') == 'tableAddEnd' && is_numeric(POST('primaryKey'))) {
+    $uk = isset($_POST['uni']) ? $_POST['uni'] : array();
+    $mk = isset($_POST['mul']) ? $_POST['mul'] : array();
+    if (POST('action') == 'tableAddEnd' && is_numeric(POST('primaryKey'))) {
         // при добавлении таблицы вместо имён полей у нас только индексы полей, которые создаются в таблице
         // поэтому приходится создавать массивы ключей самостоятельно
         $primaryKey = $names[POST('primaryKey')];
@@ -201,27 +201,27 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         }
     } else {
         $primaryKey = POST('primaryKey');
-    	$uniKeys = $uk;
-    	$mulKeys = $mk;
+        $uniKeys = $uk;
+        $mulKeys = $mk;
     }
-	$fieldsDefFull  = array(); // field    definition
-	$fieldsDefEdit  = array(); // oldfield definition
-	$newKeys        = array();
-	foreach ($_POST as $k => $v) {
+    $fieldsDefFull  = array(); // field    definition
+    $fieldsDefEdit  = array(); // oldfield definition
+    $newKeys        = array();
+    foreach ($_POST as $k => $v) {
         $_POST [$k]= POST($k);
-	}
-	foreach ($names as $k => $name) {
-		if (empty($name)) {
-			continue;
-		}
-		$type    = $_POST['ftype'][$k];
-		$null    = (isset($_POST['isNull'][$k]));
-		$default = $_POST['default'][$k];
-		$extra   = (isset($_POST['auto'][$k])) ? 'AUTO_INCREMENT' : null;
-		$extra  .= $_POST['attr'][$k] != '' ? ' '.$_POST['attr'][$k] : null;
-		$length  = $_POST['length'][$k];
-		$define  = getFieldDefinition($type, $null, $default, $extra, $length);
-		if (empty($define)) {
+    }
+    foreach ($names as $k => $name) {
+        if (empty($name)) {
+            continue;
+        }
+        $type    = $_POST['ftype'][$k];
+        $null    = (isset($_POST['isNull'][$k]));
+        $default = $_POST['default'][$k];
+        $extra   = (isset($_POST['auto'][$k])) ? 'AUTO_INCREMENT' : null;
+        $extra  .= $_POST['attr'][$k] != '' ? ' '.$_POST['attr'][$k] : null;
+        $length  = $_POST['length'][$k];
+        $define  = getFieldDefinition($type, $null, $default, $extra, $length);
+        if (empty($define)) {
             $msc->addMessage('Не удалось создать поле "'.$name.'". Не указаны дополнительные параметры поля',
                 '', MS_MSG_FAULT);
             unset($names[$k]);
@@ -237,68 +237,63 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
                 $define .= ' AFTER `'.$after.'`';
             }
         }
-		$fieldsDefFull []= "`$name` $define";
-		if (POST('action') == 'fieldsEditEnd') {
-			$fieldsDefEdit [$_POST['oldname'][$k]]= '`'.$name .'` '. $define;
-		}
-		// ключи
+        $fieldsDefFull []= "`$name` $define";
+        if (POST('action') == 'fieldsEditEnd') {
+            $fieldsDefEdit [$_POST['oldname'][$k]]= '`'.$name .'` '. $define;
+        }
+        // ключи
         if (array_key_exists($name, $uniKeys)) {
             $newKeys []= "$name UNI ".$uniKeys[$name];
         }
         if (array_key_exists($name, $mulKeys)) {
             $newKeys []= "$name MUL ".$mulKeys[$name];
-		}
-	}
-	// TODO обработка SET ENUM полей
-    //echo '<pre>'; print_r($fieldsDefFull); echo '</pre>'; exit;
-	/*pre($_POST);
-	pre($uniKeys);
-	pre($mulKeys);
-	exit;*/
-	
-	// создание запроса на сздание таблицы
-	if (POST('action') == 'tableAddEnd') {
-		$sql  = "CREATE TABLE `" . POST('table_name') . "` (\r\n  ";
-		$sql .= implode(",\r\n  ", $fieldsDefFull);
-		if ($primaryKey != '') {
-			$sql .= ",\r\n  PRIMARY KEY ($primaryKey)";
-		}
-		if (count($uniKeys) > 0) {
-			$sql .= ",\r\n  UNIQUE (" . implode(', ', $uniKeys) . ")";
-		}
-		if (count($mulKeys) > 0) {
-			$sql .= ",\r\n  INDEX (" . implode(', ', $mulKeys) . ")";
-		}
-		$sql .= "\r\n)";
-		if ($msc->query($sql)) {
-			$msc->addMessage('Таблица '.POST('table_name').' создана', $sql, MS_MSG_SUCCESS);
-			$msc->table = POST('table_name');
-			$msc->pageTitle = 'Обзор таблицы ' . POST('table_name');
-			include_once(DIR_MYSQL . 'tbl_data.php');
-			return null;
-		} else {
-			$msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, mysqli_error());
-		}
-	}
-	// создание запроса на изменение полей
-	if (POST('action') == 'fieldsEditEnd') {
-		// определение полей
-		$a = array();
-		foreach ($fieldsDefEdit as $oldFieldName => $def) {
+        }
+    }
+    // TODO обработка SET ENUM полей
+
+    // создание запроса на сздание таблицы
+    if (POST('action') == 'tableAddEnd') {
+        $sql  = "CREATE TABLE `" . POST('table_name') . "` (\r\n  ";
+        $sql .= implode(",\r\n  ", $fieldsDefFull);
+        if ($primaryKey != '') {
+            $sql .= ",\r\n  PRIMARY KEY ($primaryKey)";
+        }
+        if (count($uniKeys) > 0) {
+            $sql .= ",\r\n  UNIQUE (" . implode(', ', $uniKeys) . ")";
+        }
+        if (count($mulKeys) > 0) {
+            $sql .= ",\r\n  INDEX (" . implode(', ', $mulKeys) . ")";
+        }
+        $sql .= "\r\n)";
+        if ($msc->query($sql)) {
+            $msc->addMessage('Таблица '.POST('table_name').' создана', $sql, MS_MSG_SUCCESS);
+            $msc->table = POST('table_name');
+            $msc->pageTitle = 'Обзор таблицы ' . POST('table_name');
+            include_once(DIR_MYSQL . 'tbl_data.php');
+            return null;
+        } else {
+            $msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, mysqli_error());
+        }
+    }
+    // создание запроса на изменение полей
+    if (POST('action') == 'fieldsEditEnd') {
+        // определение полей
+        $a = array();
+        foreach ($fieldsDefEdit as $oldFieldName => $def) {
             $oldDefinition = "`$oldFieldName` ".getFieldDefinition($fields[$oldFieldName]);
             //echo "<br />$oldDefinition == $def";exit;
             if ($oldDefinition == $def) {
                 continue;
             }
-			$a []= ' CHANGE `'.$oldFieldName.'` '. $def;
-		}
-		$sql  = count($a) == 0 ? '' : 'ALTER TABLE `'.GET('table') . "`\r\n" . implode(",\r\n", $a);
-		// ключи		
+            $a []= ' CHANGE `'.$oldFieldName.'` '. $def;
+        }
+        $sql  = count($a) == 0 ? '' : 'ALTER TABLE `'.GET('table') . "`\r\n" . implode(",\r\n", $a);
+        // ключи
         $currentKeys = array();
         $a = getTableKeys($msc->table);
         $currentPrimaryKey = '';
-		foreach ($a as $fieldName => $currentKeyNames) {
-    		foreach ($currentKeyNames as $k => $currentKeyName) {
+        foreach ($a as $fieldName => $currentKeyNames) {
+            foreach ($currentKeyNames as $k => $currentKeyName) {
                 if ($currentKeyName != 'PRI') {
                     if (!in_array($fieldName, $names)) {
                         continue;
@@ -309,29 +304,25 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
                 }
             }
         }
-        //pre($newKeys);
-        //pre($currentKeys);
         // удаляем пересекающиеся ключи
-		foreach ($currentKeys as $currentKey) {
+        foreach ($currentKeys as $currentKey) {
             if (in_array($currentKey, $newKeys)) {
                 unset($newKeys[array_search($currentKey, $newKeys)]);
                 unset($currentKeys[array_search($currentKey, $currentKeys)]);
             }
         }
-        //pre($newKeys);
-        //pre($currentKeys);
         $sql2 = array();
-		foreach ($currentKeys as $k => $removeKey) {
+        foreach ($currentKeys as $k => $removeKey) {
             list($fieldName, $removeKeyType, $removeKeyName) = explode(' ', $removeKey);
             $sql2 []= 'ALTER TABLE `'.GET('table').'` DROP KEY `'.$removeKeyName.'`';
         }
-		foreach ($newKeys as $k => $addKey) {
+        foreach ($newKeys as $k => $addKey) {
             list($fieldName, $addKeyType, $addKeyName) = explode(' ', $addKey);
             $sql2 []= 'ALTER TABLE `'.GET('table').'` ADD '.($addKeyType=='UNI'?'UNIQUE':'INDEX').' (`'.$fieldName.'`)';
         }
         if ($currentPrimaryKey != $primaryKey) {
             if ($currentPrimaryKey != '') {
-    			if ($primaryKey == '') {
+                if ($primaryKey == '') {
                     $drop = false;
                     // если в числе обновлённых полей нет текущего primary key, то не удалям ключ
                     foreach ($names as $k => $name) {
@@ -345,156 +336,143 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
                 } else {
                     dropPrimaryKey(GET('table'));
                 }
-			}			
-			if ($primaryKey != '') {
+            }
+            if ($primaryKey != '') {
                 $sql2 []= 'ALTER TABLE `'.GET('table').'` ADD PRIMARY KEY (`'.$primaryKey.'`)';
             }
-		}
-  /*
-        pre($currentKeys);
-        pre($newKeys);
-        echo "$currentPrimaryKey != $primaryKey";
-		pre($sql2);
-		exit;*/
-		foreach ($sql2 as $s) {
-    		if ($msc->query($s)) {
-    			$msc->addMessage('Ключи изменены', $s, MS_MSG_SUCCESS);
-			} else {
-    			$msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, mysqli_error());
-			}
-		}
-		// выполнение
-		if ($sql != '') {
-    		if ($msc->query($sql)) {
-    			$msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-    			include DIR_MYSQL . 'tbl_struct.php';
-    			return null;
-    		} else {
-    			$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
-    		}
-        } else {
-    		$msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
-			include DIR_MYSQL . 'tbl_struct.php';
-			return null;
         }
-	}
-	// создание запроса на добавление
-	if (POST('action') == 'fieldsAddEnd') {
-		// определение полей
-		$a = array();
-		foreach ($fieldsDefFull as $def) {
-			$a []= ' ADD COLUMN ' . $def . $afterSql;
-		}
-		$sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
-		// ключи
-		$oldFields = getFields(GET('table'));
-		// выполнение
-		if ($msc->query($sql)) {
-			include DIR_MYSQL . 'tbl_struct.php';
-			$msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-			return null;
-		} else {
-			$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
-		}
-	}
-}
 
-// HTML форма
-// Создание таблицы
-if ($msc->table == null) {
-   	$fieldsCount = isset($_POST['name']) ? count($_POST['name']) : POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
-    if (is_array(POST('name'))) {
-    	$cont = MSC_DrawFields();
-    } else {
-    	$cont = MSC_DrawFields(range(0, $fieldsCount - 1));
+        foreach ($sql2 as $s) {
+            if ($msc->query($s)) {
+                $msc->addMessage('Ключи изменены', $s, MS_MSG_SUCCESS);
+            } else {
+                $msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, mysqli_error());
+            }
+        }
+        // выполнение
+        if ($sql != '') {
+            if ($msc->query($sql)) {
+                $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+                include DIR_MYSQL . 'tbl_struct.php';
+                return null;
+            } else {
+                $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
+            }
+        } else {
+            $msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
+            include DIR_MYSQL . 'tbl_struct.php';
+            return null;
+        }
     }
-	$msc->pageTitle = "Добавить таблицу в базу данных $msc->db";
-	include(MS_DIR_TPL . 'tbl_edit.htm.php');
-	
-// Добавление полей
-} elseif (POST('action') == 'fieldsAdd') {
-	$fieldsCount = isset($_POST['name']) ? count($_POST['name']) : POST('fieldsNum', GET('fieldsNum', MS_FIELDS_COUNT));
-  if (is_array(POST('name'))) {
-  	$cont = MSC_DrawFields();
-  } else {
-  	$cont = MSC_DrawFields(range(0, $fieldsCount - 1));
-  }
-	$msc->pageTitle = 'Добавить поля';
-	if (POST('afterOption') == 'start') {
-		$afterSql = 'FIRST';
-	} else if (POST('afterOption') == 'field') {
-		$afterSql = 'AFTER `'.POST('afterField').'`';
-	}
-	include(MS_DIR_TPL . 'tbl_edit.htm.php');
+    // создание запроса на добавление
+    if (POST('action') == 'fieldsAddEnd') {
+        // определение полей
+        $a = array();
+        foreach ($fieldsDefFull as $def) {
+            $a []= ' ADD COLUMN ' . $def . $afterSql;
+        }
+        $sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
+        // ключи
+        $oldFields = getFields(GET('table'));
+        // выполнение
+        if ($msc->query($sql)) {
+            include DIR_MYSQL . 'tbl_struct.php';
+            $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+            return null;
+        } else {
+            $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
+        }
+    }
 
+}
 // Удаление множества полей через POST (удаление одиночных полей через ajax)
-} elseif (POST('action') == 'fieldsDelete' && isset($_POST['field']) && count($_POST['field']) > 0) {
+if (POST('action') == 'fieldsDelete' && isset($_POST['field']) && count($_POST['field']) > 0) {
     // если в таблице осталось только 1 поле, то удаляем таблицу
     if (count($fields) == 1) {
-        $sql = 'DROP TABLE `'.$msc->table.'`';
+        $sql = 'DROP TABLE `' . $msc->table . '`';
     } else {
-        $sql = 'ALTER table `'.$msc->table.'` DROP `' . implode('`, DROP `', $_POST['field']) . '`';
+        $sql = 'ALTER table `' . $msc->table . '` DROP `' . implode('`, DROP `', $_POST['field']) . '`';
     }
-	if ($msc->query($sql)) {
+    if ($msc->query($sql)) {
         if (count($fields) == 1) {
             include DIR_MYSQL . 'tbl_list.php';
         } else {
             include DIR_MYSQL . 'tbl_struct.php';
         }
-		$msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-		return null;
-	} else {
-		$msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
-	}	
-
-// Редактирование полей или таблицы	
-} else {
-	// редактируемые поля
-	$edited = array();
-	if (GET('field') != '') {
-		$edited []= stripslashes(urldecode(GET('field')));
-	} elseif (isset($_POST['field']) && count($_POST['field']) > 0) {
-		$edited = $_POST['field'];
-	}
-    // собираем только те поля, которые реально существуют в таблице
-	$array = array();
-	foreach ($fields as $row) {
-		if (count($edited) > 0) {
-			if (in_array($row->Field, $edited)) {
-				$array []= $row;
-			}
-			continue;
-		}
-		$array []= $row;
-	}
-	if (count($array) == 0) {
-        redirect('?s=tbl_List');
+        $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+        return null;
+    } else {
+        $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_error());
     }
-	$cont = MSC_DrawFields($array);
-	$msc->pageTitle = 'Редактировать структуру';
-	include(MS_DIR_TPL . 'tbl_edit.htm.php');
+    // TODO непонятно что значит через ajax - как этот код там используется
+   //return;
 }
-?>
-<script language="javascript">
-// выбрать в каждом селекторе такое значение, которое равно титлу селектора
-var a = document.getElementsByTagName("select");
-var founded = false;
-for (var i = 0; i < a.length; i ++) {
-    if (a[i].id.match(/typeSelectorId/)) {
-        t = a[i].title;
-        for (var j = 0; j < a[i].options.length; j ++) {
-            if (a[i].options[j].text == t.toUpperCase()) {
-                a[i].options[j].selected = true;
-                founded = true;
-            }
+
+
+// HTML форма
+// Создание таблицы или добавление полей
+if ($msc->table == null || POST('action') == 'fieldsAdd') {
+    $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
+    if (is_array(POST('name'))) {
+        $cont = MSC_DrawFields();
+    } else {
+        $array = range(0, $fieldsCount - 1);
+        $cont = MSC_DrawFields($array);
+    }
+    $msc->pageTitle = "Добавить таблицу в базу данных $msc->db";
+    // Добавление полей
+    if (POST('action') == 'fieldsAdd') {
+        $msc->pageTitle = 'Добавить поля';
+        if (POST('afterOption') == 'start') {
+            $afterSql = 'FIRST';
+        } elseif (POST('afterOption') == 'field') {
+            $afterSql = 'AFTER `'.POST('afterField').'`';
         }
     }
+
+// Редактирование полей или таблицы
+} else {
+
+    // TODO весь этот блок тоже в js
+    // редактируемые поля
+    $edited = array();
+    if (GET('field') != '') {
+        $edited []= stripslashes(urldecode(GET('field')));
+    } elseif (isset($_POST['field']) && count($_POST['field']) > 0) {
+        $edited = $_POST['field'];
+    }
+    // собираем только те поля, которые реально существуют в таблице
+    $array = array();
+    foreach ($fields as $row) {
+        if (count($edited) > 0) {
+            if (in_array($row->Field, $edited)) {
+                $array []= $row;
+            }
+            continue;
+        }
+        $array []= $row;
+    }
+    if (count($array) == 0) {
+        redirect('?s=tbl_List');
+    }
+
+    $cont = MSC_DrawFields($array);
+    $msc->pageTitle = 'Редактировать структуру';
 }
-// Очищает все отмеченные ключи
-function clearKeys(k) {
-    get('key1'+k).checked = false;
-    get('key2'+k).checked = false;
-    get('key3'+k).checked = false;
-    return false;
+
+$pageProps = [
+    'dirImage' => MS_DIR_IMG,
+    'action' => GET('s')=='tbl_add'&&empty($_POST)&&!isset($_GET['field'])?'tableAddEnd':(POST('action') == 'fieldsAdd'?'fieldsAddEnd':'fieldsEditEnd'),
+    'afterSql' => $afterSql,
+    'showTableName' => POST('action') != 'fieldsAdd'&&!isset($_GET['field'])&&$_POST['action'] != 'fieldsEdit',
+    'tableName' => POST('tableName') ?: $msc->table,
+    'array' => $array,
+    'post' => $_POST,
+    'keys' => getTableKeys($msc->table),
+    'fields' => getFields($msc->table, true)
+];
+if (isajax()) {
+    return $pageProps;
 }
-</script>
+
+include(MS_DIR_TPL . 'tbl_edit.htm.php');

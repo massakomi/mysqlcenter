@@ -66,7 +66,7 @@ $export = new MySQLExport();
 $export->setComments(0);
 $export->setOptionsStruct(0, $addAuto=0, 0);
 $exportDifference = array();
-$tableObject = new Table('contentTable');
+$tableObject = new Table('contentTable anone');
 $tableObject->setHeadContent($customHeader);
 $tableObject->setColClass('', 'font-weight:bold','b','b','r','r','r','r','r','r','r');
 foreach ($tablesArray as $tableNum => $table) {
@@ -146,12 +146,6 @@ foreach ($tablesArray as $tableNum => $table) {
 
 ?>
 
-<style>
-.contentTable .r {text-align:right}
-.contentTable .b { font-size:14px;}
-.contentTable .diff TD{ background-color:#FF3333; color:#FFFFFF}
-.contentTable A { text-decoration:none}
-</style>
 <form method="post" action="?s=tbl_compare">
     <input type="hidden" name="tableComparsion" value="1">
     <input type="hidden" name="databases" value="<?php echo implode(',', $databases)?>">

@@ -156,16 +156,6 @@ function tableCompare($databases, $table)
 
 ?>
 
-<style>
-    .contentTable .e {
-        background-color: #afa
-    }
-
-    .contentTable .n {
-        background-color: #faa
-    }
-</style>
-
 <?php
 foreach ($tables as $k => $table) {
     echo tableCompare($databases, $table);

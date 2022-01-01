@@ -1,16 +1,6 @@
-<?php
-include DIR_MYSQL . 'tpl/exportOptions.htm.php';
-?>
-
+<script src="/js/component_exportOptions.js"></script>
 
 <div id="root"></div>
-
-<!-- Load React. -->
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
 
 <script type="text/babel">
 
@@ -50,7 +40,7 @@ include DIR_MYSQL . 'tpl/exportOptions.htm.php';
               <a href="#" onClick={this.msMultiSelect} className="hs invert">инверт</a>
             </td>
             <td>
-                <ExportOptions />
+                <ExportOptions fields={this.props.fields} dirImage={this.props.dirImage} structChecked={this.props.structChecked} />
 
               WHERE условие<br />
               <input name="export_where" type="text" defaultValue={this.props.whereCondition} style={{width:'95%', display:'block', margin:'10px 0'}} />

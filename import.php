@@ -14,6 +14,14 @@ if (!defined('DIR_MYSQL')) {
 classLoad('DatabaseManager');
 $msc->pageTitle  = 'Импорт данных';
 
-$tables_array = DatabaseManager::getTables();	
+$pageProps = [
+    'tables' => DatabaseManager::getTables(),
+    'url' => $umaker->make('table', '%table%'),
+    'table' => GET('table'),
+];
+
+if (isajax()) {
+    return $pageProps;
+}
 
 include(MS_DIR_TPL . 'import.htm.php');

@@ -34,6 +34,14 @@ $query = POST('query');
 $queryField = POST('queryField');
 $listTables = DatabaseManager::getTables();
 
+$pageProps = [
+    'query' => POST('query'),
+    'queryField' => POST('queryField'),
+    'search_for' => POST('search_for'),
+    'replace_in' => POST('replace_in'),
+    'tables' => $listTables
+];
+
 // 1. Режим поиска по таблице
 if (GET('table') != null) {
     if (POST('search_for') != null) {
@@ -50,12 +58,12 @@ if (GET('table') != null) {
             return $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT);
         }
     }
-    $fields = getFields(GET('table'), true);
-    $fieldSelector = plDrawSelector($fields, ' name="field"', array_search(POST('field'), $fields), '', false) ;
+    $pageProps ['fields'] = getFields(GET('table'), true);
+    //$fieldSelector = plDrawSelector($fields, ' name="field"', array_search(POST('field'), $fields), '', false) ;
     $msc->pageTitle = 'Поиск по таблице';
+
     include DIR_MYSQL . 'tpl/searchTable.htm.php';
     echo '<h1>Поиск по базе данных</h1>';
-    include(MS_DIR_TPL . 'search.htm.php');
 
 // 2. Режим поиска по БД
 } else {
@@ -129,6 +137,11 @@ if (GET('table') != null) {
         echo $t->make();
     }
 
-    // HTML форма
-    include(MS_DIR_TPL . 'search.htm.php');
 }
+
+if (isajax()) {
+    return $pageProps;
+}
+
+// HTML форма
+include(MS_DIR_TPL . 'search.htm.php');

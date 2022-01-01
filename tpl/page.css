@@ -74,6 +74,16 @@ TABLE.contentTable .tbl { width:200px; font-size:14px}
 TABLE.contentTable .num { width:80px; text-align:right;}
 TABLE.contentTable .rig { text-align:right;}
 TABLE.contentTable A { text-decoration:none}
+table.optionstable {empty-cells:show; border-collapse:collapse;}
+table.optionstable th {background-color: #eee}
+table.optionstable th, table.optionstable td {border:1px solid #ccc; padding: 2px 4px; vertical-align: top;}
+/* db_compare tbl_compare */
+.contentTable .r {text-align:right}
+.contentTable .b { font-size:14px;}
+.contentTable .diff TD{ background-color:#FF3333; color:#FFFFFF}
+.contentTable.anone A { text-decoration:none}
+.contentTable .e { background-color: #afa}
+.contentTable .n { background-color: #faa}
 
 /* Таблица с формой */
 FORM.tableFormEdit { margin:10px 0}
@@ -96,6 +106,11 @@ TABLE.tableExport .sel { font-size:14px; height:150px}
 TABLE.tableExport .hs { font-size:12px; text-decoration:none; margin:0 5px}
 TABLE.tableExport .l2 { margin:0 0 0 24px}
 TABLE.tableExport .ta { font-size:10px}
+[name="formExport"] label { display:block}
+[name="formExport"] label .l2 { margin-left:24px}
+[name="formExport"] TABLE.tableExport .l2 {margin-right: 5px}
+[name="formExport"] [name="fields[]"] {height:120px; width:150px;}
+#search_table select {margin-right: 10px}
 
 /* Общая форма внтури FIELDSET actionsdb actions */
 FIELDSET.msGeneralForm { margin:20px 0; padding: 10px}
@@ -111,8 +126,29 @@ DIV.imageAction U { font-weight:bold; font-size:14px}
 DIV.chbxAction {font-size:12px; margin:5px;}
 IMG.helpimg {cursor:pointer}
 
+/* Страницы-ссылки для tbl_data */
+DIV.contentPageLinks { margin:5px 0 0;}
+DIV.contentPageLinks a { text-decoration:none; font-size:10px; margin: 0; padding: 2px 5px; border:1px solid #eee; margin-right: 2px}
+DIV.contentPageLinks a.cur { background-color: #0000FF; color:#FFFFFF}
+/* Селектор для tbl_data */
+SELECT.miniSelector { font-size:12px;}
+SELECT.miniSelector OPTION { font-size:12px;}
+
+/* tbl_list */
+form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left:3px}
+.links-block {padding:10px 0; margin-bottom:10px; font-size:14px;}
+.links-block a + a {margin-left: 10px}
+table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
+
 #msAjaxQueryDiv {position: fixed; right: 0; bottom: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
 
+
+
+h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
+.grey {color:#aaa}
 .mb-5 {margin-bottom: 5px;}
 .mt-10 {margin-top: 10px}
 .mt-20 {margin-top: 20px}
+.w95 {width: 95%}
+.mr10 {margin-right: 10px}
+.print_r {color:#666; border:1px solid #ccc; padding:10px;}

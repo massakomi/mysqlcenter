@@ -1,13 +1,5 @@
 <div id="root"></div>
 
-<!-- Load React. -->
-<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-<script type="text/babel" src="/js/components.js"></script>
-
-
 <script type="text/babel">
 
   class TableObject extends React.Component {
@@ -79,10 +71,10 @@
       return (
           <div>
             <FieldSet title="Переименовать базу данных в:" action="dbRename" {...this.props}>
-                <input name="newName" type="text" required defaultValue="<?php echo GET('db')?>" />
+                <input name="newName" type="text" required defaultValue={this.props.db} />
             </FieldSet>
             <FieldSet title="Копировать базу данных в:" action="dbCopy" {...this.props}>
-                <input name="newName" required type="text" defaultValue="<?php echo GET('db')?>_copy" /><br />
+                <input name="newName" required type="text" defaultValue={this.props.db+"_copy"} /><br />
                 <input name="option" type="radio" value="struct" /> Только структуру  <br />
                 <input name="option" type="radio" value="all" defaultChecked /> Структура и данные  <br />
                 <input name="option" type="radio" value="data" /> Только данные  <br />
