@@ -5,56 +5,76 @@
 <script src="/js/react.development.js" crossorigin></script>
 <script src="/js/react-dom.development.js" crossorigin></script>
 <script src="/js/react-babel.min.js"></script>
+<script type="text/babel" src="/js/components.js"></script>
 
 <script type="text/babel">
 
-	class App extends React.Component {
+class App extends React.Component {
 
-		render() {
+    constructor() {
+      super();
+      this.state = {messages: []};
+    }
 
-			const trs = Object.values(this.props.data).map((item) => {
-				if (!item.includes('|')) {
-					return;
-				}
-				let [name, title, value, type] = item.split('|')
-				let input = ''
-				if (type.includes('boolean')) {
-					input = <input type="checkbox" name={name} value="1" defaultChecked={value != 0} />
-				} else {
-					input = <input type="text" name={name} defaultValue={value} />
-				}
-				return (
-					<tr key={item.toString()}>
-						<td>{title}</td>
-						<td>{input}</td>
-					</tr>
-				)
+    update = (e) => {
+        e.preventDefault()
+        apiQuery(e.target.parentNode)
+            .then(json => this.setState({messages: json.messages}))
+    }
 
-			});
+    restore = (e) => {
+        fetch(umaker({action: 'restore', ajax: 1}))
+          .then(response => response.json())
+          .then(json => this.setState({messages: json.messages}))
+    }
 
-			return (
-				<form method="post" className="tableFormEdit" action="?s=msc_configuration">
-					<table>
-						<thead>
-						<tr>
-							<th>Параметр</th>
-							<th>Значение</th>
-						</tr>
-						</thead>
-						<tbody>{trs}</tbody>
-					</table>
-					<input type="submit" value="Изменить" className="submit"/>
-					<a href="?s=msc_configuration&action=restore">Восстановить значения по умолчанию</a>
-				</form>
-			);
-		}
-	}
+     render() {
 
-	let data = <?=json_encode($data)?>;
+        const trs = Object.values(this.props.data).map((item) => {
+            if (!item.includes('|')) {
+                return;
+            }
+            let [name, title, value, type] = item.split('|')
+            let input = ''
+            if (type.includes('boolean')) {
+                input = <input type="checkbox" name={name} value="1" defaultChecked={value != 0} />
+            } else {
+                input = <input type="text" name={name} defaultValue={value} />
+            }
+            return (
+                <tr key={item.toString()}>
+                    <td>{title}</td>
+                    <td>{input}</td>
+                </tr>
+            )
 
-	ReactDOM.render(
-			<App data={data} />,
-			document.getElementById('root')
-	);
+        });
+
+        return (
+            <form>
+              <Messages messages={this.state.messages} />
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Значение</th>
+                    </tr>
+                    </thead>
+                    <tbody>{trs}</tbody>
+                </table>
+                <input type="button" onClick={this.update.bind(this)} value="Изменить" className="submit"/>
+                <p style={{textAlign: 'center'}}><input type="button" onClick={this.restore} value="Восстановить значения по умолчанию" /></p>
+
+            </form>
+        );
+    }
+}
+
+let data = <?=json_encode($data)?>;
+
+ReactDOM.render(
+    <App data={data} />,
+    document.getElementById('root')
+);
 
 </script>

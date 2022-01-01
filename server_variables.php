@@ -5,50 +5,6 @@
 
 list($vi, $vs) = getServerVersion();
 $msc->pageTitle = 'Переменные сервера ('.$vi.')';
-
-/**
- * Sends the queries and buffers the results
- */
-/*$serverVars = $serverVarsGlobal = [];
-if ($vi >= 40003) {
-	$res = $msc->query('SHOW SESSION VARIABLES');
-	while ($row = mysqli_fetch_array($res)) {
-		$serverVars[$row[0]] = $row[1];
-	}
-	unset($res, $row);
-	$res = $msc->query('SHOW GLOBAL VARIABLES');
-	while ($row = mysqli_fetch_array($res)) {
-		$serverVarsGlobal[$row[0]] = $row[1];
-	}
-	unset($res, $row);
-} else {
-	$res = $msc->query('SHOW VARIABLES');
-	while ($row = mysqli_fetch_array($res)) {
-	    $serverVars[$row[0]] = $row[1];
-	}
-	unset($res, $row);
-}*/
-
-
-/**
- * Displays the page
- */
-/*$table = new Table('contentTable');
-$table->makeRowHead('Переменная', 'Session значение', 'Global значение');
-foreach ($serverVars as $name => $value) {
-    $style = ' style="color:#ccc"';
-    if ($value != $serverVarsGlobal[$name]) {
-        $style = '';
-    }
-	$table->makeRow(
-	'<b>'.htmlspecialchars(str_replace('_', ' ', $name)).'</b>',
-	htmlspecialchars($value),
-	'<span'.$style.'>'.htmlspecialchars($serverVarsGlobal[$name]).'</span>'
-	);
-}
-echo $table->make();
-*/
-
 ?>
 
 
@@ -60,5 +16,77 @@ echo $table->make();
 <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
-<script type="text/babel" src="js/server_variables.js"></script>
+<script type="text/babel">
 
+const wrap = (s, cmp) => {
+  if (s === undefined || cmp === s) {
+    return null
+  } else {
+    return <span title={s}>{s.substr(0, 20)}</span>
+  }
+
+}
+
+class App extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {sessionVars: [], globalVars: []}
+  }
+
+  async loadAll() {
+    let sql = 'SHOW SESSION VARIABLES';
+    let mode = 'querysql'
+    let type = 'pair-value'
+    let sessionVars = await querySql({sql, mode, type}, 'json')
+    //console.log(sessionVars)
+    sql = 'SHOW GLOBAL VARIABLES';
+    mode = 'querysql'
+    type = 'pair-value'
+    let globalVars = await querySql({sql, mode, type}, 'json')
+    this.setState({globalVars, sessionVars})
+  }
+
+  componentDidMount () {
+    this.loadAll()
+  }
+
+  render() {
+
+    let trs = []
+    let i =0;
+    for (let prop in this.state.sessionVars) {
+      i ++
+      trs.push((
+        <tr key={i}>
+          <td><b>{prop.replace('_', ' ')}</b></td>
+          <td>{wrap(this.state.sessionVars[prop])}</td>
+          <td>{wrap(this.state.globalVars[prop], this.state.sessionVars[prop])}</td>
+        </tr>
+      ))
+    }
+
+    return (
+      <table className="contentTable">
+        <thead>
+        <tr>
+          <th>Свойство</th>
+          <th>session var</th>
+          <th>global var</th>
+        </tr>
+        </thead>
+        <tbody>
+        {trs}
+        </tbody>
+      </table>
+    );
+  }
+}
+
+ReactDOM.render(
+  <App />,
+    document.getElementById('root')
+);
+
+
+</script>

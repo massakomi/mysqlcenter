@@ -127,9 +127,6 @@ class PageLayout
         $contentMain = null;
         ob_start();
         include $currentHandler;
-        if ($msc->page == 'phpinfo') {
-            exit;
-        }
         $contentMain = ob_get_contents();
         ob_clean();
         // Буферизация
@@ -169,8 +166,7 @@ class PageLayout
     {
         global $msc;
         $handlers = array(
-            'exportSp' => 'export',
-            'phpinfo' => 'msc_phpinfo'
+            'exportSp' => 'export'
         );
         if (isset($handlers[$msc->page])) {
             $currentHandler = DIR_MYSQL . $handlers[$msc->page] . '.php';

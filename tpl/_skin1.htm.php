@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title><?php echo $msc->getWindowTitle()?></title>
-    <script language="javascript" src="<?php echo MS_DIR_JS?>jquery-1.7.1.min.js"></script>
+    <script language="javascript" src="<?php echo MS_DIR_JS?>jquery-2.2.4.min.js"></script>
     <script type="text/javascript" language="javascript">
     /*$.noConflict();*/
     </script>

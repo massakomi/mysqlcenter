@@ -47,25 +47,10 @@ if (count($_POST) > 0) {
         $msc->addMessage('Нечего обновлять');
     }
 }
-var_dump(MS_CONFIG_FILE);
 $data = file(MS_CONFIG_FILE);
-
-/*
-$table = new Table();
-$table->setInterlaceClass('', 'interlace');
-$table->makeRowHead('Параметр', 'Значение');
-foreach ($data as $k => $line) {
-    if (empty($line) || substr_count($line, '|') < 3) {
-        continue;
-    }
-    list($name, $title, $value, $type) = explode('|', trim($line));
-    if ($type == 'boolean') {
-        $checked = $value == 0 ? '' : ' checked';
-        $table->makeRow($title, '<input type="checkbox" name="'.$name.'" value="1"'.$checked.'>');
-    } else {
-        $table->makeRow($title, '<input type="text" name="'.$name.'" value="'.$value.'">');
-    }
-}*/
+if (isajax()) {
+    return $data;
+}
 
 include MS_DIR_TPL.'config.html';
 

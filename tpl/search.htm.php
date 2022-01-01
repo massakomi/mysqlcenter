@@ -31,6 +31,10 @@
     componentDidMount() {
       //console.log('mount')
       document.querySelector('#queryAll').focus()
+      // можно стейты назначить и тут, а не в конструкторе, если они все равно приходят
+      this.setState({'query': this.props.query})
+      this.setState({'queryField': this.props.queryField})
+      //console.log('will mount')
     }
 
     msMultiSelect(event) {
@@ -43,36 +47,14 @@
       }
     }
 
-    componentWillMount() {
-      // можно стейты назначить и тут, а не в конструкторе, если они все равно приходят
-      this.setState({'query': this.props.options.query})
-      this.setState({'queryField': this.props.options.queryField})
-      //console.log('will mount')
-    }
-
-    /*componentWillUnmount() {
-      console.log('unmount')
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-      console.log('update')
-    }
-    componentWillReceiveProps(nextProps) {
-      console.log('next props')
-    }
-    componentDidCatch(error, info) {
-      console.log('catch')
-    }*/
-
-
     render() {
       return (
           <form action="/?s=search" method="post" name="formSearch">
             <table className="tableExport">
                 <tbody><tr>
                 <td valign="top">
-                  <select name="table[]" multiple className="sel" defaultValue={this.props.options.tables}>
-                    {Object.values(this.props.options.tables).map((table) =>
+                  <select name="table[]" multiple className="sel" defaultValue={this.props.tables}>
+                    {Object.values(this.props.tables).map((table) =>
                         <option key={table.toString()}>{table}</option>
                     )}
                   </select>   <br />
@@ -97,12 +79,11 @@
   let options = {
     'query': "<?php echo POST('query')?>",
     'queryField': "<?php echo POST('queryField')?>",
-    //'tableCurrent': '<?=$msc->table?>',
     'tables': <?=json_encode($listTables)?>
   }
 
   ReactDOM.render(
-      <App options={options} />,
+      <App {...options} />,
       document.getElementById('root')
   );
 

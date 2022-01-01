@@ -2,41 +2,78 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
 
+/*
+
+
+Все эти функции предназначены для ajax.php то есть только для ActionProcessor событий
+
+msQuery(mode, query) - обертка над xajax  query+'&'+'mode='+mode  (db_list, tbl_list, tbl_struct)
+xajax - делает запрос на ajax.php + options POST + response eval -- по сути больше нигде не используется
+
+-------------------
+querySql - асинхронный аналог xajax
+querySql - выполнить запрос удаленно - возвращает Promise, делает запрос на ajax + options POST, querySql(params, responseType='text') - server_variables, msc_help
+  // пример применения
+  async function printTable(sql) {
+    let data = await querySql({sql, mode: 'querysql'}, 'json')
+    for (let item of data) {
+    }
+  }
+
+async loadAll() {
+    sql = 'SHOW GLOBAL VARIABLES';
+    mode = 'querysql'
+    type = 'pair-value'
+    let globalVars = await querySql({sql, mode, type}, 'json')
+    this.setState({globalVars, sessionVars})
+}
+
+componentDidMount () {
+    this.loadAll()
+}
+-------------------
+
+
+apiQuery async - (НЕ РАБОТАЕТ) fetch GET json return -
+
+
+
+
 function xajax(query)
 {
-    let ajaxdebug = (typeof(debug) != 'undefined' && debug == '1');
+  let ajaxdebug = (typeof(debug) != 'undefined' && debug == '1');
 
   let options = {
-        method: 'POST',
-        body: new URLSearchParams('?'+query),
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    }
+    method: 'POST',
+    body: new URLSearchParams('?'+query),
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }
 
-    fetch('ajax.php', options)
-        .then(response => {
-            if (!response.ok) {
-              console.error(response.status +' ' + response.statusText)
-            } else {
-                return response.text();
-            }
-        })
-        .then(text => {
-            if (text.indexOf('Parse error') !== -1) {
-              console.error(text)
-            } else {
-                try {
-                  eval(text);
-                } catch(e) {
-                    if (ajaxdebug) {
-                        console.error('JS код не выполнен: '+text);
-                    }
-                }
-            }
-        })
-        .catch((error) => {
-            console.error(error)
-        });
-}
+  fetch('ajax.php', options)
+    .then(response => {
+      if (!response.ok) {
+        console.error(response.status +' ' + response.statusText)
+      } else {
+        return response.text();
+      }
+    })
+    .then(text => {
+      if (text.indexOf('Parse error') !== -1) {
+        console.error(text)
+      } else {
+        try {
+          eval(text);
+        } catch(e) {
+          if (ajaxdebug) {
+            console.error('JS код не выполнен: '+text);
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      console.error(error)
+    });
+}*/
 
 /**
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
@@ -52,10 +89,43 @@ function msQuery(mode, query='') {
   if (arguments.length === 0) {
     return false;
   }
-    query = query.replace(/^\?/, '')
+  query = query.replace(/^\?/, '')
 
-    // alert(query+'&'+'mode='+mode)
-    xajax(query+'&'+'mode='+mode)
+  // alert(query+'&'+'mode='+mode)
+  query = query+'&'+'mode='+mode
+
+  let ajaxdebug = (typeof(debug) != 'undefined' && debug === 1);
+
+  let options = {
+    method: 'POST',
+    body: new URLSearchParams('?'+query),
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }
+
+  fetch('ajax.php', options)
+    .then(response => {
+      if (!response.ok) {
+        console.error(response.status +' ' + response.statusText)
+      } else {
+        return response.text();
+      }
+    })
+    .then(text => {
+      if (text.indexOf('Parse error') !== -1) {
+        console.error(text)
+      } else {
+        try {
+          eval(text);
+        } catch(e) {
+          if (ajaxdebug) {
+            console.error('JS код не выполнен: '+text);
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      console.error(error)
+    });
 
   return false;
 }
@@ -73,17 +143,22 @@ function msQuery(mode, query='') {
     return qs;
   }
   */
-function querySql(params, responseType='text') {
+function querySql(params, responseType='text', url='ajax.php') {
 
   return new Promise(function(resolve, reject) {
-    let query = new URLSearchParams(params);
     let options = {
-      method: 'POST',
-      body: query,
       headers: {'X-Requested-With': 'XMLHttpRequest'}
     }
+    if (params) {
+      options.method = 'POST';
+      if (params.tagName === 'FORM') {
+        options.body = new FormData(params)
+      } else {
+        options.body = new URLSearchParams(params);
+      }
+    }
 
-    fetch('ajax.php', options)
+    fetch(url, options)
         .then(response => {
           if (!response.ok) {
             console.error(response.status +' ' + response.statusText)
@@ -101,12 +176,46 @@ function querySql(params, responseType='text') {
 }
 
 
-async function apiQuery (query, options={}) {
+/*async function apiQuery (query, options={}) {
   let url = 'http://msc/'
   options.method = 'GET'
   const response = await fetch(url, options)
   const json = await response.json();
   return json;
+}*/
+
+
+// umaker({db: 'xxx'})
+function umaker(query={}) {
+  let u = new URL(location.href)
+  for (let key in query) {
+    u.searchParams.set(key, query[key])
+  }
+  return u.href;
+}
+
+
+/**
+ * Отправляет форму form элемент по текущему урлу и возвращает json
+ *
+    update = (e) => {
+        e.preventDefault()
+        apiQuery(e.target.parentNode)
+            .then(json => this.setState({messages: json.messages}))
+    }
+
+    GET запрос можно сделать через стандартный механизм проще
+    restore = (e) => {
+        fetch(umaker({action: 'restore', ajax: 1}))
+          .then(response => response.json())
+          .then(json => this.setState({messages: json.messages}))
+    }
+ * @param form
+ * @returns {Promise<unknown>}
+ */
+function apiQuery(form) {
+  // sendFormGetJson
+  return querySql(form, 'json', umaker()+'&ajax=1');
 }
 
 
@@ -163,7 +272,7 @@ function msDisplaySql() {
 }
 
 
-
+/*
 function createFlyBlock (id, style) {
   if (!(element = document.getElementById(id))) {
     let element = document.createElement('div');
@@ -189,8 +298,7 @@ function trace(txt) {
     zIndex  :  '100',
   });
   d.innerHTML = d.innerHTML + txt;
-}
-
+}*/
 
 
 
@@ -549,7 +657,7 @@ function mysqlCenterInit() {
 
 // Мультиселектор чекбоксов. Указать индекс чекбокса и селектор элемента где он находится
 // <input name="table[]" type="checkbox" value="1" onclick="checkboxer(5, '#row');">
-  var globalCheckboxLastIndex = null;
+  window.globalCheckboxLastIndex = null;
 }
 
 function checkboxer(index, selector) {

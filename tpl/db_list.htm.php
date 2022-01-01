@@ -1,8 +1,5 @@
 
-
 <div id="root"></div>
-
-<?php // echo $table->make() ?>
 
 <!-- Load React. -->
 <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
@@ -35,8 +32,8 @@
       let nz = Intl.NumberFormat(undefined, {'maximumFractionDigits': 0});
       let nf = Intl.NumberFormat(undefined, {'minimumFractionDigits': 1, 'maximumFractionDigits': 1});
       let trs = [], countTotalTables = 0, countTotalSize = 0, countTotalRows = 0;
-      for (let i = 0; i < databases.length; i++) {
-        let db = databases[i]['name'];
+      for (let i = 0; i < this.props.databases.length; i++) {
+        let db = this.props.databases[i]['name'];
         let href = `/?db=${db}&s=tbl_list`
         let idRow = "db"+db;
 
@@ -135,13 +132,13 @@
 
         render() {
 
-            let mscExists = databases.includes('mysqlcenter')
+            let mscExists = this.props.databases.includes('mysqlcenter')
             let trs = []
-            for (let i = 0; i < databases.length; i++) {
-                let db = databases[i];
+            for (let i = 0; i < this.props.databases.length; i++) {
+                let db = this.props.databases[i];
                 let styles = {}
                 let action = '';
-                if (mscExists && hiddens && hiddens.includes(db)) {
+                if (mscExists && this.props.hiddens && this.props.hiddens.includes(db)) {
                     styles = {color: '#ccc'}
                     action = 'show'
                 }
@@ -197,7 +194,7 @@
                 actionReplace = ''
             }
             console.log(actionReplace)
-            //msImageAction('formDatabases', param, actionReplace)
+            msImageAction('formDatabases', param, actionReplace)
         }
 
         chbxAction(opt) {
@@ -212,7 +209,8 @@
                         <input type="hidden" name="dbMulty" value="1" />
                         <input type="hidden" name="action" value="" />
                           {!this.props.showFullInfo ?
-                              <Table folder={this.props.folder} /> :  <TableFull folder={this.props.folder} />}
+                              <Table folder={this.props.folder} databases={this.props.databases} hiddens={this.props.hiddens} /> :
+                              <TableFull folder={this.props.folder} databases={this.props.databases} hiddens={this.props.hiddens} />}
 
                     </form>
 
@@ -330,7 +328,7 @@
                 <tbody>
                 <tr>
                     <td valign="top">
-                        <ColumnLeft folder={props.folder} url={props.url} showFullInfo={props.showFullInfo} />
+                        <ColumnLeft folder={props.folder} url={props.url} showFullInfo={props.showFullInfo} databases={props.databases} hiddens={props.hiddens} />
                     </td>
                     <td valign="top">
                         <ColumnRight appName={props.appName} appVersion={props.appVersion} dbHost={props.dbHost} showFullInfo={props.showFullInfo} dbname={props.dbname}
@@ -341,12 +339,10 @@
         )
     }
 
-    let databases = <?=json_encode($dbs)?>;
-    let hiddens = <?=json_encode($hidden)?>;
+    let pageProps = <?=json_encode($pageProps)?>;
 
     ReactDOM.render(
-        <App appName="<?php echo MS_APP_NAME ?>" appVersion="<?php echo MS_APP_VERSION ?>" dbHost="<?php echo DB_HOST ?>" showFullInfo="<?=$showFullInfo?>" folder="<?=MS_DIR_IMG?>" url="<?=MS_URL?>"
-            dbname="<?php echo $msc->db ?>" phpversion="<?=phpversion()?>" mysqlVersion="<?=PMA_MYSQL_STR_VERSION?>" />,
+        <App {...pageProps} />,
         document.getElementById('root')
     );
 

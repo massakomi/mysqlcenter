@@ -198,20 +198,21 @@ if ($showFullInfo) {
     }*/
 }
 
+$pageProps = [
+    'databases' => $dbs,
+    'hiddens' => $hidden,
+    'appName' => MS_APP_NAME,
+    'appVersion' => MS_APP_VERSION,
+    'dbHost' => DB_HOST,
+    'showFullInfo' => $showFullInfo,
+    'folder' => MS_DIR_IMG,
+    'url' => MS_URL,
+    'dbname' => $msc->db,
+    'phpversion' => phpversion(),
+    'mysqlVersion' => PMA_MYSQL_STR_VERSION,
+];
 if (isajax()) {
-    return [
-        'databases' => $dbs,
-        'hiddens' => $hidden,
-        'appName' => MS_APP_NAME,
-        'appVersion' => MS_APP_VERSION,
-        'dbHost' => DB_HOST,
-        'showFullInfo' => $showFullInfo,
-        'folder' => MS_DIR_IMG,
-        'url' => MS_URL,
-        'dbname' => $msc->db,
-        'phpversion' => phpversion(),
-        'mysqlVersion' => PMA_MYSQL_STR_VERSION,
-    ];
+    return $pageProps;
 }
 
 include_once(MS_DIR_TPL . 'db_list.htm.php');

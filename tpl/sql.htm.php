@@ -19,7 +19,7 @@
 
     render() {
 
-      const opts = Object.values(this.props.options.charsets).map((charset) =>
+      const opts = Object.values(this.props.charsets).map((charset) =>
           <option key={charset.toString()}>
             {charset}
           </option>
@@ -27,11 +27,11 @@
 
       return (
           <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm" className="tableFormEdit">
-            <textarea name="sql" rows="20" id="sqlContent" wrap="off"><?php echo POST('sql')?></textarea>
+            <textarea name="sql" rows="20" id="sqlContent" wrap="off">{this.props.sql}</textarea>
             <input type="submit" value="Отправить запрос!" className="submit" />
             <fieldset className="msGeneralForm">
               <legend>Запрос из файл</legend>
-              <input type="hidden" name="MAX_FILE_SIZE" value={this.props.options.maxUploadSize} />
+              <input type="hidden" name="MAX_FILE_SIZE" value={this.props.maxUploadSize} />
               <input type="file" name="sqlFile" /> <br />
               Сжатие:
               <input name="compress" type="radio" value="auto" defaultChecked="checked" />  Автодетект
@@ -42,20 +42,17 @@
               <input name="compress" type="radio" value="csv" />  csv
               <br />
               Кодировка файла: <select name="sqlFileCharset" defaultValue="utf8">{opts}</select><br />
-              (Максимальный размер: {this.props.options.maxSize} Mb)
+              (Максимальный размер: {this.props.maxSize} Mb)
             </fieldset>
           </form>
       );
     }
   }
 
-  let options = {
-    'maxUploadSize': '<?=MAX_UPLOAD_SIZE?>',
-    'maxSize': '<?php echo round(MAX_UPLOAD_SIZE / (1024*1024), 2)?>',
-    'charsets': <?=json_encode($mysql_charsets)?>
-  }
+  let options = <?=json_encode($pageProps)?>;
+
   ReactDOM.render(
-      <App options={options} />,
+      <App {...options} />,
       document.getElementById('root')
   );
 

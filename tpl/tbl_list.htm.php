@@ -27,21 +27,27 @@
 
   class DateSelector extends React.Component {
 
+    constructor(props) {
+      super();
+      let date = new Date()
+      this.state = {day: date.getDate(), month: date.getMonth(), year: date.getFullYear()}
+    }
+
     render() {
 
       Date.prototype.daysInMonth = function() {
         return 32 - new Date(this.getFullYear(), this.getMonth(), 32).getDate();
       };
 
-      let date = new Date()
+      let date = new Date(this.state.year, this.state.month, this.state.day)
 
       let months = ['января', 'февраля', 'марта', 'апреля', 'май', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
       return (
           <React.Fragment>
-            <Selector name="ds_day" from="1" to={date.daysInMonth()} value={date.getDate()} />
-            <Selector name="ds_month" data={months} value={date.getMonth()} />
-            <Selector name="ds_year" from="2000" to={date.getFullYear()} value={date.getFullYear()} />
+            <Selector name="ds_day" from="1" to={date.daysInMonth()} value={this.state.day} />
+            <Selector name="ds_month" data={months} value={this.state.month} />
+            <Selector name="ds_year" from="2000" to={date.getFullYear()} value={this.state.year} />
             <Selector name="ds_hour" from="0" to="23" /> :
             <Selector name="ds_minut" from="0" to="59" /> :
             <Selector name="ds_second" from="0" to="59" />
@@ -56,6 +62,10 @@
     /*checkboxer = () => {
 
     }*/
+
+    image(src) {
+      return <img src={this.props.dirImage + src} alt="" />
+    }
 
     renderRow(table, key) {
       // Увеличение счётчика видимых таблиц
@@ -75,7 +85,7 @@
       }*/
       // Форматирование названия таблицы
       let valueName = table.Name
-      if (table.Rows == 0) {
+      if (table.Rows === '0') {
         valueName = <span style={{color: '#aaa'}}> {valueName}</span>
       }
       // Определение размера таблицы
@@ -86,16 +96,20 @@
       let msquery = "db=<?=$msc->db?>&table="+table.Name;
       let idRow = "row" + sumTable;
       let idChbx = 'table_' + table.Name
-      let engine = table.Engine == 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
+      let engine = table.Engine === 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
 
       return (
           <tr key={table.Name} id={idRow}>
             <td id={'row'+sumTable+'-0'}><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" onClick={checkboxer.bind(this, sumTable, '#row')} /></td>
             <td id={'row'+sumTable+'-1'} className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name, 'row'+sumTable+'-1')}>{valueName}</label></td>
-            <td id={'row'+sumTable+'-2'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_data'} title="Обзор таблицы"><img src="<?=MS_DIR_IMG?>actions.gif" alt="" /></a></td>
-            <td id={'row'+sumTable+'-3'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_struct'} title="Структура таблицы"><img src="<?=MS_DIR_IMG?>generate.png" alt="" /></a></td>
-            <td id={'row'+sumTable+'-4'}><a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Очистить таблицу"><img src="<?=MS_DIR_IMG?>delete.gif" alt="" /></a></td>
-            <td id={'row'+sumTable+'-5'}><a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Удалить таблицу"><img src="<?=MS_DIR_IMG?>close.png" alt="" /></a></td>
+            <td id={'row'+sumTable+'-2'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_data'} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
+            <td id={'row'+sumTable+'-3'}><a href={'/?db=<?=$msc->db?>&table='+table.Name+'&s=tbl_struct'} title="Структура таблицы">{this.image("generate.png")}</a></td>
+            <td id={'row'+sumTable+'-4'}>
+              <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Очистить таблицу">{this.image("delete.gif")}</a>
+            </td>
+            <td id={'row'+sumTable+'-5'}>
+              <a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Удалить таблицу">{this.image("close.png")}</a>
+            </td>
             <td id={'row'+sumTable+'-6'} className="rig">{table.Rows}</td>
             <td id={'row'+sumTable+'-7'} className="rig">{this.formatSize(size)}</td>
             <td id={'row'+sumTable+'-8'}>{updateTime}</td>
@@ -173,10 +187,6 @@
 
 </script>
 
-<?php
-//echo $contentMain
-?>
-
 
 <div id="root"></div>
 
@@ -193,11 +203,11 @@
 
     constructor(props) {
       super(props);
-      this.state = {value: 'wait'};
+      this.state = {value: 'wait', tables: props.tables};
     }
 
     msImageAction = (opt, url, e) => {
-      if (opt == 'auto') {
+      if (opt === 'auto') {
         opt = this.target.options[this.target.selectedIndex].value
       }
       msImageAction('formTableList', opt, url)
@@ -208,31 +218,58 @@
       chbx_action('formTableList', opt, 'table[]')
     }
 
+    componentDidMount() {
+      //this.filterByDate()
+    }
+
+    image(src) {
+      return this.props.dirImage + src;
+    }
+
+    reload = () => {
+      fetch(`?s=tbl_list&db=${this.props.db}&ajax=1`)
+        .then(response => response.json())
+        .then(json => this.setState({tables: json.page.tables}))
+    }
+
+    filterByDate() {
+      let year = $('[name="ds_year"]').val()
+      let month = $('[name="ds_month"]').val()
+      let day = $('[name="ds_day"]').val()
+      let date = new Date(year, month, day)
+
+      let tables = Object.values(this.props.tables).filter((table, key) => {
+        let now = new Date(table.Update_time);
+        return now > date;
+      })
+      this.setState({tables})
+    }
+
     render() {
 
       return (
           <div>
-            <form action="?db=<?php echo $msc->db?>" method="post" name="formTableList" id="formTableList">
+            <form action={"?db="+this.props.db} method="post" name="formTableList" id="formTableList">
 
               <input type="hidden" name="tableMulty" value="1" />
               <input type="hidden" name="action" value="" />
 
-              <TableList {...this.props} />
+              <TableList tables={this.state.tables} dirImage={this.props.dirImage} />
 
               <div className="chbxAction">
-                <img src="<?php echo MS_DIR_IMG?>arrow_ltr.png" alt=""  />
+                <img src={this.image("arrow_ltr.png")} alt=""  />
                 <a href="#" onClick={this.chbx_action.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
                 <a href="#" onClick={this.chbx_action.bind(this, 'uncheck')}>очистить</a>
               </div>
 
               <div className="imageAction">
                 <u>Выбранные</u>
-                <img src="<?php echo MS_DIR_IMG?>close.png" alt="" onClick={this.msImageAction.bind(this, 'delete_all', '')} />
-                <img src="<?php echo MS_DIR_IMG?>delete.gif" alt="" onClick={this.msImageAction.bind(this, 'truncate_all', '')} />
-                <img src="<?php echo MS_DIR_IMG?>copy.gif" alt="" onClick={this.msImageAction.bind(this, 'copy_all', '')} />
-                <img src="<?php echo MS_DIR_IMG?>b_tblexport.png" alt="" onClick={this.msImageAction.bind(this, 'export_all', '<?php echo MS_URL?>?db=<?php echo $msc->db?>&s=export')} />
+                <img src={this.image("close.png")} alt="" onClick={this.msImageAction.bind(this, 'delete_all', '')} />
+                <img src={this.image("delete.gif")} alt="" onClick={this.msImageAction.bind(this, 'truncate_all', '')} />
+                <img src={this.image("copy.gif")} alt="" onClick={this.msImageAction.bind(this, 'copy_all', '')} />
+                <img src={this.image("b_tblexport.png")} alt="" onClick={this.msImageAction.bind(this, 'export_all', `?db=${this.props.db}&s=export`)} />
 
-                <a href="?db=<?php echo $msc->db?>&makeMyIsam=1" style={{margin: '0 10px'}}>Конвертировать все в MyIsam</a>
+                <a href={`?db=${this.props.db}&makeInnodb=1`} style={{margin: '0 10px'}}>Конвертировать все в Innodb</a>
 
                 <select name="act" onChange={this.msImageAction.bind(this, 'auto', '')} >
                   <option></option>
@@ -248,13 +285,14 @@
               </div>
             </form>
             <div className="links-block">
-              <a href="?s=tbl_list&action=full"  title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
-              <a href="?s=tbl_list&action=structure"  title="">Исследование структуры таблиц</a>
+              <a href="?s=tbl_list&action=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
+              <a href="?s=tbl_list&action=structure">Исследование структуры таблиц</a>
+              <a href="#" onClick={this.reload.bind(this)}>reload</a>
             </div>
             {this.props.showtableupdated > 0 &&
-            <form name="form1" method="post" action="" className="showtableupdated">
+            <form className="showtableupdated">
               Показать таблицы обновлённые с <DateSelector />
-              <input type="submit" value="Показать!" />
+              <input type="button" value="Показать!" onClick={this.filterByDate.bind(this)} />
             </form>
               }
           </div>
@@ -262,10 +300,7 @@
     }
   }
 
-  let options = {
-    'showtableupdated': '<?=conf('showtableupdated') == '1'?>',
-    'tables': <?=json_encode($tables)?>
-  }
+  let options = <?=json_encode($pageProps)?>;
   ReactDOM.render(
       <App {...options} />,
       document.getElementById('root')

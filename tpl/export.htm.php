@@ -25,24 +25,23 @@ include DIR_MYSQL . 'tpl/exportOptions.htm.php';
 
     msMultiSelect = (event) => {
       if (event.target.classList.contains('invert')) {
-        $('[name="'+this.props.options.selectMultName+'"] option').prop('selected', function() {
+        $('[name="'+this.props.selectMultName+'"] option').prop('selected', function() {
           return !this.selected
         })
       } else {
-        $('[name="'+this.props.options.selectMultName+'"] option').prop('selected', event.target.classList.contains('select'))
+        $('[name="'+this.props.selectMultName+'"] option').prop('selected', event.target.classList.contains('select'))
       }
     }
 
     render() {
-      let params = this.props.options;
 
       return (
       <form action="" method="post" name="formExport">
         <table className="tableExport">
             <tbody><tr>
             <td>
-              <select name={params.selectMultName} multiple="multiple" className="sel" defaultValue={params.optionsSelected}>
-                {this.props.options.optionsData.map((v) =>
+              <select name={this.props.selectMultName} multiple="multiple" className="sel" defaultValue={this.props.optionsSelected}>
+                {this.props.optionsData.map((v) =>
                     <option key={v.toString()}>{v}</option>
                 )}
               </select><br />
@@ -54,28 +53,23 @@ include DIR_MYSQL . 'tpl/exportOptions.htm.php';
                 <ExportOptions />
 
               WHERE условие<br />
-              <input name="export_where" type="text" defaultValue={params.whereCondition} style={{width:'95%', display:'block', margin:'10px 0'}} />
+              <input name="export_where" type="text" defaultValue={this.props.whereCondition} style={{width:'95%', display:'block', margin:'10px 0'}} />
                 <input type="submit" value="Экспортировать!" />
             </td>
             <td> </td>
           </tr></tbody>
         </table>
-        <a href={params.exportSpecialUrl}>Специальный экспорт</a>
+        <a href={umaker({s: 'exportSp'})}>Специальный экспорт</a>
       </form>
       );
     }
   }
 
-  let options = {
-    'exportSpecialUrl': '<?php echo $umaker->make("s", "exportSp"); ?>',
-    'whereCondition': '<?php echo htmlspecialchars($whereCondition); ?>',
-    'selectMultName': '<?php echo $selectMultName?>',
-    'optionsData': <?=json_encode($optionsData)?>,
-    'optionsSelected': <?=json_encode($optionsSelected)?>
-  }
+  let options = <?=json_encode($pageProps)?>;
+  console.log(options)
 
   ReactDOM.render(
-      <App options={options}/>,
+      <App {...options}/>,
       document.getElementById('root')
   );
 

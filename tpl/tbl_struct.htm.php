@@ -56,18 +56,25 @@
 
     deleteField(field, e) {
       e.preventDefault()
-      let msquery = 'db='+this.props.options.db+'&table='+this.props.options.table+'&s=tbl_struct'
+      let msquery = 'db='+this.props.db+'&table='+this.props.table+'&s=tbl_struct'
       let urlDelete = msquery + '&field=' + field
       let query = urlDelete + '&id=f-' + encodeURIComponent(field)
       msQuery('deleteField', query)
     }
 
     render() {
-
-      const listItems = Object.values(this.props.options.data).map((v, k) => {
+      const listItems = Object.values(this.props.data).map((v, k) => {
         let key = v.Key;
         if (key === 'PRI') {
-          key = <img src={this.props.options.dirImage + "acl.gif"} alt="" border="0" />
+          key = <img src={this.props.dirImage + "acl.gif"} alt="" border="0" />
+        }
+        for (let keyObject of this.props.dataKeys) {
+          if (keyObject.Column_name === v.Field) {
+            let foreignKeys = this.props.foreignKeys[v.Field]
+            if (keyObject.Key_name.indexOf('FK') === 0 || (foreignKeys && foreignKeys.CONSTRAINT_TYPE === 'FOREIGN KEY')) {
+              key = <span title={foreignKeys && foreignKeys.REFERENCED_TABLE_NAME ? foreignKeys.REFERENCED_TABLE_NAME : keyObject.Table}>FK</span>
+            }
+          }
         }
         return (
           <tr id={"f-"+v.Field} key={v.Field}>
@@ -78,8 +85,8 @@
              <td>{v.Default}</td>
              <td>{key}</td>
              <td>{v.Extra}</td>
-             <td><a href={"?s=tbl_add&field="+encodeURIComponent(v.Field)} title="Редактировать ряд"><img src={this.props.options.dirImage + "edit.gif"} alt="" /></a></td>
-             <td><a href="#" onClick={this.deleteField.bind(this, v.Field)} title="Удалить ряд"><img src={this.props.options.dirImage + "close.png"} alt="" /></a></td>
+             <td><a href={"?s=tbl_add&field="+encodeURIComponent(v.Field)} title="Редактировать ряд"><img src={this.props.dirImage + "edit.gif"} alt="" /></a></td>
+             <td><a href="#" onClick={this.deleteField.bind(this, v.Field)} title="Удалить ряд"><img src={this.props.dirImage + "close.png"} alt="" /></a></td>
           </tr>
         )
       });
@@ -141,35 +148,35 @@
             <table>
               <tbody><tr>
                 <td valign="top">
-                  <form action={this.props.options.addTableUrl} method="post" name="formTableStructure" id="formTableStructure">
+                  <form action={this.props.addTableUrl} method="post" name="formTableStructure" id="formTableStructure">
                     <input type="hidden" name="action" value="" />
 
-                    <TableStruct options={this.props.options} />
+                    <TableStruct {...this.props} />
 
                   <div className="chbxAction">
-                    <img src={this.props.options.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle" />
+                    <img src={this.props.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle" />
                     <a href="#" onClick={this.chbx_action.bind(this, "check")}>выбрать все</a>  &nbsp;
                     <a href="#" onClick={this.chbx_action.bind(this, "uncheck")}>очистить</a>
                   </div>
 
                   <div className="imageAction">
                     <u>Выбранные</u>
-                    <input type="image" src={this.props.options.dirImage + "edit.gif"} onClick={msImageAction.bind(this, 'fieldsEdit')} alt="" />
-                    <input type="image" src={this.props.options.dirImage + "close.png"} onClick={msImageAction.bind(this, 'fieldsDelete')} alt="" />
+                    <input type="image" src={this.props.dirImage + "edit.gif"} onClick={msImageAction.bind(this, 'fieldsEdit')} alt="" />
+                    <input type="image" src={this.props.dirImage + "close.png"} onClick={msImageAction.bind(this, 'fieldsDelete')} alt="" />
                   </div>
                   </form>
 
-                <a href={this.props.options.printVersionUrl}>Печатная версия</a>
+                <a href={this.props.printVersionUrl}>Печатная версия</a>
                 <fieldset className="msGeneralForm">
                   <legend>Изменить структуру</legend>
-                  <form action={this.props.options.addTableUrl} method="post" onSubmit={this.checkEmpty}>
+                  <form action={this.props.addTableUrl} method="post" onSubmit={this.checkEmpty}>
                     <input type="hidden" name="action" value="fieldsAdd" />
                     Добавить полей &nbsp; <input name="fieldsNum" type="text" defaultValue="1" size="5" /> &nbsp;
                     <input name="afterOption" type="radio" value="end" defaultChecked id="f1" /> <label htmlFor="f1">в конец </label>
                     <input name="afterOption" type="radio" value="start" id="f2" /> <label htmlFor="f2">в начало</label>
                     <input name="afterOption" type="radio" value="field" id="f3" />  <label htmlFor="f3">после </label>
                     <select name="afterField" onFocus={this.selectOnFocus}>
-                      {Object.values(this.props.options.data).map((table) =>
+                      {Object.values(this.props.data).map((table) =>
                           <option key={table.Field}>{table.Field}</option>
                       )}
                     </select>&nbsp;
@@ -182,13 +189,13 @@
                 <td valign="top" style={{padding: '20px 0 0 10px'}}>
                   <strong> Подробности таблицы </strong>
                   <br />
-                  <TableObject data={this.props.options.dataDetails[1]} columns={this.props.options.dataDetails[0]} />
+                  <TableObject data={this.props.dataDetails[1]} columns={this.props.dataDetails[0]} />
                 </td>
               </tr></tbody>
             </table>
 
             <strong style={{marginRight: '10px'}}>Информация о ключах</strong>
-            <img src={this.props.options.dirImage + "i-help2.gif"} title="Индексы - это сбалансированные деревья значений указанных в индексе полей и ссылки на физические записи в таблице. Индексы позволяют ускорить работу выполнения запросов в сотни раз и сразу находить нужные данные, вместо того, чтобы последовательно читать всю таблицу." alt="" border="0" align="absmiddle" className="helpimg" /><br />
+            <img src={this.props.dirImage + "i-help2.gif"} title="Индексы - это сбалансированные деревья значений указанных в индексе полей и ссылки на физические записи в таблице. Индексы позволяют ускорить работу выполнения запросов в сотни раз и сразу находить нужные данные, вместо того, чтобы последовательно читать всю таблицу." alt="" border="0" align="absmiddle" className="helpimg" /><br />
 
             <table className="contentTable">
               <thead>
@@ -211,11 +218,11 @@
                 <th>Expression</th>
               </tr></thead>
               <tbody>
-              {this.props.options.dataKeys.map((v) => {
+              {this.props.dataKeys.map((v) => {
                   let href = "?s=tbl_struct&action=deleteKey&key="+v.Key_name+"&field="+v.Column_name
                   return (
                       <tr key={v.Key_name + v.Seq_in_index}>
-                        <td><a href={href} onClick={this.checkDelete}><img src={this.props.options.dirImage + "close.png"} alt="" border="0" /></a></td>
+                        <td><a href={href} onClick={this.checkDelete}><img src={this.props.dirImage + "close.png"} alt="" border="0" /></a></td>
                           {Object.values(v).map((value, key) =>
                               <td key={key + "index"}>{value}</td>
                           )}
@@ -225,8 +232,8 @@
               </tbody>
             </table>
 
-            <p><a href={this.props.options.addKeyUrl}>Добавить ключ</a></p>
-            <div className="print_r">{this.props.options.tableAddStr}</div>
+            <p><a href={this.props.addKeyUrl}>Добавить ключ</a></p>
+            <div className="print_r">{this.props.tableAddStr}</div>
           </div>
       );
     }
@@ -234,20 +241,9 @@
 
   // $umaker->make('s', 'tbl_struct', 'key', $row['Key_name'], 'field', $row['Column_name'], 'action', 'deleteKey')
 
-  let options = {
-    'db': '<?=$msc->db?>',
-    'table': '<?=$msc->table?>',
-    'addKeyUrl': '<?php echo $umaker->make('s', 'tbl_struct', 'action', 'add_key') ?>',
-    'addTableUrl': '<?=$umaker->make('s', 'tbl_add')?>',
-    'printVersionUrl': '<?=$umaker->make('s', 'tbl_struct', 'print', '1')?>',
-    'data': <?=json_encode($fields)?>,
-    'dataKeys': <?=json_encode($dataKeys)?>,
-    'dataDetails': <?=json_encode($data)?>,
-    'tableAddStr': <div><?=$tableAddStr?></div>,
-    'dirImage': '<?=MS_DIR_IMG?>'
-  }
+  let options = <?=json_encode($pageProps)?>;
   ReactDOM.render(
-      <App options={options}/>,
+      <App {...options}/>,
       document.getElementById('root')
   );
 
