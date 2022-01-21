@@ -14,12 +14,27 @@ if (!defined('DIR_MYSQL')) {
 }
 $msc->pageTitle = 'Сравнение баз данных';
 
+
+
+//$databases = ['home1c', 'symfony_home1c'];
+
+
 // Проверка
 $databases = POST('databases');
 if (count($databases) < 2) {
     $msc->addMessage('Вы не выбрали базы данных для сравнения');
     return null;
 }
+
+/*
+$pageProps = [
+    'databases' => $databases
+];
+if (isajax()) {
+    return $pageProps;
+}
+include(MS_DIR_TPL . 'db_compare.htm.php');
+*/
 
 // Создание начальных массивов
 $dbArray = array();

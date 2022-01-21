@@ -85,7 +85,7 @@ class DatabaseManager extends DatabaseInterface {
 			foreach ($a as $table) {
 				$dbt->copyTable($dbFrom, $table, $struct, $data, $table,  $dbTo);
 				if ($isMove) {
-					$dbt->tableAction($dbFrom, $table, 'DROP');
+					//$dbt->tableAction($dbFrom, $table, 'DROP');
 				}
 			}
 			// удалить БД

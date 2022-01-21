@@ -1,6 +1,5 @@
 <?php
 
-
 if ($_SERVER['HTTP_HOST'] != 'msc') {
     echo json_encode($_SERVER);
     return;

@@ -456,7 +456,7 @@ if ($msc->table == null || POST('action') == 'fieldsAdd') {
         redirect('?s=tbl_List');
     }
 
-    $cont = MSC_DrawFields($array);
+    //$cont = MSC_DrawFields($array);
     $msc->pageTitle = 'Редактировать структуру';
 }
 

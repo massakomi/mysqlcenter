@@ -94,7 +94,7 @@ echo $table->make()*/
         let values = [
           <input name="row[]" type="checkbox" value={idRow} className="cb" id={`c${idRow}`} onClick={checkboxer.bind(this, j, '#row')} />,
           <a href={u1} title="Редактировать ряд"><img src={`${this.props.dirImage}edit.gif`} alt="" border="0" /></a>,
-          <a href="#" onClick={msQuery.bind(this, 'deleteRow', `${u2}&id=row${j}`)} title="Удалить ряд"><img src={`${this.props.dirImage}close.png`} alt="" border="0" /></a>
+          <a href="#" onClick={msQuery.bind(this, 'deleteRow', `${u2}&db=${this.props.db}&table=${this.props.table}&id=row${j}`)} title="Удалить ряд"><img src={`${this.props.dirImage}close.png`} alt="" border="0" /></a>
         ]
 
         // загрузка данных
@@ -119,7 +119,7 @@ echo $table->make()*/
           z ++;
         }
         trs.push(
-          <tr key={j}>{tds}</tr>
+          <tr key={j} id={`row${j}`}>{tds}</tr>
         )
         j ++
       }
