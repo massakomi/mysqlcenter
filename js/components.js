@@ -109,7 +109,7 @@ function getTableHeaders(fields, sortEnabled=true, headWrap=false) {
   let fieldsCount = Object.keys(fields).length;
   Object.keys(fields).forEach(function(k) {
     let v = fields[k]
-    let isWrapped = v.Type.match(/(int|enum|float)/i) !== null
+    let isWrapped = v.Type.match(/(int|enum|float|char)/i) !== null
     if (!headWrap || v.Field.length <= headWrap) {
       isWrapped = false
     }

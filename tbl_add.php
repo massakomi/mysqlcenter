@@ -414,10 +414,10 @@ if (POST('action') == 'fieldsDelete' && isset($_POST['field']) && count($_POST['
 if ($msc->table == null || POST('action') == 'fieldsAdd') {
     $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
     if (is_array(POST('name'))) {
-        $cont = MSC_DrawFields();
+        //$cont = MSC_DrawFields();
     } else {
         $array = range(0, $fieldsCount - 1);
-        $cont = MSC_DrawFields($array);
+        //$cont = MSC_DrawFields($array);
     }
     $msc->pageTitle = "Добавить таблицу в базу данных $msc->db";
     // Добавление полей

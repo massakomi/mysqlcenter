@@ -184,7 +184,7 @@ $j = 0;
 $data = [];
 while ($row = mysqli_fetch_object($result)) {
     $data []= $row;
-    if ($table->headerCont == null) {
+    /*if ($table->headerCont == null) {
         if (isset($directSQL)) {
             $fields = array();
             $a = null;
@@ -243,7 +243,7 @@ while ($row = mysqli_fetch_object($result)) {
         $i++;
     }
     $table -> makeRow($values, ' id="row'.$j.'"');
-    $j ++;
+    $j ++;*/
 }
 
 if ($count != $j) {

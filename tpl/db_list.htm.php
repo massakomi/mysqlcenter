@@ -29,7 +29,7 @@
         let href = `/?db=${db}&s=tbl_list`
         let idRow = "db"+db;
 
-        let extra = databases[i]['extra'];
+        let extra = this.props.databases[i]['extra'];
         let countTables = 0, countSize = 0, countRows = 0, updateTime = 0;
         for (let status of extra) {
           countTables ++;

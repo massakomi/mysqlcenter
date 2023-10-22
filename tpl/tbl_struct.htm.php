@@ -134,6 +134,12 @@
       get('f3').checked = true
     }
 
+    checkDelete = (e) => {
+      e.preventDefault();
+      check(e.currentTarget, 'удаление ключа');
+      return false
+    }
+
     render() {
 
       return (
@@ -212,7 +218,7 @@
               </tr></thead>
               <tbody>
               {this.props.dataKeys.map((v) => {
-                  let href = "?s=tbl_struct&action=deleteKey&key="+v.Key_name+"&field="+v.Column_name
+                  let href = `?db=${this.props.db}&table=${this.props.table}&s=tbl_struct&action=deleteKey&key=${v.Key_name}&field=${v.Column_name}`
                   return (
                       <tr key={v.Key_name + v.Seq_in_index}>
                         <td><a href={href} onClick={this.checkDelete}><img src={this.props.dirImage + "close.png"} alt="" border="0" /></a></td>

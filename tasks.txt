@@ -24,8 +24,3 @@ MSC задачи по коду:
 + вынести <style> из tpl в общий css
 
 MSC задачи - проверка, тесты интерфейса, что работает что нет: TODO
-- Call to undefined function MSC_DrawFields() http://msc/index.php?db=bitrix_business&s=tbl_add
-- delete key не работает http://msc/?table=b_agent&db=bitrix_business&s=tbl_struct
-- ExportOptions is not defined http://msc/?table=b_admin_notify&db=bitrix_business&s=export
-- косяки в th http://msc/?db=bitrix_business&table=b_blog&s=tbl_data
-- databases is not defined http://msc/?s=db_list&db=bitrix_business&mode=full
