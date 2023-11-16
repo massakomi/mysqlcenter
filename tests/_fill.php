@@ -82,12 +82,12 @@ for ($i = 150000; $i < 150001; $i ++) {
     }
     $sql = $p.implode('","', $data).'")';
     mysqli_query($sql);
-    if (mysqli_error() != '') {
+    if (mysqli_errorx() != '') {
         $f = fopen('log.txt', 'a+');
-        fwrite($f, $sql.mysqli_error());
+        fwrite($f, $sql.mysqli_errorx());
         fclose($f);
     }*/
-    //echo mysqli_error();
+    //echo mysqli_errorx();
     //$sql []= implode('", "', $data);
     //$insert []= $data;
 }

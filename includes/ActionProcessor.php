@@ -438,7 +438,7 @@ class ActionProcessor
                 if ($msc->query($sql, $db)) {
                     $msc->addMessage('Поле удалено', $sql, MS_MSG_SUCCESS);
                 } else {
-                    $msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, mysqli_error());
+                    $msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, mysqli_errorx());
                 }
                 break;
 
@@ -454,7 +454,7 @@ class ActionProcessor
                     if ($msc->query($sql, $db)) {
                         $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
                     } else {
-                        $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_error());
+                        $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_errorx());
                     }
                 }
                 break;

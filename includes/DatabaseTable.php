@@ -55,7 +55,7 @@ class DatabaseTable extends DatabaseInterface {
             $this->query("ANALYZE TABLE `$table`;"); // refresh stat
             return $msc->addMessage("Таблица $table $text", $sql, MS_MSG_SUCCESS);
         } else {
-            return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, $msc->error ?: mysqli_error());
+            return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, $msc->error ?: mysqli_errorx());
         }
     }
 
@@ -110,7 +110,7 @@ class DatabaseTable extends DatabaseInterface {
                 $msc->addMessage('Данные скопированы', $sql, MS_MSG_SUCCESS);
             } else {
                 $errorsFull++;
-                $msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, mysqli_error());
+                $msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, mysqli_errorx());
             }
         }
         return ($errorsFull == 0);
@@ -125,7 +125,7 @@ class DatabaseTable extends DatabaseInterface {
         global $msc;
         $sql = 'SELECT COUNT(1) AS c FROM '.$this->table;
         $msc->query($sql);
-        $this->exists = (mysqli_error() == null);
+        $this->exists = (mysqli_errorx() == null);
         return $this->exists;
     }
 

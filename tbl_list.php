@@ -13,6 +13,13 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+function textm() {
+    echo '2';
+    echo '2';
+    echo '2';
+    echo '2';
+}
+
 $tables = DatabaseTable::getCashedTablesArray();
 
 if (count($tables) == 0) {
@@ -42,6 +49,17 @@ if (GET('action') == 'full') {
 
 // Полная таблица
 } else {
+    echo 1;
+    echo 1;
+    echo 1;
+    echo 1;
+    echo 1;
+    textm();
+    echo 1;
+    echo 1;
+    echo 1;
+    echo 1;
+    echo 1;
     $msc->pageTitle = 'Список таблиц базы данных "'.$msc->db.'" ';
     $action = POST('act');
     foreach ($tables as $key => $o) {
@@ -49,7 +67,7 @@ if (GET('action') == 'full') {
             if ($o->Engine == 'InnoDB') continue;
             echo '<br>'.$o->Name.' '.$o->Rows;
             $msc->query('ALTER TABLE `'.$o->Name.'` ENGINE = InnoDB');
-            echo mysqli_error();
+            echo mysqli_errorx();
         }
         if ($_GET['drop']) echo 'DROP TABLE `' . $o->Name . '`;<br />';
 

@@ -97,6 +97,7 @@ class MSCenter
      */
     function getCurrentDatabase()
     {
+        global $connection;
         if (GET('db') != '') {
             if ($this->db != GET('db')) {
                 setcookie('mc_db', GET('db'), time() + 3600 * 24 * 14, '/');
@@ -116,11 +117,11 @@ class MSCenter
             $this->db = DB_NAME;
         }
         if (!$this->db) {
-            $this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error());
+            $this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error($connection));
             return $this->db = null;
         }
         if (!$this->selectDb($this->db)) {
-            $this->addMessage('Ошибка при выборе базы данных "' . $this->db . '"', '', MS_MSG_FAULT, mysqli_error());
+            $this->addMessage('Ошибка при выборе базы данных "' . $this->db . '"', '', MS_MSG_FAULT, mysqli_error($connection));
             return $this->db = null;
         }
         $this->query('SET collation_connection = ' . MS_COLLATION);
@@ -159,7 +160,8 @@ class MSCenter
                 if (GET('s') != '') {
                     $this->page = GET('s');
                 } else {
-                    list($a, $value) = each($_GET);
+                    $a = array_key_first($_GET);
+                    $value = $_GET[$a];
                     if ($value != '') {
                         $this->page = $defaultPage;
                     } else {
@@ -238,7 +240,8 @@ showhide("' . $messageId . '");
      */
     function notice($text, $sql = null)
     {
-        $this->addMessage($text, $sql, MS_MSG_NOTICE, mysqli_error());
+        global $connection;
+        $this->addMessage($text, $sql, MS_MSG_NOTICE, mysqli_error($connection));
     }
 
     /**
@@ -251,12 +254,13 @@ showhide("' . $messageId . '");
      */
     function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error='')
     {
+        global $connection;
         if (!$error) {
-            $error = mysqli_error();
+            $error = mysqli_error($connection);
         }
         $textError = $text;
         if ($sql != '') {
-            $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . mysqli_affected_rows() . '</span>';
+            $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . mysqli_affected_rows($connection) . '</span>';
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200, "\r\n") . ';' . $aff . '</div>';
             if ($error != null) {
                 $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
@@ -386,6 +390,7 @@ showhide("' . $messageId . '");
      */
     public function exec($sql, $database)
     {
+        global $connection;
         if ($sql == null || empty($sql)) {
             return $this->addMessage('Запрос пустой', null, MS_MSG_FAULT);
         }
@@ -399,7 +404,7 @@ showhide("' . $messageId . '");
             if ($this->query($v['query'], null, false)) {
                 $succ++;
             } else {
-                $errors [] = mysqli_error();
+                $errors [] = mysqli_error($connection);
             }
         }
         $fault = count($errors);

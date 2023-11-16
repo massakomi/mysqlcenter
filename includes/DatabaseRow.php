@@ -33,7 +33,7 @@ class DatabaseRow extends DatabaseInterface {
 		if ($this->query($sql)){
 			return $this->addMessage("Ряд $row удалён", $sql, MS_MSG_SUCCESS);
 		} else {
-			return $this->addMessage("Ошибка удаления ряда $row", $sql, MS_MSG_FAULT, mysqli_error());
+			return $this->addMessage("Ошибка удаления ряда $row", $sql, MS_MSG_FAULT, mysqli_errorx());
 		}
 	}
 
@@ -72,7 +72,7 @@ class DatabaseRow extends DatabaseInterface {
 				return $this->addMessage('Всё в порядке', $sql, MS_MSG_SUCCESS);
 			}
 		} else {
-			return $this->addMessage('Ошибка копирования ряда '.$row, $sql, MS_MSG_FAULT, mysqli_error());
+			return $this->addMessage('Ошибка копирования ряда '.$row, $sql, MS_MSG_FAULT, mysqli_errorx());
 		}
 	}
 }

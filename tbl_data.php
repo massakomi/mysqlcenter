@@ -93,7 +93,7 @@ if (isset($directSQL) && $msc->table == '') {
 $fields = getFields($msc->table);
 // Если полей нет, значит и таблицы нет
 if (!$fields || count($fields) == 0) {
-    return $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysqli_error());
+    return $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, mysqli_errorx());
 }
 
 // Собираем массив имён полей, и также массив имён только ключевых полей
@@ -257,6 +257,7 @@ $pageProps = [
     'headWrap' => MS_HEAD_WRAP,
     'textCut' => MS_TEXT_CUT,
     'linksRange' => (int)MS_LIST_LINKS_RANGE,
+    'db' => $msc->db,
     'table' => $msc->table,
     'count' => $count,
     'part' => $part,

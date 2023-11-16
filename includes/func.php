@@ -115,7 +115,7 @@ function dropPrimaryKey($tbl) {
         if ($msc->query($sql)) {
             return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
         } else {
-            return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_error());
+            return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_errorx());
         }
     }
     return '';
@@ -173,7 +173,7 @@ function select($sql, $type='', $group='', $simple='') {
         return $result;
     }
     if ($result === false) {
-        //echo mysqli_error();
+        //echo mysqli_errorx();
         return array(); // что возвращать?
     }
     $count = mysqli_num_rows($result);
@@ -817,7 +817,9 @@ function msclog($message, $sql=null) {
         $file = @fopen($logFile, 'a+');
     }
     $message = str_replace("\n", ' ', $message);
-    $sql     = str_replace("\n", ' ', $sql);
+    if ($sql) {
+        $sql = str_replace("\n", ' ', $sql);
+    }
     $time    = date('d.m.y H:i:s ');
     $string  = "\n".$time.$message;
     if ($sql != null) {
@@ -848,7 +850,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline) {
         return;
     }
     if (stristr($errstr, 'Unable to save result set')) {
-        $logstr  .= '('.mysqli_error().')';
+        $logstr  .= '('.mysqli_errorx().')';
     }
     $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
     if (function_exists('msclog')) {
@@ -974,6 +976,11 @@ function getTableHeaders($fields, $sorts=true) {
         $headers[]= $link;
     }
     return $headers;
+}
+
+function mysqli_errorx() {
+    global $connection;
+    return mysqli_error($connection);
 }
 
 

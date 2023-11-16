@@ -61,7 +61,7 @@ if ($msc->page == 'exportSp') {
         // Save
         if (POST('new') != null) {
             if (!$id_set = $msct->insertSet(POST('new'))) {
-                return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, mysqli_error());
+                return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, mysqli_errorx());
             }
             foreach ($_POST['table'] as $key => $t){
                 $struct = intval(isset($_POST['struct'][$key]));
@@ -86,7 +86,7 @@ if ($msc->page == 'exportSp') {
                 }
                 $msct->insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
             }
-            $msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS, mysqli_error());
+            $msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS, mysqli_errorx());
         // Send
         } else {
             $drawForm = false;

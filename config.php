@@ -113,7 +113,9 @@ if (isset($_POST['pass']) && isset($_POST['user'])) {
 
 global $msc, $umaker, $pagel, $connection;
 
-$pagel->enterType = $enterType;
+if ($pagel) {
+    $pagel->enterType = $enterType;
+}
 
 // 3. проверка соединения с базой
 $connection = @mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);

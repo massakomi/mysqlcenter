@@ -22,7 +22,7 @@ if (GET('mode') == 'speedtest') {
     global $msc;
     $result = $msc->query($sql);
     if (!$result) {
-      $msc->addMessage('Ошибка', $sql, MS_MSG_FAULT, mysqli_error());
+      $msc->addMessage('Ошибка', $sql, MS_MSG_FAULT, mysqli_errorx());
     }
   }
   

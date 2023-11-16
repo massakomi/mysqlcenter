@@ -32,7 +32,7 @@ class DatabaseManager extends DatabaseInterface {
 		if ($this->query($sql)){
 			return $msc->addMessage("База данных $db $text", $sql, MS_MSG_SUCCESS);
 		} else {
-			return $msc->addMessage("Ошибка работы с $db", $sql, MS_MSG_FAULT, mysqli_error());
+			return $msc->addMessage("Ошибка работы с $db", $sql, MS_MSG_FAULT, mysqli_errorx());
 		}
 	}
 
@@ -116,7 +116,7 @@ class DatabaseManager extends DatabaseInterface {
 		if ($this->query($sql, $db)) {
 			return $msc->addMessage("Успешно выполнено", $sql, MS_MSG_SUCCESS);
 		} else {
-			return $msc->addMessage("Ошибка при выполнении операции с $db", $sql, MS_MSG_FAULT, mysqli_error());
+			return $msc->addMessage("Ошибка при выполнении операции с $db", $sql, MS_MSG_FAULT, mysqli_errorx());
 		}
 	}
 
