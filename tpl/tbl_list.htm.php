@@ -101,10 +101,10 @@
             <td id={'row'+sumTable+'-2'}><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
             <td id={'row'+sumTable+'-3'}><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{this.image("generate.png")}</a></td>
             <td id={'row'+sumTable+'-4'}>
-              <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Очистить таблицу">{this.image("delete.gif")}</a>
+              <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery)} title="Очистить таблицу">{this.image("delete.gif")}</a>
             </td>
             <td id={'row'+sumTable+'-5'}>
-              <a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'-8&id2='+idRow+'-9')} title="Удалить таблицу">{this.image("close.png")}</a>
+              <a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'&id2='+idRow+'-9')} title="Удалить таблицу">{this.image("close.png")}</a>
             </td>
             <td id={'row'+sumTable+'-6'} className="rig">{table.Rows}</td>
             <td id={'row'+sumTable+'-7'} className="rig">{formatSize(size)}</td>

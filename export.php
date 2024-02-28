@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
@@ -11,7 +11,7 @@ classLoad('MSTable');
  * Экспорт
  */
 
-if (!defined('DIR_MYSQL')) { 
+if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
@@ -20,7 +20,7 @@ if (!defined('DIR_MYSQL')) {
 $msct = new MSTable;
 
 // шапка дампа
-$dumpHeader = 
+$dumpHeader =
 '-- '.MS_APP_NAME.' SQL Экспорт
 -- версия '.MS_APP_VERSION.'
 --
@@ -161,7 +161,7 @@ if ($msc->page == 'exportSp') {
     $array = POST('export_table');
     $optionsSelected = [];
     // 3.2.1. Создание
-    if (count($array) > 0 || count($exportDb) > 0) {
+    if (is_array($array) && count($array) > 0 || is_array($exportDb) && count($exportDb) > 0) {
         // создание дампа
         $exp = new MySQLExport();
         $exp->setComments(POST('addComment') != '');
@@ -169,7 +169,7 @@ if ($msc->page == 'exportSp') {
         $exp->setOptionsStruct($addIfNot, $addAuto, $addKav);
         $exp->setOptionsData($insFull, $insExpand, $insZapazd, $insIgnor);
         // Экспорт БД
-        if (count($exportDb) > 0) {
+        if ($exportDb && count($exportDb) > 0) {
             foreach ($exportDb as $db) {
                 $exp->data .= "\r\n".'CREATE DATABASE `'.$db.'` DEFAULT CHARACTER SET '.MS_CHARACTER_SET.' COLLATE '.MS_COLLATION.';
 USE `'.$db.'`;'."\r\n"."\r\n";

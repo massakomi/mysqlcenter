@@ -281,7 +281,7 @@ showhide("' . $messageId . '");
                 'color' => $color,
                 'error' => $error,
                 'sql' => $sql,
-                'rows' => mysqli_affected_rows(),
+                'rows' => mysqli_affected_rows($connection),
             ];
         } else {
             $this->messages []= '<span style="color:' . $color . '">' . $text . '</span>';
@@ -302,15 +302,17 @@ showhide("' . $messageId . '");
      */
     public function query($sql, $database = null, $log = true)
     {
-        global $connection;
+        global $connection, $msc;
         if ($database != null) {
             $this->selectDb($database);
         }
         $this->queries [] = $sql;
-        $result = mysqli_query($connection, $sql);
-        $this->error = $connection->error;
-        if ($result === false) {
+        try {
+            $result = mysqli_query($connection, $sql);
+        } catch (\Exception $e) {
+            $this->error = $e->getMessage();
             msclog('query()', $sql);
+            $msc->addMessage($this->error, null, MS_MSG_FAULT);;
         }
         if ($log) {
             $this->loqQuery($sql, $result);
@@ -542,12 +544,13 @@ showhide("' . $messageId . '");
         if ($this->dbSelected == $db) {
             return true;
         }
-        if (mysqli_select_db($connection, $db)) {
-            $this->db = $db;
-            return true;
-        } else {
+        try {
+            mysqli_select_db($connection, $db);
+        } catch (\Exception $e) {
             return false;
         }
+        $this->db = $db;
+        return true;
     }
 
 }

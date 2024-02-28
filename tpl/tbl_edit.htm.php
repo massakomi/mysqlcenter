@@ -110,7 +110,7 @@
 
       // создание селектора типов данных
       let columnTypes = [
-        'VARCHAR', 'TINYINT', 'TEXT', 'DATE',
+        'VARCHAR', 'TINYINT', 'TEXT', 'DATE', 'JSON',
         'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
         'FLOAT', 'DOUBLE', 'DECIMAL',
         'DATETIME', 'TIMESTAMP', 'TIME', 'YEAR',

@@ -46,9 +46,9 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 
         } elseif (POST('compress') == 'excel') {
 
-            include_once 'includes/excel_reader.php';
+            //include_once 'includes/excel_reader.php';
 
-            $data = new Spreadsheet_Excel_Reader($_FILES['sqlFile']['tmp_name'], false);
+            //$data = new Spreadsheet_Excel_Reader($_FILES['sqlFile']['tmp_name'], false);
 
             foreach ($data->boundsheets as $k => $v) {
                 echo '<a href="?sheet='.$k.'">'.$v['name'].'</a> &nbsp; ';

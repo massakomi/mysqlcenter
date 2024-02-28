@@ -545,7 +545,7 @@ function readZipFile($path, $mime = '') {
         }
         echo "<br>";
      }*/
-     
+
     /*echo '<br />'.$path;
         $zip = zip_open($path);
  echo var_dump($zip);
@@ -571,11 +571,11 @@ var_dump($zip_entry);
             zip_close($zip);
 
         } else {
-           
+
         }
 */
 
-        
+
       break;
     case 'text/plain':
       $file = @fopen($path, 'rb');
@@ -1029,7 +1029,7 @@ function conf($param, $default='') {
  * @param string SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
  */
 function execSql($db, &$sql, $log=true) {
-    global $msc;
+    global $msc, $connection;
     $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
     if (!$msc->selectDb($db)) {
         return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);;
@@ -1052,7 +1052,7 @@ function execSql($db, &$sql, $log=true) {
         if (!$msc->query($q)) {
             $errors []= $msc->error.' ('.substr($q, 0, 100).')';
         } else {
-            $affected += mysqli_affected_rows();
+            $affected += mysqli_affected_rows($connection);
         }
     }
     $fault = count($errors);

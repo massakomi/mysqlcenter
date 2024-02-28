@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
@@ -25,7 +25,7 @@ function getTableMultySelector($extra) {
     return '<select'.$extra.'>'.$tableSelectMult.'</select>';
 }
 
-if (!defined('DIR_MYSQL')) { 
+if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
@@ -73,7 +73,7 @@ if (GET('table') != null) {
     if (strlen($queryField) > 0) {
         $array = DatabaseManager::getTables();
         $msc->pageTitle = "Поиск - база данных $msc->db";
-        
+
         $t = new Table('contentTable');
         $t->makeRowHead('Таблица', 'Найдено');
         $t->setColClass('', 'text-align:right');
@@ -124,6 +124,9 @@ if (GET('table') != null) {
             $whereCondition = " WHERE " . implode(' LIKE "%'.$query.'%" OR ', $fields) . ' LIKE "%'.$query.'%"';
             $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
             $result = $msc->query($sql);
+            if (!$result) {
+                continue;
+            }
             // найдено что-то
             if ($row = mysqli_fetch_object($result)) {
                 if ($row->c > 0) {

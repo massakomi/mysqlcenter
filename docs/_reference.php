@@ -12,7 +12,7 @@
  */
 function _inspectFunction($functionName) {
     $prop = new ReflectionFunction($functionName);
-    $function = '';
+    $function = new stdClass();
     $function->filename    = basename($prop->getFileName());
     // 2. Разбор комментария
     $co = _parseComment($prop->getDocComment());
@@ -25,11 +25,11 @@ function _inspectFunction($functionName) {
     // 3. Параметры
     foreach ($prop->getParameters() as $index => $param) {
         if ($param->isOptional()) {
-            $param->default = $param->getDefaultValue();
+            @$param->default = $param->getDefaultValue();
         }
         if (isset($co->parameters[$index])) {
-            $param->type  = $co->parameters[$index]->type;
-            $param->title = $co->parameters[$index]->title;
+            @$param->type  = $co->parameters[$index]->type;
+            @$param->title = $co->parameters[$index]->title;
         }
         $function->parameters [$index]= $param;
     }
@@ -51,32 +51,32 @@ function _inspectClass($className) {
         unset($methods[$key]->class);
         // 1. Свойства
         if ($prop->isPublic()) {
-            $methods[$key]->type = 'public';
+            @$methods[$key]->type = 'public';
         }
         if ($prop->isPrivate()) {
-            $methods[$key]->type = 'private';
+            @$methods[$key]->type = 'private';
         }
         if ($prop->isProtected()) {
-            $methods[$key]->type = 'protected';
+            @$methods[$key]->type = 'protected';
         }
-        $methods[$key]->static = $prop->isStatic() ? 'static' : '';
-        $methods[$key]->startLine = $prop->getStartLine();
+        @$methods[$key]->static = $prop->isStatic() ? 'static' : '';
+        @$methods[$key]->startLine = $prop->getStartLine();
         // 2. Разбор комментария
         $co = _parseComment($prop->getDocComment());
         foreach ($co as $p => $v) {
             if ($p != 'parameters') {
-                $methods[$key]->$p = $v;
+                @$methods[$key]->$p = $v;
             }
         }
         // 3. Параметры
-        $methods[$key]->parameters = array();
+        @$methods[$key]->parameters = array();
         foreach ($prop->getParameters() as $index => $param) {
             if ($param->isOptional()) {
-                $param->default = $param->getDefaultValue();
+                @$param->default = $param->getDefaultValue();
             }
             if (isset($co->parameters[$index])) {
-                $param->type  = $co->parameters[$index]->type;
-                $param->title = $co->parameters[$index]->title;
+                @$param->type  = $co->parameters[$index]->type;
+                @$param->title = $co->parameters[$index]->title;
             }
             $methods[$key]->parameters[]= $param;
         }
@@ -91,6 +91,7 @@ function _inspectClass($className) {
  * @return object Объект с параметрами PHPDoc
  */
 function _parseComment($comment) {
+    $co = new stdClass();
     $co->return      = array();
     $co->description = array();
     $co->parameters  = array();
@@ -125,6 +126,7 @@ function _parseComment($comment) {
         // сохраняем найденные параметры в массив $userParameters
         $param = '';
         if ($chunks[0] == 'param') {
+            $param = new stdClass();
             $param->type   = $chunks[1];
             $param->title  = $chunks[2];
             $co->parameters [$paramindex]= $param;
@@ -162,15 +164,15 @@ function _printInspectReference($inspectedData) {
         H1 {margin:10px 0; font-size:20px; background-color:#eee; padding:3px 10px}
         H2 {margin:0; font-size:18px}
         P  {font-size:14px}
-        
+
         TABLE.inspect {margin-bottom:10px}
         TABLE.inspect TD, TABLE.inspect TH {border:1px solid #ccc; padding:2px 5px; font-size:12px}
         TABLE.inspect TD.name {width:100px}
         TABLE.inspect DIV.params {display:none; border:1px solid darkblue; padding:5px; margin:2px}
-        
+
         TD.static {color:blue}
         TR.private TD, TR.uprivate TD {color:#ccc; font-size:10px; padding:0 5px}
-        
+
         TABLE.inspect B.no {color:#aaa}
         TABLE.inspect B.integer {color:green}
         TABLE.inspect B.array {color:red}
@@ -217,7 +219,7 @@ function _printInspectReference($inspectedData) {
         $pc = array();
         foreach ($mo->parameters as $po) {
             if (!isset($po->type)) {
-                $po->type = 'no';
+                @$po->type = 'no';
             }
             $nullClass = '';
             if (property_exists($po, 'default')) {
@@ -243,6 +245,8 @@ function _printInspectReference($inspectedData) {
     $content .= '</table>';
     echo $content;
 }
+
+chdir('..');
 
 $classBefore = get_declared_classes();
 $scripts = scandir('includes');

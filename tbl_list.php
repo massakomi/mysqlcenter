@@ -26,6 +26,12 @@ if (count($tables) == 0) {
     $msc->addMessage('В базе данных нет таблиц');
 }
 
+/*foreach ($tables as $k => $v) {
+    if ($v->Data_length < 100000000) {
+        unset($tables[$k]);
+    }
+}*/
+
 // Простая таблица
 if (GET('action') == 'full') {
     $msc->pageTitle = 'Полные данные таблиц "'.$msc->db.'" ';
@@ -49,17 +55,6 @@ if (GET('action') == 'full') {
 
 // Полная таблица
 } else {
-    echo 1;
-    echo 1;
-    echo 1;
-    echo 1;
-    echo 1;
-    textm();
-    echo 1;
-    echo 1;
-    echo 1;
-    echo 1;
-    echo 1;
     $msc->pageTitle = 'Список таблиц базы данных "'.$msc->db.'" ';
     $action = POST('act');
     foreach ($tables as $key => $o) {

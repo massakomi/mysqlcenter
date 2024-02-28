@@ -28,7 +28,15 @@
       e.preventDefault()
       fetch(this.props.url+'&ajax=1&action='+action, opts)
         .then(response => response.json())
-        .then(json => this.setState({messages: json.messages}));
+        .then(json => {
+          if (action === 'tableRename') {
+            if (json.page.url) {
+              window.location = json.page.url
+            }
+          } else {
+            this.setState({messages: json.messages})
+          }
+        });
     }
 
     render() {

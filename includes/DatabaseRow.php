@@ -16,7 +16,7 @@ class DatabaseRow extends DatabaseInterface {
 	function __construct() {
 		$this->_init();
 	}
-	
+
 	/**
 	 * Удаляет $limit строк из $table по условию $row
 	 *
@@ -46,6 +46,7 @@ class DatabaseRow extends DatabaseInterface {
 	 * @return boolean
 	 */
 	function rowCopy($db, $table, $row) {
+        global $connection;
 		$this->queryCheck($db, $table, $row);
 		$fields = getFields($table);
 		$f = array();
@@ -65,7 +66,7 @@ class DatabaseRow extends DatabaseInterface {
 		$row = stripslashes(urldecode($row));
 		$sql = "INSERT INTO $table ($fields) SELECT $fields FROM $table WHERE $row";
 		if ($this->query($sql)) {
-			$n = mysqli_affected_rows();
+			$n = mysqli_affected_rows($connection);
 			if ($n > 0) {
 				return $this->addMessage('Добавлено '.$n.' рядов', $sql, MS_MSG_SUCCESS);
 			} else {

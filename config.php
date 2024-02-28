@@ -118,13 +118,18 @@ if ($pagel) {
 }
 
 // 3. проверка соединения с базой
-$connection = @mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
-if ($connection == false) {
-    //setcookie('msc_pass', '', time(), '/');
-    //setcookie('msc_user', '', time(), '/');
-    exit('Unable to connect to database on "' . DB_HOST . '" as ' . DB_USERNAME_CUR . ' (enterType=' . $enterType . ')<br />
-    Values in "config_local.php" seem to be wrong<br />
-    Please check this values and then login again');
+try {
+    $connection = mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
+} catch (\Exception $e) {
+    try {
+        $connection = mysqli_connect(DB_HOST, DB_USERNAME, DB_PASSWORD);
+    } catch (\Exception $e) {
+        echo 'Unable to connect to database on "' . DB_HOST . '" as ' . DB_USERNAME_CUR . ' (enterType=' . $enterType . ')<br />
+    + Values in "config_local.php" seem to be wrong<br />
+    Please check this values and then login again';
+        $pagel->loginPage();
+        exit;
+    }
 }
 // Если вошли нормально записываем значения в куки
 if (isset($_POST['pass']) && isset($_POST['user'])) {
