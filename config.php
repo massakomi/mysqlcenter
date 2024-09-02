@@ -87,6 +87,8 @@ if (!defined('MSC_LOCAL_USE')) {
 if ($_POST['cookies']) {
     $_COOKIE = $_POST['cookies'];
 }
+
+/*
 // Если есть данные формы, берем оттуда
 if (isset($_POST['pass']) && isset($_POST['user'])) {
     define('DB_USERNAME_CUR', $_POST['user']);
@@ -109,7 +111,7 @@ if (isset($_POST['pass']) && isset($_POST['user'])) {
 } else {
     $pagel->loginPage();
     exit;
-}
+}*/
 
 global $msc, $umaker, $pagel, $connection;
 
@@ -118,11 +120,13 @@ if ($pagel) {
 }
 
 // 3. проверка соединения с базой
-try {
+/*try {
     $connection = mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
-} catch (\Exception $e) {
+} catch (\Exception $e) {*/
     try {
-        $connection = mysqli_connect(DB_HOST, DB_USERNAME, DB_PASSWORD);
+        define('DB_USERNAME_CUR', DB_USERNAME);
+        define('DB_PASSWORD_CUR', DB_PASSWORD);
+        $connection = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD);
     } catch (\Exception $e) {
         echo 'Unable to connect to database on "' . DB_HOST . '" as ' . DB_USERNAME_CUR . ' (enterType=' . $enterType . ')<br />
     + Values in "config_local.php" seem to be wrong<br />
@@ -130,7 +134,7 @@ try {
         $pagel->loginPage();
         exit;
     }
-}
+//}
 // Если вошли нормально записываем значения в куки
 if (isset($_POST['pass']) && isset($_POST['user'])) {
     // В куки пишем только если заходят с конфигурационных данных, и куки еще не записаны

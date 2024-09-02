@@ -1,10 +1,10 @@
-<?php 
+<?php
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
  */
 
 
-define('DB_HOST',       'localhost');
+define('DB_HOST',       'mysql-8.2');
 define('DB_USERNAME',   'root');
 define('DB_PASSWORD',   'root');
 define('DB_NAME',       '');
