@@ -15,7 +15,6 @@
     }
 
     dbHide(db, action) {
-      alert('hide')
       msQuery('dbHide', `db=${db}&id=db${db}&action=${action}`)
     }
 
@@ -123,7 +122,6 @@
         }
 
         render() {
-
             let mscExists = this.props.databases.includes('mysqlcenter')
             let trs = []
             for (let i = 0; i < this.props.databases.length; i++) {
@@ -172,20 +170,15 @@
 
         constructor(props) {
             super(props);
-            //console.log('construct')
             this.state = {value: 'wait'};
         }
 
         msImageAction = (param, actionReplace) => {
-            //e.preventDefault()
-            //console.log('act = '+param)
-            //console.log(this)
             if (typeof actionReplace == 'string') {
                 actionReplace = this.props.url + '?s=' + actionReplace
             } else {
                 actionReplace = ''
             }
-            console.log(actionReplace)
             msImageAction('formDatabases', param, actionReplace)
         }
 
@@ -203,7 +196,6 @@
                           {!this.props.showFullInfo ?
                               <Table folder={this.props.folder} databases={this.props.databases} hiddens={this.props.hiddens} /> :
                               <TableFull folder={this.props.folder} databases={this.props.databases} hiddens={this.props.hiddens} />}
-
                     </form>
 
                     <div className="chbxAction">

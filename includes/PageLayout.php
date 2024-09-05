@@ -1,6 +1,6 @@
 <?php
 /**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
+ * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
 /**
@@ -120,6 +120,7 @@ class PageLayout
                 echo '<pre>'; print_r($_SERVER); echo '</pre>'; exit;
             }*/
 
+            header('Content-Type: application/json');
             exit(json_encode($data));
         }
 
