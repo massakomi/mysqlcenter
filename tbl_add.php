@@ -183,8 +183,8 @@ $fields = getFields($msc->table);
 $names = POST('name');
 if (is_array($names) && count($names) > 0 && POST('action') != '') {
     // Ключи
-    $uk = isset($_POST['uni']) ? $_POST['uni'] : array();
-    $mk = isset($_POST['mul']) ? $_POST['mul'] : array();
+    $uk = $_POST['uni'] ?? [];
+    $mk = $_POST['mul'] ?? [];
     if (POST('action') == 'tableAddEnd' && is_numeric(POST('primaryKey'))) {
         // при добавлении таблицы вместо имён полей у нас только индексы полей, которые создаются в таблице
         // поэтому приходится создавать массивы ключей самостоятельно
