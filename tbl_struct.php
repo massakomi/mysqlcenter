@@ -1,6 +1,6 @@
 <?php
 /**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2010
+ * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
 /**
@@ -20,7 +20,7 @@ if (GET('action') == 'add_key') {
         $keyName = POST('keyName');
         $keyDefinition = POST('keyType');
         if ($keyName != '') {
-            $keyDefinition .= ' `'.$keyName.'`';
+            $keyDefinition .= ' `' . $keyName . '`';
         }
         $keyFields = [];
         foreach ($_POST['field'] as $key => $fieldName) {
@@ -28,9 +28,9 @@ if (GET('action') == 'add_key') {
                 continue;
             }
             $fieldSize = $_POST['length'][$key];
-            $keyFields []= '`'.$fieldName.'`'. ($fieldSize > 0 ? "($fieldSize)" : '');
+            $keyFields [] = '`' . $fieldName . '`' . ($fieldSize > 0 ? "($fieldSize)" : '');
         }
-        $sql = 'ALTER TABLE '.$msc->table.' ADD '.$keyDefinition.' ('.implode(',', $keyFields).')';
+        $sql = 'ALTER TABLE ' . $msc->table . ' ADD ' . $keyDefinition . ' (' . implode(',', $keyFields) . ')';
         //var_dump($sql); exit;
         if ($msc->query($sql, $msc->db)) {
             $returnInAdd = false;
@@ -44,9 +44,9 @@ if (GET('action') == 'add_key') {
     if ($returnInAdd) {
         $fieldRows = ['' => ''];
         foreach ($fields as $field) {
-            $fieldRows [$field->Field]= "$field->Field [$field->Type]";
+            $fieldRows [$field->Field] = "$field->Field [$field->Type]";
         }
-        $msc->pageTitle = 'Добавить ключи к таблице "'.$msc->table.'"';
+        $msc->pageTitle = 'Добавить ключи к таблице "' . $msc->table . '"';
 
         $pageProps = [
             'fieldRows' => $fieldRows,
@@ -75,7 +75,7 @@ if (!$dbt->isExists()) {
     $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT);
     return null;
 }
-$msc->pageTitle = 'Структура таблицы '.$msc->table;
+$msc->pageTitle = 'Структура таблицы ' . $msc->table;
 
 if (GET('print') == '1') {
     echo $dbt->insertStructTable();
@@ -85,26 +85,26 @@ if (GET('print') == '1') {
 $a = $msc->table != '' ? $msc->getData('
 SELECT i.*, k.*  FROM information_schema.TABLE_CONSTRAINTS i
 LEFT JOIN information_schema.KEY_COLUMN_USAGE k ON i.CONSTRAINT_NAME = k.CONSTRAINT_NAME 
-WHERE  i.CONSTRAINT_TYPE = \'FOREIGN KEY\' AND i.TABLE_SCHEMA = \''.$msc->db.'\'
-AND i.TABLE_NAME = \''.$msc->table.'\'
+WHERE  i.CONSTRAINT_TYPE = \'FOREIGN KEY\' AND i.TABLE_SCHEMA = \'' . $msc->db . '\'
+AND i.TABLE_NAME = \'' . $msc->table . '\'
 GROUP BY k.CONSTRAINT_NAME
 ') : [];
 $foreignKeys = [];
 foreach ($a as $k => $v) {
-    $foreignKeys[$v['COLUMN_NAME']]= $v;
+    $foreignKeys[$v['COLUMN_NAME']] = $v;
 }
-$dataKeys = $msc->table != '' ? $msc->getData('SHOW KEYS FROM `'.$msc->table.'`') : [];
+$dataKeys = $msc->table != '' ? $msc->getData('SHOW KEYS FROM `' . $msc->table . '`') : [];
 
 // Массив полей, распечатка массива
 $fields = array_values($fields);
 $tableAddStr = ['array('];
 foreach ($fields as $k => $v) {
-    $tableAddStr []= "&nbsp;&nbsp;&nbsp;&nbsp;'".$v->Field."' => ,";
+    $tableAddStr [] = "&nbsp;&nbsp;&nbsp;&nbsp;'" . $v->Field . "' => ,";
 }
-$tableAddStr []= ")";
+$tableAddStr [] = ")";
 $tableAddStr = implode('<br />', $tableAddStr);
 
-$data = $dbt->insertDetailsTable($return=1);
+$data = $dbt->insertDetailsTable($return = 1);
 
 $pageProps = [
     'db' => $msc->db,
