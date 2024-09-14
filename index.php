@@ -8,7 +8,7 @@
  */
 
 spl_autoload_register(function ($class) {
-    include 'includes/' . $class . '.php';
+    include_once 'includes/' . $class . '.php';
 });
 
 if (file_exists('Debugger.php')) {
