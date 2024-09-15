@@ -1150,3 +1150,23 @@ function printTable($offersData, $opts=[])
 function isajax() {
     return $_GET['ajax'];
 }
+
+function getData($sql) {
+    global $msc;
+    $data = [];
+    $res = $msc->query($sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        $data [] = $row;
+    }
+    return $data;
+}
+
+function getDataAssoc($sql, $key, $value) {
+    global $msc;
+    $data = [];
+    $res = $msc->query($sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        $data [$row[$key]] = $row[$value];
+    }
+    return $data;
+}

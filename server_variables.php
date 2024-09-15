@@ -5,6 +5,15 @@
 
 list($vi, $vs) = getServerVersion();
 $msc->pageTitle = 'Переменные сервера ('.$vi.')';
+
+if (isajax()) {
+    $sessionVars = getDataAssoc('SHOW SESSION VARIABLES', 'Variable_name', 'Value');
+    $globalVars = getDataAssoc('SHOW GLOBAL VARIABLES', 'Variable_name', 'Value');
+    return [
+        'sessionVars' => $sessionVars,
+        'globalVars' => $globalVars,
+    ];
+}
 ?>
 
 <div id="root"></div>

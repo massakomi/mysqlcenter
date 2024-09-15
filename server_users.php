@@ -5,14 +5,26 @@
 
 $msc->pageTitle = 'Различная информация';
 
-
-$res = $msc->query('SHOW COUNT(*) ERRORS');
-while ($row = mysqli_fetch_assoc($res)) {
-	pre($row);
+if (isajax()) {
+    $users = getData('SELECT * FROM mysql.user');
+    $grants = getData('SHOW GRANTS');
+    $privileges = getData('SHOW PRIVILEGES');
+    $engines = getData('SHOW ENGINES');
+    return [
+        'users' => $users,
+        'grants' => $grants,
+        'privileges' => $privileges,
+        'engines' => $engines,
+    ];
 }
 
 
+
 echo '<h3>Пользователи</h3>';
+
+//
+
+
 $res = $msc->query('SELECT * FROM mysql.user');
 $table = new Table('contentTable');
 $data = [];
@@ -30,7 +42,7 @@ foreach ($data as $k => $row) {
 	 	$table->makeRowHead($row);
 		continue;
 	 }
-	 $table->makeRow($row);	
+	 $table->makeRow($row);
 }
 echo $table -> make();
 
@@ -46,7 +58,7 @@ while ($row = mysqli_fetch_assoc($res)) {
 	 $table->makeRow($row);
 }
 echo 'Список привилегий, предоставленных аккаунту, который вы используете для соединения с сервером (FOR CURRENT_USER)';
-echo $table -> make(); 
+echo $table -> make();
 
 
 
@@ -62,7 +74,7 @@ while ($row = mysqli_fetch_assoc($res)) {
 	 $table->makeRow($row);
 }
 echo 'Список системных привилегий, которые поддерживает MySQL сервер. Точный список привилегий зависит от версии вашего сервера.';
-echo $table -> make(); 
+echo $table -> make();
 
 
 
