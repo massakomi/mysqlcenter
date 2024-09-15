@@ -156,6 +156,9 @@ class DatabaseInterface
      */
     public function error($message, $file = null, $line = null, $db_error = false)
     {
+        if (isajax()) {
+            ajaxError($message);
+        }
         echo $message;
         if ($file != null && $line != null) {
             echo "<br /><b>file:</b> $file<br /><b>line:</b> $line";

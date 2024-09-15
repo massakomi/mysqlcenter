@@ -463,33 +463,13 @@ class ActionProcessor
 
         }
 
-
-        //$objResponse->addConfirmCommands(1, 'Тест addConfirmCommands');
-
-
-        //$objResponse->addAppend('testId', 'innerHTML', ' + Тест addAppend');
-        //$objResponse->addPrepend('testId', 'innerHTML', ' - Тест addPrepend');
-        //$objResponse->addReplace('testId', 'innerHTML', '+', '+ Тест Replace');
-        //$objResponse->addClear('testId', 'innerHTML');
-
-
-        //$objResponse->addRedirect('/engine/mysqladmin/?s=_test&action=1');
-
-        //$objResponse->addScript('alert(5);');
-        // $objResponse->addScriptCall("myJSFunction", "arg 1", "arg 2", 12345);
-        // $objResponse->addIncludeScript($sFileName)
-
-        // $objResponse->addCreate($sParent, $sTag, $sId, $sType="")
-        // $objResponse->addInsert($sBefore, $sTag, $sId)
-        // $objResponse->addInsertAfter($sAfter, $sTag, $sId)
-
-        // $objResponse->addCreateInput($sParent, $sType, $sName, $sId)
-        // $objResponse->addInsertInput($sBefore, $sType, $sName, $sId)
-        // $objResponse->addInsertInputAfter($sAfter, $sType, $sName, $sId)
-
-        // $objResponse->addEvent($sTarget,$sEvent,$sScript)
-        // $objResponse->addHandler($sTarget,$sEvent,$sHandler)
-        // $objResponse->addRemoveHandler($sTarget,$sEvent,$sHandler)
+        if (isajax()) {
+            header('Content-Type: application/json');
+            exit(json_encode([
+                'status' => true,
+                'message' => $msc->getMessagesData()
+            ]));
+        }
     }
 }
 
@@ -500,6 +480,9 @@ class ActionProcessor
  */
 function addAlert($str)
 {
+    if (isajax()) {
+        return ;
+    }
     echo "\n" . 'alert("' . $str . '");';
 }
 
@@ -510,6 +493,9 @@ function addAlert($str)
  */
 function addRemove($id)
 {
+    if (isajax()) {
+        return ;
+    }
     echo "\n" . 'remove(get("' . $id . '"));';
 }
 
@@ -520,10 +506,16 @@ function addRemove($id)
  */
 function addAssign($id, $param, $value)
 {
+    if (isajax()) {
+        return ;
+    }
     echo "\n" . 'get("' . $id . '").setAttribute("' . $param . '", "' . $value . '");';
 }
 
 function addHtml($id, $value)
 {
+    if (isajax()) {
+        return ;
+    }
     echo "\n" . 'get("' . $id . '").innerHTML = "' . $value . '";';
 }

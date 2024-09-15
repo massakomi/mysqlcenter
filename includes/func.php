@@ -1170,3 +1170,11 @@ function getDataAssoc($sql, $key, $value) {
     }
     return $data;
 }
+
+function ajaxError($message) {
+    header('Content-Type: application/json');
+    exit(json_encode([
+        'status' => false,
+        'message' => $message
+    ]));
+}
