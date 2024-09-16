@@ -100,6 +100,7 @@ class PageLayout
                 'getPageTitle' => $msc->getPageTitle(),
                 'messages' => $msc->getMessagesData(),
                 'queries' => $msc->queries,
+                'databases' => Server::getDatabasesWithoutHidden(),
 
                 'generate_time' => round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5),
                 'memory_get_peak_usage' => formatSize(memory_get_peak_usage()),
@@ -116,12 +117,7 @@ class PageLayout
 
             ];
 
-            /*if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-                echo '<pre>'; print_r($_SERVER); echo '</pre>'; exit;
-            }*/
-
-            header('Content-Type: application/json');
-            exit(json_encode($data));
+            ajaxResult($data);
         }
 
         // Получаем контент

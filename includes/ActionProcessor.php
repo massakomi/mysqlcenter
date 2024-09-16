@@ -464,11 +464,10 @@ class ActionProcessor
         }
 
         if (isajax()) {
-            header('Content-Type: application/json');
-            exit(json_encode([
+            ajaxResult([
                 'status' => true,
                 'message' => $msc->getMessagesData()
-            ]));
+            ]);
         }
     }
 }

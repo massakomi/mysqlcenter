@@ -25,7 +25,7 @@
 </head>
 <body>
 <div class="pageBlock">
-  <b id="appNameId"><a href="?db_list"><?php echo MS_APP_NAME?></a></b> &nbsp; &nbsp; 
+  <b id="appNameId"><a href="?db_list"><?php echo MS_APP_NAME?></a></b> &nbsp; &nbsp;
 <?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;
   <span class="hiddenText" onclick="msDisplaySql()" title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
   <span class="menuChain"><?php echo $this->getChainMenu()?></span>
@@ -61,7 +61,7 @@ echo $this->getTableMenu();
         <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''" />
         </form>
         </td></tr>
-        
+
     </table>
 <?php
 if (conf('showmessages') == '1') {
@@ -80,17 +80,8 @@ if (conf('showmessages') == '1') {
 </form>
 <div id="dbHiddenMenu">
 <?php
-$dbs = Server::getDatabases();
-$hidden = array();
-if (in_array('mysqlcenter', $dbs)) {
-    include_once 'includes/MSTable.php';
-	$hidden = MSTable::getHiddensArray();
-}
-
+$dbs = Server::getDatabasesWithoutHidden();
 foreach ($dbs as $db) {
-    if (in_array($db, $hidden)) {
-    	continue;
-    }
 	echo '<a href="?db='.$db.'">'.$db.'</a><br />';
 }
 ?>
@@ -103,7 +94,7 @@ foreach ($msc->queries as $query) {
 ?>
 </div>
 
-<div class="pageBlock">  
+<div class="pageBlock">
 	<?php echo $this->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
   &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
   <strong>Хост:</strong> <?php echo DB_HOST ?> &nbsp;&nbsp;

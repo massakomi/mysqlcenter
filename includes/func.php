@@ -1171,6 +1171,11 @@ function getDataAssoc($sql, $key, $value) {
     return $data;
 }
 
+function ajaxResult($data) {
+    header('Content-Type: application/json');
+    exit(json_encode($data));
+}
+
 function ajaxError($message) {
     header('Content-Type: application/json');
     exit(json_encode([
