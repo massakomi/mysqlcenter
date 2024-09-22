@@ -14,12 +14,6 @@ if (function_exists('date_default_timezone_set')) {
     date_default_timezone_set('Europe/Moscow');
 }
 
-class A
-{
-}
-
-;
-
 // Папки
 define('MS_URL', '');
 define('MS_DIR_TPL', 'tpl/');
@@ -46,7 +40,7 @@ $msc = new MSCenter(); // чтобы начать анализ скорости 
 
 // 1. загрузка локального конфига
 if (!file_exists(DIR_MYSQL . 'config_local.php')) {
-    exit('File "config_local.php" was not founded<br />
+    exitError('File "config_local.php" was not founded<br />
     You need to create this file with db config parameters LIKE this: <br /> <br />
     define("DB_HOST",       "localhost"); <br />
     define("DB_USERNAME",   "user_name"); <br />
@@ -84,7 +78,7 @@ if (!defined('MSC_LOCAL_USE')) {
     }
 }
 
-if ($_POST['cookies']) {
+if (array_key_exists('cookies', $_POST)) {
     $_COOKIE = $_POST['cookies'];
 }
 
@@ -114,25 +108,20 @@ if (isset($_POST['pass']) && isset($_POST['user'])) {
 }*/
 
 global $msc, $umaker, $pagel, $connection;
-
+/*
 if ($pagel) {
     $pagel->enterType = $enterType;
-}
+}*/
 
 // 3. проверка соединения с базой
 /*try {
     $connection = mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
 } catch (\Exception $e) {*/
     try {
-        define('DB_USERNAME_CUR', DB_USERNAME);
-        define('DB_PASSWORD_CUR', DB_PASSWORD);
         $connection = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD);
     } catch (\Exception $e) {
-        echo 'Unable to connect to database on "' . DB_HOST . '" as ' . DB_USERNAME_CUR . ' (enterType=' . $enterType . ')<br />
-    + Values in "config_local.php" seem to be wrong<br />
-    Please check this values and then login again';
-        $pagel->loginPage();
-        exit;
+        exitError('Unable to connect to database on "' . DB_HOST . '" as ' . DB_USERNAME . '<br />' . $e->getMessage());
+        //$pagel->loginPage();
     }
 //}
 // Если вошли нормально записываем значения в куки

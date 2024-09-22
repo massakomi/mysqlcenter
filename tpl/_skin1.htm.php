@@ -98,7 +98,7 @@ foreach ($msc->queries as $query) {
 	<?php echo $this->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
   &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
   <strong>Хост:</strong> <?php echo DB_HOST ?> &nbsp;&nbsp;
-  <strong>Пользователь:</strong> <?php echo DB_USERNAME_CUR ?> &nbsp;&nbsp;
+  <strong>Пользователь:</strong> <?php echo DB_USERNAME ?> &nbsp;&nbsp;
 <?php
 if (function_exists('memory_get_peak_usage')) {
 ?>

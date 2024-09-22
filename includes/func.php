@@ -1173,13 +1173,20 @@ function getDataAssoc($sql, $key, $value) {
 
 function ajaxResult($data) {
     header('Content-Type: application/json');
-    exit(json_encode($data));
+    exit(json_encode($data, JSON_INVALID_UTF8_IGNORE));
 }
 
 function ajaxError($message) {
-    header('Content-Type: application/json');
-    exit(json_encode([
+    ajaxResult([
         'status' => false,
         'message' => $message
-    ]));
+    ]);
+}
+
+function exitError($message) {
+    if (isajax()) {
+        ajaxError($message);
+    } else {
+        exit($message);
+    }
 }

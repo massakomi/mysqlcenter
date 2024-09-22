@@ -18,11 +18,52 @@ class PageLayout
     }
 
     /**
+     * Статистика просмотров баз данных
+     * @return void
+     */
+    private function dbViewStat() {
+        global $msc;
+        $dbs = Server::getDatabases();
+        if (!in_array('mysqlcenter', $dbs) || empty($msc->db)) {
+            return ;
+        }
+        include_once 'includes/MSTable.php';
+
+        $result = $msc->query($t = 'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $msc->db . '"');
+        $a = [];
+        while ($o = mysqli_fetch_object($result)) {
+            $a [] = $o;
+        }
+        if (count($a) == 0) {
+            $msc->query('REPLACE INTO mysqlcenter.db_info VALUES("' . $msc->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
+        } else {
+            $msc->query('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
+                '" WHERE db_name="' . $msc->db . '"', null, 0);
+        }
+
+        // Статистика просмотров таблиц
+        if ($msc->table != '') {
+            $result = $msc->query($t = 'SELECT * FROM mysqlcenter.table_info
+                    WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"');
+            $a = [];
+            while ($o = mysqli_fetch_object($result)) {
+                $a [] = $o;
+            }
+            if (count($a) == 0) {
+                $msc->query('REPLACE INTO mysqlcenter.table_info VALUES("' . $msc->db . '", "' . $msc->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
+            } else {
+                $msc->query('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
+                    '" WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"', null, 0);
+            }
+        }
+    }
+
+    /**
      * Отображение страницы
      */
     public function display()
     {
-        global $msc, $umaker, $connection;
+        global $msc;
         $currentHandler = $this->_getHandler();
         $currentPage = $msc->getCurrentPage();
         if ($currentHandler == null) {
@@ -34,49 +75,7 @@ class PageLayout
         global $debugger;
         if (isset($debugger)) $debugger->et('До контента');
 
-        // Статистика просмотров
-        $dbs = Server::getDatabases();
-        if (in_array('mysqlcenter', $dbs)) {
-            include_once 'includes/MSTable.php';
-
-            // Статистика просмотров баз данных
-            if ($msc->db != '') {
-                $result = $msc->query($t = 'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $msc->db . '"');
-                $a = array();
-                while ($o = mysqli_fetch_object($result)) {
-                    $a [] = $o;
-                }
-                if (count($a) == 0) {
-                    $msc->query('REPLACE INTO mysqlcenter.db_info VALUES("' . $msc->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
-                } else {
-                    $msc->query('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
-                        '" WHERE db_name="' . $msc->db . '"', null, 0);
-                }
-
-                // Статистика просмотров таблиц
-                if ($msc->table != '') {
-                    $result = $msc->query($t = 'SELECT * FROM mysqlcenter.table_info
-                        WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"');
-                    $a = array();
-                    while ($o = mysqli_fetch_object($result)) {
-                        $a [] = $o;
-                    }
-                    if (count($a) == 0) {
-                        $msc->query('REPLACE INTO mysqlcenter.table_info VALUES("' . $msc->db . '", "' . $msc->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
-                    } else {
-                        $msc->query('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
-                            '" WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"', null, 0);
-                    }
-                }
-            }
-        }
-
-//        $generate_time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
-//        $memory_get_peak_usage = formatSize(memory_get_peak_usage());
-//        $memory_get_usage = formatSize(memory_get_usage());
-//        $includeSize = formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files())));
-//        $memory_limit = ini_get('memory_limit');
-
+        $this->dbViewStat();
 
         if (isajax()) {
 
@@ -109,7 +108,7 @@ class PageLayout
                 'memory_limit' => ini_get('memory_limit'),
 
                 'DB_HOST' => DB_HOST,
-                'DB_USERNAME_CUR' => DB_USERNAME_CUR,
+                'DB_USERNAME_CUR' => DB_USERNAME,
 
                 //'enterType' => $this->enterType,
                 //'cookies' => $_COOKIE,
