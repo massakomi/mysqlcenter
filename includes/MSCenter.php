@@ -117,7 +117,7 @@ class MSCenter
             $this->db = DB_NAME;
         }
         if (!$this->db) {
-            $this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error($connection));
+            //$this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error($connection));
             return $this->db = null;
         }
         if (!$this->selectDb($this->db)) {
@@ -330,6 +330,17 @@ showhide("' . $messageId . '");
         $res = $this->query($sql);
         $data = mysqli_fetch_all($res, MYSQLI_ASSOC);
         return $data;
+    }
+
+    /**
+     * @param $sql
+     * @param null $result
+     * @return array
+     */
+    public function getOne($sql, $result = null)
+    {
+        $res = $this->query($sql);
+        return mysqli_fetch_assoc($res);
     }
 
     /**

@@ -30,7 +30,10 @@ if (count($tables) == 0) {
     if ($v->Data_length < 100000000) {
         unset($tables[$k]);
     }
-}*/
+}
+
+
+*/
 
 // Простая таблица
 if (GET('action') == 'full') {
@@ -39,7 +42,7 @@ if (GET('action') == 'full') {
     return;
 
 // Исследование структуры
-} elseif (GET('action') == 'structure') {
+} elseif (GET('action') == 'structure' || GET('mode') == 'structure') {
     $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
     foreach ($tables as $key => $table) {
         $tables [$key]->fields = getFields($table->Name);

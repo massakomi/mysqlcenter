@@ -63,7 +63,7 @@ class PageLayout
      */
     public function display()
     {
-        global $msc;
+        global $msc, $umaker, $connection; // umaker connection нужны!
         $currentHandler = $this->_getHandler();
         $currentPage = $msc->getCurrentPage();
         if ($currentHandler == null) {

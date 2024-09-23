@@ -32,7 +32,7 @@ class ActionProcessor
 
     /**
      * Конструктор
-     * @param boolean True, если запускается из ajax-скрипта
+     * @param boolean True, если запускается из ajax-скрипта ajax.php
      */
     public function __construct($isAjax = false)
     {
@@ -78,12 +78,17 @@ class ActionProcessor
         // Выполнение запросов
         // Данные из POST должны считываться самостоятельно
 
+        /*ajaxResult([
+            'status' => true,
+            'message' => ["queryMode=$queryMode db=$db tbl=".(is_array($tbl) ? implode(',', $tbl) : $tbl)]
+        ]);
+        $msc->addMessage('Выполняем $queryMode='.$queryMode.' $db='.$db.'
+            tbl='.(is_array($tbl) ? '['.implode(',', $tbl).']' : $tbl), '', MS_MSG_NOTICE);*/
+
         switch ($queryMode) {
             case 'querysql':
-
                 $data = [];
                 $res = $msc->query($_POST['sql']);
-
                 if ($_POST['type'] == 'pair-value') {
                     while ($row = mysqli_fetch_array($res)) {
                         $data[$row[0]] = $row[1];
@@ -93,10 +98,7 @@ class ActionProcessor
                         $data[] = $row;
                     }
                 }
-
                 exit(json_encode($data));
-            break;
-
 
             case 'sqlQuery'    :
 
@@ -278,10 +280,13 @@ class ActionProcessor
             case 'truncate_all' :
             case 'copy_all' :
                 $a = $tbl;
+                if (!is_array($a)) {
+                    $msc->addMessage('table не массив',  '', MS_MSG_ERROR);
+                    break;
+                }
                 if ($a == false) {
                     break;
                 }
-                $db = $db;
                 $dbt->queryCheck($db);
                 $cs = (POST('copy_struct') != '');
                 $cd = (POST('copy_data') != '');
@@ -353,13 +358,46 @@ class ActionProcessor
                 $dbm->DatabaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset');
                 break;
 
+
+            case 'dbAllAction'       :
+                $tables = DatabaseTable::getCashedTablesArray();
+                $action = POST('act');
+                foreach ($tables as $o) {
+                    if ($action === 'makeInnodb') {
+                        if ($o->Engine == 'InnoDB') {
+                            $msc->addMessage('Таблица '.$o->Name.' пропущена - уже InnoDB',  '', MS_MSG_NOTICE);
+                            continue;
+                        }
+                        $msc->query($sql='ALTER TABLE `'.$o->Name.'` ENGINE = InnoDB');
+                        $error = mysqli_errorx();
+                        if ($error) {
+                            $msc->addMessage(111, $sql='xxx', MS_MSG_FAULT);
+                        }
+                    }
+                    if ($action === 'drop-query') {
+                        $sql = 'DROP TABLE `' . $o->Name . '`;';
+                        $msc->addMessage($sql, '', MS_MSG_SUCCESS);
+                    }
+
+                    if (in_array($action, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
+                        $sql = strtoupper($action) . ' TABLE `' . $o->Name . '`';
+                        if ($msc->query($sql)) {
+                            $msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
+                        } else {
+                            $msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
+                        }
+                    }
+                }
+                break;
+
+
             // массово + единично
             case 'dbRename'       :
             case 'dbCopy'         :
                 $isMove = ($queryMode == 'dbRename');
                 if ($this->param('dbMulty')) {
                     $databases = $this->param('databases');
-                    $newName = array();
+                    $newName = [];
                     foreach ($databases as $db) {
                         $new = $db . '_copy';
                         if (in_array($new, $databases)) {
@@ -457,6 +495,12 @@ class ActionProcessor
                         $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_errorx());
                     }
                 }
+                break;
+
+            // операции с пользователем
+
+            case 'userAdd' :
+                Server::userAdd();
                 break;
 
             default:    //$msc->addMessage('Неизвестный запрос: '.$queryMode, null, MS_MSG_NOTICE);

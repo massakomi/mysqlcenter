@@ -90,10 +90,10 @@ class DatabaseTable extends DatabaseInterface {
         $sql = preg_replace('/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i', 'CREATE TABLE `' . $newName . '`', $sql, 1);
         $errorsFull = 0; // сохраняем ошибки, а не выходим, чтобы не прерывать процесс копирования
         if ($this->query($sql, $database)) {
-            $msc->addMessage("Таблица скопирована", $sql, MS_MSG_SUCCESS);
+            $msc->addMessage("Таблица $table скопирована", $sql, MS_MSG_SUCCESS);
         } else {
             $errorsFull++;
-            $msc->addMessage("Ошибка копирования", $sql, MS_MSG_FAULT);
+            $msc->addMessage("Ошибка копирования $table", $sql, MS_MSG_FAULT);
         }
         // переход в старую БД после запроса
         if ($database != $db) {
