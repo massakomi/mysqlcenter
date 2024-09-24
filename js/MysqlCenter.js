@@ -614,15 +614,15 @@ function rlist(object, event, a){
   }
 }
 
-formatSize = (bytes) => {
+formatSize = (bytes, digits = 2) => {
   if (bytes < Math.pow(1024, 1)) {
     return bytes + " b";
   } else if (bytes < Math.pow(1024, 2)) {
-    return (bytes / Math.pow(1024, 1)).toFixed(2) + ' Kb';
+    return (bytes / Math.pow(1024, 1)).toFixed(digits) + ' Kb';
   } else if (bytes < Math.pow(1024, 3)) {
-    return (bytes / Math.pow(1024, 2)).toFixed(2) + ' Mb';
+    return (bytes / Math.pow(1024, 2)).toFixed(digits) + ' Mb';
   } else if (bytes < Math.pow(1024, 4)) {
-    return (bytes / Math.pow(1024, 3)).toFixed(2) + ' Gb';
+    return (bytes / Math.pow(1024, 3)).toFixed(digits) + ' Gb';
   }
 }
 
