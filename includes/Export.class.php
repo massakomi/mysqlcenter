@@ -458,7 +458,7 @@ class MySQLExport {
             fwrite($file, $content);
             fclose($file);
 
-            return '/download.zip';
+            return 'https://'.$_SERVER['HTTP_HOST'] . '/data/download.zip';
         }
     }
     // текстовое поле
