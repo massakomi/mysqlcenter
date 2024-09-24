@@ -79,7 +79,7 @@ function get_databases_full($database=null, $force_stats=false, $link=null, $sor
 
     if (PMA_MYSQL_INT_VERSION >= 50002) {
         $limit = '';
-        
+
         // get table information from information_schema
         if ($database) {
             $sql_where_schema = 'WHERE `SCHEMA_NAME` LIKE \''. addslashes($database) . '\'';
@@ -194,7 +194,7 @@ if ($msc->table == '') {
 	$DQuery = $umaker->make('db', $msc->db, 's', 'actions');
 
     $charsetSelector = '';
-    $dbInfo = get_databases_full($msc->db, GET('action')=='fullinfo', $connection, $sort_by, $sort_order, 0);
+    $dbInfo = get_databases_full($msc->db, GET('act')=='fullinfo', $connection, $sort_by, $sort_order, 0);
     $dbInfo = $dbInfo[0];
     $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
     $charsetSelector = getCharsetSelector(substr($dbInfo['collation'], 0, strpos($dbInfo['collation'], '_')));
@@ -212,7 +212,7 @@ if ($msc->table == '') {
     }
 
 	include(MS_DIR_TPL . 'actionsdb.htm.php');
-	
+
 } else {
 	$msc->pageTitle = "Действия - таблица $msc->table";
 	$DTQuery = MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table";

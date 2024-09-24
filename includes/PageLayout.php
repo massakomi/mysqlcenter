@@ -144,7 +144,7 @@ class PageLayout
     {
         if (isajax()) {
             $data = [
-                'message' => $errorMessage,
+                'messages' => $errorMessage,
                 'getWindowTitle' => 'Login to MysqlCenter',
                 'page' => 'login',
                 'post' => $_POST,

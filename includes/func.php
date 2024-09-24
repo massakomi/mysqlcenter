@@ -1144,12 +1144,6 @@ function printTable($offersData, $opts=[])
     echo '</table>';
 }
 
-/**
- * @return bool
- */
-function isajax() {
-    return $_GET['ajax'];
-}
 
 function getData($sql) {
     global $msc;
@@ -1171,6 +1165,13 @@ function getDataAssoc($sql, $key, $value) {
     return $data;
 }
 
+/**
+ * @return bool
+ */
+function isajax() {
+    return $_GET['ajax'];
+}
+
 function ajaxResult($data) {
     header('Content-Type: application/json');
     exit(json_encode($data, JSON_INVALID_UTF8_IGNORE));
@@ -1179,7 +1180,14 @@ function ajaxResult($data) {
 function ajaxError($message) {
     ajaxResult([
         'status' => false,
-        'message' => $message
+        'messages' => $message
+    ]);
+}
+
+function ajaxSuccess($message) {
+    ajaxResult([
+        'status' => true,
+        'messages' => $message
     ]);
 }
 

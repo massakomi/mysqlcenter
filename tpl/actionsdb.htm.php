@@ -53,7 +53,7 @@
   class App extends React.Component {
 
     fullinfo = () => {
-      fetch(this.props.url+'&ajax=1&action=fullinfo')
+      fetch(this.props.url+'&ajax=1&act=fullinfo')
         .then(response => response.json())
         .then(json => this.setState({dbInfo: json.page.dbInfo}))
     }

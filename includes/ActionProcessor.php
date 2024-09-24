@@ -251,6 +251,27 @@ class ActionProcessor
                 $dbt->tableAction($db, $tbl, 'COMMENT', $this->param('comment'));
                 break;
 
+            // Найти и заменить
+            case 'tableReplace';
+                $field = POST('field');
+                $search_for = POST('search_for');
+                $replace_in = POST('replace_in');
+                if ($field && $search_for) {
+                    global $connection;
+                    $sql = 'UPDATE `'.$tbl.'` SET '.$field.' = REPLACE(`'.$field.'`, "'.$search_for.'", "'.$replace_in.'")';
+                    if ($msc->query($sql)) {
+                        $c = mysqli_affected_rows($connection);
+                        if ($c > 0) {
+                            $msc->addMessage('Таблица изменена, затронуто рядов: '.$c, $sql, MS_MSG_SUCCESS);
+                        } else {
+                            $msc->addMessage('Ничего не найдено и не заменено', $sql, MS_MSG_NOTICE);
+                        }
+                    } else {
+                        $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT);
+                    }
+                }
+                break;
+
             // Порядок
             case 'tableOrder';
                 if (count($_POST) == 0) {
@@ -508,10 +529,7 @@ class ActionProcessor
         }
 
         if (isajax()) {
-            ajaxResult([
-                'status' => true,
-                'message' => $msc->getMessagesData()
-            ]);
+            ajaxSuccess($msc->getMessagesData());
         }
     }
 }
