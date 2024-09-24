@@ -67,7 +67,7 @@ if (GET('action') == 'full') {
             $msc->query('ALTER TABLE `'.$o->Name.'` ENGINE = InnoDB');
             echo mysqli_errorx();
         }
-        if ($_GET['drop']) echo 'DROP TABLE `' . $o->Name . '`;<br />';
+        if (array_key_exists('drop', $_GET)) echo 'DROP TABLE `' . $o->Name . '`;<br />';
 
         if ($action == 'analyze' || $action == 'check' || $action == 'flush' || $action == 'repair'
             || $action == 'optimize') {

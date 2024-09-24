@@ -10,6 +10,10 @@ require_once dirname(__FILE__).'/DatabaseInterface.php';
  */
 class DatabaseTable extends DatabaseInterface {
 
+    public ?string $database;
+    public ?string $tableb;
+    public ?string $table;
+
     /**
      * @access private
      */
@@ -17,7 +21,7 @@ class DatabaseTable extends DatabaseInterface {
         $this->_init();
         $this->database = $db;
         $this->tableb   = $table;
-        $this->table    = '`'.str_replace('`', '``', $table).'`';
+        $this->table    = $table ? '`'.str_replace('`', '``', $table).'`' : '';
     }
 
     /**

@@ -44,8 +44,7 @@ if (!file_exists(DIR_MYSQL . 'config_local.php')) {
     You need to create this file with db config parameters LIKE this: <br /> <br />
     define("DB_HOST",       "localhost"); <br />
     define("DB_USERNAME",   "user_name"); <br />
-    define("DB_PASSWORD",   ""); <br />
-    define("DB_NAME",       "db_name");
+    define("DB_PASSWORD",   "");
 ');
 }
 include DIR_MYSQL . 'config_local.php';

@@ -79,10 +79,11 @@ class PageLayout
 
         if (isajax()) {
 
-            if (!$_GET['init']) {
+            $pageProps = [];
+            if (!array_key_exists('init', $_GET)) {
                 $pageProps = include $currentHandler;
             }
-            if (!$pageProps) {
+            if (!is_array($pageProps)) {
                 $pageProps = [];
             }
 
@@ -279,7 +280,6 @@ class PageLayout
             $url = UrlMaker::edit($url, 'table', $msc->table);
         }
         $dbMenu = array(
-            '<img src="' . MS_DIR_IMG . 'help.gif" alt="" border="0" title="MySQL справка" align="absbottom" />' => array('msc_help', ''),
             'Настройки' => array('msc_configuration', '')
         );
         $menu = '<div class="globalMenu">' . "\r\n";

@@ -79,7 +79,7 @@ if (isset($_GET['fullText'])) {
 
 // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
 if (isset($directSQL) && $msc->table == '') {
-  echo '"'.$directSQL.'"';
+    //echo '"'.$directSQL.'"';
     if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
         $msc->table = str_replace('`', '', $t[1]);
     } else {

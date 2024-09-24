@@ -1,4 +1,4 @@
-<script type="text/babel" src="/js/component_exportOptions.js"></script>
+<script type="text/babel" src="/js/export/options.js"></script>
 
 <div id="root"></div>
 

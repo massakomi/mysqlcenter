@@ -129,13 +129,16 @@ if ($msc->page == 'exportSp') {
         }
     }
     if ($drawForm) {
-    // Отображение формы экспорта
+        $table = GET('table') ?: POST('table');
+        // Отображение формы экспорта
         $cSet = $msct->getSetInfo(GET('set'));
-        $result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db);
         $data = [];
-        while ($o = mysqli_fetch_object($result)) {
-            $o->Fields = getFields($o->Name);
-            $data []= $o;
+        if ($msc->db) {
+            $result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db);
+            while ($o = mysqli_fetch_object($result)) {
+                $o->Fields = getFields($o->Name);
+                $data []= $o;
+            }
         }
         $pageProps = [
             'dirImage' => MS_DIR_IMG,
@@ -143,7 +146,7 @@ if ($msc->page == 'exportSp') {
             'data' => $data,
             'configSet' => $cSet,
             'setsArray' => $msct->getSetsArray(),
-            'fields' => $_GET['table'] ? getFields($_GET['table'], true) : [],
+            'fields' => $table ? getFields($table, true) : [],
         ];
         if (isajax()) {
             return $pageProps;
@@ -192,10 +195,16 @@ USE `'.$db.'`;'."\r\n"."\r\n";
         // Send
         if (intval(POST('export_to')) == 1) {
             $file = $msc->table != '' ? $msc->table : $msc->db;
-            echo $exp->send('zip', $file);
+            $content = $exp->send('zip', $file);
         } else {
-            echo $exp->send();
+            $content = $exp->send();
         }
+        if (isajax()) {
+            return [
+                'content' => $content
+            ];
+        }
+        echo $content;
     }
     // 3.2.2. HTML форма экспорта
     else {

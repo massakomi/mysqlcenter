@@ -8,6 +8,7 @@
  */
 
 $msc->pageTitle = 'SQL запрос в БД';
+$db = GET('db') ?: POST('db');
 
 // Запрос из файла
 if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
@@ -15,18 +16,18 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
         if (POST('compress') == 'zip' || substr($_FILES['sqlFile']['name'], -3) == 'zip') {
             if (!function_exists('zip_open')) {
                 $msc->addMessage('Расширение zip не включено. Не могу распаковать файл', null, MS_MSG_FAULT);
-                return null;
-            }
-            $zip = zip_open($_FILES['sqlFile']['tmp_name']);
-            if ($zip) {
-                $s = null;
-                while ($zip_entry = zip_read($zip)) {
-                    if (zip_entry_open($zip, $zip_entry, "r")) {
-                        $s .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
-                        zip_entry_close($zip_entry);
+            } else {
+                $zip = zip_open($_FILES['sqlFile']['tmp_name']);
+                if ($zip) {
+                    $s = null;
+                    while ($zip_entry = zip_read($zip)) {
+                        if (zip_entry_open($zip, $zip_entry, "r")) {
+                            $s .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+                            zip_entry_close($zip_entry);
+                        }
                     }
+                    zip_close($zip);
                 }
-                zip_close($zip);
             }
 
         } elseif (POST('compress') == 'csv') {
@@ -36,9 +37,6 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             $data = file_get_contents($_FILES['sqlFile']['tmp_name']);
             $data = iconv('windows-1251', 'utf-8', $data);
             $data = explode("\n", $data);
-            if (0) {
-                $data = array_unique($data);
-            }
             foreach ($data as $k => $v) {
                 $row = array_map('mysqli_escape_stringx', explode(';', trim($v)));
                 echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("'.implode('","', $row).'");';
@@ -98,7 +96,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             $msc->query("SET NAMES '".POST('sqlFileCharset')."'");
         }
         $log = strlen($s) < 10000;
-        execSql(GET('db'), $s, $log);
+        execSql($db, $s, $log);
         if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
             $msc->query("SET NAMES 'utf8'");
         }
@@ -115,12 +113,13 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
         // редирект на лист
         $msc->pageTitle = 'Обзор таблицы ';
         $msc->page = 'tbl_data';
+        $msc->db = $db;
         $directSQL = $_POST['sql'];
-        include_once(DIR_MYSQL . 'tbl_data.php');
-        return null;
+        $pageProps = include_once(DIR_MYSQL . 'tbl_data.php');
+        return $pageProps;
     } else {
         $log = strlen($_POST['sql']) < 10000;
-        execSql(GET('db'), $_POST['sql'], $log);
+        execSql($db, $_POST['sql'], $log);
     }
 }
 
@@ -128,7 +127,7 @@ $pageProps = [
     'maxUploadSize' => MAX_UPLOAD_SIZE,
     'maxSize' => round(MAX_UPLOAD_SIZE / (1024 * 1024), 2),
     'charsets' => getCharsetArray(),
-    'sql' => POST('sql')
+    //'sql' => POST('sql')
 ];
 if (isajax()) {
     return $pageProps;

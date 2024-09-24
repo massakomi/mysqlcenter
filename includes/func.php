@@ -1061,10 +1061,11 @@ function execSql($db, &$sql, $log=true) {
     if (count($errors) == 0) {
         $msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
     } else {
-        $msc->addMessage('Запросы выполнен с ошибками' . $info .'<br />'. implode('<br />', $errors), null, MS_MSG_FAULT);
+        $msc->addMessage('Запросы выполнен с ошибками' . $info, null, MS_MSG_FAULT, implode('<br />', $errors));
     }
     $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
-    $msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
+    $msc->addMessage("Выполнено за $mysqlGenerationTime с.");
+    $msc->addMessage("Затронуто рядов: $affected");
 }
 
 

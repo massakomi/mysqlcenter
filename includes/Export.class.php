@@ -2,7 +2,7 @@
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
- 
+
 global $memory_limit;
 $memory_limit = (intval(ini_get('memory_limit'))*1024*1024)/2;
 
@@ -381,7 +381,7 @@ class MySQLExport {
           if ($this->addKav) {
             $b = '`'.$b.'`';
           }
-          
+
           if ($v->Key == 'PRI') {
             $primary []= $b.'='.$val;
           } else {
@@ -439,6 +439,27 @@ class MySQLExport {
   function _sendSQLDamp($type = 'textarea', $file=null) {
     if (is_null($file)) {
       $this->table != null ? $file = $this->table :  $file = $this->db;
+    }
+    if (isajax()) {
+        if ($type == 'textarea') {
+            return $this->get();
+        }
+        if ($type == 'zip') {
+            include_once 'zip.lib.php';
+            $a = new zipfile();
+            $a -> addFile($this->get(), $file.'.sql');
+            $content = $a ->file();
+
+            $dir = $_SERVER['DOCUMENT_ROOT'].'/data';
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777);
+            }
+            $file = fopen($dir.'/download.zip', 'a+');
+            fwrite($file, $content);
+            fclose($file);
+
+            return '/download.zip';
+        }
     }
     // текстовое поле
     if ($type == 'textarea') {

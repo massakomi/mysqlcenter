@@ -8,7 +8,7 @@ if (!defined('DIR_MYSQL')) {
 }
 //config_default.txt
 
-if (GET('action') == 'restore') {
+if (GET('mode') == 'restore') {
 	if (copy('includes/config_default.txt', MS_CONFIG_FILE)) {
         $msc->addMessage('Значения по умолчанию восстановлены');
     }
@@ -49,7 +49,7 @@ if (count($_POST) > 0) {
 }
 $data = file(MS_CONFIG_FILE);
 if (isajax()) {
-    return $data;
+    return compact('data');
 }
 
 include MS_DIR_TPL.'config.html';

@@ -129,7 +129,6 @@ class ActionProcessor
                 get("sqlCounterDiv").style.padding = "10px";
                 get("sqlCounterDiv").style.marginTop = "10px";
                 ';
-                //addAssign($id, $param, $value);
 
                 function addSqlAjaxLog($txt)
                 {
@@ -180,28 +179,15 @@ class ActionProcessor
             // в запросе обязательно должна быть указана БД и таблица
 
             case 'tableDelete'    :
-                if ($dbt->tableAction($db, $tbl, 'DROP')) {
-                    $msc->page = 'tbl_list';
-                    if ($isAjax) {
-                        addRemove($this->param('id'));
-                    }
-                }
+                $dbt->tableAction($db, $tbl, 'DROP');
                 break;
 
             case 'tableTruncate'  :
-                if ($dbt->tableAction($db, $tbl, 'TRUNCATE')) {
-                    if ($isAjax) {
-                        addAssign($this->param('id'), 'innerHTML', '0');
-                        addAssign($this->param('id2'), 'innerHTML', '0');
-                    }
-                }
+                $dbt->tableAction($db, $tbl, 'TRUNCATE');
                 break;
 
             case 'tableRename':
                 if ($dbt->tableAction($db, $tbl, 'RENAME', $this->param('newName'))) {
-                    if ($isAjax) {
-                        addHtml($this->param('id'), $this->param('newName'));
-                    }
                     $msc->table = $this->param('newName');
                 }
                 break;
@@ -334,11 +320,7 @@ class ActionProcessor
                 }
                 if ($databases) {
                     foreach ($databases as $db) {
-                        if ($dbm->DatabaseAction($db, 'DROP')) {
-                            if ($isAjax) {
-                                addAssign($this->param('id'), 'innerHTML', '[удалена]');
-                            }
-                        }
+                        $dbm->DatabaseAction($db, 'DROP');
                     }
                     $msc->db = null;
                     $msc->page = 'db_list';
@@ -346,25 +328,21 @@ class ActionProcessor
                 break;
 
             case 'dbTruncate'     :
-                if ($dbm->DatabaseTruncate($db) && $isAjax) {
-                    addAlert('База данных очищена');
-                }
+                $dbm->DatabaseTruncate($db);
                 break;
 
             case 'dbHide'     :
-                if ($this->param('action') == 'show') {
+                if ($this->param('act') == 'show') {
                     $msc->query('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 1)');
-                    addAssign($this->param('id'), 'style', 'color:black');
+                    $msc->addMessage("База $db открыта");
                 } else {
                     $msc->query('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 0)');
-                    addAssign($this->param('id'), 'style', 'color:#ccc');
+                    $msc->addMessage("База $db скрыта");
                 }
                 break;
 
             case 'dbTablesDelete' :
-                if ($dbm->DatabaseTruncate($db, true) && $isAjax) {
-                    addAlert('База данных очищена');
-                }
+                $dbm->DatabaseTruncate($db, true);
                 break;
 
             case 'dbCreate'       :
@@ -451,16 +429,10 @@ class ActionProcessor
 
             case 'deleteRow':
                 $dbr->rowDelete($db, $tbl, $this->param('row'));
-                if ($isAjax) {
-                    addRemove($this->param('id'));
-                }
                 break;
 
             case 'copyRow':
                 $dbr->rowCopy($db, $tbl, $this->param('row'));
-                if ($isAjax) {
-                    addAlert('Ряд скопирован');
-                }
                 break;
 
             case 'rowsAdd':
@@ -534,49 +506,3 @@ class ActionProcessor
     }
 }
 
-/**
- * alert-аналог для ajax
- * @access private
- * @package msc
- */
-function addAlert($str)
-{
-    if (isajax()) {
-        return ;
-    }
-    echo "\n" . 'alert("' . $str . '");';
-}
-
-/**
- * remove-аналог для ajax
- * @access private
- * @package msc
- */
-function addRemove($id)
-{
-    if (isajax()) {
-        return ;
-    }
-    echo "\n" . 'remove(get("' . $id . '"));';
-}
-
-/**
- * setAttribute-аналог для ajax
- * @access private
- * @package msc
- */
-function addAssign($id, $param, $value)
-{
-    if (isajax()) {
-        return ;
-    }
-    echo "\n" . 'get("' . $id . '").setAttribute("' . $param . '", "' . $value . '");';
-}
-
-function addHtml($id, $value)
-{
-    if (isajax()) {
-        return ;
-    }
-    echo "\n" . 'get("' . $id . '").innerHTML = "' . $value . '";';
-}

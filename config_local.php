@@ -7,7 +7,6 @@
 define('DB_HOST',       'mysql-8.2');
 define('DB_USERNAME',   'root');
 define('DB_PASSWORD',   'root');
-define('DB_NAME',       '');
 
 define('MS_LOG_ALLOW',    1);
 

@@ -98,23 +98,16 @@ class MSCenter
     function getCurrentDatabase()
     {
         global $connection;
-        if (GET('db') != '') {
-            if ($this->db != GET('db')) {
-                setcookie('mc_db', GET('db'), time() + 3600 * 24 * 14, '/');
+        $db = GET('db') ?: POST('db');
+        if ($db != '') {
+            if ($this->db != $db) {
+                setcookie('mc_db', $db, time() + 3600 * 24 * 14, '/');
             }
-            $this->db = GET('db');
+            $this->db = $db;
         } elseif (!empty($_SESSION['db'])) {
             $this->db = $_SESSION['db'];
         } elseif (!empty($_COOKIE['mc_db'])) {
             $this->db = $_COOKIE['mc_db'];
-        } else {
-            if ($this->db != DB_NAME) {
-                setcookie('mc_db', DB_NAME, time() + 3600 * 24 * 14, '/');
-            }
-            $this->db = DB_NAME;
-        }
-        if (!$this->db && DB_NAME) {
-            $this->db = DB_NAME;
         }
         if (!$this->db) {
             //$this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error($connection));
