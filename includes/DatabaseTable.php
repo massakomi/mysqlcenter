@@ -165,6 +165,9 @@ class DatabaseTable extends DatabaseInterface {
                 $v = str_replace('"', '', $v);
                 $v = str_replace(' title=', '', $v);
             }
+            if (isajax()) {
+                return $result[0];
+            }
             return [$comments, $result];
         }
         $result = $msc->query($sql);
@@ -185,23 +188,33 @@ class DatabaseTable extends DatabaseInterface {
     }
 
 
+    /**
+     * @return array
+     */
+    public static function getCashedTablesArray() {
+        global $msc;
+        $result = $msc->query('SHOW TABLE STATUS');
+        if (!$result || mysqli_num_rows($result) == 0) {
+            return [];
+        }
+        $array = [];
+        while ($row = mysqli_fetch_object($result)) {
+            $array []= $row;
+        }
+        return $array;
+      }
 
-  public static function getCashedTablesArray() {
-    global $msc;
-
-    $result = $msc->query('SHOW TABLE STATUS');
-
-    if (!$result || mysqli_num_rows($result) == 0) {
-        return array();
+    /**
+     * @return array
+     */
+    public static function getSimpleTablesArray() {
+        global $msc;
+        $result = $msc->query('SHOW TABLES');
+        if (!$result || mysqli_num_rows($result) == 0) {
+            return [];
+        }
+        return array_map(fn($item) => $item[0], mysqli_fetch_all($result));
     }
-
-    $array = array();
-    while ($row = mysqli_fetch_object($result)) {
-      $array []= $row;
-    }
-
-    return $array;
-  }
 
 
 }

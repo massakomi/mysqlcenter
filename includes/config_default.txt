@@ -3,7 +3,6 @@ insertrows|Сколько рядов вставлять за 1 раз|2|integer
 linksrange|Сколько ссылок на постраничный вывод показывать максимум|25|integer
 headwrap|Длина wrap у переносимых заголовков полей|5|integer
 textcut|Text поля обрезка|100|integer
-dbfullinfo|Полная инфо о базах данных по умолчанию|0|boolean
 datetimeformat|Формат даты и времени|d.m.Y H:i|string
 fieldsmax|Количество полей при создании таблицы по умолчанию|3|integer
 showtablecompare|Блок "Сравнить таблицу с ..." показать|1|boolean

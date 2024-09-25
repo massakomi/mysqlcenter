@@ -79,43 +79,41 @@ class PageLayout
 
         if (isajax()) {
 
-            $pageProps = [];
-            if (!array_key_exists('init', $_GET)) {
-                $pageProps = include $currentHandler;
-            }
-            if (!is_array($pageProps)) {
+            if (array_key_exists('init', $_GET)) {
+                $data = [
+                    'main' => [
+                        'handler' => $currentHandler,
+                        'page' => $msc->page,
+                        'db' => $msc->db,
+                        'table' => $msc->table,
+                    ],
+
+                    'getWindowTitle' => $msc->getWindowTitle(),
+                    'getPageTitle' => $msc->getPageTitle(),
+                    'messages' => $msc->getMessagesData(),
+                    'queries' => $msc->queries,
+                    'databases' => Server::getDatabasesWithoutHidden(),
+
+                    'DB_HOST' => DB_HOST,
+                    'DB_USERNAME_CUR' => DB_USERNAME,
+
+                    //'enterType' => $this->enterType,
+                    //'cookies' => $_COOKIE,
+                    //'session_id' => session_id()
+                ];
+            } else {
                 $pageProps = [];
+                if (!array_key_exists('init', $_GET)) {
+                    $pageProps = include $currentHandler;
+                }
+                if (!is_array($pageProps)) {
+                    $pageProps = [];
+                }
+                $data = [
+                    'page' => $pageProps,
+                    'messages' => $msc->getMessagesData(),
+                ];
             }
-
-            $data = [
-                'page' => $pageProps,
-                'main' => [
-                    'handler' => $currentHandler,
-                    'page' => $msc->page,
-                    'db' => $msc->db,
-                    'table' => $msc->table,
-                ],
-
-                'getWindowTitle' => $msc->getWindowTitle(),
-                'getPageTitle' => $msc->getPageTitle(),
-                'messages' => $msc->getMessagesData(),
-                'queries' => $msc->queries,
-                'databases' => Server::getDatabasesWithoutHidden(),
-
-                'generate_time' => round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5),
-                'memory_get_peak_usage' => formatSize(memory_get_peak_usage()),
-                'memory_get_usage' => formatSize(memory_get_usage()),
-                'includeSize' => formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))),
-                'memory_limit' => ini_get('memory_limit'),
-
-                'DB_HOST' => DB_HOST,
-                'DB_USERNAME_CUR' => DB_USERNAME,
-
-                //'enterType' => $this->enterType,
-                //'cookies' => $_COOKIE,
-                //'session_id' => session_id()
-
-            ];
 
             ajaxResult($data);
         }

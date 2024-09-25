@@ -160,7 +160,6 @@ define('MS_LIST_LINKS_RANGE', conf('linksrange'));
 define('MS_HEAD_WRAP', conf('headwrap'));
 define('MS_TEXT_CUT', conf('textcut'));
 define('MS_ROWS_INSERT', conf('insertrows'));
-define('MS_DB_FULL_INFO', conf('dbfullinfo'));
 define('MS_DATE_FORMAT', conf('datetimeformat'));
 define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
 define('MS_FIELDS_COUNT', conf('fieldsmax'));

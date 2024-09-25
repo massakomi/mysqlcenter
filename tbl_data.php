@@ -141,7 +141,7 @@ if (!isset($directSQL)) {
         $msc->addMessage("В таблице $msc->table нет данных", $sql, MS_MSG_SIMPLE);
         return null;
     } else {
-        $msc->addMessage('Выбрано', $sql);
+        //$msc->addMessage('Выбрано', $sql);
     }
 
 // Прямой запрос

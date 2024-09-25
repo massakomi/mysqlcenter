@@ -473,6 +473,23 @@ class ActionProcessor
                 }
                 break;
 
+            // Удаление множества полей через POST
+            case 'fieldsDelete' :
+                $deleteFields = $this->param('field');
+                $fields = getFields($tbl);
+                // если в таблице осталось только 1 поле, то удаляем таблицу
+                if (count($fields) == 1) {
+                    $sql = 'DROP TABLE `' . $tbl . '`';
+                } else {
+                    $sql = 'ALTER table `' . $tbl . '` DROP `' . implode('`, DROP `', $deleteFields) . '`';
+                }
+                if ($msc->query($sql)) {
+                    $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+                } else {
+                    $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
+                }
+                break;
+
             // операции с ключами
 
             case 'deleteKey' :
@@ -490,6 +507,29 @@ class ActionProcessor
                 }
                 break;
 
+            case 'addKey' :
+                $keyName = POST('keyName');
+                $keyDefinition = POST('keyType');
+                $dbm->queryCheck($db, $tbl, $keyName, $keyDefinition);
+                if ($keyName != '') {
+                    $keyDefinition .= ' `' . $keyName . '`';
+                }
+                $keyFields = [];
+                foreach ($_POST['field'] as $key => $fieldName) {
+                    if ($fieldName == '') {
+                        continue;
+                    }
+                    $fieldSize = $_POST['length'][$key];
+                    $keyFields [] = '`' . $fieldName . '`' . ($fieldSize > 0 ? "($fieldSize)" : '');
+                }
+                $sql = 'ALTER TABLE ' . $tbl . ' ADD ' . $keyDefinition . ' (' . implode(',', $keyFields) . ')';
+                if ($msc->query($sql, $db)) {
+                    $msc->addMessage('Ключ добавлен', $sql, MS_MSG_SUCCESS);
+                } else {
+                    $msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT);
+                }
+                break;
+
             // операции с пользователем
 
             case 'userAdd' :
@@ -501,7 +541,13 @@ class ActionProcessor
         }
 
         if (isajax()) {
-            ajaxSuccess($msc->getMessagesData());
+            $data = $msc->getMessagesData();
+            foreach ($data as $key => $item) {
+                if ($item['type'] == MS_MSG_ERROR || $item['type'] == MS_MSG_FAULT) {
+                    ajaxError($data);
+                }
+            }
+            ajaxSuccess($data);
         }
     }
 }

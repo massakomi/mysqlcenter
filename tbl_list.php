@@ -41,6 +41,14 @@ if (GET('action') == 'full') {
     echo $contentMain = MSC_printObjectTable($tables);
     return;
 
+} elseif (GET('mode') == 'simple') {
+    $pageProps = [
+        'tables' => DatabaseTable::getSimpleTablesArray()
+    ];
+    if (isajax()) {
+        return $pageProps;
+    }
+
 // Исследование структуры
 } elseif (GET('action') == 'structure' || GET('mode') == 'structure') {
     $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';

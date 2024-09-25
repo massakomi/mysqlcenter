@@ -14,53 +14,25 @@ if (!defined('DIR_MYSQL')) {
 }
 $fields = getFields($msc->table);
 
-if (GET('action') == 'add_key') {
-    $returnInAdd = true;
-    if (count($_POST) > 0) {
-        $keyName = POST('keyName');
-        $keyDefinition = POST('keyType');
-        if ($keyName != '') {
-            $keyDefinition .= ' `' . $keyName . '`';
-        }
-        $keyFields = [];
-        foreach ($_POST['field'] as $key => $fieldName) {
-            if ($fieldName == '') {
-                continue;
-            }
-            $fieldSize = $_POST['length'][$key];
-            $keyFields [] = '`' . $fieldName . '`' . ($fieldSize > 0 ? "($fieldSize)" : '');
-        }
-        $sql = 'ALTER TABLE ' . $msc->table . ' ADD ' . $keyDefinition . ' (' . implode(',', $keyFields) . ')';
-        //var_dump($sql); exit;
-        if ($msc->query($sql, $msc->db)) {
-            $returnInAdd = false;
-            // обновляем массив полей
-            $fields = getFields($msc->table);
-            $msc->addMessage('Ключ добавлен', $sql, MS_MSG_SUCCESS);
-        } else {
-            $msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT);
-        }
+if (GET('mode') == 'add_key') {
+     $fieldRows = ['' => ''];
+    foreach ($fields as $field) {
+        $fieldRows [$field->Field] = "$field->Field [$field->Type]";
     }
-    if ($returnInAdd) {
-        $fieldRows = ['' => ''];
-        foreach ($fields as $field) {
-            $fieldRows [$field->Field] = "$field->Field [$field->Type]";
-        }
-        $msc->pageTitle = 'Добавить ключи к таблице "' . $msc->table . '"';
+    $msc->pageTitle = 'Добавить ключи к таблице "' . $msc->table . '"';
 
-        $pageProps = [
-            'fieldRows' => $fieldRows,
-            'keyName' => POST('keyName'),
-            'postType' => POST('keyType'),
-            'dirImage' => MS_DIR_IMG,
-        ];
-        if (isajax()) {
-            return $pageProps;
-        }
-
-        include 'tpl/tbl_key_add.htm.php';
-        return;
+    $pageProps = [
+        'fieldRows' => $fieldRows,
+        'keyName' => POST('keyName'),
+        'postType' => POST('keyType'),
+        'dirImage' => MS_DIR_IMG,
+    ];
+    if (isajax()) {
+        return $pageProps;
     }
+
+    include 'tpl/tbl_key_add.htm.php';
+    return;
 }
 
 

@@ -18,7 +18,7 @@ if (!defined('DIR_MYSQL')) {
  */
 /*function MSC_DrawFields($array='') {
     global $msc;
-    
+
     // получение массива из post
     if (empty($array)) {
         $array = array();
@@ -78,7 +78,7 @@ if (!defined('DIR_MYSQL')) {
         'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
     );
     $types_select = draw_array_options($columnTypes);
-    
+
     $table = new Table('', 0, 4, 0, '', "tableFormEdit");
     $table->makeRowHead(
         'Поле','Тип','Длина/значения','Ноль','По умолчанию',
@@ -91,7 +91,7 @@ if (!defined('DIR_MYSQL')) {
         'Атрибуты','После...'
     );
     foreach ($array as $k => $v) {
-    
+
         $NAME = $TYPE = $LENGTH = $DEFAULT = $ISNULL = $AUT = $extra = '';
         $isUnsignedZero = $isUnsigned = false;
         $PRI = $UNI = $MUL = $uniName = $mulName = '';
@@ -126,7 +126,7 @@ if (!defined('DIR_MYSQL')) {
                     }
                 }
             }
-        
+
         // пустые поля
         } else {
             if (POST('afterOption') != '') {
@@ -147,13 +147,13 @@ if (!defined('DIR_MYSQL')) {
         $table->makeRow(array(
         '<input name="name[]" tabindex="1" id="name'.$k.'" type="text" value="'.$NAME.'" size="15" />
             <input type="hidden" name="oldname[]" value="'.$NAME.'" />',
-            
+
         '<select name="ftype[]" tabindex="2" title="'.$TYPE.'" id="typeSelectorId'.$k.'">'.$types_select.'</select>',
         '<input name="length[]" tabindex="3" id="length'.$k.'" type="text" value="'.$LENGTH.'" size="30" />',
-        
+
         '<input name="isNull['.$k.']" tabindex="4" id="isNull'.$k.'" type="checkbox" value="1"'.$ISNULL.' />',
         '<input name="default[]" tabindex="5" id="default'.$k.'" type="text" size="10" value="'.$DEFAULT.'" />',
-        
+
         '<input name="auto['.$k.']" tabindex="6" id="auto'.$k.'" onclick="get(\'default'.$k.'\').value=\'\'"
             type="checkbox" value="1"'.$AUT.' />',
 
@@ -163,7 +163,7 @@ if (!defined('DIR_MYSQL')) {
         '<input name="mul['.$j.']" tabindex="9" id="key3'.$k.'" type="checkbox" value="'.$mulName.'"'.$MUL.' />',
         '<a href="#" onclick="return clearKeys('.$k.')">clear</a>',
         '<input name="fulltext['.$k.']" tabindex="11" id="fulltext'.$k.'" type="checkbox" value="1" />',
-        
+
         '<select name="attr[]" tabindex="12" id="attr'.$k.'" style="width:70px">
             <option></option>
             <option'.($isUnsigned?' selected="selected"':'').'>UNSIGNED</option>
@@ -385,29 +385,6 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
     }
 
 }
-// Удаление множества полей через POST (удаление одиночных полей через ajax)
-if (POST('action') == 'fieldsDelete' && isset($_POST['field']) && count($_POST['field']) > 0) {
-    // если в таблице осталось только 1 поле, то удаляем таблицу
-    if (count($fields) == 1) {
-        $sql = 'DROP TABLE `' . $msc->table . '`';
-    } else {
-        $sql = 'ALTER table `' . $msc->table . '` DROP `' . implode('`, DROP `', $_POST['field']) . '`';
-    }
-    if ($msc->query($sql)) {
-        if (count($fields) == 1) {
-            include DIR_MYSQL . 'tbl_list.php';
-        } else {
-            include DIR_MYSQL . 'tbl_struct.php';
-        }
-        $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-        return null;
-    } else {
-        $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
-    }
-    // TODO непонятно что значит через ajax - как этот код там используется
-   //return;
-}
-
 
 // HTML форма
 // Создание таблицы или добавление полей

@@ -83,7 +83,7 @@ $msc->pageTitle = 'Список баз данных сервера ' . DB_HOST .
 $table = new Table('contentTable', null, null, null, null, 'structureTableId');
 
 // Определяем, показывать ли полную информацию или нет
-$showFullInfo = ((MS_DB_FULL_INFO && !isset($_GET['mode'])) || GET('mode') == 'full');
+$showFullInfo = GET('mode') == 'full';
 
 /**
  * Отображаем список баз данных с полной информацией
