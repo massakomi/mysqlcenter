@@ -1,9 +1,9 @@
-<?php 
+<?php
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
-if (!defined('DIR_MYSQL')) { 
+if (!defined('DIR_MYSQL')) {
 	exit('Hacking attempt');
 }
 if ($msc->table == '') {
@@ -29,9 +29,14 @@ if (GET('row') == '' && POST('row') == '') {
     if (GET('row') != '') {
         $whereCondition = urldecode(stripslashes(GET('row')));
     // массовый едит
-    } elseif (!is_null($array) && count($array) > 0) {
-        $_POST['row'] = array_map('urldecode', array_map('stripslashes', $_POST['row']));
-        $whereCondition = implode(' OR ', $_POST['row']);
+    } elseif (!is_null($array)) {
+        if (!is_array($array)) {
+            $array = explode(',', $array);
+        }
+        if (count($array) > 0) {
+            $array = array_map('urldecode', array_map('stripslashes', $array));
+            $whereCondition = implode(' OR ', $array);
+        }
     }
 
     // создания таблицы для данных
