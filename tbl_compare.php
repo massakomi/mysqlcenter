@@ -15,17 +15,22 @@ if (!defined('DIR_MYSQL')) {
 $msc->pageTitle = 'Сравнение таблиц';
 
 // Проверка
-$tables = POST('table');
+$tables = POST('table') ?: [GET('table')];
 if (count($tables) < 1) {
     $msc->addMessage('Вы не выбрали таблиц для сравнения');
     return null;
 }
 // Получение массив баз данных
-if (isset($_POST['databases'])) {
-    $databases = explode(',', $_POST['databases']);
+if (count($_POST)) {
+    if (isset($_POST['databases'])) {
+        $databases = explode(',', $_POST['databases']);
+    } else {
+        $databases = [$_POST['database'], $msc->db];
+    }
 } else {
-    $databases = [$_POST['database'], $msc->db];
+    $databases = [GET('db'), GET('db2')];
 }
+
 
 /**
  * Обработка массива/объекта $row для отображения в таблице
