@@ -151,16 +151,17 @@ function getTableHeaders(fields, sortEnabled=true, headWrap=false) {
  */
 function processRowValue(v, type, textCut) {
   if (v === null) {
-    v = <i>NULL</i>
+    v = 'null'
   } else {
     // Тексты
     if (type.match(/(blob|text|char)/i)) {
       v = htmlspecialchars(v)
     }
+
     if (v.length > textCut) {
       let fullText = new URL(location.href).searchParams.get('fullText');
-      if (fullText == '') {
-        v = v.substr(0, textCut)
+      if (fullText === null) {
+        v = v.substring(0, textCut)
       }
     }
     // дата
