@@ -536,18 +536,13 @@ class ActionProcessor
                 Server::userAdd();
                 break;
 
-            default:    //$msc->addMessage('Неизвестный запрос: '.$queryMode, null, MS_MSG_NOTICE);
+            default:
+                return false;
 
         }
 
         if (isajax()) {
-            $data = $msc->getMessagesData();
-            foreach ($data as $key => $item) {
-                if ($item['type'] == MS_MSG_ERROR || $item['type'] == MS_MSG_FAULT) {
-                    ajaxError($data);
-                }
-            }
-            ajaxSuccess($data);
+            ajaxResultWithMessages();
         }
     }
 }

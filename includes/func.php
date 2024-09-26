@@ -1192,6 +1192,17 @@ function ajaxSuccess($message) {
     ]);
 }
 
+function ajaxResultWithMessages() {
+    global $msc;
+    $data = $msc->getMessagesData();
+    foreach ($data as $key => $item) {
+        if ($item['type'] == MS_MSG_ERROR || $item['type'] == MS_MSG_FAULT) {
+            ajaxError($data);
+        }
+    }
+    ajaxSuccess($data);
+}
+
 function exitError($message) {
     if (isajax()) {
         ajaxError($message);

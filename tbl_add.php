@@ -11,171 +11,6 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
-/**
- * Создание полей структуры
- *
- * @param array Массив в виде простых чисел (сколько полей надо создать), либо пустое значение, если из POST
- */
-/*function MSC_DrawFields($array='') {
-    global $msc;
-
-    // получение массива из post
-    if (empty($array)) {
-        $array = array();
-        foreach ($_POST['name'] as $key => $name) {
-            if (empty($name)) {
-                continue;
-            }
-            $object = new A;
-            $object->Field   = $name;
-            $object->Type    = strtolower($_POST['ftype'][$key]);
-            if ($_POST['length'][$key] > 0) {
-                $object->Type .= '('. $_POST['length'][$key].')';
-            }
-            if ($_POST['attr'][$key] == 'UNSIGNED ZEROFILL') {
-                $object->Type .= ' UNSIGNED ZEROFILL';
-            } else if ($_POST['attr'][$key] == 'UNSIGNED') {
-                $object->Type .= ' UNSIGNED';
-            }
-            $object->Null    = isset($_POST['isNull'][$key]) ? 'YES' : '';
-            if (isset($_POST['uni'][$key])) {
-                $object->Key = 'UNI';
-            }
-            if (isset($_POST['mul'][$key])) {
-                $object->Key = 'MUL';
-            }
-            $object->Key = $_POST['primaryKey'] == $name ? 'PRI' : '';
-            $object->Default = $_POST['default'][$key];
-            $object->Extra = '';
-            if (isset($_POST['auto'][$key])) {
-                $object->Extra   = 'AUTO_INCREMENT';
-            }
-            $array []= $object;
-        }
-    }
-
-    $keys = getTableKeys($msc->table);
-
-    // получение массива "предыдущих полей" полей
-    $fields = array('' => 'FIRST');
-    $a = getFields($msc->table, true);
-    $previousFields = array();
-    $prev = '';
-    foreach ($a as $field) {
-        $previousFields [$field]= $prev;
-        $prev = $field;
-        $fields [$field]= $field;
-    }
-    unset($a, $prev, $field);
-
-    // создание селектора типов данных
-    $columnTypes = array(
-        'VARCHAR', 'TINYINT', 'TEXT', 'DATE',
-        'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
-        'FLOAT', 'DOUBLE', 'DECIMAL',
-        'DATETIME', 'TIMESTAMP', 'TIME', 'YEAR',
-        'CHAR', 'TINYBLOB', 'TINYTEXT', 'BLOB', 'MEDIUMBLOB', 'MEDIUMTEXT', 'LONGBLOB', 'LONGTEXT',
-        'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
-    );
-    $types_select = draw_array_options($columnTypes);
-
-    $table = new Table('', 0, 4, 0, '', "tableFormEdit");
-    $table->makeRowHead(
-        'Поле','Тип','Длина/значения','Ноль','По умолчанию',
-        '<span title="Автоинкремент">Au</span>',
-        '<span title="Primary key">PR</span>',
-        '<span title="Unique">UN</span>',
-        '<span title="Index">IND</span>',
-        '-',
-        '<span title="Fulltext">FU</span>',
-        'Атрибуты','После...'
-    );
-    foreach ($array as $k => $v) {
-
-        $NAME = $TYPE = $LENGTH = $DEFAULT = $ISNULL = $AUT = $extra = '';
-        $isUnsignedZero = $isUnsigned = false;
-        $PRI = $UNI = $MUL = $uniName = $mulName = '';
-
-        // уже заполненные поля
-        if (is_object($v)) {
-            if (preg_match('!\((.*)\)!i', $v->Type, $a)) {
-                $LENGTH = $a[1];
-            }
-            $isUnsignedZero = stristr($v->Type, 'unsigned zerofill');
-            $isUnsigned     = stristr($v->Type, 'unsigned') && !$isUnsignedZero;
-            $NAME    = $v->Field;
-            $TYPE    = preg_replace('~\((.*)\).*~i', '', $v->Type);
-            $DEFAULT = $v->Default;
-            $ISNULL  = $v->Null === true || $v->Null === 'YES'  ? ' checked' : '';
-            $AUT     = $v->Extra ? ' checked' : '';
-            $extra = plDrawSelector($fields, ' name="after[]"', $previousFields[$v->Field], '', false);
-            $extra .= '<input type="hidden" name="afterold[]" value="'.(!empty($previousFields[$v->Field]) ?
-                $previousFields[$v->Field] : 'FIRST').'" >';
-            // выбор ключей
-            if (isset($keys[$NAME])) {
-                foreach ($keys[$NAME] as $keyName => $key) {
-                    $PRI = ($key == 'PRI' || (isset($_POST['primaryKey']) && $_POST['primaryKey'] == $NAME) ?
-                        ' checked' : $PRI);
-                    if ($key == 'UNI' || isset($_POST['uni'][$NAME])) {
-                        $UNI = ' checked';
-                        $uniName = $keyName;
-                    }
-                    if ($key == 'MUL' || isset($_POST['mul'][$NAME])) {
-                        $MUL = ' checked';
-                        $mulName = $keyName;
-                    }
-                }
-            }
-
-        // пустые поля
-        } else {
-            if (POST('afterOption') != '') {
-                $checked = '';
-                if (POST('afterOption') == 'end') {
-                    $checked = array_pop(array_keys($fields));
-                } else if (POST('afterOption') == 'field') {
-                    $checked = POST('afterField');
-                }
-                $extra = plDrawSelector($fields, ' name="after['.$k.']"', $checked, '', false);
-                $extra .= '<input type="hidden" name="afterold['.$k.'] value="'.$checked.'">';
-            }
-        }
-
-        // создание ряда
-        $j = $NAME == '' ? $k : $NAME; // todo везде должны быть только индексы, не путать с именами полей чтобы
-        // id в полях нужно, чтобы из веб-теста получить доступ к полям!
-        $table->makeRow(array(
-        '<input name="name[]" tabindex="1" id="name'.$k.'" type="text" value="'.$NAME.'" size="15" />
-            <input type="hidden" name="oldname[]" value="'.$NAME.'" />',
-
-        '<select name="ftype[]" tabindex="2" title="'.$TYPE.'" id="typeSelectorId'.$k.'">'.$types_select.'</select>',
-        '<input name="length[]" tabindex="3" id="length'.$k.'" type="text" value="'.$LENGTH.'" size="30" />',
-
-        '<input name="isNull['.$k.']" tabindex="4" id="isNull'.$k.'" type="checkbox" value="1"'.$ISNULL.' />',
-        '<input name="default[]" tabindex="5" id="default'.$k.'" type="text" size="10" value="'.$DEFAULT.'" />',
-
-        '<input name="auto['.$k.']" tabindex="6" id="auto'.$k.'" onclick="get(\'default'.$k.'\').value=\'\'"
-            type="checkbox" value="1"'.$AUT.' />',
-
-        // primaryKey - значение должно быть либо номером, либо полем, так оно считывается ниже
-        '<input name="primaryKey" tabindex="7" id="key1'.$k.'" type="radio" value="'.$j.'"'.$PRI.' />',
-        '<input name="uni['.$j.']" tabindex="8" id="key2'.$k.'" type="checkbox" value="'.$uniName.'"'.$UNI.' />',
-        '<input name="mul['.$j.']" tabindex="9" id="key3'.$k.'" type="checkbox" value="'.$mulName.'"'.$MUL.' />',
-        '<a href="#" onclick="return clearKeys('.$k.')">clear</a>',
-        '<input name="fulltext['.$k.']" tabindex="11" id="fulltext'.$k.'" type="checkbox" value="1" />',
-
-        '<select name="attr[]" tabindex="12" id="attr'.$k.'" style="width:70px">
-            <option></option>
-            <option'.($isUnsigned?' selected="selected"':'').'>UNSIGNED</option>
-            <option'.($isUnsignedZero?' selected="selected"':'').'>UNSIGNED ZEROFILL</option>
-        </select>',
-        $extra
-        ),
-        " id='tableFormEditTr$k'");
-    }
-    return $table->make();
-}*/
-
 // Получаем начальную инфо о полях таблицы
 $fields = getFields($msc->table);
 
@@ -267,10 +102,12 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         $sql .= "\r\n)";
         if ($msc->query($sql)) {
             $msc->addMessage('Таблица '.POST('table_name').' создана', $sql, MS_MSG_SUCCESS);
-            $msc->table = POST('table_name');
-            $msc->pageTitle = 'Обзор таблицы ' . POST('table_name');
-            include_once(DIR_MYSQL . 'tbl_data.php');
-            return null;
+            if (!isajax()) {
+                $msc->table = POST('table_name');
+                $msc->pageTitle = 'Обзор таблицы ' . POST('table_name');
+                include_once(DIR_MYSQL . 'tbl_data.php');
+                return null;
+            }
         } else {
             $msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, mysqli_errorx());
         }
@@ -360,8 +197,10 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
             }
         } else {
             $msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
-            include DIR_MYSQL . 'tbl_struct.php';
-            return null;
+            if (!isajax()) {
+                include DIR_MYSQL . 'tbl_struct.php';
+                return null;
+            }
         }
     }
     // создание запроса на добавление
@@ -376,14 +215,18 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         $oldFields = getFields(GET('table'));
         // выполнение
         if ($msc->query($sql)) {
-            include DIR_MYSQL . 'tbl_struct.php';
             $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-            return null;
+            if (!isajax()) {
+                include DIR_MYSQL . 'tbl_struct.php';
+                return null;
+            }
         } else {
             $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
         }
     }
-
+    if (isajax()) {
+        ajaxResultWithMessages();
+    }
 }
 
 // HTML форма
@@ -415,6 +258,8 @@ if ($msc->table == null || POST('action') == 'fieldsAdd') {
     $edited = array();
     if (GET('field') != '') {
         $edited []= stripslashes(urldecode(GET('field')));
+    } elseif (!empty($_POST['fields'])) {
+        $edited = explode(',', $_POST['fields']);
     } elseif (isset($_POST['field']) && count($_POST['field']) > 0) {
         $edited = $_POST['field'];
     }
@@ -429,7 +274,7 @@ if ($msc->table == null || POST('action') == 'fieldsAdd') {
         }
         $array []= $row;
     }
-    if (count($array) == 0) {
+    if (count($array) == 0 && !isajax()) {
         redirect('?s=tbl_List');
     }
 
