@@ -305,7 +305,7 @@ showhide("' . $messageId . '");
         } catch (\Exception $e) {
             $this->error = $e->getMessage();
             msclog('query()', $sql);
-            $msc->addMessage($this->error, null, MS_MSG_FAULT);;
+            //$msc->addMessage($this->error, null, MS_MSG_FAULT);;
         }
         if ($log) {
             $this->loqQuery($sql, $result);

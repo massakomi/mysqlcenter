@@ -372,7 +372,7 @@ class MySQLExport {
             if (stristr($v->Type, 'int')) {
               $val =  $row[$i];
             } else {
-              $val =  '\'' . mysql_escape_string(trim($row[$i])) . '\'';
+              $val =  '\'' . mysqli_escape_string(trim($row[$i])) . '\'';
             }
           } else {
             $val = 'NULL';

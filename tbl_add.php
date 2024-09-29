@@ -190,8 +190,10 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         if ($sql != '') {
             if ($msc->query($sql)) {
                 $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-                include DIR_MYSQL . 'tbl_struct.php';
-                return null;
+                if (!isajax()) {
+                    include DIR_MYSQL . 'tbl_struct.php';
+                    return null;
+                }
             } else {
                 $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
             }

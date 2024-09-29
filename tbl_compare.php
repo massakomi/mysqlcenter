@@ -23,7 +23,7 @@ if (count($tables) < 1) {
 // Получение массив баз данных
 if (count($_POST)) {
     if (isset($_POST['databases'])) {
-        $databases = explode(',', $_POST['databases']);
+        $databases = is_array($_POST['databases']) ? $_POST['databases'] : explode(',', $_POST['databases']);
     } else {
         $databases = [$_POST['database'], $msc->db];
     }
@@ -73,6 +73,9 @@ function selectDataFromDatabase($databases, $table, $pk) {
     $sql = "SELECT * FROM $databases[0].$table";
     $result = $msc->query($sql . $orderBy);
     $data1 = [];
+    if (!$result) {
+        exitError("Таблица $table не найдена в базе $databases[0]");
+    }
     while ($row = mysqli_fetch_object($result)) {
         $data1 [] = $row;
     }

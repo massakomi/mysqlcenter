@@ -1205,7 +1205,9 @@ function ajaxResultWithMessages() {
 
 function exitError($message) {
     if (isajax()) {
-        ajaxError($message);
+        global $msc;
+        $msc->addMessage($message, null, MS_MSG_FAULT);
+        ajaxResultWithMessages();
     } else {
         exit($message);
     }

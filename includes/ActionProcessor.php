@@ -536,6 +536,19 @@ class ActionProcessor
                 Server::userAdd();
                 break;
 
+            // разное
+
+            case 'killProcess' :
+                $kill = POST('id');
+                if (!empty($kill)) {
+                    if ($msc->query($sql = 'KILL ' . $kill)) {
+                        $msc->addMessage('Успешно удалено');
+                    } else {
+                        $msc->addMessage('Ошибка остановки', $sql, MS_MSG_ERROR, $msc->error);
+                    }
+                }
+                break;
+
             default:
                 return false;
 
