@@ -81,25 +81,19 @@ class PageLayout
 
             if (array_key_exists('init', $_GET)) {
                 $data = [
-                    'main' => [
+                    /*'main' => [
                         'handler' => $currentHandler,
                         'page' => $msc->page,
                         'db' => $msc->db,
                         'table' => $msc->table,
-                    ],
+                    ],*/
 
-                    'getWindowTitle' => $msc->getWindowTitle(),
-                    'getPageTitle' => $msc->getPageTitle(),
                     'messages' => $msc->getMessagesData(),
                     'queries' => $msc->queries,
                     'databases' => Server::getDatabasesWithoutHidden(),
 
                     'DB_HOST' => DB_HOST,
-                    'DB_USERNAME_CUR' => DB_USERNAME,
-
-                    //'enterType' => $this->enterType,
-                    //'cookies' => $_COOKIE,
-                    //'session_id' => session_id()
+                    'DB_USERNAME' => DB_USERNAME,
                 ];
             } else {
                 $pageProps = [];
