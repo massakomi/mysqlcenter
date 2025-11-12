@@ -79,7 +79,12 @@ echo $table->make()*/
             pkValues.push(`${pkCurrent}="${row[pkCurrent]}"`);
           }
         } else {
-          for (let pkCurrent of fieldNames) {
+          for (let field in this.props.fields) {
+            let info = this.props.fields[field]
+            let pkCurrent = info.Field
+            if (info.Type.indexOf('int') < 0) {
+                continue;
+            }
             if (!row[pkCurrent]) {
               continue;
             }

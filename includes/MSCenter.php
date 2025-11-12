@@ -321,6 +321,9 @@ showhide("' . $messageId . '");
     public function getData($sql, $result = null)
     {
         $res = $this->query($sql);
+        if (!$res) {
+            return [];
+        }
         $data = mysqli_fetch_all($res, MYSQLI_ASSOC);
         return $data;
     }
