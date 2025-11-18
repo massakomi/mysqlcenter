@@ -90,7 +90,22 @@ if (GET('table') != null) {
                 ];
             }
         }
-        return compact('results', 'founded', 'foundedTotal');
+        if (isajax()) {
+            return compact('results', 'founded', 'foundedTotal');
+        } else {
+            $msc->pageTitle .= " (найдено <b>$founded</b>)";
+            $t = new Table('contentTable');
+            $t->makeRowHead('Таблица', 'Найдено');
+            $t->setColClass('', 'text-align:right');
+            foreach ($results as $row) {
+                $table = $row['table']['text'];
+                $t->makeRow([
+                    "<a href='/?db=$msc->db&table=$table&s=tbl_data'>".$table."</a>",
+                    $row['fields'],
+                ], " style='color:black'");
+            }
+            echo $t->make();
+        }
 
     } elseif (strlen($query) > 0) {
         $msc->pageTitle = "Поиск: '$query'";
