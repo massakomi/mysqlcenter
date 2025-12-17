@@ -19,10 +19,11 @@
 
     tableAction = (action, e) => {
       let opts = {}
-      if (e.target.parentNode.tagName === 'FORM') {
+      const form = e.target.closest('FORM')
+      if (form !== null) {
         opts = {
           method: 'POST',
-          body: new FormData(e.target.parentNode)
+          body: new FormData(form)
         }
       }
       e.preventDefault()
@@ -71,7 +72,10 @@
                     <HtmlSelector data={this.props.dbs} value={this.props.db} name="newDB" auto="false" />
                     .
                     <input name="newName" type="text" required defaultValue={this.props.table} />
-                    <input type="submit" onClick={this.tableAction.bind(this, "tableCopyTo")} value="Выполнить!" className="submit" />
+                      <div className="mt-10">
+                          <input type="submit" onClick={this.tableAction.bind(this, "tableCopyTo")} value="Выполнить!" />
+                          <input type="checkbox" name="tableCopyNoData" value="1" /> только структуру
+                      </div>
                   </form>
                 </fieldset>
 
@@ -79,7 +83,7 @@
                   <legend>Изменить кодировку таблицы</legend>
                   <form>
                     <CharsetSelector charsets={this.props.charsets} value={this.props.charset} />
-                    <input type="button" onClick={this.tableAction.bind(this, "tableCharset")} value="Выполнить!" />
+                    <input type="button" onClick={this.tableAction.bind(this, "tableCharset")} value="Выполнить!" className="ml-10" />
                   </form>
                 </fieldset>
 
@@ -91,11 +95,11 @@
                   </form>
                 </fieldset>
                 <fieldset className="msGeneralForm">
-                  <legend>Изменить подрядок</legend>
+                  <legend>Изменить порядок</legend>
                   <form>
                     <HtmlSelector data={this.props.fields} name="field" />
-                    <select name="order"><option value="">По возрастанию</option><option value="DESC">По убыванию</option></select>
-                    <input type="submit" onClick={this.tableAction.bind(this, "tableOrder")} value="Выполнить!" className="submit" />
+                    <select name="order" className="ml-10"><option value="">По возрастанию</option><option value="DESC">По убыванию</option></select>
+                    <input type="submit" onClick={this.tableAction.bind(this, "tableOrder")} value="Выполнить!" className="ml-10" />
                   </form>
                 </fieldset>
                 <fieldset className="msGeneralForm">

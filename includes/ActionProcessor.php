@@ -201,7 +201,8 @@ class ActionProcessor
 
             // Копирование в другую БД
             case 'tableCopyTo';
-                $dbt->copyTable($db, $tbl, true, true, $this->param('newName'), $this->param('newDB'));
+                $withData = !$this->param('tableCopyNoData');
+                $dbt->copyTable($db, $tbl, true, $withData, $this->param('newName'), $this->param('newDB'));
                 break;
 
             // Изменение кодировки

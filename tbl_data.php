@@ -120,6 +120,8 @@ if (!isset($directSQL)) {
         $whereCondition = ' WHERE `' . implode('` LIKE "%'.GET('query').'%" OR `', $fieldsNames) . '` LIKE "%'.GET('query').'%"';
     } elseif (GET('where') != null) {
         $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
+    } elseif (GET('id') != null) {
+        $whereCondition  = " WHERE $pk[0]=".GET('id');
     }
 
     // Получаем кол-во рядов в таблице
@@ -271,5 +273,6 @@ $pageProps = [
 if (isajax()) {
     return $pageProps;
 }
+$msc->addPopularTable($msc->table);
 
 include(MS_DIR_TPL . 'tbl_data.htm.php');

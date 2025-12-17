@@ -206,25 +206,24 @@
       for (let j = 0; j < this.props.tableData.length; j++) {
         let data = this.props.tableData[j]
 
-        let pk = []
+        let pk = [], mul = []
         let tableInnerRows = Object.keys(data).map((field, i) => {
           let value = data[field]
           let key = this.props.fields[field].Key;
           if (key.indexOf('PRI') > -1) {
             pk.push(field+'="'+value+'"')
           }
+          if (key.indexOf('MUL') > -1) {
+            mul.push(field+'="'+value+'"')
+          }
           return <AddRow key={'row'+i} name={field} fields={this.props.fields} value={value} i={i} j={j} />
         });
 
-        let cond = pk.join(' AND ')
-        if (pk.length === 0) {
-          for (let field of Object.keys(this.props.fields)) {
-            let value = data[field]
-            if (value == null) {
-              continue;
-            }
-            pk.push(field+'="'+value+'"')
-          }
+        let cond = '';
+        if (pk.length > 0) {
+            cond = pk.join(' AND ')
+        } else if (mul.length > 0) {
+            cond = mul.join(' AND ')
         }
         let hiddenInput = (<input name="cond[]" type="hidden" value={cond} />)
 

@@ -191,15 +191,19 @@ class DatabaseTable extends DatabaseInterface {
     /**
      * @return array
      */
-    public static function getCashedTablesArray() {
-        global $msc;
-        $result = $msc->query('SHOW TABLE STATUS');
-        if (!$result || mysqli_num_rows($result) == 0) {
-            return [];
-        }
-        $array = [];
-        while ($row = mysqli_fetch_object($result)) {
-            $array []= $row;
+    public static function getCashedTablesArray(): array
+    {
+        static $array;
+        if (!isset($array)) {
+            global $msc;
+            $result = $msc->query('SHOW TABLE STATUS');
+            if (!$result || mysqli_num_rows($result) == 0) {
+                return [];
+            }
+            $array = [];
+            while ($row = mysqli_fetch_object($result)) {
+                $array []= $row;
+            }
         }
         return $array;
       }

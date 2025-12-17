@@ -127,7 +127,7 @@ function getTableHeaders(fields, sortEnabled=true, headWrap=false) {
       let f = []
       let i = 0
       for (let x of v.Field) {
-        f.push(<span key={i}>{x}<br /></span>)
+        f.push(<span key={i}>{x}</span>)
         i ++
       }
       v.Field = f

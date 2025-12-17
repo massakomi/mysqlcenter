@@ -30,52 +30,48 @@
   <span class="hiddenText" onclick="msDisplaySql()" title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
   <span class="menuChain"><?php echo $this->getChainMenu()?></span>
 </div>
-<table width="100%" class="outerTable">
-  <tr>
-    <td width="100" class="tableMenuTd">
-<?php
-echo $this->getTableMenu();
 
-?>
-      <img src="tpl/images/spacer.png" width="100" height="1" />
-    </td>
-    <td>
-      <table width="800" border=0 cellspacing=0 cellpadding=0><tr>
-        <td width="500"><h1><?php echo $msc->getPageTitle()?></h1></td>
-        <td style="white-space:nowrap">
-        <span class="hiddenText" onclick="showhide(get('queryPopupBlock')); return false">запросы&nbsp;</span>
-        <?php echo count($msc->queries) ?>
-        &nbsp;&nbsp;
-        <?php
-        if (GET('table') != '') {
-            $url = '?db='.$msc->db.'&table='.$msc->table.'&s=tbl_data';
-        ?>
-        <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
-        <input type="text" name="query" value="Поиск по таблице" onfocus="this.value=''" />
-        </form>
-        <?php
-        }
-        $url = '?db='.$msc->db.'&s=search';
-        ?>
-        <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
-        <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''" />
-        </form>
-        </td></tr>
+<div id="msAjaxQueryDiv"></div>
 
-    </table>
-<?php
-if (conf('showmessages') == '1') {
-    echo $msc->getMessages();
-}
-?>
-<?php echo $contentMain?>
-    </td>
-    <td><div id="msAjaxQueryDiv"></div></td>
-  </tr>
-</table>
+<div class="outerTable">
+    <div class="leftCol">
+        <?php echo $this->getTableMenu(); ?>
+    </div>
+    <div class="rightCol">
+        <div class="headTop">
+            <h1><?php echo $msc->getPageTitle()?></h1>
+            <div>
+                <?php
+                if (GET('table') != '') {
+                    $url = '?db='.$msc->db.'&table='.$msc->table.'&s=tbl_data';
+                ?>
+                <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value+'&id='+this.id.value; ">
+                <input type="text" name="query" value="Поиск по таблице" onfocus="this.value=''; this.nextElementSibling.value=''" />
+                <input type="text" name="id" value="По id" onfocus="this.value=''; this.previousElementSibling.value = ''" style="width: 50px" />
+                    <input type="submit" style="display: none">
+                </form>
+                <?php
+                }
+                $url = '?db='.$msc->db.'&s=search';
+                ?>
+                <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
+                <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''" />
+                </form>
+            </div>
+        </div>
+    <?php
+    if (conf('showmessages') == '1') {
+        echo $msc->getMessages();
+    }
+    ?>
+    <?php echo $contentMain?>
+    </div>
+</div>
+
+
 <form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post" name="sqlPopupQueryForm" id="sqlPopupQueryForm" style="text-align:right">
   <input type="submit" value="Отправить запрос!" />
-  <textarea name="sql" rows="15" wrap="off"></textarea>
+  <textarea name="sql" rows="15" wrap="off"><?=$_POST['sql']?></textarea>
   <a href="#" onclick="msDisplaySql(); return false">закрыть</a>
 </form>
 <div id="dbHiddenMenu">
@@ -83,13 +79,6 @@ if (conf('showmessages') == '1') {
 $dbs = Server::getDatabasesWithoutHidden();
 foreach ($dbs as $db) {
 	echo '<a href="?db='.$db.'">'.$db.'</a><br />';
-}
-?>
-</div>
-<div id="queryPopupBlock">
-<?php
-foreach ($msc->queries as $query) {
-	echo $query.'<br />';
 }
 ?>
 </div>

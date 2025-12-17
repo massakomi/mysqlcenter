@@ -653,7 +653,6 @@ function mysqlCenterInit() {
     $('#dbHiddenMenu').on('click', function (e) {
       $('#dbHiddenMenu').hide();
     })
-    $('#queryPopupBlock').hide()
 
 
 

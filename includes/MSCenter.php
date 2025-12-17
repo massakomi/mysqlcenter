@@ -23,11 +23,6 @@ class MSCenter
     // public
     var $db, $table, $page;
 
-    /**
-     * Массив запросов общий
-     */
-    var $queries = array();
-
     // private
     var $dbSelected;
     var $messages = array();
@@ -171,7 +166,8 @@ class MSCenter
     /**
      * @return array
      */
-    function getMessagesData() {
+    function getMessagesData()
+    {
         if ($this->allowRepeatMessages == '' && !isajax()) {
             $messages = array_count_values($this->messages);
             $this->messages = array_unique($this->messages);
@@ -245,12 +241,9 @@ showhide("' . $messageId . '");
      * @param integer тип сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @return boolean
      */
-    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error='')
+    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = '')
     {
         global $connection;
-        if (!$error) {
-            $error = mysqli_error($connection);
-        }
         $textError = $text;
         if ($sql != '') {
             $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . mysqli_affected_rows($connection) . '</span>';
@@ -268,7 +261,7 @@ showhide("' . $messageId . '");
         );
         $color = isset($colors[$type]) ? $colors[$type] : 'black';
         if (isajax()) {
-            $this->messages []= [
+            $this->messages [] = [
                 'text' => $textError,
                 'type' => $type,
                 'color' => $color,
@@ -277,7 +270,7 @@ showhide("' . $messageId . '");
                 'rows' => mysqli_affected_rows($connection),
             ];
         } else {
-            $this->messages []= '<span style="color:' . $color . '">' . $text . '</span>';
+            $this->messages [] = '<span style="color:' . $color . '">' . $text . '</span>';
         }
         if ($type == MS_MSG_ERROR || $type == MS_MSG_FAULT) {
             return false;
@@ -299,7 +292,6 @@ showhide("' . $messageId . '");
         if ($database != null) {
             $this->selectDb($database);
         }
-        $this->queries [] = $sql;
         try {
             $result = mysqli_query($connection, $sql);
         } catch (\Exception $e) {
@@ -560,5 +552,69 @@ showhide("' . $messageId . '");
         return true;
     }
 
+    private $popularTablesFile = 'data/popular.json';
+
+    public function getPopularTables(): array
+    {
+        if (!file_exists($this->popularTablesFile)) {
+            return [];
+        }
+        if ($_GET['resetPopular']) {
+            unlink($this->popularTablesFile);
+            return [];
+        }
+        $json = file_get_contents($this->popularTablesFile);
+        $json = json_decode($json, true);
+        ksort($json[$this->db]);
+        foreach ($json[$this->db] as $table => $values) {
+            if (!is_array($values)) {
+                $json[$this->db][$table] = ['count' => $values];
+            }
+        }
+
+       // $sum = array_sum($json);
+        //var_dump($sum / 20);
+        //echo '<pre>'; print_r($json); echo '</pre>'; exit;
+        return $json;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPopularTablesDb(): array
+    {
+        $tables = $this->getPopularTables();
+        if (array_key_exists($this->db, $tables)) {
+            return $tables[$this->db];
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * @param $table
+     * @return void
+     */
+    public function addPopularTable($table)
+    {
+        $tables = $this->getPopularTables();
+        if (array_key_exists($table, $tables[$this->db])) {
+            $tables[$this->db] [$table]['count'] ++;
+        } else {
+            $tables[$this->db] [$table]['count']= 1;
+        }
+        $tables[$this->db] [$table]['time'] = time();
+        if (date('i') % 10 == 0) {
+            $tablesAll = array_column(DatabaseTable::getCashedTablesArray(), 'Name');
+            $exists = array_intersect(array_keys($tables[$this->db]), $tablesAll);
+            $notExists = array_diff(array_keys($tables[$this->db]), $exists);
+            if (count($notExists) > 0) {
+                foreach ($notExists as $table) {
+                    unset($tables[$this->db][$table]);
+                }
+            }
+        }
+        file_put_contents($this->popularTablesFile, json_encode($tables));
+    }
+
 }
-?>

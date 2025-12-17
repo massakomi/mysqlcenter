@@ -89,7 +89,6 @@ class PageLayout
                     ],*/
 
                     'messages' => $msc->getMessagesData(),
-                    'queries' => $msc->queries,
                     'databases' => Server::getDatabasesWithoutHidden(),
 
                     'DB_HOST' => DB_HOST,
@@ -344,6 +343,7 @@ class PageLayout
         }
         // создание меню и селектора
         $menuTables .= "\r\n" . '<div class="menuTables">' . "\r\n";
+        $menuTables .= $this->addPopularTables();
         if ($auto === true) {
             $selectorTables .= '<select onchange="location=this.options[this.selectedIndex].value">' . "\r\n";
         } else {
@@ -361,18 +361,12 @@ class PageLayout
             if ($greyEmpty && $t->Rows == 0) {
                 $style .= '" style="color:#ccc';
             }
-            // если есть текущая страница, то переход на неё (переход по структурам всех таблиц)
-            if (!is_null($msc->page) && $msc->page == 'tbl_struct') {
-                $link = '?db=' . $msc->db . '&table=' . $t->Name . '&s=' . $msc->page;
-            } else {
-                $link = '?db=' . $msc->db . '&table=' . $t->Name . '&s=tbl_data';
-            }
             if ($msc->table == $t->Name) {
-                $menuTables .= '  <a class="cur" href="' . $link . '">' . $t->Name . '</a>' . "\r\n";
+                $menuTables .= $this->makeTableMenuItem($t->Name, 'cur');
                 $selectorTables .= '  <option value="" selected><b>' . $t->Name . '</b></option>' . "\r\n";
             } else {
-                $menuTables .= '  <a class="' . $style . '" href="' . $link . '">' . $t->Name . '</a>' . "\r\n";
-                $selectorTables .= '  <option value="' . $link . '">' . $t->Name . '</option>' . "\r\n";
+                $menuTables .= $this->makeTableMenuItem($t->Name, $style);
+                $selectorTables .= '  <option value="' . $this->getMenuTableLink($t->Name) . '">' . $t->Name . '</option>' . "\r\n";
             }
         }
         $menuTables .= '</div>' . "\r\n";
@@ -382,6 +376,21 @@ class PageLayout
         } else {
             return $menuTables;
         }
+    }
+
+    function makeTableMenuItem($table, $class, $title='') {
+        return '  <a class="' . $class . '" title="' . $title . '" href="' . $this->getMenuTableLink($table) . '">' . $table . '</a>' . "\r\n";
+    }
+
+    function getMenuTableLink($table) {
+        global $msc;
+        // если есть текущая страница, то переход на неё (переход по структурам всех таблиц)
+        if (!is_null($msc->page) && $msc->page == 'tbl_struct') {
+            $link = '?db=' . $msc->db . '&table=' .$table . '&s=' . $msc->page;
+        } else {
+            $link = '?db=' . $msc->db . '&table=' . $table . '&s=tbl_data';
+        }
+        return $link;
     }
 
     /**
@@ -411,6 +420,36 @@ class PageLayout
         }
         $selectorDB .= '</select>' . "\r\n";
         return $selectorDB;
+    }
+
+    private function addPopularTables()
+    {
+        global $msc;
+        $tables = $msc->getPopularTablesDb();
+        if (count($tables) == 0) {
+            return '';
+        }
+        ksort($tables);
+        $menu = '';
+        foreach ($tables as $table => $info) {
+            $class = 't2';
+            if ($info['count'] == 1) {
+                $class = 'freq0';
+            } elseif ($info['count'] < 3) {
+                $class = 'freq1';
+            } elseif ($info['count'] < 5) {
+                $class = 'freq2';
+            }
+            if ($info['time']) {
+                $lastTime = time() - $info['time'];
+                if ($lastTime < 86400) {
+                    $class = 't2';
+                }
+            }
+            $menu .= $this->makeTableMenuItem($table, $class, $info['count'] .' '.$info['time']);
+        }
+        $menu .= '<a href="#" style="position: absolute; right: 0; top: 0" onclick="location.href=location.href + \'&resetPopular=1\'; return false;">reset</a> <hr />';
+        return $menu;
     }
 }
 

@@ -1061,7 +1061,9 @@ function execSql($db, &$sql, $log=true) {
     if (count($errors) == 0) {
         $msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
     } else {
-        $msc->addMessage('Запросы выполнен с ошибками' . $info, null, MS_MSG_FAULT, implode('<br />', $errors));
+        $msc->addMessage('Запрос выполнен с ошибками' . $info, null, MS_MSG_FAULT);
+        $msc->addMessage(implode('<br />', $errors), null, MS_MSG_FAULT);
+
     }
     $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
     $msc->addMessage("Выполнено за $mysqlGenerationTime с.");

@@ -43,11 +43,14 @@ echo $table->make()*/
     render() {
 
       // Собираем массив имён полей, и также массив имён только ключевых полей
-      let pk = [], fieldNames = []
+      let pk = [], mul = [], fieldNames = []
       Object.values(this.props.fields).map(function(v) {
         fieldNames.push(v.Field)
         if (v.Key.indexOf('PRI') > -1) {
           pk.push(v.Field)
+        }
+        if (v.Key.indexOf('MUL') > -1) {
+          mul.push(v.Field)
         }
       })
 
@@ -71,13 +74,23 @@ echo $table->make()*/
         // определение уникального ид ряда
         let pkValues = []
         if (pk.length > 0) {
-          for (let pkCurrent of pk) {
+            for (let pkCurrent of pk) {
+                if (!row[pkCurrent]) {
+                    console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`)
+                    continue;
+                }
+                pkValues.push(`${pkCurrent}="${row[pkCurrent]}"`);
+            }
+        // если нет pk ключей, берем простые ключи
+        } else if (mul.length > 0) {
+          for (let pkCurrent of mul) {
             if (!row[pkCurrent]) {
               console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`)
               continue;
             }
             pkValues.push(`${pkCurrent}="${row[pkCurrent]}"`);
           }
+        // если ничего нет, берем числовые поля
         } else {
           for (let field in this.props.fields) {
             let info = this.props.fields[field]
@@ -240,6 +253,10 @@ echo $table->make()*/
 
       jQuery('.contentTable TR').dblclick(function(){
         location.href = jQuery(this).find('a').attr('href');
+      });
+
+      jQuery('.contentTable TH').mouseover(function(){
+        this.classList.add('wide')
       });
 
       jQuery('.contentTable TD').click(function(){
