@@ -288,7 +288,7 @@ showhide("' . $messageId . '");
      */
     public function query($sql, $database = null, $log = true)
     {
-        global $connection, $msc;
+        global $connection;
         if ($database != null) {
             $this->selectDb($database);
         }
@@ -297,7 +297,6 @@ showhide("' . $messageId . '");
         } catch (\Exception $e) {
             $this->error = $e->getMessage();
             msclog('query()', $sql);
-            //$msc->addMessage($this->error, null, MS_MSG_FAULT);;
         }
         if ($log) {
             $this->loqQuery($sql, $result);
@@ -556,7 +555,7 @@ showhide("' . $messageId . '");
 
     public function getPopularTables(): array
     {
-        if (!file_exists($this->popularTablesFile)) {
+        if (!file_exists($this->popularTablesFile) || !$this->db) {
             return [];
         }
         if ($_GET['resetPopular']) {
@@ -565,6 +564,9 @@ showhide("' . $messageId . '");
         }
         $json = file_get_contents($this->popularTablesFile);
         $json = json_decode($json, true);
+        if (!array_key_exists($this->db, $json)) {
+            $json[$this->db] = [];
+        }
         ksort($json[$this->db]);
         foreach ($json[$this->db] as $table => $values) {
             if (!is_array($values)) {
@@ -617,4 +619,44 @@ showhide("' . $messageId . '");
         file_put_contents($this->popularTablesFile, json_encode($tables));
     }
 
+
+    /**
+     * Статистика просмотров баз данных
+     * @return void
+     */
+    public function dbViewStat() {
+        $dbs = Server::getDatabases();
+        if (!in_array('mysqlcenter', $dbs) || empty($this->db)) {
+            return ;
+        }
+        include_once 'includes/MSTable.php';
+
+        $result = $this->query($t = 'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"');
+        $a = [];
+        while ($o = mysqli_fetch_object($result)) {
+            $a [] = $o;
+        }
+        if (count($a) == 0) {
+            $this->query('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
+        } else {
+            $this->query('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
+                '" WHERE db_name="' . $this->db . '"', null, 0);
+        }
+
+        // Статистика просмотров таблиц
+        if ($this->table != '') {
+            $result = $this->query($t = 'SELECT * FROM mysqlcenter.table_info
+                    WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"');
+            $a = [];
+            while ($o = mysqli_fetch_object($result)) {
+                $a [] = $o;
+            }
+            if (count($a) == 0) {
+                $this->query('REPLACE INTO mysqlcenter.table_info VALUES("' . $this->db . '", "' . $this->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
+            } else {
+                $this->query('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
+                    '" WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"', null, 0);
+            }
+        }
+    }
 }

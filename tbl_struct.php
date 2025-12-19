@@ -14,7 +14,7 @@ if (!defined('DIR_MYSQL')) {
 }
 $fields = getFields($msc->table);
 
-if (GET('mode') == 'add_key') {
+if (GET('action') == 'add_key') {
      $fieldRows = ['' => ''];
     foreach ($fields as $field) {
         $fieldRows [$field->Field] = "$field->Field [$field->Type]";
@@ -31,7 +31,7 @@ if (GET('mode') == 'add_key') {
         return $pageProps;
     }
 
-    include 'tpl/tbl_key_add.htm.php';
+    $this->template($pageProps);
     return;
 }
 
@@ -94,5 +94,4 @@ $pageProps = [
 if (isajax()) {
     return $pageProps;
 }
-
-include(MS_DIR_TPL . 'tbl_struct.htm.php');
+$this->template($pageProps);

@@ -8,6 +8,10 @@ BODY {font-size:12px; font-family:Arial; }
 .outerTable .leftCol {width: 160px}
 .outerTable h1 { margin:0; font-size:18px; padding:0; line-height:100%; margin-right: 20px}
 .outerTable .headTop {display: flex; align-items: center;}
+.search-top {display: inline}
+.search-top [name="field"] {max-width: 100px}
+.search-top [name="byField"] {width: 80px}
+.search-top [type="submit"] {display: none}
 
 /* Меню главное */
 div.globalMenu { display:inline; }
@@ -145,9 +149,23 @@ form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left
 .links-block a + a {margin-left: 10px}
 table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
 
-#msAjaxQueryDiv {position: fixed; right: 0; bottom: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
+#msAjaxQueryDiv {position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
 
-
+.loader {
+  border: 15px solid #CCCCCC; /* Light grey */
+  border-top: 15px solid #CC0000; /* Blue */
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  animation: spin 2s linear infinite;
+  position:absolute;
+  top:0; right:0;
+  display: none;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
 .grey {color:#aaa}

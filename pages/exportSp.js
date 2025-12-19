@@ -1,0 +1,112 @@
+
+class ExportSp extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {value: 'wait'};
+    }
+
+    createSet = () => {
+        var m = prompt('Введите имя для установки', 'Новая')
+        if (m) {
+            this.target.value = m;
+        } else {
+            return false;
+        }
+    }
+
+    selectSet = () => {
+        window.location = '?db=<?=$msc->db?>&s=<?=$msc->page?>&set=' + this.target.options[this.target.selectedIndex].value
+    }
+
+    render() {
+
+        const trs = Object.values(this.props.data).map((item, i) => {
+
+            let valueTable, where, valueMax, pKey
+            let checkedStruct = false;
+            let checkedData = true;
+            // let tprefix = item.Name.substr(0, iten.Name.indexOf('_'))
+
+            // Определение видимости таблицы
+            let configInfo = this.props.configSet[item.Name];
+            if (!configInfo) {
+                checkedData = false
+            } else {
+                // Определение необхдоимости экспорта данных и стр-ры
+                if (configInfo.struct == 1) {
+                    checkedStruct = true
+                }
+                if (configInfo.data != 1) {
+                    checkedData = false
+                }
+                // Определение верхнего значение PK
+                valueMax = configInfo.pk_top == 0 ? null : configInfo.pk_top;
+                where = configInfo.where_sql;
+            }
+
+            // Определение ключевого поля и создание массива полей
+            let fnames = []
+            for (let field in item.Fields) {
+                fnames.push(field)
+                if (item.Fields[field].Key.indexOf('PRI') > -1) {
+                    pKey = field;
+                }
+            }
+            // Создание ряда
+            valueTable = item.Name
+            if (!checkedData && !checkedStruct) {
+                valueTable = <span style={{color: '#aaa'}}>{valueTable}</span>
+            } else {
+                valueTable = <b>{valueTable}</b>
+            }
+
+            return (
+              <tr key={i}>
+                  <td><label htmlFor={`row${i}`}>{valueTable}</label></td>
+                  <td>
+                      <input name={`struct[${i}]`} type="checkbox" value="1" id={`row${i}`} className="cb" defaultChecked={checkedStruct} />
+                      <input name={`table[${i}]`} type="hidden" value={item.Name} />
+                  </td>
+                  <td><input name={`data[${i}]`} type="checkbox" value="1" id={`row2${i}`} className="cb" defaultChecked={checkedData} /></td>
+                  <td><HtmlSelector data={fnames} name={`from[${i}]`} value={pKey} /></td>
+                  <td><input name={`from[${i}]`} type="text" size="5" defaultValue="1" /> - <input name="to['.$i.']" type="text" size="5" defaultValue={valueMax} /></td>
+                  <td><input name={`where[${i}]`} type="text" size="40" defaultValue={where} /></td>
+              </tr>
+            )
+        });
+
+        //this.props.setsArray.unshift('Загрузить установку')
+        return (
+          <form method="post" action="" name="formExport">
+              <input type="hidden" name="exportSpecial" value="1" />
+              <ExportOptions fields={this.props.fields} dirImage={this.props.dirImage} structChecked={this.props.structChecked} />
+              <p><input type="submit" value="Выполнить" /></p>
+              <select onChange={this.selectSet} defaultValue={new URL(location.href).searchParams.get('set')}>
+                  {Object.values(this.props.setsArray).map((v) =>
+                    <option key={v.toString()}>{v}</option>
+                  )}
+              </select>
+              <input type="submit" name="save" value="Сохранить изменения" />
+              <input type="submit" name="new" value="Создать новую установку" onClick={this.createSet} />
+              <input type="submit" name="delete" value="Удалить установку" />
+
+              <table className="contentTable">
+                  <thead>
+                  <tr>
+                      <th>Таблица</th>
+                      <th>Структ</th>
+                      <th>Данные</th>
+                      <th>Поле</th>
+                      <th>Диапазон</th>
+                      <th>WHERE</th>
+                  </tr></thead>
+                  <tbody>
+                  {trs}
+                  </tbody>
+              </table>
+
+          </form>
+        );
+    }
+}

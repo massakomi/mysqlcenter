@@ -133,5 +133,4 @@ if (isajax()) {
     return $pageProps;
 }
 
-// Вывод
-include(MS_DIR_TPL . 'sql.htm.php');
+$this->template($pageProps);

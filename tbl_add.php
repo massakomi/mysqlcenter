@@ -299,4 +299,4 @@ if (isajax()) {
     return $pageProps;
 }
 
-include(MS_DIR_TPL . 'tbl_edit.htm.php');
+$this->template($pageProps);

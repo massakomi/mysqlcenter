@@ -63,4 +63,4 @@ if (isajax()) {
     return $pageProps;
 }
 
-include(MS_DIR_TPL . 'tbl_change.htm.php');
+$this->template($pageProps);

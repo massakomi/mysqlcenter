@@ -52,6 +52,8 @@ if (isajax()) {
     return compact('data');
 }
 
-include MS_DIR_TPL.'config.html';
-
 $msc->pageTitle = 'Настройка MySQL Center';
+
+$this->template([
+    'data' => $data
+]);

@@ -109,4 +109,4 @@ if (isajax()) {
     return $pageProps;
 }
 
-require_once 'tpl/tbl_compare.php';
+$this->template($pageProps);

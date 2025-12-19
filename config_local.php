@@ -4,9 +4,9 @@
  */
 
 
-define('DB_HOST',       'mysql-8.2');
+define('DB_HOST',       'mysql-5.7');
 define('DB_USERNAME',   'root');
-define('DB_PASSWORD',   'root');
+define('DB_PASSWORD',   '');
 
 define('MS_LOG_ALLOW',    1);
 

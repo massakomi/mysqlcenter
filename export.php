@@ -151,8 +151,7 @@ if ($msc->page == 'exportSp') {
         if (isajax()) {
             return $pageProps;
         }
-
-        include(MS_DIR_TPL . 'exportSp.html');
+        $this->template($pageProps);
     }
 
 // 3. ОБЫЧНЫЙ ЭКСПОРТ
@@ -259,7 +258,7 @@ USE `'.$db.'`;'."\r\n"."\r\n";
         if (isajax()) {
             return $pageProps;
         }
-        include(MS_DIR_TPL . 'export.htm.php');
+        $this->template($pageProps);
     }
 
 }

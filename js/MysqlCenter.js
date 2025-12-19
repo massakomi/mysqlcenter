@@ -80,9 +80,10 @@ function xajax(query)
  *
  * @param  mode string  Режим запроса
  * @param  query string  Строка запроса urldecoded
+ * @param callback
  * @return boolean false
  */
-function msQuery(mode, query='') {
+function msQuery(mode, query='', callback = '') {
   if (mode !== 'tableRename' && mode !== 'dbCreate'  && mode !== 'dbHide' && confirm('Подтвердите...') === false) {
     return false;
   }
@@ -102,8 +103,10 @@ function msQuery(mode, query='') {
     headers: {'X-Requested-With': 'XMLHttpRequest'}
   }
 
+  loader()
   fetch('ajax.php', options)
     .then(response => {
+      loader()
       if (!response.ok) {
         console.error(response.status +' ' + response.statusText)
       } else {
@@ -120,6 +123,9 @@ function msQuery(mode, query='') {
           if (ajaxdebug) {
             console.error('JS код не выполнен: '+text);
           }
+        }
+        if (callback && typeof(callback) == 'function') {
+          callback()
         }
       }
     })
@@ -626,62 +632,73 @@ formatSize = (bytes, digits = 2) => {
   }
 }
 
-function mysqlCenterInit() {
-
-  $(document).ready(function () {
-
-    hideTimeout = null;
+function dbHiddenMenu() {
+    let hideTimeout = null;
     $('#appNameId').mouseover(function () {
-      $('#dbHiddenMenu').show();
+        $('#dbHiddenMenu').show();
     })
     function menuHidder(e) {
-      var w = parseInt($('#dbHiddenMenu').width());
-      if (e.pageX > w) {
-        hideTimeout = setTimeout(function() {
-          $('#dbHiddenMenu').hide()
-        }, 300);
-      }
+        var w = parseInt($('#dbHiddenMenu').width());
+        if (e.pageX > w) {
+            hideTimeout = setTimeout(function() {
+                $('#dbHiddenMenu').hide()
+            }, 300);
+        }
     }
-
     $('#dbHiddenMenu').mouseout(menuHidder);
-
     $('#dbHiddenMenu').mouseover(function (e) {
-      if (hideTimeout != null) {
-        clearInterval(hideTimeout);
-      }
+        if (hideTimeout != null) {
+            clearInterval(hideTimeout);
+        }
     })
     $('#dbHiddenMenu').on('click', function (e) {
-      $('#dbHiddenMenu').hide();
+        $('#dbHiddenMenu').hide();
     })
+}
 
-
-
+function ctrlKeyMode() {
     // Определяет активность клавиши CTRL
     window.globalCtrlKeyMode = false;
     window.key = {
-      needkey:function(e) {
-        var code;
-        if (!e) var e = window.event;
-        if (e.keyCode) code = e.keyCode;
-        else if (e.which) code = e.which;
-        if (globalCtrlKeyMode == true) {
-          globalCtrlKeyMode = false;
+        needkey:function(e) {
+            if (globalCtrlKeyMode === true) {
+                globalCtrlKeyMode = false;
+            }
+            if (e.ctrlKey === true && e.type === 'keydown') {
+                globalCtrlKeyMode = true;
+            }
         }
-        if (e.ctrlKey == true && e.type == 'keydown') {
-          globalCtrlKeyMode = true;
-        }
-      }
     }
     if (document.getElementById) {
-      document.onkeydown = key.needkey;
-      document.onkeyup = key.needkey;
+        document.onkeydown = key.needkey;
+        document.onkeyup = key.needkey;
     }
+}
 
+function searchEvents() {
+    $('.search-top [name="query"]').on('focus', function() {
+        this.value='';
+        this.closest('form').querySelector('[name=query]').value = ''
+    })
+    $('.search-top [name="field"]').on('change', function() {
+        $('.search-top [name="byField"]').val('')
+    })
+    $('.search-top [name="byField"]').on('focus', function() {
+        $('.search-top [name="query"]').val('')
+        this.style.width='auto'
+    })
+}
+
+function mysqlCenterInit() {
+
+  $(document).ready(function () {
+    dbHiddenMenu();
+    ctrlKeyMode();
+    searchEvents();
   });
 
-
-// Мультиселектор чекбоксов. Указать индекс чекбокса и селектор элемента где он находится
-// <input name="table[]" type="checkbox" value="1" onclick="checkboxer(5, '#row');">
+  // Мультиселектор чекбоксов. Указать индекс чекбокса и селектор элемента где он находится
+  // <input name="table[]" type="checkbox" value="1" onclick="checkboxer(5, '#row');">
   window.globalCheckboxLastIndex = null;
 }
 
@@ -782,7 +799,7 @@ function wordwrap (str, intWidth, strBreak, cut) {
 }
 
 function htmlspecialchars(text) {
-  var map = {
+  const map = {
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -791,4 +808,8 @@ function htmlspecialchars(text) {
   };
 
   return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function loader() {
+    $('.loader').toggle()
 }

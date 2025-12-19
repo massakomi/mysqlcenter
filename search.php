@@ -60,8 +60,8 @@ if (GET('table') != null) {
     }
     $msc->pageTitle = 'Поиск по таблице';
 
-    include DIR_MYSQL . 'tpl/searchTable.htm.php';
-    echo '<h1>Поиск по базе данных</h1>';
+    $this->template($pageProps);
+    //echo '<h1>Поиск по базе данных</h1>';
 
 // 2. Режим поиска по БД
 } else {
@@ -76,7 +76,7 @@ if (GET('table') != null) {
             $fields = getFields($table, true);
             $founds = [];
             foreach ($fields as $field) {
-                if (stristr($field, $queryField)) {
+                if (preg_match('~[a-z][A-Z]~', $field,)) {
                     $founds []= $field;
                     $foundedTotal ++;
                 }
@@ -147,11 +147,10 @@ if (GET('table') != null) {
         return compact('results', 'founded');
     }
 
-}
+    if (isajax()) {
+        return $pageProps;
+    }
 
-if (isajax()) {
-    return $pageProps;
-}
+    $this->template($pageProps);
 
-// HTML форма
-include(MS_DIR_TPL . 'search.htm.php');
+}

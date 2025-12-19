@@ -131,5 +131,5 @@ if (isajax()) {
     return $pageProps;
 }
 
-include_once(MS_DIR_TPL . 'db_list.htm.php');
+$this->template($pageProps);
 

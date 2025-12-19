@@ -116,12 +116,16 @@ if (!isset($directSQL)) {
 
     // Собираем where условие если требуется, для выборки
     $whereCondition = null;
-    if (GET('query') != '') {
-        $whereCondition = ' WHERE `' . implode('` LIKE "%'.GET('query').'%" OR `', $fieldsNames) . '` LIKE "%'.GET('query').'%"';
+    if (POST('query') != '') {
+        $whereCondition = ' WHERE `' . implode('` LIKE "%'.GET('query').'%" OR `', $fieldsNames) . '` LIKE "%'.POST('query').'%"';
     } elseif (GET('where') != null) {
         $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
-    } elseif (GET('id') != null) {
-        $whereCondition  = " WHERE $pk[0]=".GET('id');
+    } elseif (POST('byField') != null) {
+        if (POST('like') == 'like') {
+            $whereCondition  = " WHERE `".POST('field')."` LIKE '%".POST('byField')."%'";
+        } else {
+            $whereCondition  = " WHERE `".POST('field')."`='".POST('byField')."'";
+        }
     }
 
     // Получаем кол-во рядов в таблице
@@ -275,4 +279,4 @@ if (isajax()) {
 }
 $msc->addPopularTable($msc->table);
 
-include(MS_DIR_TPL . 'tbl_data.htm.php');
+$this->template($pageProps);

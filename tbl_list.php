@@ -62,7 +62,7 @@ if (GET('action') == 'full') {
     if (isajax()) {
         return $pageProps;
     }
-    return include(MS_DIR_TPL . 'tbl_struct_view.htm.php');
+    $this->template($pageProps);
 
 // Полная таблица
 } else {
@@ -98,6 +98,6 @@ if (GET('action') == 'full') {
         return $pageProps;
     }
 
-    include(MS_DIR_TPL . 'tbl_list.htm.php');
+    $this->template($pageProps);
 }
 

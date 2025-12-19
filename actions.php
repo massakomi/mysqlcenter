@@ -211,7 +211,7 @@ if ($msc->table == '') {
         return $pageProps;
     }
 
-	include(MS_DIR_TPL . 'actionsdb.htm.php');
+    $this->template($pageProps);
 
 } else {
 	$msc->pageTitle = "Действия - таблица $msc->table";
@@ -246,5 +246,5 @@ if ($msc->table == '') {
         return $pageProps;
     }
 
-    include(MS_DIR_TPL . 'actions.htm.php');
+    $this->template($pageProps);
 }

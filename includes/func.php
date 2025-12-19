@@ -239,23 +239,27 @@ function getTableKeys($table) {
  */
 function getFields($table, $onlyNames=false) {
     if (empty($table)) {
-        return array();
+        return [];
     }
     global $msc;
-    $a = array();
-    $table = str_replace('`', '``', $table );
-    $result = $msc->query('SHOW FIELDS FROM `'.$table.'`');
-    if (!$result) {
-        return false;
-    }
-    while ($row = mysqli_fetch_object($result)) {
-        if ($onlyNames) {
-            $a []= $row->Field;
-        } else {
-            $a [$row->Field]= $row;
+    static $cache;
+    $cacheId = $table . '_' . $onlyNames;
+    if (!isset($cache[$cacheId])) {
+        $cache[$cacheId] = [];
+        $table = str_replace('`', '``', $table );
+        $result = $msc->query('SHOW FIELDS FROM `'.$table.'`');
+        if (!$result) {
+            return [];
+        }
+        while ($row = mysqli_fetch_object($result)) {
+            if ($onlyNames) {
+                $cache[$cacheId] []= $row->Field;
+            } else {
+                $cache[$cacheId] [$row->Field]= $row;
+            }
         }
     }
-    return $a;
+    return $cache[$cacheId];
 }
 
 /**
@@ -402,7 +406,7 @@ function plDrawSelector($array, $attributes, $checked=null, $basetab='', $keyVal
     $wasSelected = false; // флаг, чтобы 1 селектед только
     foreach ($array as $k => $v) {
         $sel = null;
-        if ($checked == $k && !$wasSelected) {
+        if (($checked == $k || (!$keyValue && $checked == $v)) && !$wasSelected) {
             $sel = ' selected="selected"';
             $wasSelected = true;
         }

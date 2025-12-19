@@ -6,12 +6,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title><?php echo $msc->getWindowTitle()?></title>
     <script language="javascript" src="<?php echo MS_DIR_JS?>jquery-2.2.4.min.js"></script>
-    <script type="text/javascript" language="javascript">
-    /*$.noConflict();*/
-    </script>
     <script language="JavaScript" src="<?php echo MS_DIR_JS?>MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
     <script language="javascript">
-    var debug = '1';
+    let debug = '1';
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>page.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>color.white.css" />
@@ -24,6 +21,7 @@
     <script type="text/babel" src="/js/components.js"></script>
 </head>
 <body>
+<div class="loader"></div>
 <div class="pageBlock">
   <b id="appNameId"><a href="?db_list"><?php echo MS_APP_NAME?></a></b> &nbsp; &nbsp;
 <?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;
@@ -44,18 +42,21 @@
                 <?php
                 if (GET('table') != '') {
                     $url = '?db='.$msc->db.'&table='.$msc->table.'&s=tbl_data';
-                ?>
-                <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value+'&id='+this.id.value; ">
-                <input type="text" name="query" value="Поиск по таблице" onfocus="this.value=''; this.nextElementSibling.value=''" />
-                <input type="text" name="id" value="По id" onfocus="this.value=''; this.previousElementSibling.value = ''" style="width: 50px" />
-                    <input type="submit" style="display: none">
-                </form>
-                <?php
+                    $fields = getFields($msc->table, true);
+                    ?>
+                    <form action="<?php echo $url?>" method="post" class="search-top">
+                        <input type="text" name="query" value="Поиск по таблице" />
+                        <?=plDrawSelector($fields, ' name="field"', POST('field'), '', false) ?>
+                        <?=plDrawSelector(['=', 'like'], ' name="like"', POST('like'), '', false) ?>
+                        <input type="text" name="byField" value="<?=POST('byField')?>" />
+                        <input type="submit">
+                    </form>
+                    <?php
                 }
                 $url = '?db='.$msc->db.'&s=search';
                 ?>
                 <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
-                <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''" />
+                <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''; this.style.width='auto'" style="width: 100px" />
                 </form>
             </div>
         </div>

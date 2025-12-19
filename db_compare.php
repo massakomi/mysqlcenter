@@ -15,7 +15,10 @@ if (!defined('DIR_MYSQL')) {
 $msc->pageTitle = 'Сравнение баз данных';
 
 // Проверка
-$databases = explode(';', POST('dbs'));
+$databases = [];
+if (POST('dbs')) {
+    $databases = explode(';', POST('dbs'));
+}
 if (!$databases) {
     $databases = POST('databases');
 }
@@ -60,4 +63,4 @@ $pageProps = pageProps($databases);
 if (isajax()) {
     return $pageProps;
 }
-include(MS_DIR_TPL . 'db_compare.htm.php');
+$this->template($pageProps);

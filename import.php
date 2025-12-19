@@ -24,4 +24,4 @@ if (isajax()) {
     return $pageProps;
 }
 
-include(MS_DIR_TPL . 'import.htm.php');
+$this->template($pageProps);

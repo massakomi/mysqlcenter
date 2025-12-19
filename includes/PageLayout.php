@@ -18,44 +18,51 @@ class PageLayout
     }
 
     /**
-     * Статистика просмотров баз данных
-     * @return void
+     * {}
      */
-    private function dbViewStat() {
+    public function template($pageProps)
+    {
+        $action = $this->getPageForTemplate();
+        $component = ucfirst($action);
+        ?>
+        <div id="root"></div>
+        <?php if ($action == 'export' || $action == 'exportSp') { ?>
+        <script type="text/babel" src="/js/export/options.js"></script>
+        <?php } ?>
+        <script type="text/babel" src="/pages/<?= $action ?>.js"></script>
+        <script type="text/babel">
+            let options = <?=json_encode($pageProps)?>;
+            ReactDOM.render(
+              <<?=$component?> {...options} />,
+              document.getElementById('root')
+            );
+        </script>
+        <?php
+    }
+
+    /**
+     * @return string
+     */
+    public function getPageForTemplate(): string
+    {
         global $msc;
-        $dbs = Server::getDatabases();
-        if (!in_array('mysqlcenter', $dbs) || empty($msc->db)) {
-            return ;
+        $page = $msc->page;
+        if ($msc->page == 'actions' && !$msc->table) {
+            $page = 'actionsdb';
         }
-        include_once 'includes/MSTable.php';
-
-        $result = $msc->query($t = 'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $msc->db . '"');
-        $a = [];
-        while ($o = mysqli_fetch_object($result)) {
-            $a [] = $o;
+        if ($msc->page == 'search' && $msc->table) {
+            $page = 'searchTable';
         }
-        if (count($a) == 0) {
-            $msc->query('REPLACE INTO mysqlcenter.db_info VALUES("' . $msc->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
-        } else {
-            $msc->query('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
-                '" WHERE db_name="' . $msc->db . '"', null, 0);
+        if ($msc->page == 'tbl_list' && $_GET['action'] == 'structure') {
+            $page = 'tbl_struct_view';
         }
-
-        // Статистика просмотров таблиц
-        if ($msc->table != '') {
-            $result = $msc->query($t = 'SELECT * FROM mysqlcenter.table_info
-                    WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"');
-            $a = [];
-            while ($o = mysqli_fetch_object($result)) {
-                $a [] = $o;
-            }
-            if (count($a) == 0) {
-                $msc->query('REPLACE INTO mysqlcenter.table_info VALUES("' . $msc->db . '", "' . $msc->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
-            } else {
-                $msc->query('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
-                    '" WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"', null, 0);
-            }
+        if ($msc->page == 'tbl_struct' && $_GET['action'] == 'add_key') {
+            $page = 'tbl_key_add';
         }
+        if ($msc->page == 'msc_configuration') {
+            $page = 'config';
+        }
+        return $page;
     }
 
     /**
@@ -75,7 +82,7 @@ class PageLayout
         global $debugger;
         if (isset($debugger)) $debugger->et('До контента');
 
-        $this->dbViewStat();
+        $msc->dbViewStat();
 
         if (isajax()) {
 
@@ -378,15 +385,17 @@ class PageLayout
         }
     }
 
-    function makeTableMenuItem($table, $class, $title='') {
+    function makeTableMenuItem($table, $class, $title = '')
+    {
         return '  <a class="' . $class . '" title="' . $title . '" href="' . $this->getMenuTableLink($table) . '">' . $table . '</a>' . "\r\n";
     }
 
-    function getMenuTableLink($table) {
+    function getMenuTableLink($table)
+    {
         global $msc;
         // если есть текущая страница, то переход на неё (переход по структурам всех таблиц)
         if (!is_null($msc->page) && $msc->page == 'tbl_struct') {
-            $link = '?db=' . $msc->db . '&table=' .$table . '&s=' . $msc->page;
+            $link = '?db=' . $msc->db . '&table=' . $table . '&s=' . $msc->page;
         } else {
             $link = '?db=' . $msc->db . '&table=' . $table . '&s=tbl_data';
         }
@@ -422,7 +431,10 @@ class PageLayout
         return $selectorDB;
     }
 
-    private function addPopularTables()
+    /**
+     * @return string
+     */
+    private function addPopularTables(): string
     {
         global $msc;
         $tables = $msc->getPopularTablesDb();
@@ -446,11 +458,10 @@ class PageLayout
                     $class = 't2';
                 }
             }
-            $menu .= $this->makeTableMenuItem($table, $class, $info['count'] .' '.$info['time']);
+            $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $info['time']);
         }
         $menu .= '<a href="#" style="position: absolute; right: 0; top: 0" onclick="location.href=location.href + \'&resetPopular=1\'; return false;">reset</a> <hr />';
         return $menu;
     }
 }
 
-?>
