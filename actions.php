@@ -25,34 +25,6 @@ function getCharsetSelector($selected=null) {
 }
 
 /**
- * Возвращает сравнение выбранной базы данных
- *
- * @param  string  База данных
- * @param  integer Версия MySQL
- * @return string  Сравнение
- */
-function getDbCollation($db, $version) {
-    global $msc;
-    if ($version >= 50000 && $db == 'information_schema') {
-        return 'utf8_general_ci';
-    }
-    if ($version >= 50006) {
-        $return = select('SELECT DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = \'' . $db . '\' LIMIT 1;', '', 1);
-        return $return[0];
-    } else if ($version >= 40101) {
-        $msc->selectDb($db);
-        $return = select('SHOW VARIABLES LIKE \'collation_database\'', 'array', '', 1);
-        if ($db !== $msc->db) {
-            $msc->selectDb($msc->db);
-        }
-        return $return[0];
-    } else {
-        return getServerCollation();
-    }
-}
-
-
-/**
  * Возвращает массив баз данных с полной информацией о них
  *
  * @param   string      База данных
@@ -64,7 +36,7 @@ function getDbCollation($db, $version) {
  * @param   bool|int    Максимум для LIMIT
  * @return  array       Массив объектов с инфо баз данных
  */
-function get_databases_full($database=null, $force_stats=false, $link=null, $sort_by='SCHEMA_NAME', $sort_order='ASC', $limit_offset=0, $limit_count=false) {
+function get_databases_full($database=null, $force_stats=false, $sort_by='SCHEMA_NAME', $sort_order='ASC', $limit_offset=0, $limit_count=false) {
     global $msc;
     $sort_order = strtoupper($sort_order);
 
@@ -121,11 +93,7 @@ function get_databases_full($database=null, $force_stats=false, $link=null, $sor
            GROUP BY BINARY `information_schema`.`SCHEMATA`.`SCHEMA_NAME`
            ORDER BY BINARY `' . $sort_by . '` ' . $sort_order
            . $limit;
-        $databases = array();
-        $res = $msc->query($sql);
-        while ($row = mysqli_fetch_assoc($res)) {
-            $databases []= $row;
-        }
+        $databases = $msc->fetchPdo($sql)->fetchAll();
         unset($sql_where_schema, $sql, $drops);
     } else {
         return array();
@@ -154,27 +122,6 @@ function get_databases_full($database=null, $force_stats=false, $link=null, $sor
 }
 
 /**
- * Возвращает сравнение сервера по умолчанию
- *
- * @return string
- */
-function getServerCollation() {
-    global $msc, $connection;
-    if (is_object($msc)) {
-        $r = $msc->query('SHOW VARIABLES LIKE \'collation_server\'');
-    } else {
-        if ($r = @mysql_query($connection, 'SHOW VARIABLES LIKE \'collation_server\'')) {
-            return '';
-        }
-    }
-    $a = array();
-    while ($row = mysqli_fetch_array($r)) {
-        $a []= $row[1];
-    }
-    return $a;
-}
-
-/**
  * Операции с БД и таблицами
  */
 $sort_by = 'SCHEMA_NAME';
@@ -194,7 +141,7 @@ if ($msc->table == '') {
 	$DQuery = $umaker->make('db', $msc->db, 's', 'actions');
 
     $charsetSelector = '';
-    $dbInfo = get_databases_full($msc->db, GET('act')=='fullinfo', $connection, $sort_by, $sort_order, 0);
+    $dbInfo = get_databases_full($msc->db, GET('act')=='fullinfo', $sort_by, $sort_order, 0);
     $dbInfo = $dbInfo[0];
     $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
     $charsetSelector = getCharsetSelector(substr($dbInfo['collation'], 0, strpos($dbInfo['collation'], '_')));
@@ -217,9 +164,9 @@ if ($msc->table == '') {
 	$msc->pageTitle = "Действия - таблица $msc->table";
 	$DTQuery = MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table";
 
-    $result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db.' LIKE "'.$msc->table.'"');
+    $result = $msc->fetchPdoObject('SHOW TABLE STATUS FROM '.$msc->db.' LIKE "'.$msc->table.'"');
     $charset = null;
-    if ($row = mysqli_fetch_object($result)) {
+    if ($row = $result->fetch()) {
         $charset = substr($row->Collation, 0, strpos($row->Collation, '_'));
     } else {
         $msc->notice('Таблица не найдена');

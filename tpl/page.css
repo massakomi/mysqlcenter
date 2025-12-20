@@ -6,6 +6,7 @@ BODY {font-size:12px; font-family:Arial; }
 /* Каркасная таблица */
 .outerTable {display: flex; gap: 10px}
 .outerTable .leftCol {width: 160px}
+.outerTable .rightCol {width: 100%}
 .outerTable h1 { margin:0; font-size:18px; padding:0; line-height:100%; margin-right: 20px}
 .outerTable .headTop {display: flex; align-items: center;}
 .search-top {display: inline}

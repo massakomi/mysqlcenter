@@ -1,3 +1,86 @@
+Можно ли переходить на PDO с учетом, чтобы потом подключить постгрес? Вот это уже интереснее.
+- на 20.12.25
+- метод query на 12-12  70 results
+- mysqli_ встречается 12-12 94 раза   15-15 70 matches  15-45 48 matches
+
+
+Список таблиц
+- при удалении таблиц остаются в таблице.
+- косяки с размером таблиц больших
+- Конвертировать все в Innodb не нужна
+- что за reload
+Почему-то долго открывается к примеру http://msc/?table=adm_settings&db=parterraportal00&s=tbl_struct (список таблиц? долго выполняется show table?)
+Верстка экспорт, sql поехала.
+Структура
+- вместо печатной версии лучше create table
+- снизу div>array( не нужен
+Конфигурации подключения? Нужно ли? Да, у меня есть 3 локал базы 5.7, 8.4, докер. Хранится все в простом config. Ну не знаю.
+
+
+```php
+https://www.php.net/manual/ru/book.pdo.php
+
+$msc->execPdo($sql)
+
+$res = $msc->fetchPdo($sql);
+foreach ($res as $row)
+while ($o = $res->fetchObject($result))
+while ($o = $res->fetchColumn($result))
+
+$res->fetch() // получить один
+
+$data = $msc->fetchPdo($sql)->fetchAll(); // сразу получить assoc array БЕЗ ПРОВЕРКИ
+$data = $msc->getData('SHOW TABLE STATUS', PDO::FETCH_OBJ); // object array с проверкой
+
+$data = $msc->fetchPdo($sql)->fetchAll(PDO::FETCH_KEY_PAIR); // две колонки объединяются key => value
+$data = $msc->getData(($sql, PDO::FETCH_KEY_PAIR) // с проверкой
+
+$data = $msc->fetchPdo($sql)->fetchAll(PDO::FETCH_COLUMN) // колонку
+$data = $msc->getData($sql, PDO::FETCH_COLUMN) // колонку с проверкой
+
+$result = $msc->fetchPdo($sql); // проверить что запрос что-то отдал, Null если ничего
+if ($result) {
+}
+```
+
+
+Ошибки
+
+--------------------------------------------
+MSC задачи - 2021
+
+1 замена строк `?db=${this.props.db}&makeInnodb=1`
+2 this.image("arrow_ltr.png")}
+image(src) {
+return this.props.dirImage + src;
+}
+3 замена всех <?
+4 вынос с php еще код
+5 ...options + $pageProps передача
+  let options = <?=json_encode($pageProps)?>;
+ReactDOM.render(
+<App {...options} />,
+
+
+MSC задачи по коду:
+-/+ tbl_edit.htm остался вообще не реализованным + tbl_add также в php папке больше всех
+-/+ tbl_data тоже не реализована сама таблица
+- db_compare tbl_compare также не реализованы
+- tbl_list date2rusString сделать
++ tpl <? убрать php с actions actionsdb и других *.htm файлов (много их)
++ unpkg.com остался в tpl файлах + может вообще в head вынести это
++ вынести <style> из tpl в общий css
+
+MSC задачи - проверка, тесты интерфейса, что работает что нет: TODO
+
+--------------------------------------------
+docs/tasks.txt задачи от 2008 года...
+
+
+
+
+
+
 
 
 

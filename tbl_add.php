@@ -100,7 +100,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
             $sql .= ",\r\n  INDEX (" . implode(', ', $mulKeys) . ")";
         }
         $sql .= "\r\n)";
-        if ($msc->query($sql)) {
+        if ($msc->execPdo($sql)) {
             $msc->addMessage('Таблица '.POST('table_name').' создана', $sql, MS_MSG_SUCCESS);
             if (!isajax()) {
                 $msc->table = POST('table_name');
@@ -109,7 +109,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
                 return null;
             }
         } else {
-            $msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, mysqli_errorx());
+            $msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, $msc->error);
         }
     }
     // создание запроса на изменение полей
@@ -180,22 +180,22 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         }
 
         foreach ($sql2 as $s) {
-            if ($msc->query($s)) {
+            if ($msc->execPdo($s)) {
                 $msc->addMessage('Ключи изменены', $s, MS_MSG_SUCCESS);
             } else {
-                $msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, mysqli_errorx());
+                $msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, $msc->error);
             }
         }
         // выполнение
         if ($sql != '') {
-            if ($msc->query($sql)) {
+            if ($msc->execPdo($sql)) {
                 $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
                 if (!isajax()) {
                     include DIR_MYSQL . 'tbl_struct.php';
                     return null;
                 }
             } else {
-                $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
+                $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
             }
         } else {
             $msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
@@ -207,6 +207,12 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
     }
     // создание запроса на добавление
     if (POST('action') == 'fieldsAddEnd') {
+        $afterSql = '';
+        if (POST('afterOption') == 'start') {
+            $afterSql = 'FIRST';
+        } elseif (POST('afterOption') == 'field') {
+            $afterSql = 'AFTER `'.POST('afterField').'`';
+        }
         // определение полей
         $a = array();
         foreach ($fieldsDefFull as $def) {
@@ -216,14 +222,14 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         // ключи
         $oldFields = getFields(GET('table'));
         // выполнение
-        if ($msc->query($sql)) {
+        if ($msc->execPdo($sql)) {
             $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
             if (!isajax()) {
                 include DIR_MYSQL . 'tbl_struct.php';
                 return null;
             }
         } else {
-            $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
+            $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
         }
     }
     if (isajax()) {

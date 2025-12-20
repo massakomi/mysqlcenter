@@ -36,44 +36,7 @@ componentDidMount () {
 
 apiQuery async - (НЕ РАБОТАЕТ) fetch GET json return -
 
-
-
-
-function xajax(query)
-{
-  let ajaxdebug = (typeof(debug) != 'undefined' && debug == '1');
-
-  let options = {
-    method: 'POST',
-    body: new URLSearchParams('?'+query),
-    headers: {'X-Requested-With': 'XMLHttpRequest'}
-  }
-
-  fetch('ajax.php', options)
-    .then(response => {
-      if (!response.ok) {
-        console.error(response.status +' ' + response.statusText)
-      } else {
-        return response.text();
-      }
-    })
-    .then(text => {
-      if (text.indexOf('Parse error') !== -1) {
-        console.error(text)
-      } else {
-        try {
-          eval(text);
-        } catch(e) {
-          if (ajaxdebug) {
-            console.error('JS код не выполнен: '+text);
-          }
-        }
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-    });
-}*/
+*/
 
 /**
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
@@ -83,59 +46,154 @@ function xajax(query)
  * @param callback
  * @return boolean false
  */
-function msQuery(mode, query='', callback = '') {
-  if (mode !== 'tableRename' && mode !== 'dbCreate'  && mode !== 'dbHide' && confirm('Подтвердите...') === false) {
+async function msQuery(mode, query='', callback = '') {
+  if (mode.match(/delete/i) && confirm('Подтвердите...') === false || arguments.length === 0) {
     return false;
-  }
-  if (arguments.length === 0) {
-    return false;
-  }
-  query = query.replace(/^\?/, '')
-
-  // alert(query+'&'+'mode='+mode)
-  query = query+'&'+'mode='+mode
-
-  let ajaxdebug = (typeof(debug) != 'undefined' && debug === 1);
-
-  let options = {
-    method: 'POST',
-    body: new URLSearchParams('?'+query),
-    headers: {'X-Requested-With': 'XMLHttpRequest'}
   }
 
   loader()
-  fetch('ajax.php', options)
-    .then(response => {
-      loader()
-      if (!response.ok) {
-        console.error(response.status +' ' + response.statusText)
-      } else {
-        return response.text();
-      }
-    })
-    .then(text => {
-      if (text.indexOf('Parse error') !== -1) {
-        console.error(text)
-      } else {
-        try {
-          eval(text);
-        } catch(e) {
-          if (ajaxdebug) {
-            console.error('JS код не выполнен: '+text);
-          }
-        }
-        if (callback && typeof(callback) == 'function') {
-          callback()
-        }
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-    });
+  let response = await fetch('ajax.php', getFetchOptions(mode, query))
+  loader()
 
-  return false;
+  return await queryResponse(response, callback);
 }
 
+/**
+ * @param response
+ * @param callback
+ * @param ajaxdebug
+ * @param type
+ * @returns {Promise<{error: boolean, message: string}|*>}
+ */
+async function queryResponse(response, callback, type='json') {
+    let ajaxdebug = (typeof(debug) != 'undefined' && debug);
+    if (response.ok) {
+        let content;
+        if (type === 'text') {
+            content = await response.text();
+            if (content.indexOf('Parse error') !== -1) {
+                console.error(content)
+            } else {
+                try {
+                    eval(content);
+                } catch(e) {
+                    if (ajaxdebug) {
+                        console.error('JS код не выполнен: '+content);
+                    }
+                }
+                if (callback && typeof(callback) == 'function') {
+                    callback()
+                }
+            }
+        } else {
+            try {
+                content = await response.json();
+                showMessages(content)
+            } catch (e) {
+                let message = 'Ошибка ' + e.name + ":" + e.message + "\n" + e.stack;
+                showError(message);
+                return {error: true, message};
+            }
+        }
+        return content;
+    } else {
+        console.error(response.status +' ' + response.statusText)
+        let error;
+        try {
+            error = await response.json();
+            showError(`${error.message} <span class="text-black-50">${error.file}</span>`);
+        } catch (e) {
+            let message = `${response.status} ${response.statusText}`;
+            showError(message);
+            error = {error: true, message}
+        }
+        // вопрос - что тут возвращать, false, response или error???
+        // В есть 2 момента. 1. На каких то страницах лучше не открывать Модал если пришла ошибка. Как это определить. Удобно либо false либо response.ok
+        // 2. В Admin когда приходит false я не могу вывести ошибку в модалке, не знаю ее, но и закрывать модалку не хочу, не нужно
+        // В теории возвращать response. если очень нужно прочитать ошибку - можно еще раз сделать json  ХЗ пока
+        return error;
+    }
+}
+
+function showMessages(json) {
+    if (!json.messages) {
+        return;
+    }
+
+    $("#msAjaxQueryDiv").show()
+    if ($("#msAjaxQueryDiv div").length > 2) {
+        $("#msAjaxQueryDiv div").last().remove()
+    }
+
+    let messages = [];
+    for (let message of json.messages) {
+        let textError = message.text
+        if (message.sql !== '') {
+            let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
+            textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
+        }
+        if (message.error !== '') {
+            textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
+        }
+        messages.push(textError)
+    }
+    messages = messages.join('<br />')
+
+    let messageId = 'msg-'+Math.random()
+    $("#msAjaxQueryDiv").prepend(`
+        <table class="globalMessage">
+        <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide('${messageId}')">close</a></th></tr>
+        <tr id="${messageId}"><td>${messages}</td></tr>
+        </table>`)
+
+    if ($("#msAjaxQueryDiv div").length > 2) {
+        $("#msAjaxQueryDiv div").last().remove()
+    }
+    if (typeof(msAjaxQueryDivTm) != 'undefined') {
+        clearTimeout(msAjaxQueryDivTm);
+    }
+    msAjaxQueryDivTm = setTimeout(function() {
+        $("#msAjaxQueryDiv").fadeOut()
+    }, 2000);
+}
+
+/**
+ *
+ * @param mode
+ * @param query
+ * @returns RequestInit
+ */
+function getFetchOptions(mode, query) {
+    let body = null
+    if (typeof(query) === 'string') {
+        query = query.replace(/^\?/, '')
+        query = query+'&'+'mode='+mode
+        body = new URLSearchParams('?'+query)
+        body.set('ajax', 1)
+    } else if (query instanceof Element) {
+        body = new FormData(query)
+        body.set('mode', mode)
+        body.set('ajax', 1)
+    } else {
+        alert('Unknown fetch options!')
+    }
+    return {
+        method: 'POST',
+        body: body,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }
+}
+
+function showError(message) {
+    const el = document.querySelector('#errorMessage');
+    if (el !== null) {
+        el.lastTime = (Date.now() / 1000).toFixed(0)
+        el.classList.remove('d-none')
+        el.innerHTML = message
+    } else {
+        console.error(message)
+    }
+}
 
 /*
   getAllVars() {
@@ -799,6 +857,9 @@ function wordwrap (str, intWidth, strBreak, cut) {
 }
 
 function htmlspecialchars(text) {
+    if (typeof(text) != 'string') {
+        return text
+    }
   const map = {
     '&': '&amp;',
     '<': '&lt;',

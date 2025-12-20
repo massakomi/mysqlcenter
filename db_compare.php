@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
@@ -9,7 +9,7 @@ include_once(DIR_MYSQL . 'includes/Export.class.php');
  * Сравнение баз данных
  */
 
-if (!defined('DIR_MYSQL')) { 
+if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 $msc->pageTitle = 'Сравнение баз данных';
@@ -27,28 +27,29 @@ if ($databases && count($databases) < 2) {
     return null;
 }
 
-function pageProps($databases) {
+function pageProps($databases)
+{
     global $msc;
 
     // Создание начальных массивов
-    $dbArray = array();
+    $dbArray = [];
     foreach ($databases as $k => $v) {
-        $result = $msc->query('SHOW TABLE STATUS FROM '.$v);
-        while ($row = mysqli_fetch_object($result)) {
-            $dbArray[$v][$row->Name]= $row;
+        $data = $msc->getData('SHOW TABLE STATUS FROM ' . $v, PDO::FETCH_OBJ);
+        foreach ($data as $row) {
+            $dbArray[$v][$row->Name] = $row;
         }
     }
 
     $exportArray = [];
-    $export = new MySQLExport();
+    $export = new Export();
     $export->setComments(0);
-    $export->setOptionsStruct(0, $addAuto=0, 0);
+    $export->setOptionsStruct(0, $addAuto = 0, 0);
     foreach ($dbArray as $db => $tables) {
         foreach ($tables as $table => $values) {
             $export->data = null;
             $export->setDatabase($db);
             $export->setTable($table);
-            $exportData = $export->exportStructure(0,0);
+            $exportData = $export->exportStructure(0, 0);
             $exportData = str_replace(' PACK_KEYS=0', '', $exportData);
             $exportData = preg_replace('~COMMENT=".*"~U', '', $exportData);
             $exportArray [$db][$table] = $exportData;
@@ -57,9 +58,7 @@ function pageProps($databases) {
     return compact('databases', 'dbArray', 'exportArray');
 }
 
-
 $pageProps = pageProps($databases);
-//echo '<pre>'; print_r($pageProps); echo '</pre>'; exit;
 if (isajax()) {
     return $pageProps;
 }

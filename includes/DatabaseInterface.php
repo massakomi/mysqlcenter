@@ -23,20 +23,6 @@ class DatabaseInterface
     // INTERFACE
 
     /**
-     * Имя глобального объекта, метод которого будет использоваться при запросе к базе данных
-     * Для установки этого значения можно также использовать константу DBI_MSC_QUERY_OBJECT
-     * @public string
-     */
-    public $queryObject;
-
-    /**
-     * Имя метода объекта $queryObject, которому будут передаваться sql запросы для выполнения
-     * Для установки этого значения можно также использовать константу DBI_MSC_QUERY_METHOD
-     * @public string
-     */
-    public $queryMethod;
-
-    /**
      * Имя глобального объекта, метод которого будет использоваться для передачи сообщений и кодов ошибок
      * Для установки этого значения можно также использовать константу DBI_MSC_MSG_OBJECT
      * @public string
@@ -60,41 +46,12 @@ class DatabaseInterface
      */
     public function _init()
     {
-        if (defined('DBI_MSC_QUERY_OBJECT')) {
-            $this->queryObject = DBI_MSC_QUERY_OBJECT;
-        }
-        if (defined('DBI_MSC_QUERY_METHOD')) {
-            $this->queryMethod = DBI_MSC_QUERY_METHOD;
-        }
         if (defined('DBI_MSC_MSG_OBJECT')) {
             $this->msgObject = DBI_MSC_MSG_OBJECT;
         }
         if (defined('DBI_MSC_MSG_METHOD')) {
             $this->msgMethod = DBI_MSC_MSG_METHOD;
         }
-    }
-
-    /**
-     * Запрос к БД
-     *
-     * @parentClass DatabaseInterface
-     * @param string
-     * @param string
-     * @return resource
-     */
-    public function query($sql, $database = null)
-    {
-        global $connection;
-        if ($this->queryObject != '' && $this->queryMethod != '') {
-            if (!isset($GLOBALS[$this->queryObject])) {
-                exit('Query object must be global');
-            }
-            if (!is_object($GLOBALS[$this->queryObject])) {
-                exit('Query object must be object');
-            }
-            return call_user_func(array($GLOBALS[$this->queryObject], $this->queryMethod), $sql, $database);
-        }
-        return mysqli_query($connection, $sql);
     }
 
     /**
@@ -130,10 +87,10 @@ class DatabaseInterface
     public function queryCheck($database = '', $table = '', $params = '')
     {
         $args = func_get_args();
-        if (isset($args[0]) && is_null($args[0]) || empty($args[0])) {
+        if (empty($args[0])) {
             $this->error('Database name not defined');
         }
-        if (isset($args[1]) && is_null($args[1]) || count($args) > 1 && empty($args[1])) {
+        if (count($args) > 1 && empty($args[1])) {
             $this->error('Table name not defined');
         }
         if (count($args) > 2) {

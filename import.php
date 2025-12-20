@@ -11,7 +11,6 @@ if (!defined('DIR_MYSQL')) {
 	exit('Hacking attempt');
 }
 
-classLoad('DatabaseManager');
 $msc->pageTitle  = 'Импорт данных';
 
 $pageProps = [

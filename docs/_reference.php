@@ -276,7 +276,7 @@ _printInspectReference($functions['user']);
 echo '<h1>Справочник классов</h1>';
 //$classes = array('Engine', 'Loader', 'File', 'MysqlQuery', 'User', '_Menu', 'Object', '_Reference');
 foreach ($classes as $className) {
-    if ($className == 'MySQLExport' || $className == 'Table' || $className == 'zipfile') {
+    if ($className == 'Export' || $className == 'Table' || $className == 'zipfile') {
         continue;
     }
     _printInspectReference($className);

@@ -20,7 +20,7 @@ class PageLayout
     /**
      * {}
      */
-    public function template($pageProps)
+    public function template($pageProps=[])
     {
         $action = $this->getPageForTemplate();
         $component = ucfirst($action);
@@ -70,7 +70,7 @@ class PageLayout
      */
     public function display()
     {
-        global $msc, $umaker, $connection; // umaker connection нужны!
+        global $msc, $umaker; // umaker нужны!
         $currentHandler = $this->_getHandler();
         $currentPage = $msc->getCurrentPage();
         if ($currentHandler == null) {
@@ -327,7 +327,6 @@ class PageLayout
         }
         $menuTables = null;
         $selectorTables = null;
-        $msc->selectDb($msc->db);
         global $debugger;
         if (isset($debugger)) $debugger->et('До getCashedTablesArray');
         $tables = DatabaseTable::getCashedTablesArray();

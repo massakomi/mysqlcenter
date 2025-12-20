@@ -71,12 +71,12 @@ function selectDataFromDatabase($databases, $table, $pk) {
     }
     // Первая  БД
     $sql = "SELECT * FROM $databases[0].$table";
-    $result = $msc->query($sql . $orderBy);
+    $result = $msc->fetchPdo($sql . $orderBy);
     $data1 = [];
     if (!$result) {
         exitError("Таблица $table не найдена в базе $databases[0]");
     }
-    while ($row = mysqli_fetch_object($result)) {
+    while ($row = $result->fetch(PDO::FETCH_OBJ)) {
         $data1 [] = $row;
     }
 
@@ -84,8 +84,8 @@ function selectDataFromDatabase($databases, $table, $pk) {
     $data2 = [];
     $msc->selectDb($databases[1]);
     $sql = "SELECT * FROM $table";
-    $result = $msc->query($sql . $orderBy);
-    while ($row = mysqli_fetch_object($result)) {
+    $result = $msc->fetchPdo($sql . $orderBy);
+    while ($row = $result->fetch(PDO::FETCH_OBJ)) {
         $data2 [] = $row;
     }
 

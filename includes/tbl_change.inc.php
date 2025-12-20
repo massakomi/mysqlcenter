@@ -37,8 +37,7 @@ function processRowsEdit($editType) {
     foreach ($rows as $numRow => $data) {
         if ($editType == 0) {
             $where  = urldecode($_POST['cond'][$numRow]);
-            $result = $msc->query('SELECT * FROM `'.$msc->table.'` WHERE '.$where);
-            $cValue = mysqli_fetch_object($result);
+            $cValue = $msc->fetchPdo('SELECT * FROM `'.$msc->table.'` WHERE '.$where)->fetchObject();
         }
         $arrayValues = array();
         $countEmpty = 0;
@@ -73,7 +72,7 @@ function processRowsEdit($editType) {
         } else {
             $sql = 'INSERT INTO `'.$msc->table.'` (`'.implode('`, `', $arrayFields).'`) VALUES ('.implode(', ', $arrayValues).')';
         }
-        if ($msc->query($sql)) {
+        if ($msc->execPdo($sql)) {
             $msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
             $countInsert ++;
         } else {

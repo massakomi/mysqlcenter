@@ -3,12 +3,13 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
-require_once dirname(__FILE__).'/DatabaseInterface.php';
+require_once dirname(__FILE__) . '/DatabaseInterface.php';
 
 /**
  * Класс, отвечающий за работу с таблицами базы данных
  */
-class DatabaseTable extends DatabaseInterface {
+class DatabaseTable extends DatabaseInterface
+{
 
     public ?string $database;
     public ?string $tableb;
@@ -17,49 +18,85 @@ class DatabaseTable extends DatabaseInterface {
     /**
      * @access private
      */
-    function __construct($db=null, $table=null) {
+    function __construct($db = null, $table = null)
+    {
         $this->_init();
         $this->database = $db;
-        $this->tableb   = $table;
-        $this->table    = $table ? '`'.str_replace('`', '``', $table).'`' : '';
+        $this->tableb = $table;
+        $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
     }
 
     /**
      * Совершает действие типа $type с $table, используя если надо параметр $param
      *
-     * @todo  проверка существования таблицы
      * @param string
      * @param string
      * @param string  DROP | TRUNCATE | ANALISE | OPTIMIZE | CHECK | REPAIR | FLUSH
      * @param string
      * @return boolean
+     * @todo  проверка существования таблицы
      */
-    function tableAction($db, $table, $type='DROP', $param=null) {
+    public function tableAction($db, $table, $type = 'DROP', $param = null): bool
+    {
         global $msc;
         $this->queryCheck($db, $table);
         if (($type == 'RENAME' || $type == 'CHARSET' || $type == 'ORDER') && $param == null) {
             return $this->addMessage('Не указан требуемый параметр', null, MS_MSG_ERROR);
         }
         switch ($type) {
-        case 'DROP'	    : $sql = "DROP TABLE `$table`";     $text = 'удалена';    break;
-        case 'TRUNCATE'	: $sql = "TRUNCATE TABLE `$table`"; $text = 'очищена';    break;
-        case 'CHECK'	: $sql = "CHECK TABLE `$table`";    $text = 'обработана'; break;
-        case 'ANALYZE'	: $sql = "ANALYZE TABLE `$table`";  $text = 'обработана'; break;
-        case 'REPAIR'	: $sql = "REPAIR TABLE `$table`";   $text = 'обработана'; break;
-        case 'OPTIMIZE'	: $sql = "OPTIMIZE TABLE `$table`"; $text = 'обработана'; break;
-        case 'FLUSH'	: $sql = "FLUSH TABLE `$table`";    $text = 'обработана'; break;
-        case 'RENAME'	: $sql = "ALTER TABLE `$table` RENAME `$param`";                    $text = 'переименована'; break;
-        case 'CHARSET'	: $sql = "ALTER TABLE `$table` CONVERT TO CHARACTER SET `$param`";  $text = 'изменена'; break;
-        case 'COMMENT'	: $sql = "ALTER TABLE `$table` COMMENT = '$param'";                 $text = 'изменена'; break;
-        case 'ORDER'	: $sql = "ALTER TABLE `$table` ORDER BY $param";                    $text = 'изменена'; break;
-        default :
-            return $msc->addMessage('Неверный тип обработки', null, MS_MSG_ERROR);
+            case 'DROP'        :
+                $sql = "DROP TABLE `$table`";
+                $text = 'удалена';
+                break;
+            case 'TRUNCATE'    :
+                $sql = "TRUNCATE TABLE `$table`";
+                $text = 'очищена';
+                break;
+            case 'CHECK'    :
+                $sql = "CHECK TABLE `$table`";
+                $text = 'обработана';
+                break;
+            case 'ANALYZE'    :
+                $sql = "ANALYZE TABLE `$table`";
+                $text = 'обработана';
+                break;
+            case 'REPAIR'    :
+                $sql = "REPAIR TABLE `$table`";
+                $text = 'обработана';
+                break;
+            case 'OPTIMIZE'    :
+                $sql = "OPTIMIZE TABLE `$table`";
+                $text = 'обработана';
+                break;
+            case 'FLUSH'    :
+                $sql = "FLUSH TABLE `$table`";
+                $text = 'обработана';
+                break;
+            case 'RENAME'    :
+                $sql = "ALTER TABLE `$table` RENAME `$param`";
+                $text = 'переименована';
+                break;
+            case 'CHARSET'    :
+                $sql = "ALTER TABLE `$table` CONVERT TO CHARACTER SET `$param`";
+                $text = 'изменена';
+                break;
+            case 'COMMENT'    :
+                $sql = "ALTER TABLE `$table` COMMENT = '$param'";
+                $text = 'изменена';
+                break;
+            case 'ORDER'    :
+                $sql = "ALTER TABLE `$table` ORDER BY $param";
+                $text = 'изменена';
+                break;
+            default :
+                return $msc->addMessage('Неверный тип обработки', null, MS_MSG_ERROR);
         }
-        if ($this->query($sql, $db)){
-            $this->query("ANALYZE TABLE `$table`;"); // refresh stat
+        $msc->selectDb($db);
+        if ($msc->execPdo($sql)) {
+            $msc->execPdo("ANALYZE TABLE `$table`;");
             return $msc->addMessage("Таблица $table $text", $sql, MS_MSG_SUCCESS);
         } else {
-            return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, $msc->error ?: mysqli_errorx());
+            return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, $msc->error);
         }
     }
 
@@ -74,12 +111,10 @@ class DatabaseTable extends DatabaseInterface {
      * @param string  База данных, куда надо копировать
      * @return boolean
      */
-    function copyTable($db, $table, $struct=true, $data=false, $newName=null, $database=null) {
+    function copyTable($db, $table, $struct = true, $data = false, $newName = null, $database = null)
+    {
         global $msc;
         $this->queryCheck($db, $table);
-        if (!class_exists('MySQLExport')) {
-            require_once dirname(__FILE__).'/Export.class.php';
-        }
         // дамп структуры
         if ($newName == null) {
             $newName = $table . '_copy';
@@ -87,17 +122,17 @@ class DatabaseTable extends DatabaseInterface {
         if ($database == null) {
             $database = $db;
         }
-        $exp = new MySQLExport();
+        $exp = new Export();
         $exp->setDatabase($db);
         $exp->setTable($table);
         $sql = $exp->exportStructure(1, false);
         $sql = preg_replace('/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i', 'CREATE TABLE `' . $newName . '`', $sql, 1);
-        $errorsFull = 0; // сохраняем ошибки, а не выходим, чтобы не прерывать процесс копирования
-        if ($this->query($sql, $database)) {
+        $msc->selectDb($database);
+        if ($msc->execPdo($sql)) {
             $msc->addMessage("Таблица $table скопирована", $sql, MS_MSG_SUCCESS);
         } else {
-            $errorsFull++;
-            $msc->addMessage("Ошибка копирования $table", $sql, MS_MSG_FAULT);
+            $msc->addMessage("Ошибка копирования $table", $sql, MS_MSG_FAULT, $msc->error);
+            return false;
         }
         // переход в старую БД после запроса
         if ($database != $db) {
@@ -106,18 +141,18 @@ class DatabaseTable extends DatabaseInterface {
         // дамп данных
         if ($data) {
             if ($database != $db) {
-                $sql = 'INSERT INTO '.$database.'.'.$newName.' SELECT * FROM '.$db.'.'.$table;
+                $sql = 'INSERT INTO ' . $database . '.' . $newName . ' SELECT * FROM ' . $db . '.' . $table;
             } else {
                 $sql = "INSERT INTO $newName SELECT * FROM $table";
             }
-            if ($this->query($sql)) {
+            if ($msc->execPdo($sql)) {
                 $msc->addMessage('Данные скопированы', $sql, MS_MSG_SUCCESS);
             } else {
-                $errorsFull++;
-                $msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, mysqli_errorx());
+                $msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, $msc->error);
+                return false;
             }
         }
-        return ($errorsFull == 0);
+        return true;
     }
 
     /**
@@ -125,20 +160,21 @@ class DatabaseTable extends DatabaseInterface {
      *
      * @return boolean
      */
-    function isExists() {
+    function isExists()
+    {
         global $msc;
-        $sql = 'SELECT COUNT(1) AS c FROM '.$this->table;
-        $msc->query($sql);
-        $this->exists = (mysqli_errorx() == null);
+        $sql = 'SELECT COUNT(1) AS c FROM ' . $this->table;
+        $this->exists = ($msc->fetchPdo($sql) !== null);
         return $this->exists;
     }
 
     /**
      * Возвращает таблицу с полной информацией о таблице $this->table
      *
-     * @return string
+     * @return array
      */
-    function insertDetailsTable($return=false) {
+    function insertDetailsTable()
+    {
         global $msc;
         $comments = array(
             'Engine' => ' title="Тип хранилища"',
@@ -158,35 +194,18 @@ class DatabaseTable extends DatabaseInterface {
             'Create_options' => ' title="Дополнительные опции, заданные при создании таблицы через CREATE TABLE."',
             'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может получить доступ к информации о таблице"'
         );
-        $sql = 'SHOW TABLE STATUS LIKE "'.$this->tableb.'"';
-        if ($return) {
-            $result = $msc->getData($sql);
-            foreach ($comments as $k => &$v) {
-                $v = str_replace('"', '', $v);
-                $v = str_replace(' title=', '', $v);
-            }
-            if (isajax()) {
-                return $result[0];
-            }
-            return [$comments, $result];
+        $sql = 'SHOW TABLE STATUS LIKE "' . $this->tableb . '"';
+
+        $result = $msc->getData($sql);
+        foreach ($comments as $k => &$v) {
+            $v = str_replace('"', '', $v);
+            $v = str_replace(' title=', '', $v);
         }
-        $result = $msc->query($sql);
-        return MSC_printObjectTable($result, true, '', $comments);
+        if (isajax()) {
+            return $result[0];
+        }
+        return [$comments, $result];
     }
-
-    /**
-     * Возвращает таблицу с полной информацией о структуре $this->table
-     *
-     * @return string
-     */
-    function insertStructTable() {
-        global $msc;
-        $sql = 'DESCRIBE `'.$this->tableb.'`';
-        $result = $msc->query($sql);
-        $table = new Table(null, 1, 3, 0);
-        return MSC_printObjectTable($result, false, $table);
-    }
-
 
     /**
      * @return array
@@ -196,32 +215,10 @@ class DatabaseTable extends DatabaseInterface {
         static $array;
         if (!isset($array)) {
             global $msc;
-            $result = $msc->query('SHOW TABLE STATUS');
-            if (!$result || mysqli_num_rows($result) == 0) {
-                return [];
-            }
-            $array = [];
-            while ($row = mysqli_fetch_object($result)) {
-                $array []= $row;
-            }
+            $array = $msc->getData('SHOW TABLE STATUS', PDO::FETCH_OBJ);
         }
         return $array;
-      }
-
-    /**
-     * @return array
-     */
-    public static function getSimpleTablesArray() {
-        global $msc;
-        $result = $msc->query('SHOW TABLES');
-        if (!$result || mysqli_num_rows($result) == 0) {
-            return [];
-        }
-        return array_map(fn($item) => $item[0], mysqli_fetch_all($result));
     }
-
 
 }
 
-
-?>

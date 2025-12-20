@@ -242,8 +242,6 @@ class Tbl_list extends React.Component {
                       <img src={this.image("copy.gif")} alt="" onClick={this.msImageAction.bind(this, 'copy_all', '')} />
                       <img src={this.image("b_tblexport.png")} alt="" onClick={this.msImageAction.bind(this, 'export_all', `?db=${this.props.db}&s=export`)} />
 
-                      <a href={`?db=${this.props.db}&makeInnodb=1`} style={{margin: '0 10px'}}>Конвертировать все в Innodb</a>
-
                       <select name="act" onChange={this.msImageAction.bind(this, 'auto', '')} >
                           <option></option>
                           <option value="check">проверить</option>

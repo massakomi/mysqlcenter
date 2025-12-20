@@ -9,22 +9,6 @@
  * + обработка запроса, с окончаниями
  */
 
-// селектор таблиц мульти
-classLoad('DatabaseManager');
-function getTableMultySelector($extra) {
-    global $msc;
-    $tableSelectMult = null;
-    $listTables = DatabaseManager::getTables();
-    foreach ($listTables as $t){
-        if ($t == $msc->table || $msc->table == '') {
-            $tableSelectMult .= "<option selected='selected'>$t</option>";
-        } else {
-            $tableSelectMult .= "<option>$t</option>";
-        }
-    }
-    return '<select'.$extra.'>'.$tableSelectMult.'</select>';
-}
-
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
@@ -125,12 +109,12 @@ if (GET('table') != null) {
             $fields = getFields($table, true);
             $whereCondition = " WHERE " . implode(' LIKE "%'.$query.'%" OR ', $fields) . ' LIKE "%'.$query.'%"';
             $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
-            $result = $msc->query($sql);
+            $result = $msc->fetchPdoObject($sql);
             if (!$result) {
                 continue;
             }
             // найдено что-то
-            if ($row = mysqli_fetch_object($result)) {
+            if ($row = $result->fetch()) {
                 if ($row->c > 0) {
                     $founded ++;
                     $results []= [
@@ -144,7 +128,23 @@ if (GET('table') != null) {
             }
         }
         $msc->pageTitle .= " (найдено <b>$founded</b>)";
-        return compact('results', 'founded');
+        if (isajax()) {
+            return compact('results', 'founded');
+        } else {
+            $t = new Table('contentTable');
+            $t->makeRowHead('Таблица', 'Найдено');
+            $t->setColClass('', 'text-align:right');
+            foreach ($results as $row) {
+                $table = $row['table'];
+                $t->makeRow([
+                    "<a href='/?db=$msc->db&table=$table&s=tbl_data'>".$table."</a>",
+                    $row['rows']['text'],
+                ], " style='color:black'");
+            }
+            echo $t->make();
+            echo '<hr />';
+        }
+
     }
 
     if (isajax()) {

@@ -30,6 +30,7 @@
 </div>
 
 <div id="msAjaxQueryDiv"></div>
+<div id="errorMessage"></div>
 
 <div class="outerTable">
     <div class="leftCol">

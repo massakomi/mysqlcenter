@@ -109,13 +109,13 @@ function dropPrimaryKey($tbl) {
         if (stristr($definition, 'auto_increment')) {
             $definition = str_ireplace('auto_increment', '', $definition);
             $sql = 'ALTER TABLE `'.$tbl.'` CHANGE '.$field.' '.$field.' '.$definition;
-            $msc->query($sql);
+            $msc->execPdo($sql);
         }
         $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
-        if ($msc->query($sql)) {
+        if ($msc->execPdo($sql)) {
             return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
         } else {
-            return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_errorx());
+            return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, $msc->error);
         }
     }
     return '';
@@ -130,95 +130,35 @@ function dropPrimaryKey($tbl) {
  */
 function getServerVersion() {
     global $msc;
-    $result = $msc->query('SELECT VERSION() AS version');
-    if ($result !== false) {
-        $row   = mysqli_fetch_array($result);
-        $match = explode('.', $row[0]);
+    $result = $msc->fetchPdo('SELECT VERSION() AS version');
+    if (!$result) {
+        return ['-', '-'];
     }
-    if (!isset($row)) {
-        $vi = 32332;
-        $vs = '3.23.32';
-    } else{
-        $vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
-        $vs = $row[0];
-    }
-    return array($vi, $vs);
-}
-
-/**
- * Возвращает выборку в виде массива
- * Вопросы - надо ли опциональни при пусто типе возвращать result, и надо ли при неверном указании типа возвращать false
- * Вообще-то если тип всегда будет одинаков, то мы никогда не узнаем об ошибках.
- * Таким образом, функция всегда возвращает то, что требуется. Если есть ошибки в параметрах, возвращает false.
- * $array = select('SELECT Db, User FROM db');
- *
- * @package sql
- * @param string SQL-запрос
- * @param string Тип выборки каждого ряда: assoc|object|array|row. Если не указано, возвращается mysql result
- * @param string Из какого поля брать ключи результирующего массива. Если не указано / не найдено, то используются индексы
- * @param string Если надо вернуть простой одномерный массив значений, то здесь указывается, из какого поля брать значения.
- * @return mixed Если есть ошибки в параметрах, то false, иначе если $type='' - mysql result, иначе массив.
- */
-function select($sql, $type='', $group='', $simple='') {
-    global $msc;
-    $types = array(
-        'assoc','object','array','row'
-    );
-    if (empty($sql) || !in_array($type, $types)) {
-        return false;
-    }
-    // в случае неудачи возвращает чистый bool(false), иначе resource(18) of type (mysql result)
-    $result = $msc->query($sql);
-    if ($type == '') {
-        return $result;
-    }
-    if ($result === false) {
-        //echo mysqli_errorx();
-        return array(); // что возвращать?
-    }
-    $count = mysqli_num_rows($result);
-    $array = array();
-    $i = 0;
-    while($row = call_user_func('mysqli_fetch_'.$type, $result)) {
-        $key = $i;
-        if ($group != '') {
-            if (isset($row[$group])) {
-                $key = $row[$group];
-            } else {
-                return false;
-            }
-        }
-        if ($simple != '') {
-            if (isset($row[$simple])) {
-                $row = $row[$simple];
-            } else {
-                return false;
-            }
-        }
-        $array [$key]= $row;
-        $i ++;
-    }
-    return $array;
+    $row   = $result->fetch();
+    $match = explode('.', $row['version']);
+    $vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
+    $vs = $row['version'];
+    return [$vi, $vs];
 }
 
 /**
  * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа]
  *
  * @package sql
- * @param string  Имя таблицы
+ * @param string $table Имя таблицы
  * @return array
  */
 function getTableKeys($table) {
     if (empty($table)) {
-        return array();
+        return [];
     }
     global $msc;
-    $keys = array();
-    $res = $msc->query('SHOW KEYS FROM `'.$table.'`');
-    if (!$res) {
-        return array();
+    $keys = [];
+    $result = $msc->fetchPdoObject('SHOW KEYS FROM `'.$table.'`');
+    if (!$result) {
+        return [];
     }
-    while ($row = mysqli_fetch_object($res)) {
+    foreach ($result as $row) {
          if ($row->Key_name == 'PRIMARY') {
             $keys [$row->Column_name][$row->Key_name]= 'PRI';
          } else {
@@ -247,11 +187,11 @@ function getFields($table, $onlyNames=false) {
     if (!isset($cache[$cacheId])) {
         $cache[$cacheId] = [];
         $table = str_replace('`', '``', $table );
-        $result = $msc->query('SHOW FIELDS FROM `'.$table.'`');
+        $result = $msc->fetchPdoObject('SHOW FIELDS FROM `'.$table.'`');
         if (!$result) {
             return [];
         }
-        while ($row = mysqli_fetch_object($result)) {
+        foreach ($result as $row) {
             if ($onlyNames) {
                 $cache[$cacheId] []= $row->Field;
             } else {
@@ -272,8 +212,8 @@ function getFields($table, $onlyNames=false) {
 function getCharsetArray($extended=false) {
     global $msc;
     $charsetList = array();
-    $result = $msc->query('SHOW CHARACTER SET');
-    while ($row = mysqli_fetch_array($result)) {
+    $res = $msc->fetchPdo('SHOW CHARACTER SET');
+    foreach ($res as $row) {
        $charsetList [$row['Charset']]= $extended ? $row : $row['Charset'];
     }
     ksort($charsetList);
@@ -291,24 +231,17 @@ function getCharsetArray($extended=false) {
  * @return string Результат
  */
 function processValueType($value, $type, $isNull) {
-    global $connection;
+    global $pdo;
     if ($isNull) {
         return 'NULL';
     } else {
         if (preg_match('~^[a-z]+int~iU', trim($type)) && !empty($value) && is_numeric($value)) {
             return $value;
         } else {
-            return '"' . mysqli_escape_stringx($value) . '"';
+            return '"' . $pdo->quote($value) . '"';
         }
     }
 }
-
-function mysqli_escape_stringx($value)
-{
-    global $connection;
-    return mysqli_escape_string($connection, $value);
-}
-
 
 /**
  * Возвращает ключ $name массива $_GET
@@ -713,7 +646,7 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
     $dataArray = array();
     // Преобразование входного объекта/массива
     if (!is_array($object)) {
-        while ($o = mysqli_fetch_assoc($object)) {
+        while ($o = $object->fetch()) {
             $dataArray []= $o;
         }
     } else {
@@ -766,8 +699,8 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
 function printSqlTable($sql) {
     global $msc;
     $table = new Table('sqlTable', 1, 1, 0);
-    $result = $msc->query($sql);
-    while ($row = mysqli_fetch_object($result)) {
+    $result = $msc->fetchPdo($sql);
+    while ($row = $result->fetch()) {
         if ($table->tableCont == null) {
             $a = array();
             foreach ($row as $k => $v) {
@@ -813,7 +746,7 @@ function pre($arrray, $html=false) {
  * @param string  SQL запрос (добавляется к сообщению)
  */
 function msclog($message, $sql=null) {
-    global $connection;
+    global $pdo;
     $logFile = 'error.log';
     if (!file_exists($logFile)) {
         $file = @fopen($logFile, 'w+');
@@ -827,7 +760,7 @@ function msclog($message, $sql=null) {
     $time    = date('d.m.y H:i:s ');
     $string  = "\n".$time.$message;
     if ($sql != null) {
-        $string  .= '('.$sql.' '.mysqli_error($connection).')';
+        $string  .= '('.$sql.' '.$pdo->errorInfo()[2].')';
     }
     @fwrite($file, $string);
     @fclose($file);
@@ -840,7 +773,7 @@ function msclog($message, $sql=null) {
  * @package debug
  */
 function mscErrorHandler($errno, $errstr, $errfile, $errline) {
-    global $mscGlobalErrorsCash;
+    global $mscGlobalErrorsCash, $pdo;
     $logstr = $errstr.'['.$errfile.':'.$errline.']';
     if (!isset($mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash = array();
@@ -854,7 +787,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline) {
         return;
     }
     if (stristr($errstr, 'Unable to save result set')) {
-        $logstr  .= '('.mysqli_errorx().')';
+        $logstr  .= '('.$pdo->errorInfo()[2].')';
     }
     $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
     if (function_exists('msclog')) {
@@ -982,25 +915,6 @@ function getTableHeaders($fields, $sorts=true) {
     return $headers;
 }
 
-function mysqli_errorx() {
-    global $connection;
-    return mysqli_error($connection);
-}
-
-
-/**
- * Загружает класс
- *
- * @package msc
- * @param string Базовое имя файла без расширения в папке includes (предположительно - имя класса)
- */
-function classLoad($className) {
-    if (!class_exists($className)) {
-        require_once DIR_MYSQL . 'includes/' . $className.'.php';
-    }
-}
-
-
 /**
  * Возвращает значение указанного параметра конфигурации
  *
@@ -1033,7 +947,7 @@ function conf($param, $default='') {
  * @param string SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
  */
 function execSql($db, &$sql, $log=true) {
-    global $msc, $connection;
+    global $msc;
     $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
     if (!$msc->selectDb($db)) {
         return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);;
@@ -1053,10 +967,10 @@ function execSql($db, &$sql, $log=true) {
             continue;
         }
         $c ++;
-        if (!$msc->query($q)) {
+        if (!$msc->execPdo($q)) {
             $errors []= $msc->error.' ('.substr($q, 0, 100).')';
         } else {
-            $affected += mysqli_affected_rows($connection);
+            $affected += $msc->affectedRows;
         }
     }
     $fault = count($errors);
@@ -1154,29 +1068,14 @@ function printTable($offersData, $opts=[])
 
 function getData($sql) {
     global $msc;
-    $data = [];
-    $res = $msc->query($sql);
-    while ($row = mysqli_fetch_assoc($res)) {
-        $data [] = $row;
-    }
-    return $data;
-}
-
-function getDataAssoc($sql, $key, $value) {
-    global $msc;
-    $data = [];
-    $res = $msc->query($sql);
-    while ($row = mysqli_fetch_assoc($res)) {
-        $data [$row[$key]] = $row[$value];
-    }
-    return $data;
+    return $msc->fetchPdo($sql)>fetchAll();
 }
 
 /**
  * @return bool
  */
 function isajax() {
-    return $_GET['ajax'];
+    return $_GET['ajax'] || $_POST['ajax'];
 }
 
 function ajaxResult($data) {
@@ -1201,7 +1100,7 @@ function ajaxSuccess($message) {
 function ajaxResultWithMessages() {
     global $msc;
     $data = $msc->getMessagesData();
-    foreach ($data as $key => $item) {
+    foreach ($data as $item) {
         if ($item['type'] == MS_MSG_ERROR || $item['type'] == MS_MSG_FAULT) {
             ajaxError($data);
         }

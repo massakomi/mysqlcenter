@@ -3,6 +3,10 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
+spl_autoload_register(function ($class) {
+    include_once 'includes/' . $class . '.php';
+});
+
 // CORE
 error_reporting(E_ALL);
 session_start();
@@ -15,15 +19,15 @@ if (function_exists('date_default_timezone_set')) {
 }
 
 // Папки
-define('MS_URL', '');
-define('MS_DIR_TPL', 'tpl/');
-define('MS_DIR_IMG', 'tpl/images/');
-define('MS_DIR_JS', 'js/');
-define('MS_DIR_CSS', 'tpl/');
+const MS_URL = '';
+const MS_DIR_TPL = 'tpl/';
+const MS_DIR_IMG = 'tpl/images/';
+const MS_DIR_JS = 'js/';
+const MS_DIR_CSS = 'tpl/';
 
-define('MS_CONFIG_FILE', 'includes/config.txt');
-define('MS_CHARACTER_SET', 'utf8');
-define('MS_COLLATION', 'utf8_general_ci');
+const MS_CONFIG_FILE = 'includes/config.txt';
+const MS_CHARACTER_SET = 'utf8';
+const MS_COLLATION = 'utf8_general_ci';
 
 // чтобы убрать функции в func.php и при этом начать лог ошибок раньше
 require_once DIR_MYSQL . 'includes/func.php';
@@ -31,7 +35,6 @@ if (conf('errorlog') == '1') {
     set_error_handler('mscErrorHandler');
 }
 
-require_once DIR_MYSQL . 'includes/MSCenter.php';
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше
 
 /**
@@ -72,7 +75,7 @@ if (!defined('MSC_LOCAL_USE')) {
     if (count($enterErrors) != 0) {
         $errorMessage = '<strong>You are not entered</strong> <br />';
         $errorMessage .= implode('<br />', $enterErrors);
-        $pagel->loginPage($errorMessage);
+        //$pagel->loginPage($errorMessage);
         exit;
     }
 }
@@ -81,48 +84,20 @@ if (array_key_exists('cookies', $_POST)) {
     $_COOKIE = $_POST['cookies'];
 }
 
-/*
-// Если есть данные формы, берем оттуда
-if (isset($_POST['pass']) && isset($_POST['user'])) {
-    define('DB_USERNAME_CUR', $_POST['user']);
-    define('DB_PASSWORD_CUR', $_POST['pass']);
-    $enterType = 'POST';
+global $msc, $umaker, $pagel, $pdo;
 
-// Если есть данные сессии, то оттуда
-} elseif (isset($_SESSION['msc_pass']) && isset($_SESSION['msc_user'])) {
-    define('DB_USERNAME_CUR', $_SESSION['msc_user']);
-    define('DB_PASSWORD_CUR', $_SESSION['msc_pass']);
-    $enterType = 'SESSION';
-
-// Если нет ПОСТа и Сессии, пробуем Куки. Но оттуда берем только если это конфиг данные
-// (потому что мы не можем в куки хранить пароль без md5, а md5 пароль мы не можем использовать при коннекте)
-} elseif (isset($_COOKIE['msc_pass']) && isset($_COOKIE['msc_user'])
-    && md5(DB_PASSWORD) == $_COOKIE['msc_pass']) {
-    define('DB_USERNAME_CUR', $_COOKIE['msc_user']);
-    define('DB_PASSWORD_CUR', DB_PASSWORD);
-    $enterType = 'COOKIE';
-} else {
-    $pagel->loginPage();
-    exit;
-}*/
-
-global $msc, $umaker, $pagel, $connection;
-/*
-if ($pagel) {
-    $pagel->enterType = $enterType;
-}*/
+$msc->init();
 
 // 3. проверка соединения с базой
-/*try {
-    $connection = mysqli_connect(DB_HOST, DB_USERNAME_CUR, DB_PASSWORD_CUR);
-} catch (\Exception $e) {*/
-    try {
-        $connection = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD);
-    } catch (\Exception $e) {
-        exitError('Unable to connect to database on "' . DB_HOST . '" as ' . DB_USERNAME . '<br />' . $e->getMessage());
-        //$pagel->loginPage();
-    }
-//}
+try {
+    $pdo = new PDO('mysql:host='.DB_HOST.';dbname='.$msc->getCurrentDatabase(), DB_USERNAME, DB_PASSWORD, [
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=".MS_COLLATION.', character_set_server='.MS_CHARACTER_SET.', sql_mode=""'
+    ]);
+} catch (PDOException $e) {
+    $msc->clearCurrentDatabase();
+    exitError('Unable to pdo-connect to database on "' . DB_HOST . '" as ' . DB_USERNAME . '<br />' . $e->getMessage());
+}
+
 // Если вошли нормально записываем значения в куки
 if (isset($_POST['pass']) && isset($_POST['user'])) {
     // В куки пишем только если заходят с конфигурационных данных, и куки еще не записаны
@@ -136,17 +111,8 @@ if (isset($_POST['pass']) && isset($_POST['user'])) {
     $_SESSION['msc_pass'] = $_POST['pass'];
 }
 
-require_once DIR_MYSQL . 'includes/Server.php';
-$msc->init();
-// Важные
-require_once DIR_MYSQL . 'includes/ActionProcessor.php';
-require_once DIR_MYSQL . 'includes/UrlMaker.php';
-
-// Engine классы
-require_once DIR_MYSQL . 'includes/table.class.php';
-
-// Для кэширования таблиц
-require_once dirname(__FILE__) . '/includes/DatabaseTable.php';
+// Выбираем базу и делаем первые запросы только после определения базы
+$msc->selectDb($msc->getCurrentDatabase());
 
 // DEFINES
 
@@ -169,8 +135,3 @@ list($vi, $vs) = getServerVersion();
 define('PMA_MYSQL_INT_VERSION', $vi);
 define('PMA_MYSQL_STR_VERSION', $vs);
 define('MAX_UPLOAD_SIZE', getMaxUploadSize());
-
-// Конфигурация PMA
-$byteUnits = array('Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB');
-$day_of_week = array('Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб');
-$month = array('Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек');

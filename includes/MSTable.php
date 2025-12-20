@@ -17,12 +17,12 @@ class MSTable
     public static function getSetInfo($idSet)
     {
         if ($idSet == null) {
-            return array();
+            return [];
         }
         global $msc;
-        $result = $msc->query('SELECT * FROM mysqlcenter.export_table WHERE id_set=' . $idSet);
-        $a = array();
-        while ($o = mysqli_fetch_object($result)) {
+        $result = $msc->fetchPdoObject('SELECT * FROM mysqlcenter.export_table WHERE id_set=' . $idSet);
+        $a = [];
+        while ($o = $result->fetch()) {
             $a [$o->table_name] = $o;
         }
         return $a;
@@ -34,12 +34,7 @@ class MSTable
     public static function getSetsArray()
     {
         global $msc;
-        $result = $msc->query('SELECT * FROM mysqlcenter.export_set');
-        $a = array();
-        while ($o = mysqli_fetch_object($result)) {
-            $a [$o->id] = $o->name;
-        }
-        return $a;
+        return $msc->getData('SELECT id, name FROM mysqlcenter.export_set', PDO::FETCH_KEY_PAIR);
     }
 
     /**
@@ -48,12 +43,7 @@ class MSTable
     public static function getHiddensArray()
     {
         global $msc;
-        $result = $msc->query('SELECT * FROM mysqlcenter.db_info WHERE visible=0');
-        $a = array();
-        while ($o = mysqli_fetch_object($result)) {
-            $a [] = $o->db_name;
-        }
-        return $a;
+        return $msc->getData('SELECT db_name FROM mysqlcenter.db_info WHERE visible=0', PDO::FETCH_COLUMN);
     }
 
     /**
@@ -61,9 +51,9 @@ class MSTable
      */
     public static function insertSet($name)
     {
-        global $msc;
-        if ($msc->query('INSERT INTO mysqlcenter.export_set (`name`) VALUES ("' . $name . '")')) {
-            return mysqli_insert_id();
+        global $msc, $pdo;
+        if ($msc->execPdo('INSERT INTO mysqlcenter.export_set (`name`) VALUES ("' . $name . '")')) {
+            return $pdo->lastInsertId();
         } else {
             return false;
         }
@@ -74,13 +64,13 @@ class MSTable
      */
     public static function insertOption($id_set, $table_name, $struct, $data, $where_sql, $pk_top)
     {
-        global $msc;
+        global $msc, $pdo;
         if ($struct + $data == 0) {
             return false;
         }
         $sql = "INSERT INTO mysqlcenter.export_table(id_set, table_name, struct, data, where_sql, pk_top) VALUES ('$id_set', '$table_name', '$struct', '$data', '$where_sql', '$pk_top')";
-        if ($msc->query($sql)) {
-            return mysqli_insert_id();
+        if ($msc->execPdo($sql)) {
+            return $pdo->lastInsertId();
         } else {
             return false;
         }

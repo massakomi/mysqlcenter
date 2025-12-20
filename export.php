@@ -3,10 +3,6 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
-include_once(DIR_MYSQL . 'includes/Export.class.php');
-classLoad('DatabaseManager');
-classLoad('MSTable');
-
 /**
  * Экспорт
  */
@@ -61,7 +57,7 @@ if ($msc->page == 'exportSp') {
         // Save
         if (POST('new') != null) {
             if (!$id_set = $msct->insertSet(POST('new'))) {
-                return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, mysqli_errorx());
+                return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, $msc->error);
             }
             foreach ($_POST['table'] as $key => $t){
                 $struct = intval(isset($_POST['struct'][$key]));
@@ -86,11 +82,11 @@ if ($msc->page == 'exportSp') {
                 }
                 $msct->insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
             }
-            $msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS, mysqli_errorx());
+            $msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS);
         // Send
         } else {
             $drawForm = false;
-            $exp = new MySQLExport();
+            $exp = new Export();
             if (POST('addComment') != null) {
                 $exp->setHeader($dumpHeader);
             }
@@ -134,8 +130,8 @@ if ($msc->page == 'exportSp') {
         $cSet = $msct->getSetInfo(GET('set'));
         $data = [];
         if ($msc->db) {
-            $result = $msc->query('SHOW TABLE STATUS FROM '.$msc->db);
-            while ($o = mysqli_fetch_object($result)) {
+            $result = $msc->fetchPdo('SHOW TABLE STATUS FROM '.$msc->db);
+            while ($o = $result->fetchObject($result)) {
                 $o->Fields = getFields($o->Name);
                 $data []= $o;
             }
@@ -165,7 +161,7 @@ if ($msc->page == 'exportSp') {
     // 3.2.1. Создание
     if (is_array($array) && count($array) > 0 || is_array($exportDb) && count($exportDb) > 0) {
         // создание дампа
-        $exp = new MySQLExport();
+        $exp = new Export();
         $exp->setComments(POST('addComment') != '');
         $exp->setHeader($dumpHeader);
         $exp->setOptionsStruct($addIfNot, $addAuto, $addKav);

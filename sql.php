@@ -38,7 +38,10 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             $data = iconv('windows-1251', 'utf-8', $data);
             $data = explode("\n", $data);
             foreach ($data as $k => $v) {
-                $row = array_map('mysqli_escape_stringx', explode(';', trim($v)));
+                $row = array_map(function($value) {
+                    global $pdo;
+                    return $pdo->quote($value);
+                }, explode(';', trim($v)));
                 echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("'.implode('","', $row).'");';
             }
 
@@ -93,12 +96,12 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
         }
         // Применяем кодировку если надо
         if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
-            $msc->query("SET NAMES '".POST('sqlFileCharset')."'");
+            $msc->execPdo("SET NAMES '".POST('sqlFileCharset')."'");
         }
         $log = strlen($s) < 10000;
         execSql($db, $s, $log);
         if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
-            $msc->query("SET NAMES 'utf8'");
+            $msc->execPdo("SET NAMES 'utf8'");
         }
     } else {
         $msc->addMessage('Размер файла превышает максимально допустимый', null, MS_MSG_FAULT);

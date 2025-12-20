@@ -4,11 +4,11 @@
  */
 
 // типы сообщений
-define('MS_MSG_SIMPLE',  1); // инфо
-define('MS_MSG_SUCCESS', 2); // успешная операция
-define('MS_MSG_FAULT',   3); // операция не удалась
-define('MS_MSG_ERROR',   4); // серъёзная ошибка
-define('MS_MSG_NOTICE',  5); // непонятная ситуация, замечание
+const MS_MSG_SIMPLE = 1; // инфо
+const MS_MSG_SUCCESS = 2; // успешная операция
+const MS_MSG_FAULT = 3; // операция не удалась
+const MS_MSG_ERROR = 4; // серъёзная ошибка
+const MS_MSG_NOTICE = 5; // непонятная ситуация, замечание
 
 /**
  * Управляющий класс
@@ -17,27 +17,26 @@ define('MS_MSG_NOTICE',  5); // непонятная ситуация, заме�
  * - заголовок раздела h1 и страницы title
  * - текущая страница, БД, таблица
  */
-class MSCenter
+class MSCenter extends DatabaseQuery
 {
 
     // public
-    var $db, $table, $page;
+    public $db, $table, $page;
 
     // private
-    var $dbSelected;
-    var $messages = array();
+    public array $messages = [];
 
     /**
      * Общедоступная переменная для создания заголовка раздела h1
      */
-    var $pageTitle;
+    public string $pageTitle;
 
     /**
      * Время timestamp начала работы программы. Используется для подсчёта времени выполнения.
      */
-    var $timer;
+    public float $timer;
 
-    var $allowRepeatMessages;
+    public $allowRepeatMessages;
 
     /**
      * Конструктор, для начала анализа скорости
@@ -90,9 +89,8 @@ class MSCenter
      * Возвращает текущую отображаемую базу данных (которую мы видим), вызывается при инициализации
      * @access private
      */
-    function getCurrentDatabase()
+    public function getCurrentDatabase()
     {
-        global $connection;
         $db = GET('db') ?: POST('db');
         if ($db != '') {
             if ($this->db != $db) {
@@ -105,20 +103,16 @@ class MSCenter
             $this->db = $_COOKIE['mc_db'];
         }
         if (!$this->db) {
-            //$this->addMessage('Не выбрана база данных', '', MS_MSG_FAULT, mysqli_error($connection));
             return $this->db = null;
         }
-        if (!$this->selectDb($this->db)) {
-            $this->addMessage('Ошибка при выборе базы данных "' . $this->db . '"', '', MS_MSG_FAULT, mysqli_error($connection));
-            return $this->db = null;
-        }
-        $this->query('SET collation_connection = ' . MS_COLLATION);
-        //$this->query('SET collation_database = '.MS_COLLATION);
-        //$this->query('SET collation_server = '.MS_COLLATION);
-        $this->query('SET NAMES "' . MS_CHARACTER_SET . '"');
-        $this->query('SET character_set_server = ' . MS_CHARACTER_SET);
-        $this->query('SET sql_mode=""');
         return $this->db;
+    }
+
+    public function clearCurrentDatabase(): void
+    {
+        setcookie('mc_db', null, -1, '/');
+        $_SESSION['db'] = '';
+        $this->db = null;
     }
 
     /**
@@ -229,8 +223,7 @@ showhide("' . $messageId . '");
      */
     function notice($text, $sql = null)
     {
-        global $connection;
-        $this->addMessage($text, $sql, MS_MSG_NOTICE, mysqli_error($connection));
+        $this->addMessage($text, $sql, MS_MSG_NOTICE, $this->error);
     }
 
     /**
@@ -241,12 +234,11 @@ showhide("' . $messageId . '");
      * @param integer тип сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @return boolean
      */
-    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = '')
+    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = ''): bool
     {
-        global $connection;
         $textError = $text;
         if ($sql != '') {
-            $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . mysqli_affected_rows($connection) . '</span>';
+            $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>';
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200, "\r\n") . ';' . $aff . '</div>';
             if ($error != null) {
                 $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
@@ -267,7 +259,7 @@ showhide("' . $messageId . '");
                 'color' => $color,
                 'error' => $error,
                 'sql' => $sql,
-                'rows' => mysqli_affected_rows($connection),
+                'rows' => $this->affectedRows,
             ];
         } else {
             $this->messages [] = '<span style="color:' . $color . '">' . $text . '</span>';
@@ -276,80 +268,6 @@ showhide("' . $messageId . '");
             return false;
         }
         return true;
-    }
-
-    /**
-     * Единый для всех запрос в БД
-     *
-     * @param string
-     * @param string
-     * @param boolean
-     * @return mysqli_result mysql
-     */
-    public function query($sql, $database = null, $log = true)
-    {
-        global $connection;
-        if ($database != null) {
-            $this->selectDb($database);
-        }
-        try {
-            $result = mysqli_query($connection, $sql);
-        } catch (\Exception $e) {
-            $this->error = $e->getMessage();
-            msclog('query()', $sql);
-        }
-        if ($log) {
-            $this->loqQuery($sql, $result);
-        }
-        return $result;
-    }
-
-    /**
-     * @param $sql
-     * @param null $result
-     * @return array
-     */
-    public function getData($sql, $result = null)
-    {
-        $res = $this->query($sql);
-        if (!$res) {
-            return [];
-        }
-        $data = mysqli_fetch_all($res, MYSQLI_ASSOC);
-        return $data;
-    }
-
-    /**
-     * @param $sql
-     * @param null $result
-     * @return array
-     */
-    public function getOne($sql, $result = null)
-    {
-        $res = $this->query($sql);
-        return mysqli_fetch_assoc($res);
-    }
-
-    /**
-     * Перехватывает запрос и сохраняет его в файле
-     *
-     * @access private
-     * @param $sql
-     * @param null $result
-     * @return bool
-     */
-    public function loqQuery($sql, $result = null)
-    {
-        if (!MS_LOG_ALLOW) {
-            return false;
-        }
-        if (!$result || preg_match('~^(SHOW|SELECT|SET)~i', trim($sql))) {
-            return false;
-        }
-        $string = trim($sql);
-        $string = preg_replace('/[\r\n\t]+/', ' ', $string);
-        $string = str_replace('  ', ' ', $string);
-        $this->logInFile($string);
     }
 
     /**
@@ -381,176 +299,6 @@ showhide("' . $messageId . '");
         }
     }
 
-    /**
-     * Выполняет дамп, разделённый ;\r\n (sql.php) Лог запросов производит сразу
-     *
-     * @param string $sql
-     * @param string $database
-     * @return boolean
-     */
-    public function exec($sql, $database)
-    {
-        global $connection;
-        if ($sql == null || empty($sql)) {
-            return $this->addMessage('Запрос пустой', null, MS_MSG_FAULT);
-        }
-        $this->logInFile($sql);
-        $ret = array();
-        $this->PMA_splitSqlFile($ret, $sql);
-        $succ = 0;
-        $this->selectDb($database);
-        $errors = array();
-        foreach ($ret as $v) {
-            if ($this->query($v['query'], null, false)) {
-                $succ++;
-            } else {
-                $errors [] = mysqli_error($connection);
-            }
-        }
-        $fault = count($errors);
-        $info = " $succ запросов выполнено, $fault неудач. ";
-        if ($fault == 0) {
-            return $this->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
-        } else {
-            return $this->addMessage('Запросы выполнены с ошибками' . $info, null, MS_MSG_FAULT, implode('<br />', $errors));
-        }
-    }
-
-    /**
-     * Удаляет комментарии и разделяет большие sql файлы в индивидуальные запросы
-     *
-     * @access private
-     * @param array    Массив, куда помещать запросы
-     * @param string   SQL запросы, разделенный точкой с запятой
-     * @return boolean  всегда true
-     */
-    function PMA_splitSqlFile(&$ret, $sql)
-    {
-        // do not trim, see bug #1030644
-        //$sql      = trim($sql);
-        $sql = rtrim($sql, "\n\r");
-        $sql_len = strlen($sql);
-        $char = '';
-        $string_start = '';
-        $in_string = FALSE;
-        $nothing = TRUE;
-        $time0 = time();
-
-        for ($i = 0; $i < $sql_len; ++$i) {
-            $char = $sql[$i];
-
-            // We are in a string, check for not escaped end of strings except for
-            // backquotes that can't be escaped
-            if ($in_string) {
-                for (; ;) {
-                    $i = strpos($sql, $string_start, $i);
-                    // No end of string found -> add the current substring to the
-                    // returned array
-                    if (!$i) {
-                        $ret[] = array('query' => $sql, 'empty' => $nothing);
-                        return TRUE;
-                    }
-                    // Backquotes or no backslashes before quotes: it's indeed the
-                    // end of the string -> exit the loop
-                    else if ($string_start == '`' || $sql[$i - 1] != '\\') {
-                        $string_start = '';
-                        $in_string = FALSE;
-                        break;
-                    } // one or more Backslashes before the presumed end of string...
-                    else {
-                        // ... first checks for escaped backslashes
-                        $j = 2;
-                        $escaped_backslash = FALSE;
-                        while ($i - $j > 0 && $sql[$i - $j] == '\\') {
-                            $escaped_backslash = !$escaped_backslash;
-                            $j++;
-                        }
-                        // ... if escaped backslashes: it's really the end of the
-                        // string -> exit the loop
-                        if ($escaped_backslash) {
-                            $string_start = '';
-                            $in_string = FALSE;
-                            break;
-                        } // ... else loop
-                        else {
-                            $i++;
-                        }
-                    } // end if...elseif...else
-                } // end for
-            } // end if (in string)
-
-            // lets skip comments (/*, -- and #)
-            else if (($char == '-' && $sql_len > $i + 2 && $sql[$i + 1] == '-' && $sql[$i + 2] <= ' ') || $char == '#' || ($char == '/' && $sql_len > $i + 1 && $sql[$i + 1] == '*')) {
-                $i = strpos($sql, $char == '/' ? '*/' : "\n", $i);
-                // didn't we hit end of string?
-                if ($i === FALSE) {
-                    break;
-                }
-                if ($char == '/') $i++;
-            } // We are not in a string, first check for delimiter...
-            else if ($char == ';') {
-                // if delimiter found, add the parsed part to the returned array
-                $ret[] = array('query' => substr($sql, 0, $i), 'empty' => $nothing);
-                $nothing = TRUE;
-                $sql = ltrim(substr($sql, min($i + 1, $sql_len)));
-                $sql_len = strlen($sql);
-                if ($sql_len) {
-                    $i = -1;
-                } else {
-                    // The submited statement(s) end(s) here
-                    return TRUE;
-                }
-            } // end else if (is delimiter)
-
-            // ... then check for start of a string,...
-            else if (($char == '"') || ($char == '\'') || ($char == '`')) {
-                $in_string = TRUE;
-                $nothing = FALSE;
-                $string_start = $char;
-            } // end else if (is start of string)
-
-            elseif ($nothing) {
-                $nothing = FALSE;
-            }
-
-            // loic1: send a fake header each 30 sec. to bypass browser timeout
-            $time1 = time();
-            if ($time1 >= $time0 + 30) {
-                $time0 = $time1;
-                header('X-pmaPing: Pong');
-            }
-        }
-
-        // add any rest to the returned array
-        if (!empty($sql) && preg_match('@[^[:space:]]+@', $sql)) {
-            $ret[] = array('query' => $sql, 'empty' => $nothing);
-        }
-
-        return TRUE;
-    }
-
-    /**
-     * Выполняет выбор БД (select_db) на сервера
-     * @param string
-     */
-    function selectDb($db)
-    {
-        global $connection;
-        if ($db == null) {
-            return false;
-        }
-        if ($this->dbSelected == $db) {
-            return true;
-        }
-        try {
-            mysqli_select_db($connection, $db);
-        } catch (\Exception $e) {
-            return false;
-        }
-        $this->db = $db;
-        return true;
-    }
-
     private $popularTablesFile = 'data/popular.json';
 
     public function getPopularTables(): array
@@ -574,7 +322,7 @@ showhide("' . $messageId . '");
             }
         }
 
-       // $sum = array_sum($json);
+        // $sum = array_sum($json);
         //var_dump($sum / 20);
         //echo '<pre>'; print_r($json); echo '</pre>'; exit;
         return $json;
@@ -601,9 +349,9 @@ showhide("' . $messageId . '");
     {
         $tables = $this->getPopularTables();
         if (array_key_exists($table, $tables[$this->db])) {
-            $tables[$this->db] [$table]['count'] ++;
+            $tables[$this->db] [$table]['count']++;
         } else {
-            $tables[$this->db] [$table]['count']= 1;
+            $tables[$this->db] [$table]['count'] = 1;
         }
         $tables[$this->db] [$table]['time'] = time();
         if (date('i') % 10 == 0) {
@@ -624,39 +372,30 @@ showhide("' . $messageId . '");
      * Статистика просмотров баз данных
      * @return void
      */
-    public function dbViewStat() {
+    public function dbViewStat()
+    {
         $dbs = Server::getDatabases();
         if (!in_array('mysqlcenter', $dbs) || empty($this->db)) {
-            return ;
+            return;
         }
-        include_once 'includes/MSTable.php';
-
-        $result = $this->query($t = 'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"');
-        $a = [];
-        while ($o = mysqli_fetch_object($result)) {
-            $a [] = $o;
-        }
+        $this->disableLog();
+        $a = $this->getData('SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"', PDO::FETCH_OBJ);
         if (count($a) == 0) {
-            $this->query('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
+            $this->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")');
         } else {
-            $this->query('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
-                '" WHERE db_name="' . $this->db . '"', null, 0);
+            $this->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') . '" WHERE db_name="' . $this->db . '"');
         }
 
         // Статистика просмотров таблиц
         if ($this->table != '') {
-            $result = $this->query($t = 'SELECT * FROM mysqlcenter.table_info
-                    WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"');
-            $a = [];
-            while ($o = mysqli_fetch_object($result)) {
-                $a [] = $o;
-            }
+            $a = $this->getData($t = 'SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"', PDO::FETCH_OBJ);
             if (count($a) == 0) {
-                $this->query('REPLACE INTO mysqlcenter.table_info VALUES("' . $this->db . '", "' . $this->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")', null, 0);
+                $this->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $this->db . '", "' . $this->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")');
             } else {
-                $this->query('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
-                    '" WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"', null, 0);
+                $this->execPdo('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
+                    '" WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"');
             }
         }
+        $this->enableLog();
     }
 }

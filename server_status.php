@@ -3,48 +3,12 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
-
-/**
- * Formats $value to byte view
- *
- * @param  double   the value to format
- * @param  integer  the sensitiveness
- * @param  integer  the number of decimals to retain
- *
- * @return   array  the formatted value and its unit
- *
- * @access  public
- *
- * @author   staybyte
- * @version  1.2 - 18 July 2002
- */
-function PMA_formatByteDown($value, $limes = 6, $comma = 0) {
-    $dh       = pow(10, $comma);
-    $li       = pow(10, $limes);
-    $return_value = $value;
-    $unit     = $GLOBALS['byteUnits'][0];
-    for ( $d = 6, $ex = 15; $d >= 1; $d--, $ex-=3 ) {
-        if (isset($GLOBALS['byteUnits'][$d]) && $value >= $li * pow(10, $ex)) {
-            $value = round($value / ( pow(1024, $d) / $dh) ) /$dh;
-            $unit = $GLOBALS['byteUnits'][$d];
-            break 1;
-        } // end if
-    } // end for
-
-    if ($unit != $GLOBALS['byteUnits'][0]) {
-        $return_value = number_format($value, $comma, '.', ',');
-    } else {
-        $return_value = number_format($value, 0, '.', ',');
-    }
-    return array($return_value, $unit);
-}
-
 $msc->pageTitle = 'Список процессов';
 
 $kill = GET('kill');
 // Kills a selected process
 if (!empty($kill)) {
-    if ($msc->query($sql = 'KILL ' . $kill)) {
+    if ($msc->execPdo($sql = 'KILL ' . $kill)) {
         $msc->addMessage('Успешно удалено');
     } else {
         $msc->addMessage('Ошибка остановки', $sql, MS_MSG_ERROR, $msc->error);
@@ -57,12 +21,9 @@ if (!empty($kill)) {
 }
 
 // Sends the query and buffers the result
-$serverProcesses = array();
-$sql_query = 'SHOW FULL PROCESSLIST';
-$res = $msc->query($sql_query);
-while ($row = mysqli_fetch_assoc($res)) {
-     $serverProcesses[] = $row;
-}
+$sql = 'SHOW FULL PROCESSLIST';
+$res = $msc->fetchPdo($sql);
+$serverProcesses = $res->fetchAll();
 
 if (isajax()) {
     return [

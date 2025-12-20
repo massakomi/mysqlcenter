@@ -4,12 +4,12 @@
  */
 
 if (!defined('DIR_MYSQL')) {
-	exit('Hacking attempt');
+    exit('Hacking attempt');
 }
 //config_default.txt
 
 if (GET('mode') == 'restore') {
-	if (copy('includes/config_default.txt', MS_CONFIG_FILE)) {
+    if (copy('includes/config_default.txt', MS_CONFIG_FILE)) {
         $msc->addMessage('Значения по умолчанию восстановлены');
     }
 }
@@ -20,12 +20,12 @@ if (count($_POST) > 0) {
     $newFileContent = [];
     $changed = false;
     foreach ($data as $k => $line) {
-    	if (empty($line) || substr_count($line, '|') < 3) {
-    		continue;
-    	}
-    	list($name, $title, $value, $type) = explode('|', trim($line));
-    	if ($type == 'boolean') {
-        	if (intval(POST($name)) != intval($value)) {
+        if (empty($line) || substr_count($line, '|') < 3) {
+            continue;
+        }
+        list($name, $title, $value, $type) = explode('|', trim($line));
+        if ($type == 'boolean') {
+            if (intval(POST($name)) != intval($value)) {
                 $value = intval(POST($name));
                 $changed = true;
             }
@@ -33,7 +33,7 @@ if (count($_POST) > 0) {
             $value = POST($name);
             $changed = true;
         }
-    	$newFileContent []= "$name|$title|$value|$type";
+        $newFileContent [] = "$name|$title|$value|$type";
     }
     if ($changed) {
         $f = fopen(MS_CONFIG_FILE, 'w+');

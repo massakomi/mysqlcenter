@@ -63,8 +63,6 @@ class ActionProcessor
         /**
          * Подгружаем и инициализируем функции для работы с БД
          */
-        define('DBI_MSC_QUERY_OBJECT', 'msc');
-        define('DBI_MSC_QUERY_METHOD', 'query');
         define('DBI_MSC_MSG_OBJECT', 'msc');
         define('DBI_MSC_MSG_METHOD', 'addMessage');
         require_once dirname(__FILE__) . '/DatabaseManager.php';
@@ -87,93 +85,12 @@ class ActionProcessor
 
         switch ($queryMode) {
             case 'querysql':
-                $data = [];
-                $res = $msc->query($_POST['sql']);
                 if ($_POST['type'] == 'pair-value') {
-                    while ($row = mysqli_fetch_array($res)) {
-                        $data[$row[0]] = $row[1];
-                    }
+                    $data = $msc->getData($_POST['sql'], PDO::FETCH_KEY_PAIR);
                 } else {
-                    while ($row = mysqli_fetch_assoc($res)) {
-                        $data[] = $row;
-                    }
+                    $data = $msc->getData($_POST['sql']);
                 }
                 exit(json_encode($data));
-
-            case 'sqlQuery'    :
-
-                $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
-                if (!$msc->selectDb($db)) {
-                    return $msc->addMessage('Не смог выбрать базу данных "' . $db . '"', null, MS_MSG_FAULT);;
-                }
-
-                $file = 'Z:/marketmixer1.sql';
-                //echo 'alert(1);';
-
-                if (!file_exists($file)) {
-                    return $msc->addMessage('Файл "' . $file . '" не найден ', null, MS_MSG_FAULT);
-                }
-
-                echo '
-                insertBefore("sqlQueryForm", "h2", "sqlTitleDiv");
-                    remove(get("sqlQueryForm"));
-                get("sqlTitleDiv").innerHTML = "<b>Выполняем запросы из файла ' . $file . '<b>";
-                
-                insertAfter("sqlTitleDiv", "DIV", "sqlQueryDiv");
-                get("sqlQueryDiv").style.border = "1px solid #ccc";
-                get("sqlQueryDiv").style.padding = "10px";
-                get("sqlQueryDiv").style.marginTop = "10px";
-                
-                insertAfter("sqlTitleDiv", "DIV", "sqlCounterDiv");
-                get("sqlCounterDiv").style.border = "1px solid #ccc";
-                get("sqlCounterDiv").style.padding = "10px";
-                get("sqlCounterDiv").style.marginTop = "10px";
-                ';
-
-                function addSqlAjaxLog($txt)
-                {
-                    echo "\n" . 'get("sqlQueryDiv").innerHTML = "<div>' . $txt . '</div>" + get("sqlQueryDiv").innerHTML;';
-                }
-
-
-                //$sql = file_get_contents($file);
-
-                //addSqlAjaxLog('размер файла '.strpos($file, ";\r\n"));
-                break;
-
-
-                //$msc->logInFile($sql);
-                $sql = str_replace("\r\n", "\n", $sql);
-                $array = explode(";\n", $sql);
-                $errors = array();
-                $c = 0;
-                $affected = 0;
-                $count = count($array);
-                //addSqlAjaxLog('Всего запросов в файле: '.$count);
-                for ($i = 0; $i < $count; $i++) {
-                    $q = trim($array[$i]);
-                    if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
-                        continue;
-                    }
-                    $c++;
-
-                    echo "\n" . 'get("sqlCounterDiv").innerHTML = "' . $c . '";';
-
-
-                }
-                $fault = count($errors);
-                $succ = $c - $fault;
-                $info = " $succ запросов выполнено, $fault неудач. ";
-                if (count($errors) == 0) {
-                    $msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
-                } else {
-                    $msc->addMessage('Запросы выполнен с ошибками' . $info . '<br />' . implode('<br />', $errors), null, MS_MSG_FAULT);
-                }
-                $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
-                $msc->addMessage("Выполнено за $mysqlGenerationTime с.<br>Затронуто рядов: $affected");
-
-
-                break;
 
             // операции с таблицами
             // в запросе обязательно должна быть указана БД и таблица
@@ -222,7 +139,7 @@ class ActionProcessor
                 $cs = intval($this->param('checksum'));
                 $dkv = intval($this->param('delay_key_write'));
                 $sql = "ALTER TABLE `$table` PACK_KEYS = $pk CHECKSUM = $cs DELAY_KEY_WRITE = $dkv AUTO_INCREMENT = $ai";
-                if ($msc->query($sql)) {
+                if ($msc->execPdo($sql)) {
                     return $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
                 } else {
                     return $msc->addMessage('Ошибка изменения таблицы', $sql, MS_MSG_FAULT);
@@ -245,10 +162,9 @@ class ActionProcessor
                 $search_for = POST('search_for');
                 $replace_in = POST('replace_in');
                 if ($field && $search_for) {
-                    global $connection;
                     $sql = 'UPDATE `'.$tbl.'` SET '.$field.' = REPLACE(`'.$field.'`, "'.$search_for.'", "'.$replace_in.'")';
-                    if ($msc->query($sql)) {
-                        $c = mysqli_affected_rows($connection);
+                    if ($msc->execPdo($sql)) {
+                        $c = $msc->affectedRows;
                         if ($c > 0) {
                             $msc->addMessage('Таблица изменена, затронуто рядов: '.$c, $sql, MS_MSG_SUCCESS);
                         } else {
@@ -324,7 +240,7 @@ class ActionProcessor
                     foreach ($databases as $db) {
                         $dbm->DatabaseAction($db, 'DROP');
                     }
-                    $msc->db = null;
+                    $msc->clearCurrentDatabase();
                     $msc->page = 'db_list';
                 }
                 break;
@@ -335,10 +251,10 @@ class ActionProcessor
 
             case 'dbHide'     :
                 if ($this->param('act') == 'show') {
-                    $msc->query('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 1)');
+                    $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 1)');
                     $msc->addMessage("База $db открыта");
                 } else {
-                    $msc->query('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 0)');
+                    $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 0)');
                     $msc->addMessage("База $db скрыта");
                 }
                 break;
@@ -364,17 +280,6 @@ class ActionProcessor
                 $tables = DatabaseTable::getCashedTablesArray();
                 $action = POST('act');
                 foreach ($tables as $o) {
-                    if ($action === 'makeInnodb') {
-                        if ($o->Engine == 'InnoDB') {
-                            $msc->addMessage('Таблица '.$o->Name.' пропущена - уже InnoDB',  '', MS_MSG_NOTICE);
-                            continue;
-                        }
-                        $msc->query($sql='ALTER TABLE `'.$o->Name.'` ENGINE = InnoDB');
-                        $error = mysqli_errorx();
-                        if ($error) {
-                            $msc->addMessage(111, $sql='xxx', MS_MSG_FAULT);
-                        }
-                    }
                     if ($action === 'drop-query') {
                         $sql = 'DROP TABLE `' . $o->Name . '`;';
                         $msc->addMessage($sql, '', MS_MSG_SUCCESS);
@@ -382,7 +287,7 @@ class ActionProcessor
 
                     if (in_array($action, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
                         $sql = strtoupper($action) . ' TABLE `' . $o->Name . '`';
-                        if ($msc->query($sql)) {
+                        if ($msc->execPdo($sql)) {
                             $msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
                         } else {
                             $msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
@@ -468,10 +373,10 @@ class ActionProcessor
             case 'deleteField' :
                 $dbm->queryCheck($db, $tbl, $this->param('field'));
                 $sql = "ALTER TABLE `$tbl` DROP " . $this->param('field');
-                if ($msc->query($sql, $db)) {
+                if ($msc->execPdo($sql, $db)) {
                     $msc->addMessage('Поле удалено', $sql, MS_MSG_SUCCESS);
                 } else {
-                    $msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, mysqli_errorx());
+                    $msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, $msc->error);
                 }
                 break;
 
@@ -485,10 +390,10 @@ class ActionProcessor
                 } else {
                     $sql = 'ALTER table `' . $tbl . '` DROP `' . implode('`, DROP `', $deleteFields) . '`';
                 }
-                if ($msc->query($sql)) {
+                if ($msc->execPdo($sql)) {
                     $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
                 } else {
-                    $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, mysqli_errorx());
+                    $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
                 }
                 break;
 
@@ -501,10 +406,10 @@ class ActionProcessor
                     dropPrimaryKey($tbl);
                 } else {
                     $sql = "ALTER TABLE `$tbl` DROP KEY " . $this->param('key');
-                    if ($msc->query($sql, $db)) {
+                    if ($msc->execPdo($sql)) {
                         $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
                     } else {
-                        $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, mysqli_errorx());
+                        $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, $msc->error);
                     }
                 }
                 break;
@@ -525,7 +430,7 @@ class ActionProcessor
                     $keyFields [] = '`' . $fieldName . '`' . ($fieldSize > 0 ? "($fieldSize)" : '');
                 }
                 $sql = 'ALTER TABLE ' . $tbl . ' ADD ' . $keyDefinition . ' (' . implode(',', $keyFields) . ')';
-                if ($msc->query($sql, $db)) {
+                if ($msc->execPdo($sql)) {
                     $msc->addMessage('Ключ добавлен', $sql, MS_MSG_SUCCESS);
                 } else {
                     $msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT);
@@ -543,7 +448,7 @@ class ActionProcessor
             case 'killProcess' :
                 $kill = POST('id');
                 if (!empty($kill)) {
-                    if ($msc->query($sql = 'KILL ' . $kill)) {
+                    if ($msc->execPdo($sql = 'KILL ' . $kill)) {
                         $msc->addMessage('Успешно удалено');
                     } else {
                         $msc->addMessage('Ошибка остановки', $sql, MS_MSG_ERROR, $msc->error);

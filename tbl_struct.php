@@ -7,8 +7,6 @@
  * Обзор стркутуры таблицы
  */
 
-classLoad('DatabaseTable');
-
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
@@ -50,7 +48,7 @@ if (!$dbt->isExists()) {
 $msc->pageTitle = 'Структура таблицы ' . $msc->table;
 
 if (GET('print') == '1') {
-    echo $dbt->insertStructTable();
+    echo 'вместо печатной версии лучше create table';
     exit;
 }
 
@@ -76,7 +74,7 @@ foreach ($fields as $k => $v) {
 $tableAddStr [] = ")";
 $tableAddStr = implode('<br />', $tableAddStr);
 
-$data = $dbt->insertDetailsTable($return = 1);
+$data = $dbt->insertDetailsTable();
 
 $pageProps = [
     'db' => $msc->db,

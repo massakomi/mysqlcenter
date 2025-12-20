@@ -16,12 +16,8 @@ class Server
     {
         static $array;
         if (!isset($array)) {
-            global $connection;
-            $db_list = mysqli_query($connection, 'SHOW DATABASES');
-            $array = [];
-            while ($row = mysqli_fetch_object($db_list)) {
-                $array [] = $row->Database;
-            }
+            global $msc;
+            $array = $msc->fetchPdo('SHOW DATABASES')->fetchAll(PDO::FETCH_COLUMN);
         }
         return $array;
     }
@@ -56,14 +52,14 @@ class Server
         $database  = $_POST['database'];
         $userpass  = $_POST['userpass'];
 
-        /*
-        $result = $msc->query('DROP USER massakomi');
+
+        /*$result = $msc->query('DROP USER ""');
         var_dump($result);
-        */
+        exit;*/
 
         // Проверяем, может уже есть такой пользователь
         $sql = 'SELECT * FROM mysql.user WHERE User="'.$username.'"';
-        $result = $msc->getOne($sql);
+        $result = $msc->fetchPdo($sql);
         if ($result) {
             $msc->addMessage('Пользователь с именем "'.$username.'" уже существует', '', MS_MSG_NOTICE);
             return false;
@@ -72,7 +68,7 @@ class Server
 
         // Сначала добавляем пользователя
         $sql = 'CREATE USER `'.$username.'` IDENTIFIED BY "'.$userpass.'"';
-        $result = $msc->query($sql);
+        $result = $msc->execPdo($sql);
         if ($result) {
             $msc->addMessage('Пользователь "'.$username.'" добавлен', $sql, MS_MSG_SUCCESS);
         } else {
@@ -82,7 +78,7 @@ class Server
 
         // Теперь добавляем базу данных
         $sql = 'CREATE DATABASE `'.$database.'`';
-        $result = $msc->query($sql);
+        $result = $msc->execPdo($sql);
         if ($result) {
             $msc->addMessage('База данных "'.$database.'" создана', $sql, MS_MSG_SUCCESS);
         } else {
@@ -92,7 +88,7 @@ class Server
 
         // Теперь наделяем привелегиями пользователя на эту базу
         $sql = 'GRANT ALL ON `'.$database.'`.* TO `'.$username.'`';
-        $result = $msc->query($sql);
+        $result = $msc->execPdo($sql);
         if ($result) {
             $msc->addMessage('Права на базу "'.$database.'" отданы пользоватлю "'.$username.'"', $sql, MS_MSG_SUCCESS);
         } else {

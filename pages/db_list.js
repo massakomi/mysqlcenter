@@ -244,7 +244,10 @@ class ColumnRight extends React.Component {
         this.setState({formDisabled: s})
     }
 
-
+    userAdd(event) {
+        event.preventDefault()
+        msQuery('userAdd', event.target.closest('form'))
+    }
 
     render() {
 
@@ -274,7 +277,7 @@ class ColumnRight extends React.Component {
 
               <fieldset className="mt-10">
                   <legend>Добавить пользователя</legend>
-                  <form action="?s=users&action=add" method="post">
+                  <form onSubmit={this.userAdd} method="post">
                       <div className="mb-5"><input name="rootpass" type="text" /> Пароль админа</div>
                       <div className="mb-5"><input name="database" type="text" required={true} id="databaseField" onKeyUp={this.updateLoginName} /> Имя базы данных</div>
                       <div className="mb-5"><input name="databaseuser" id="unameField" type="text" required={true} defaultValue={this.state.database}  /> Логин пользователя</div>
