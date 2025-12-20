@@ -104,7 +104,6 @@ class ActionProcessor
                 break;
 
             case 'tableRename':
-                sleep(2);
                 if ($dbt->tableAction($db, $tbl, 'RENAME', $this->param('newName'))) {
                     $msc->table = $this->param('newName');
                 }

@@ -118,18 +118,14 @@ if (!isset($directSQL)) {
         $msc->notice('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
         return;
     }
-    $a = $result->fetchObject();
-    $count = $a->rows;
-
-    // Часть пока будет равна всем данным, потому что лимита нет. И ссылок не будет.
-    $part  = $count;
+    $count = 0;
+    $part  = 0;
 
     // Для директ sql сообщение выводим тут
     $msc->addMessage('Выбрано', $directSQL);
-
     $sql = $directSQL;
-
 }
+
 
 // Запрос и если ничего не найдено тут - выходим
 if (!$result = $msc->fetchPdo($sql)) {
@@ -140,8 +136,8 @@ if (!$result = $msc->fetchPdo($sql)) {
 
 
 // Создаём таблицу из результата $result
-$headers = array('<a href="'.$umaker->switcher('fullText', '1').'" title="Показать полные значения всех полей '.
-    'и убрать переносы заголовков полей" class="hiddenSmallLink" style="color:white">full</a>', '&nbsp;', '&nbsp;');
+$headers = ['<a href="'.$umaker->switcher('fullText', '1').'" title="Показать полные значения всех полей '.
+    'и убрать переносы заголовков полей" class="hiddenSmallLink" style="color:white">full</a>', '&nbsp;', '&nbsp;'];
 $table = new Table('contentTable');
 $table->setInterlaceClass('', 'interlace');
 $data = [];
@@ -149,6 +145,9 @@ while ($row = $result->fetchObject()) {
     $data []= $row;
 }
 $j = count($data);
+if (!$count) {
+    $count = $j;
+}
 if ($count != $j) {
     $msc->pageTitle = "Таблица: $msc->table ($j строк из $count всего)";
 } else {

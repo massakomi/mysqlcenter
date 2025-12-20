@@ -29,7 +29,7 @@ class MSCenter extends DatabaseQuery
     /**
      * Общедоступная переменная для создания заголовка раздела h1
      */
-    public string $pageTitle;
+    public string $pageTitle = '';
 
     /**
      * Время timestamp начала работы программы. Используется для подсчёта времени выполнения.

@@ -12,6 +12,7 @@ if (!defined('DIR_MYSQL')) {
 }
 $fields = getFields($msc->table);
 
+
 if (GET('action') == 'add_key') {
      $fieldRows = ['' => ''];
     foreach ($fields as $field) {
@@ -47,32 +48,34 @@ if (!$dbt->isExists()) {
 }
 $msc->pageTitle = 'Структура таблицы ' . $msc->table;
 
-if (GET('print') == '1') {
-    echo 'вместо печатной версии лучше create table';
-    exit;
+
+function getKeys() {
+    global $msc;
+    $a = $msc->table != '' ? $msc->getData('
+    SELECT i.*, k.*  FROM information_schema.TABLE_CONSTRAINTS i
+    LEFT JOIN information_schema.KEY_COLUMN_USAGE k ON i.CONSTRAINT_NAME = k.CONSTRAINT_NAME 
+    WHERE  i.CONSTRAINT_TYPE = \'FOREIGN KEY\' AND i.TABLE_SCHEMA = \'' . $msc->db . '\'
+    AND i.TABLE_NAME = \'' . $msc->table . '\'
+    GROUP BY k.CONSTRAINT_NAME
+    ') : [];
+    $foreignKeys = [];
+    foreach ($a as $k => $v) {
+        $foreignKeys[$v['COLUMN_NAME']] = $v;
+    }
+    $dataKeys = $msc->table != '' ? $msc->getData('SHOW KEYS FROM `' . $msc->table . '`') : [];
+    return [$dataKeys, $foreignKeys];
+}
+$dataKeys = $foreignKeys = [];
+if ($_GET['keys']) {
+    [$dataKeys, $foreignKeys] = getKeys();
 }
 
-$a = $msc->table != '' ? $msc->getData('
-SELECT i.*, k.*  FROM information_schema.TABLE_CONSTRAINTS i
-LEFT JOIN information_schema.KEY_COLUMN_USAGE k ON i.CONSTRAINT_NAME = k.CONSTRAINT_NAME 
-WHERE  i.CONSTRAINT_TYPE = \'FOREIGN KEY\' AND i.TABLE_SCHEMA = \'' . $msc->db . '\'
-AND i.TABLE_NAME = \'' . $msc->table . '\'
-GROUP BY k.CONSTRAINT_NAME
-') : [];
-$foreignKeys = [];
-foreach ($a as $k => $v) {
-    $foreignKeys[$v['COLUMN_NAME']] = $v;
+$sqlCreateTable = '';
+$res = $msc->fetchPdo('SHOW CREATE TABLE '.$msc->table);
+if ($res) {
+    $sqlCreateTable = $res->fetch()['Create Table'];
 }
-$dataKeys = $msc->table != '' ? $msc->getData('SHOW KEYS FROM `' . $msc->table . '`') : [];
 
-// Массив полей, распечатка массива
-$fields = array_values($fields);
-$tableAddStr = ['array('];
-foreach ($fields as $k => $v) {
-    $tableAddStr [] = "&nbsp;&nbsp;&nbsp;&nbsp;'" . $v->Field . "' => ,";
-}
-$tableAddStr [] = ")";
-$tableAddStr = implode('<br />', $tableAddStr);
 
 $data = $dbt->insertDetailsTable();
 
@@ -80,13 +83,13 @@ $pageProps = [
     'db' => $msc->db,
     'table' => $msc->table,
     'addKeyUrl' => $umaker->make('s', 'tbl_struct', 'action', 'add_key'),
+    'showKeysUrl' => $umaker->make('s', 'tbl_struct', 'keys', 1),
     'addTableUrl' => $umaker->make('s', 'tbl_add'),
-    'printVersionUrl' => $umaker->make('s', 'tbl_struct', 'print', '1'),
     'data' => $fields,
     'dataKeys' => $dataKeys,
     'foreignKeys' => $foreignKeys,
     'dataDetails' => $data,
-    'tableAddStr' => "<div>$tableAddStr</div>",
+    'sqlCreateTable' => $sqlCreateTable,
     'dirImage' => MS_DIR_IMG
 ];
 if (isajax()) {

@@ -63,6 +63,42 @@ class TableList extends React.Component {
         return <img src={this.props.dirImage + src} alt="" />
     }
 
+    async tableDelete(table, e) {
+        e.preventDefault()
+        let tr = e.target.closest('tr')
+        let query = `db=${this.props.db}&table=${table}`;
+        await msQuery('tableDelete', query, () => {
+            tr.remove()
+        })
+    }
+
+    renameTable(tableOld, e) {
+        let label = e.target
+        let newName = prompt('Новое имя', tableOld)
+        if (newName) {
+            let q = `db=${this.props.db}&s=tbl_list&table=${tableOld}&newName=${newName}`;
+            msQuery('tableRename', q, () => {
+                label.innerHTML = newName
+            });
+        }
+    }
+
+    printSize(size) {
+        // меньше 1мб не нужно выводить
+        if (size < 1024*1024) {
+            return ''
+        }
+        let color = 'red'
+        // до 10мб слабже
+        if (size < 1024*1024*20) {
+            color = '#aaa'
+        } else if (size < 1024*1024*100) {
+            color = 'black'
+        }
+        let formattedSize = formatSize(size)
+        return <span title={size} style={{'color': color}}>{formattedSize}</span>
+    }
+
     renderRow(table, key) {
         // Увеличение счётчика видимых таблиц
         let sumTable = key + 1
@@ -85,7 +121,7 @@ class TableList extends React.Component {
             valueName = <span style={{color: '#aaa'}}> {valueName}</span>
         }
         // Определение размера таблицы
-        let size = Math.round((parseInt(table.Data_length) + parseInt(table.Index_length)) / 1024);
+        let size = parseInt(table.Data_length) + parseInt(table.Index_length);
         this.sumSize += parseInt(size);
         this.sumRows += parseInt(table.Rows);
         // Сборка значения рядов
@@ -96,34 +132,24 @@ class TableList extends React.Component {
 
         return (
           <tr key={table.Name} id={idRow}>
-              <td id={'row'+sumTable+'-0'}><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" onClick={checkboxer.bind(this, sumTable, '#row')} /></td>
-              <td id={'row'+sumTable+'-1'} className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name, 'row'+sumTable+'-1')}>{valueName}</label></td>
-              <td id={'row'+sumTable+'-2'}><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
-              <td id={'row'+sumTable+'-3'}><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{this.image("generate.png")}</a></td>
-              <td id={'row'+sumTable+'-4'}>
+              <td><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" onClick={checkboxer.bind(this, sumTable, '#row')} /></td>
+              <td className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name)}>{valueName}</label></td>
+              <td><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
+              <td><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{this.image("generate.png")}</a></td>
+              <td>
                   <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery)} title="Очистить таблицу">{this.image("delete.gif")}</a>
               </td>
-              <td id={'row'+sumTable+'-5'}>
-                  <a href="#" onClick={msQuery.bind(this, 'tableDelete', msquery+'&id='+idRow+'&id2='+idRow+'-9')} title="Удалить таблицу">{this.image("close.png")}</a>
+              <td>
+                  <a href="#" onClick={this.tableDelete.bind(this, table.Name)} title="Удалить таблицу">{this.image("close.png")}</a>
               </td>
-              <td id={'row'+sumTable+'-6'} className="rig">{table.Rows}</td>
-              <td id={'row'+sumTable+'-7'} className="rig">{formatSize(size)}</td>
-              <td id={'row'+sumTable+'-8'}>{updateTime}</td>
-              <td id={'row'+sumTable+'-9'} className="num">{table.Auto_increment}</td>
-              <td id={'row'+sumTable+'-10'}><span>{engine}</span></td>
-              <td id={'row'+sumTable+'-11'} className="rig"><span title={table.Collation} style={{color: '#aaa'}}>{table.Collation.substr(0, table.Collation.indexOf("_"))}</span></td>
+              <td className="rig">{table.Rows}</td>
+              <td className="rig">{this.printSize(size)}</td>
+              <td>{updateTime}</td>
+              <td className="num">{table.Auto_increment}</td>
+              <td><span>{engine}</span></td>
+              <td className="rig"><span title={table.Collation} style={{color: '#aaa'}}>{table.Collation.substr(0, table.Collation.indexOf("_"))}</span></td>
           </tr>
         )
-    }
-
-
-
-    renameTable(tableOld, id, e) {
-        let newName = prompt('Новое имя', tableOld)
-        if (newName) {
-            let q = `db=${this.props.db}&s=tbl_list&table=${tableOld}&newName=${newName}&id=${id}`;
-            msQuery('tableRename', q);
-        }
     }
 
     render() {
@@ -137,34 +163,34 @@ class TableList extends React.Component {
           <table className="contentTable interlaced">
               <thead>
               <tr>
-                  <th>&nbsp;</th>
-                  <th><b>Таблица</b></th>
-                  <th>&nbsp;</th>
-                  <th>&nbsp;</th>
-                  <th>&nbsp;</th>
-                  <th>&nbsp;</th>
-                  <th><b>Рядов</b></th>
-                  <th><b>Размер</b></th>
-                  <th><b>Дата обновления</b></th>
-                  <th><b>Ai</b></th>
+                  <th></th>
+                  <th>Таблица</th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th>Рядов</th>
+                  <th>Размер</th>
+                  <th>Дата обновления</th>
+                  <th>Ai</th>
                   <th>Engine</th>
                   <th>Cp</th>
               </tr></thead>
               <tbody>
               {trs}
               <tr>
-                  <td>&nbsp;</td>
+                  <td></td>
                   <td className="tbl">{tables.length} таблиц</td>
-                  <td>&nbsp;</td>
-                  <td>&nbsp;</td>
-                  <td>&nbsp;</td>
-                  <td>&nbsp;</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
                   <td className="rig">{Number(this.sumRows).toFixed(0)}</td>
-                  <td className="rig">{formatSize(this.sumSize)}</td>
-                  <td>&nbsp;</td>
-                  <td className="num">&nbsp;</td>
-                  <td>&nbsp;</td>
-                  <td className="rig">&nbsp;</td>
+                  <td className="rig">{this.printSize(this.sumSize)}</td>
+                  <td></td>
+                  <td className="num"></td>
+                  <td></td>
+                  <td className="rig"></td>
               </tr></tbody>
           </table>
         );
@@ -258,7 +284,6 @@ class Tbl_list extends React.Component {
               <div className="links-block">
                   <a href="?s=tbl_list&action=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
                   <a href="?s=tbl_list&action=structure">Исследование структуры таблиц</a>
-                  <a href="#" onClick={this.reload.bind(this)}>reload</a>
               </div>
               {this.props.showtableupdated > 0 &&
                 <form className="showtableupdated">

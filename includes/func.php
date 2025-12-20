@@ -747,7 +747,7 @@ function pre($arrray, $html=false) {
  */
 function msclog($message, $sql=null) {
     global $pdo;
-    $logFile = 'error.log';
+    $logFile = 'data/error.log';
     if (!file_exists($logFile)) {
         $file = @fopen($logFile, 'w+');
     } else {

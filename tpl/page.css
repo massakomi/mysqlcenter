@@ -1,7 +1,13 @@
+:root {
+  --text-color: #000000;
+  --hidden-text-color: #CCCCCC;
+  --light-text-color: #999999;
+  --head-text-color: #CC0000;
+}
 
 /* Основные стили для шаблона, используются глобально во всех страницах*/
 
-BODY {font-size:12px; font-family:Arial; }
+BODY {font-size:12px; font-family: Arial, serif; color: var(--text-color); }
 
 /* Каркасная таблица */
 .outerTable {display: flex; gap: 10px}
@@ -18,26 +24,26 @@ BODY {font-size:12px; font-family:Arial; }
 div.globalMenu { display:inline; }
 div.globalMenu A, .globalMenu A.cur { margin:0 10px 0 0; text-decoration:none}
 div.globalMenu A:hover { text-decoration:underline}
-div.globalMenu .delim {  margin:0 10px 0 0; text-decoration:none; }
+div.globalMenu .delim {  margin:0 10px 0 0; text-decoration:none; color: var(--hidden-text-color)}
 div.globalMenu A.cur { text-decoration:underline; margin:0 10px 0 0;}
 
 /* Меню цепочка */
-SPAN.menuChain A { text-decoration:none}
-SPAN.menuChain A:hover { }
+SPAN.menuChain A { text-decoration:none; color: var(--light-text-color)}
+SPAN.menuChain A:hover {color: var(--text-color)}
 
 /* Меню таблиц */
 div.menuTables { position: relative}
 div.menuTables A { font-size:10px; text-decoration:none; line-height:120%; display:block}
 div.menuTables A:hover { text-decoration:underline}
-div.menuTables A.cur { }
-div.menuTables .t1 { margin-left:5px; }
+div.menuTables A.cur {color: var(--head-text-color)}
+div.menuTables .t1 { margin-left:5px; color: var(--text-color)}
 div.menuTables .t2 { }
 div.menuTables .freq0 {color: #ccc}
 div.menuTables .freq1 {color: #aaa}
 div.menuTables .freq2 {color: #888} /* fedcba9876543210 */
 
 /* Меню баз данных */
-div#dbHiddenMenu { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid #aaa}
+div#dbHiddenMenu { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid #aaa; color: var(--text-color)}
 div#dbHiddenMenu A { font-size:12px}
 div#dbHiddenMenu A:hover {color:black}
 
@@ -48,7 +54,7 @@ form.formSearch input.img { margin:0; border:0; vertical-align:middle}
 
 /* Блок страницы */
 div.pageBlock { padding:5px; margin: 5px 0; }
-div.pageBlock B A { text-decoration:none; }
+div.pageBlock B A { text-decoration:none; color: var(--text-color)}
 
 /* Форма SQL запроса всплывающая */
 form.popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px}
@@ -59,13 +65,13 @@ form.popupGeneralForm input { text-align:right; margin:5px 0 }
 table.globalMessage { margin:5px 0; border-collapse:collapse; empty-cells:show}
 table.globalMessage td, .globalMessage th { padding: 5px; font-size:12px;}
 table.globalMessage th {text-align:left; }
-table.globalMessage .sqlQuery { font-size:10px; font-weight:bold; margin:2px 10px; white-space:pre}
+table.globalMessage .sqlQuery { font-size:10px; font-weight:bold; margin:2px 10px; white-space:pre; max-width: 1024px; overflow: auto;}
 table.globalMessage .mysqlError { font-size:10px; font-weight:bold; }
 
 /* Отображения времени выполнения */
-span.hiddenText { }
+span.hiddenText {color: var(--hidden-text-color)}
 /* Для ссылок */
-A.hiddenSmallLink { text-decoration:none; font-size:10px}
+A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
 
 
 /* Прочие стили */
@@ -74,7 +80,7 @@ A.hiddenSmallLink { text-decoration:none; font-size:10px}
 /* Таблица основная */
 table.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
 table.contentTable TD { padding: 3px; font-size:12px}
-table.contentTable th { padding: 3px; font-size:12px; text-align:left; white-space:nowrap}
+table.contentTable th { padding: 3px; font-size:12px; text-align:left; white-space:nowrap; color: var(--head-text-color)}
 table.contentTable th:not(.wide) span {display: block}
 table.contentTable .cb { margin:0; width:18px; height:18px}
 table.contentTable .sort { text-decoration:none; font-size:10px}
@@ -82,42 +88,43 @@ table.contentTable .sort:hover { text-decoration:underline}
 table.contentTable .tbl { width:200px; font-size:14px}
 table.contentTable .num { width:80px; text-align:right;}
 table.contentTable .rig { text-align:right;}
-table.contentTable A { text-decoration:none}
+table.contentTable a { text-decoration:none}
 table.optionstable {empty-cells:show; border-collapse:collapse;}
 table.optionstable th {background-color: #eee}
 table.optionstable th, table.optionstable td {border:1px solid #ccc; padding: 2px 4px; vertical-align: top;}
 /* db_compare tbl_compare */
 .contentTable .r {text-align:right}
 .contentTable .b { font-size:14px;}
-.contentTable .diff TD{ background-color:#FF3333; color:#FFFFFF}
-.contentTable.anone A { text-decoration:none}
+.contentTable .diff td{ background-color:#FF3333; color:#FFFFFF}
+.contentTable.anone a { text-decoration:none}
 .contentTable .e { background-color: #afa}
 .contentTable .n { background-color: #faa}
 
 /* Таблица с формой */
 form.tableFormEdit { margin:10px 0}
 form.tableFormEdit table { border-collapse:collapse; empty-cells:show}
-form.tableFormEdit TD { padding: 2px 2px; font-size:12px; white-space:nowrap; vertical-align:middle}
-form.tableFormEdit TH { font-size:12px; white-space:nowrap}
-form.tableFormEdit .editHeader TD { font-size:14px; font-weight:bold; white-space:nowrap; padding:5px}
+form.tableFormEdit td { padding: 2px 2px; font-size:12px; white-space:nowrap; vertical-align:middle}
+form.tableFormEdit th { font-size:12px; white-space:nowrap; color: var(--head-text-color)}
+form.tableFormEdit .editHeader td { font-size:14px; font-weight:bold; white-space:nowrap; padding:5px}
 form.tableFormEdit .si,
     form.tableFormEdit input,
-    form.tableFormEdit SELECT { padding:5px}
+    form.tableFormEdit select { padding:5px}
 form.tableFormEdit .field { font-size:14px}
 form.tableFormEdit .submit { display:block; margin:5px 0}
-form.tableFormEdit TEXTAREA#sqlContent { font-size:12px; width:99%; padding:5px }
-form.tableFormEdit TD.inner { padding: 0; }
+form.tableFormEdit textarea#sqlContent { font-size:12px; width:99%; padding:5px }
+form.tableFormEdit td.inner { padding: 0; }
 
 /* Таблица экспорт и поиск */
-table.tableExport { border-collapse:collapse; empty-cells:show; width:100%; line-height:180%;}
-table.tableExport td, .tableExport th { font-size:14px; white-space:nowrap; padding:5px}
-table.tableExport .sel { font-size:14px; height:150px}
-table.tableExport .hs { font-size:12px; text-decoration:none; margin:0 5px}
-table.tableExport .l2 { margin:0 0 0 24px}
-table.tableExport .ta { font-size:10px}
+.tableExport {display: flex; gap: 20px}
+.tableExport .sel { font-size:14px; height:150px}
+.tableExport .hs { font-size:12px; text-decoration:none; margin:0 5px; color: var(--light-text-color)}
+.tableExport .l2 { margin:0 0 0 24px}
+.tableExport .ta { font-size:10px}
+[name="formExport"] {margin-top: 20px; font-size:14px; white-space:nowrap; line-height:180%;}
+[name="formExport"] .options {display: flex; gap: 20px;}
 [name="formExport"] label { display:block}
 [name="formExport"] label .l2 { margin-left:24px}
-[name="formExport"] table.tableExport .l2 {margin-right: 5px}
+[name="formExport"] .tableExport .l2 {margin-right: 5px}
 [name="formExport"] [name="fields[]"] {height:120px; width:150px;}
 #search_table select {margin-right: 10px}
 
@@ -130,19 +137,19 @@ fieldset.msGeneralForm input.submit { display:block; margin-top:5px;}
 
 /* Блок с картинками сабмит: db_list, tbl_data, tbl_struct, tbl_list */
 div.imageAction { margin:20px 0}
-div.imageAction IMG, div.imageAction input{ margin:0 0 0 20px; vertical-align:text-top }
-div.imageAction IMG {cursor:pointer}
-div.imageAction U { font-weight:bold; font-size:14px}
-div.chbxAction {font-size:12px; margin:5px;}
-IMG.helpimg {cursor:pointer}
+div.imageAction img, div.imageAction input{ margin:0 0 0 20px; vertical-align:text-top }
+div.imageAction img {cursor:pointer}
+div.imageAction u { font-weight:bold; font-size:14px}
+div.chbxAction {font-size:12px; margin:5px; color: var(--light-text-color)}
+img.helpimg {cursor:pointer}
 
 /* Страницы-ссылки для tbl_data */
 div.contentPageLinks { margin:5px 0 0;}
 div.contentPageLinks a { text-decoration:none; font-size:10px; margin: 0; padding: 2px 5px; border:1px solid #eee; margin-right: 2px}
 div.contentPageLinks a.cur { background-color: #0000FF; color:#FFFFFF}
 /* Селектор для tbl_data */
-SELECT.miniSelector { font-size:12px;}
-SELECT.miniSelector OPTION { font-size:12px;}
+select.miniSelector { font-size:12px;}
+select.miniSelector option { font-size:12px;}
 
 /* tbl_list */
 form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left:3px}
@@ -150,8 +157,15 @@ form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left
 .links-block a + a {margin-left: 10px}
 table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
 
+/* Разное */
 #msAjaxQueryDiv {position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
+h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
+.dateString {color: var(--head-text-color)}
+a.truncate { color: var(--text-color)!important}
+a.delete { color: var(--head-text-color)!important}
+textarea.wide {width: 100%; height: 100px}
 
+/* Loader */
 .loader {
   border: 15px solid #CCCCCC; /* Light grey */
   border-top: 15px solid #CC0000; /* Blue */
@@ -168,7 +182,7 @@ table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
   100% { transform: rotate(360deg); }
 }
 
-h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
+/* Utilities */
 .grey {color:#aaa}
 .mb-5 {margin-bottom: 5px;}
 .mt-10 {margin-top: 10px}
@@ -178,3 +192,49 @@ h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; wid
 .w95 {width: 95%}
 .mr10 {margin-right: 10px}
 .print_r {color:#666; border:1px solid #ccc; padding:10px;}
+
+
+
+
+/* Цвета */
+
+A,
+TABLE.contentTable A,
+DIV#dbHiddenMenu A,
+DIV.globalMenu A       { color:#0000FF }
+DIV.globalMenu A.cur,
+DIV.menuTables .t2     { color:green   }
+DIV.formSet H2         { color:#FFFFFF }
+
+TABLE.globalMessage .mysqlError { color:#FF0000 }
+
+/* Фон */
+
+BODY,
+FORM.popupGeneralForm  { background-color:#FFFFFF }
+
+DIV#dbHiddenMenu { background-color:#eee }
+
+TABLE.globalMessage th,
+TABLE.contentTable TH,
+FORM.tableFormEdit .editHeader TD,
+FORM.tableFormEdit TH  { background-color:#CCCCCC }
+
+.interlace   { background-color:#eee }
+.selectedRow { background-color:#eea}
+
+/* Рамка */
+
+FORM.popupGeneralForm,
+TABLE.globalMessage td,
+.globalMessage th,
+TABLE.contentTable TH,
+FORM.tableFormEdit TH  { border: 1px solid #000  }
+
+FORM.formSearch INPUT,
+TABLE.contentTable TD  { border: 1px solid #ccc  }
+
+DIV.pageBlock,
+FORM.tableFormEdit TD  { border: 1px solid #eee  }
+
+FORM.tableFormEdit .si { border: 1px solid #666  }

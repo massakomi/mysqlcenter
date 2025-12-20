@@ -26,9 +26,6 @@ class PageLayout
         $component = ucfirst($action);
         ?>
         <div id="root"></div>
-        <?php if ($action == 'export' || $action == 'exportSp') { ?>
-        <script type="text/babel" src="/js/export/options.js"></script>
-        <?php } ?>
         <script type="text/babel" src="/pages/<?= $action ?>.js"></script>
         <script type="text/babel">
             let options = <?=json_encode($pageProps)?>;
@@ -300,7 +297,7 @@ class PageLayout
     /**
      * Цепочка-меню
      */
-    function getChainMenu()
+    function getChainMenu(): string
     {
         global $msc;
         $chain = '<a href="?s=db_list">DB</a>';

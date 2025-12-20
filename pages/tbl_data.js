@@ -178,7 +178,7 @@ class TableLinks extends React.Component {
 
         let count = this.props.count
         let part = this.props.part
-        if (count <= part && !getPart) {
+        if (!part || count <= part && !getPart) {
             return false;
         }
 

@@ -11,7 +11,6 @@
     let debug = '1';
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>page.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>color.white.css" />
     <link rel="shortcut icon" href="/favicon.ico"/>
 
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->

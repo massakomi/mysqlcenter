@@ -130,8 +130,8 @@ if ($msc->page == 'exportSp') {
         $cSet = $msct->getSetInfo(GET('set'));
         $data = [];
         if ($msc->db) {
-            $result = $msc->fetchPdo('SHOW TABLE STATUS FROM '.$msc->db);
-            while ($o = $result->fetchObject($result)) {
+            $result = $msc->getData('SHOW TABLE STATUS FROM '.$msc->db, PDO::FETCH_OBJ);
+            foreach ($result as $o) {
                 $o->Fields = getFields($o->Name);
                 $data []= $o;
             }
