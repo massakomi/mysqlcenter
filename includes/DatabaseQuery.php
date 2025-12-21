@@ -110,9 +110,6 @@ class DatabaseQuery
      */
     public function loqQuery($sql, $result = null)
     {
-        if (!MS_LOG_ALLOW) {
-            return false;
-        }
         if (!$result || preg_match('~^(SHOW|SELECT|SET)~i', trim($sql))) {
             return false;
         }

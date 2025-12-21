@@ -1,12 +1,13 @@
 <?php /* @var $this PageLayout */ ?>
 <?php /* @var $msc MSCenter */ ?>
+<?php /* @var $umaker UrlMaker */ ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title><?php echo $msc->getWindowTitle()?></title>
-    <script language="javascript" src="<?php echo MS_DIR_JS?>jquery-2.2.4.min.js"></script>
-    <script language="JavaScript" src="<?php echo MS_DIR_JS?>MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
+    <script language="javascript" src="/js/lib/jquery-2.2.4.min.js"></script>
+    <script language="JavaScript" src="/js/MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
     <script language="javascript">
     let debug = '1';
     </script>
@@ -14,16 +15,16 @@
     <link rel="shortcut icon" href="/favicon.ico"/>
 
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-    <script src="/js/react.development.js" crossorigin></script>
-    <script src="/js/react-dom.development.js" crossorigin></script>
-    <script src="/js/react-babel.min.js"></script>
-    <script type="text/babel" src="/js/components.js"></script>
+    <script src="/js/lib/react.development.js" crossorigin></script>
+    <script src="/js/lib/react-dom.development.js" crossorigin></script>
+    <script src="/js/lib/react-babel.min.js"></script>
+    <script src="/js/components.js" type="text/babel"></script>
 </head>
 <body>
 <div class="loader"></div>
 <div class="pageBlock">
   <b id="appNameId"><a href="?db_list"><?php echo MS_APP_NAME?></a></b> &nbsp; &nbsp;
-<?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;
+    <?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;
   <span class="hiddenText" onclick="msDisplaySql()" title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
   <span class="menuChain"><?php echo $this->getChainMenu()?></span>
 </div>
@@ -53,11 +54,14 @@
                     </form>
                     <?php
                 }
-                $url = '?db='.$msc->db.'&s=search';
+                if ($msc->db) {
                 ?>
-                <form action="<?php echo $url?>" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
-                <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''; this.style.width='auto'" style="width: 100px" />
-                </form>
+                    <form action="?db=<?=$msc->db?>&s=search" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
+                        <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''; this.style.width='auto'" style="width: 100px" />
+                    </form>
+                <?php
+                }
+                ?>
             </div>
         </div>
     <?php

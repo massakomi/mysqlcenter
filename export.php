@@ -15,6 +15,8 @@ if (!defined('DIR_MYSQL')) {
 
 $msct = new MSTable;
 
+list($vi, $vs) = getServerVersion();
+
 // шапка дампа
 $dumpHeader =
 '-- '.MS_APP_NAME.' SQL Экспорт
@@ -22,7 +24,7 @@ $dumpHeader =
 --
 -- Хост: '.DB_HOST.'
 -- Время создания: '.date('j.m.Y, H-i').'
--- Версия сервера: '.PMA_MYSQL_STR_VERSION.'
+-- Версия сервера: '.$vs.'
 -- Версия PHP: '.phpversion().'
 -- 
 -- БД: `'.$msc->db.'`

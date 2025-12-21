@@ -37,56 +37,30 @@ if (conf('errorlog') == '1') {
 
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше
 
-/**
- *    Конфигурация
- */
-
-// 1. загрузка локального конфига
-if (!file_exists(DIR_MYSQL . 'config_local.php')) {
-    exitError('File "config_local.php" was not founded<br />
-    You need to create this file with db config parameters LIKE this: <br /> <br />
-    define("DB_HOST",       "localhost"); <br />
-    define("DB_USERNAME",   "user_name"); <br />
-    define("DB_PASSWORD",   "");
-');
-}
-include DIR_MYSQL . 'config_local.php';
-
-if (isset($_GET['s']) && $_GET['s'] == 'logout') {
-    setcookie('msc_pass', '', time(), '/');
-    setcookie('msc_user', '', time(), '/');
-    unset($_SESSION['msc_user'], $_SESSION['msc_pass']);
-    header('Location: ' . $_SERVER['PHP_SELF']);
-}
-
-// 2. проверка пользователя на знание логина и пароля к базе
-// На удаленном-ремоте сервере проверяем, чтобы входили только под конфигурац. данными
-if (!defined('MSC_LOCAL_USE')) {
-    $enterErrors = array();
-    if (isset($_POST['pass']) && isset($_POST['user'])) {
-        if ($_POST['user'] != DB_USERNAME) {
-            $enterErrors [] = 'Username is not equal config param DB_USERNAME';
-        }
-        if ($_POST['pass'] != DB_PASSWORD) {
-            $enterErrors [] = 'Password is not equal config param DB_PASSWORD';
-        }
-    }
-    // не вошли
-    if (count($enterErrors) != 0) {
-        $errorMessage = '<strong>You are not entered</strong> <br />';
-        $errorMessage .= implode('<br />', $enterErrors);
-        //$pagel->loginPage($errorMessage);
-        exit;
-    }
-}
-
-if (array_key_exists('cookies', $_POST)) {
-    $_COOKIE = $_POST['cookies'];
-}
+$auth = new Auth();
 
 global $msc, $umaker, $pagel, $pdo;
 
 $msc->init();
+
+// Настройки
+define('MS_APP_NAME', 'MySQL React');
+define('MS_APP_VERSION', substr('$Revision: 1.124 $', 10, 6));
+// Настройки 2
+define('MS_DEFAULT_PART', conf('rpage'));
+define('MS_LIST_LINKS_RANGE', conf('linksrange'));
+define('MS_HEAD_WRAP', conf('headwrap'));
+define('MS_TEXT_CUT', conf('textcut'));
+define('MS_ROWS_INSERT', conf('insertrows'));
+define('MS_DATE_FORMAT', conf('datetimeformat'));
+define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
+define('MS_FIELDS_COUNT', conf('fieldsmax'));
+define('MS_NULL_DESIGN', conf('nulldesign'));
+define('MAX_UPLOAD_SIZE', getMaxUploadSize());
+
+if (!$msc->connected()) {
+    return;
+}
 
 // 3. проверка соединения с базой
 try {
@@ -98,40 +72,7 @@ try {
     exitError('Unable to pdo-connect to database on "' . DB_HOST . '" as ' . DB_USERNAME . '<br />' . $e->getMessage());
 }
 
-// Если вошли нормально записываем значения в куки
-if (isset($_POST['pass']) && isset($_POST['user'])) {
-    // В куки пишем только если заходят с конфигурационных данных, и куки еще не записаны
-    if (DB_PASSWORD == $_POST['pass'] && md5(DB_PASSWORD) != @$_COOKIE['msc_pass']) {
-        setcookie('msc_user', $_POST['user'], time() + 14 * 3600 * 24, '/');
-        setcookie('msc_pass', md5($_POST['pass']), time() + 14 * 3600 * 24, '/');
-        $_COOKIE ['msc_user'] = $_POST['user'];
-        $_COOKIE ['msc_pass'] = md5($_POST['pass']);
-    }
-    $_SESSION['msc_user'] = $_POST['user'];
-    $_SESSION['msc_pass'] = $_POST['pass'];
-}
+$auth->afterConnect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
 $msc->selectDb($msc->getCurrentDatabase());
-
-// DEFINES
-
-// Настройки
-define('MS_APP_NAME', 'MySQL React');
-define('MS_APP_VERSION', substr('$Revision: 1.124 $', 10, 6));
-
-// Настройки 2
-define('MS_DEFAULT_PART', conf('rpage'));
-define('MS_LIST_LINKS_RANGE', conf('linksrange'));
-define('MS_HEAD_WRAP', conf('headwrap'));
-define('MS_TEXT_CUT', conf('textcut'));
-define('MS_ROWS_INSERT', conf('insertrows'));
-define('MS_DATE_FORMAT', conf('datetimeformat'));
-define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
-define('MS_FIELDS_COUNT', conf('fieldsmax'));
-define('MS_NULL_DESIGN', conf('nulldesign'));
-
-list($vi, $vs) = getServerVersion();
-define('PMA_MYSQL_INT_VERSION', $vi);
-define('PMA_MYSQL_STR_VERSION', $vs);
-define('MAX_UPLOAD_SIZE', getMaxUploadSize());

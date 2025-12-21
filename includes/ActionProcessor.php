@@ -37,6 +37,9 @@ class ActionProcessor
     public function __construct($isAjax = false)
     {
         global $msc;
+        if (!$msc->connected()) {
+            return false;
+        }
 
         if ($isAjax) {
             //$this->params  = $_POST;

@@ -91,6 +91,9 @@ class MSCenter extends DatabaseQuery
      */
     public function getCurrentDatabase()
     {
+        if (!$this->connected()) {
+            return null;
+        }
         $db = GET('db') ?: POST('db');
         if ($db != '') {
             if ($this->db != $db) {
@@ -116,6 +119,14 @@ class MSCenter extends DatabaseQuery
     }
 
     /**
+     * @return bool
+     */
+    public function connected(): bool
+    {
+        return defined('DB_HOST');
+    }
+
+    /**
      * Возвращает текущую таблицу, вызывается при инициализации
      * @access private
      */
@@ -133,9 +144,13 @@ class MSCenter extends DatabaseQuery
      */
     function getCurrentPage()
     {
-        $defaultPage = 'tbl_list';
-        if (conf('tblliststart') == '0' || !$this->db) {
-            $defaultPage = 'db_list';
+        if (!$this->connected()) {
+            $defaultPage = 'login';
+        } else {
+            $defaultPage = 'tbl_list';
+            if (conf('tblliststart') == '0' || !$this->db) {
+                $defaultPage = 'db_list';
+            }
         }
         if ($this->page == null) {
             if (count($_GET) > 0) {

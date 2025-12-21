@@ -49,55 +49,52 @@ function get_databases_full($database=null, $force_stats=false, $sort_by='SCHEMA
 
     $apply_limit_and_order_manual = true;
 
-    if (PMA_MYSQL_INT_VERSION >= 50002) {
-        $limit = '';
+    $limit = '';
 
-        // get table information from information_schema
-        if ($database) {
-            $sql_where_schema = 'WHERE `SCHEMA_NAME` LIKE \''. addslashes($database) . '\'';
-        } else {
-            $sql_where_schema = '';
-        }
-
-        // for PMA bc:
-        // `SCHEMA_FIELD_NAME` AS `SHOW_TABLE_STATUS_FIELD_NAME`
-        $sql = '
-             SELECT `information_schema`.`SCHEMATA`.*';
-        if ($force_stats) {
-            $sql .= ',
-                    COUNT(`information_schema`.`TABLES`.`TABLE_SCHEMA`)
-                        AS `SCHEMA_TABLES`,
-                    SUM(`information_schema`.`TABLES`.`TABLE_ROWS`)
-                        AS `SCHEMA_TABLE_ROWS`,
-                    SUM(`information_schema`.`TABLES`.`DATA_LENGTH`)
-                        AS `SCHEMA_DATA_LENGTH`,
-                    SUM(`information_schema`.`TABLES`.`MAX_DATA_LENGTH`)
-                        AS `SCHEMA_MAX_DATA_LENGTH`,
-                    SUM(`information_schema`.`TABLES`.`INDEX_LENGTH`)
-                        AS `SCHEMA_INDEX_LENGTH`,
-                    SUM(`information_schema`.`TABLES`.`DATA_LENGTH`
-                      + `information_schema`.`TABLES`.`INDEX_LENGTH`)
-                        AS `SCHEMA_LENGTH`,
-                    SUM(`information_schema`.`TABLES`.`DATA_FREE`)
-                        AS `SCHEMA_DATA_FREE`';
-        }
-        $sql .= ' FROM `information_schema`.`SCHEMATA`';
-        if ($force_stats) {
-            $sql .= '
-          LEFT JOIN `information_schema`.`TABLES`
-                 ON BINARY `information_schema`.`TABLES`.`TABLE_SCHEMA`
-                  = BINARY `information_schema`.`SCHEMATA`.`SCHEMA_NAME`';
-        }
-        $sql .= '
-              ' . $sql_where_schema . '
-           GROUP BY BINARY `information_schema`.`SCHEMATA`.`SCHEMA_NAME`
-           ORDER BY BINARY `' . $sort_by . '` ' . $sort_order
-           . $limit;
-        $databases = $msc->fetchPdo($sql)->fetchAll();
-        unset($sql_where_schema, $sql, $drops);
+    // get table information from information_schema
+    if ($database) {
+        $sql_where_schema = 'WHERE `SCHEMA_NAME` LIKE \''. addslashes($database) . '\'';
     } else {
-        return array();
+        $sql_where_schema = '';
     }
+
+    // for PMA bc:
+    // `SCHEMA_FIELD_NAME` AS `SHOW_TABLE_STATUS_FIELD_NAME`
+    $sql = '
+         SELECT `information_schema`.`SCHEMATA`.*';
+    if ($force_stats) {
+        $sql .= ',
+                COUNT(`information_schema`.`TABLES`.`TABLE_SCHEMA`)
+                    AS `SCHEMA_TABLES`,
+                SUM(`information_schema`.`TABLES`.`TABLE_ROWS`)
+                    AS `SCHEMA_TABLE_ROWS`,
+                SUM(`information_schema`.`TABLES`.`DATA_LENGTH`)
+                    AS `SCHEMA_DATA_LENGTH`,
+                SUM(`information_schema`.`TABLES`.`MAX_DATA_LENGTH`)
+                    AS `SCHEMA_MAX_DATA_LENGTH`,
+                SUM(`information_schema`.`TABLES`.`INDEX_LENGTH`)
+                    AS `SCHEMA_INDEX_LENGTH`,
+                SUM(`information_schema`.`TABLES`.`DATA_LENGTH`
+                  + `information_schema`.`TABLES`.`INDEX_LENGTH`)
+                    AS `SCHEMA_LENGTH`,
+                SUM(`information_schema`.`TABLES`.`DATA_FREE`)
+                    AS `SCHEMA_DATA_FREE`';
+    }
+    $sql .= ' FROM `information_schema`.`SCHEMATA`';
+    if ($force_stats) {
+        $sql .= '
+      LEFT JOIN `information_schema`.`TABLES`
+             ON BINARY `information_schema`.`TABLES`.`TABLE_SCHEMA`
+              = BINARY `information_schema`.`SCHEMATA`.`SCHEMA_NAME`';
+    }
+    $sql .= '
+          ' . $sql_where_schema . '
+       GROUP BY BINARY `information_schema`.`SCHEMATA`.`SCHEMA_NAME`
+       ORDER BY BINARY `' . $sort_by . '` ' . $sort_order
+       . $limit;
+    $databases = $msc->fetchPdo($sql)->fetchAll();
+    unset($sql_where_schema, $sql, $drops);
+
 
     //apply limit and order manually now
     //(caused by older MySQL < 5 or $GLOBALS['cfg']['NaturalOrder'])

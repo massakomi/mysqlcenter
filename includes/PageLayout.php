@@ -8,19 +8,14 @@
  */
 class PageLayout
 {
-
-    /**
-     * Констркутор
-     */
-    function __construct()
+    public function __construct()
     {
-        global $msc;
     }
 
     /**
      * {}
      */
-    public function template($pageProps=[])
+    public function template($pageProps = []): void
     {
         $action = $this->getPageForTemplate();
         $component = ucfirst($action);
@@ -67,87 +62,77 @@ class PageLayout
      */
     public function display()
     {
-        global $msc, $umaker; // umaker нужны!
+        global $msc;
         $currentHandler = $this->_getHandler();
         $currentPage = $msc->getCurrentPage();
+
+        if (!$msc->connected()) {
+            $contentMain = $this->getContentByHandler('login');
+            include(MS_DIR_TPL . '_skin1.htm.php');
+            return;
+        }
+
         if ($currentHandler == null) {
             $msc->page = 'db_list';
             $msc->addMessage('Страница не найдена');
             $currentHandler = $this->_getHandler();
         }
 
-        global $debugger;
-        if (isset($debugger)) $debugger->et('До контента');
-
         $msc->dbViewStat();
 
         if (isajax()) {
-
-            if (array_key_exists('init', $_GET)) {
-                $data = [
-                    /*'main' => [
-                        'handler' => $currentHandler,
-                        'page' => $msc->page,
-                        'db' => $msc->db,
-                        'table' => $msc->table,
-                    ],*/
-
-                    'messages' => $msc->getMessagesData(),
-                    'databases' => Server::getDatabasesWithoutHidden(),
-
-                    'DB_HOST' => DB_HOST,
-                    'DB_USERNAME' => DB_USERNAME,
-                ];
-            } else {
-                $pageProps = [];
-                if (!array_key_exists('init', $_GET)) {
-                    $pageProps = include $currentHandler;
-                }
-                if (!is_array($pageProps)) {
-                    $pageProps = [];
-                }
-                $data = [
-                    'page' => $pageProps,
-                    'messages' => $msc->getMessagesData(),
-                ];
-            }
-
-            ajaxResult($data);
+            $this->ajaxResult($currentHandler);
         }
 
-        // Получаем контент
-        $contentMain = null;
-        ob_start();
-        include $currentHandler;
-        $contentMain = ob_get_contents();
-        ob_clean();
-        // Буферизация
-        // выключил, т.к. на одном сервере возникла ошибка, что этот механизм запрещен
-        //$hae = isset($_SERVER['HTTP_ACCEPT_ENCODING']) ? $_SERVER['HTTP_ACCEPT_ENCODING'] : '';
-        //if (extension_loaded('zlib') && (strpos($hae, 'gzip') !== false || strpos($hae, 'deflate') !== false)) {
-        //	@ob_start('ob_gzhandler');
-        //}
-        global $debugger;
-        if (isset($debugger)) $debugger->et('До скина');
-        // Скин
+        $contentMain = $this->getContentByHandler($currentHandler);
+
         include(MS_DIR_TPL . '_skin1.htm.php');
     }
 
     /**
-     * @param string $errorMessage
+     * @param $handler
+     * @return string
      */
-    function loginPage($errorMessage = '')
+    public function getContentByHandler($handler): string
     {
-        if (isajax()) {
-            $data = [
-                'messages' => $errorMessage,
-                'getWindowTitle' => 'Login to MysqlCenter',
-                'page' => 'login',
-                'post' => $_POST,
-            ];
-            exit(json_encode($data));
+        global $msc, $umaker; // нужны в подключаемом хендлере
+        $contentMain = null;
+        ob_start();
+        if ($handler == 'login') {
+            $this->template([]);
+        } else {
+            include $handler;
         }
-        include(MS_DIR_TPL . 'login.htm');
+        $contentMain = ob_get_contents();
+        ob_clean();
+        return $contentMain;
+    }
+
+    /**
+     * @param $currentHandler
+     * @return void
+     */
+    public function ajaxResult($currentHandler): void
+    {
+        global $msc;
+        if (array_key_exists('init', $_GET)) {
+            $data = [
+                'messages' => $msc->getMessagesData(),
+                'databases' => Server::getDatabasesWithoutHidden(),
+                'DB_HOST' => DB_HOST,
+                'DB_USERNAME' => DB_USERNAME,
+            ];
+        } else {
+            $pageProps = include $currentHandler;
+            if (!is_array($pageProps)) {
+                $pageProps = [];
+            }
+            $data = [
+                'page' => $pageProps,
+                'messages' => $msc->getMessagesData(),
+            ];
+        }
+        ajaxResult($data);
     }
 
     /**
@@ -189,7 +174,11 @@ class PageLayout
         // если указан только раздел в строке запроса, выводим меню Сервер
         // чтобы при входе показать меню БД, а в db_list - меню Сервера
         $type = 'table';
-        if ((GET('s') == 'db_list' || $msc->page == 'db_list' || $msc->page == 'users') || substr(GET('s'), 0, 7) == 'server_') {
+        if (!$msc->connected()) {
+            $dbMenu = [
+                'ввести доступы к базе данных' => array('login', ''),
+            ];
+        } elseif ((GET('s') == 'db_list' || $msc->page == 'db_list' || $msc->page == 'users') || substr(GET('s'), 0, 7) == 'server_') {
             $type = 'server';
             $dbMenu = array_merge(array(
                 'базы данных' => array('db_list', ''),
@@ -300,6 +289,9 @@ class PageLayout
     function getChainMenu(): string
     {
         global $msc;
+        if (!$msc->connected()) {
+            return 'нет подключения к БД';
+        }
         $chain = '<a href="?s=db_list">DB</a>';
         if ($msc->db != null) {
             $chain .= ' &nbsp; <a href="?s=tbl_list&db=' . $msc->db . '&action=structure">&#8250;</a> &nbsp; <a href="?s=tbl_list&db=' . $msc->db . '">' . $msc->db . '</a>';
@@ -324,8 +316,7 @@ class PageLayout
         }
         $menuTables = null;
         $selectorTables = null;
-        global $debugger;
-        if (isset($debugger)) $debugger->et('До getCashedTablesArray');
+
         $tables = DatabaseTable::getCashedTablesArray();
         if (count($tables) == 0) {
             return 'Нет таблиц в БД';

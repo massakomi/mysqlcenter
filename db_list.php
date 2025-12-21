@@ -113,6 +113,8 @@ if ($showFullInfo) {
     }
 }
 
+list($vi, $vs) = getServerVersion();
+
 $pageProps = [
     'databases' => $dbs,
     'hiddens' => $hidden,
@@ -124,7 +126,7 @@ $pageProps = [
     'url' => MS_URL,
     'dbname' => $msc->db,
     'phpversion' => phpversion(),
-    'mysqlVersion' => PMA_MYSQL_STR_VERSION,
+    'mysqlVersion' => $vs,
 ];
 if (isajax()) {
     return $pageProps;
