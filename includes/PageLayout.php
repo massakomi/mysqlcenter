@@ -95,7 +95,7 @@ class PageLayout
      */
     public function getContentByHandler($handler): string
     {
-        global $msc, $umaker; // нужны в подключаемом хендлере
+        global $msc, $umaker; // нужны в подключаемом хендлере, не везде там прописаны глобалы
         $contentMain = null;
         ob_start();
         if ($handler == 'login') {

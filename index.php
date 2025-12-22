@@ -7,10 +7,9 @@ const DIR_MYSQL = './';
 
 require_once DIR_MYSQL . 'config.php';
 
-$pagel = new PageLayout();
 $actPro = new ActionProcessor();
-$umaker = new UrlMaker();
 
+$pagel = new PageLayout();
 $pagel->display();
 
 

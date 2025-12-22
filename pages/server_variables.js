@@ -18,12 +18,12 @@ class Server_variables extends React.Component {
         let sql = 'SHOW SESSION VARIABLES';
         let mode = 'querysql'
         let type = 'pair-value'
-        let sessionVars = await querySql({sql, mode, type}, 'json')
+        let sessionVars = await msQuery(mode, {sql, type})
         //console.log(sessionVars)
         sql = 'SHOW GLOBAL VARIABLES';
         mode = 'querysql'
         type = 'pair-value'
-        let globalVars = await querySql({sql, mode, type}, 'json')
+        let globalVars = await msQuery(mode, {sql, type})
         this.setState({globalVars, sessionVars})
     }
 

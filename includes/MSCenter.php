@@ -314,15 +314,11 @@ showhide("' . $messageId . '");
         }
     }
 
-    private $popularTablesFile = 'data/popular.json';
+    private $popularTablesFile = 'docs/popular.json';
 
     public function getPopularTables(): array
     {
         if (!file_exists($this->popularTablesFile) || !$this->db) {
-            return [];
-        }
-        if ($_GET['resetPopular']) {
-            unlink($this->popularTablesFile);
             return [];
         }
         $json = file_get_contents($this->popularTablesFile);
@@ -330,16 +326,16 @@ showhide("' . $messageId . '");
         if (!array_key_exists($this->db, $json)) {
             $json[$this->db] = [];
         }
+        if ($_GET['resetPopular']) {
+            unset($json[$this->db]);
+            file_put_contents($this->popularTablesFile, json_encode($json));
+        }
         ksort($json[$this->db]);
         foreach ($json[$this->db] as $table => $values) {
             if (!is_array($values)) {
                 $json[$this->db][$table] = ['count' => $values];
             }
         }
-
-        // $sum = array_sum($json);
-        //var_dump($sum / 20);
-        //echo '<pre>'; print_r($json); echo '</pre>'; exit;
         return $json;
     }
 

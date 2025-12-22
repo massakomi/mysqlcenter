@@ -25,7 +25,7 @@ const MS_DIR_IMG = 'tpl/images/';
 const MS_DIR_JS = 'js/';
 const MS_DIR_CSS = 'tpl/';
 
-const MS_CONFIG_FILE = 'includes/config.txt';
+const MS_CONFIG_FILE = 'docs/config.txt';
 const MS_CHARACTER_SET = 'utf8';
 const MS_COLLATION = 'utf8_general_ci';
 
@@ -36,7 +36,7 @@ if (conf('errorlog') == '1') {
 }
 
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше
-
+$umaker = new UrlMaker();
 $auth = new Auth();
 
 global $msc, $umaker, $pagel, $pdo;

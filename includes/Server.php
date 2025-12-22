@@ -17,7 +17,7 @@ class Server
         static $array;
         if (!isset($array)) {
             global $msc;
-            $array = $msc->fetchPdo('SHOW DATABASES')->fetchAll(PDO::FETCH_COLUMN);
+            $array = $msc->getData('SHOW DATABASES', PDO::FETCH_COLUMN);
         }
         return $array;
     }

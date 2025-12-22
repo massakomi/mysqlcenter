@@ -52,7 +52,7 @@ async function msQuery(mode, query = '', callback = '') {
     }
 
     loader()
-    let response = await fetch('ajax.php', getFetchOptions(mode, query))
+    let response = await fetch('index.php', getFetchOptions(mode, query))
     loader()
 
     return await queryResponse(response, callback);
@@ -61,7 +61,6 @@ async function msQuery(mode, query = '', callback = '') {
 /**
  * @param response
  * @param callback
- * @param ajaxdebug
  * @param type
  * @returns {Promise<{error: boolean, message: string}|*>}
  */
@@ -128,7 +127,7 @@ function showMessages(json) {
     let messages = [];
     for (let message of json.messages) {
         let textError = message.text
-        if (message.sql !== '') {
+        if (message.sql !== '' && message.sql !== null) {
             let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
             textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
         }
@@ -167,16 +166,16 @@ function getFetchOptions(mode, query) {
     let body = null
     if (typeof (query) === 'string') {
         query = query.replace(/^\?/, '')
-        query = query + '&' + 'mode=' + mode
-        body = new URLSearchParams('?' + query)
-        body.set('ajax', 1)
+        body = new URLSearchParams(query)
     } else if (query instanceof Element) {
         body = new FormData(query)
-        body.set('mode', mode)
-        body.set('ajax', 1)
+    } else if (typeof (query) === 'object') {
+        body = new URLSearchParams(query)
     } else {
         alert('Unknown fetch options!')
     }
+    body.set('mode', mode)
+    body.set('ajax', 1)
     return {
         method: 'POST',
         body: body,
@@ -194,60 +193,6 @@ function showError(message) {
         console.error(message)
     }
 }
-
-/*
-  getAllVars() {
-    let sql = 'SHOW SESSION VARIABLES';
-    let mode = 'querysql'
-    let qs = querySql({sql, mode})
-        .then((text) => {
-          this.sessionVars = JSON.parse(text)
-        })
-        .then(this.getGlobals.bind(this));
-    return qs;
-  }
-  */
-function querySql(params, responseType = 'text', url = 'ajax.php') {
-
-    return new Promise(function (resolve, reject) {
-        let options = {
-            headers: {'X-Requested-With': 'XMLHttpRequest'}
-        }
-        if (params) {
-            options.method = 'POST';
-            if (params.tagName === 'FORM') {
-                options.body = new FormData(params)
-            } else {
-                options.body = new URLSearchParams(params);
-            }
-        }
-
-        fetch(url, options)
-          .then(response => {
-              if (!response.ok) {
-                  console.error(response.status + ' ' + response.statusText)
-              } else {
-                  return responseType === 'text' ? response.text() : response.json();
-              }
-          })
-          .then(text => {
-              resolve(text)
-          })
-          .catch((error) => {
-              console.error(error)
-          });
-    });
-}
-
-
-/*async function apiQuery (query, options={}) {
-  let url = 'http://msc/'
-  options.method = 'GET'
-  const response = await fetch(url, options)
-  const json = await response.json();
-  return json;
-}*/
-
 
 // umaker({db: 'xxx'})
 function umaker(query = {}, doSwitch = false) {
@@ -270,30 +215,6 @@ function umaker(query = {}, doSwitch = false) {
         u.searchParams.set(key, query[key])
     }
     return u.href;
-}
-
-
-/**
- * Отправляет форму form элемент по текущему урлу и возвращает json
- *
- update = (e) => {
- e.preventDefault()
- apiQuery(e.target.parentNode)
- .then(json => this.setState({messages: json.messages}))
- }
-
- GET запрос можно сделать через стандартный механизм проще
- restore = (e) => {
- fetch(umaker({action: 'restore', ajax: 1}))
- .then(response => response.json())
- .then(json => this.setState({messages: json.messages}))
- }
- * @param form
- * @returns {Promise<unknown>}
- */
-function apiQuery(form) {
-    // sendFormGetJson
-    return querySql(form, 'json', umaker() + '&ajax=1');
 }
 
 

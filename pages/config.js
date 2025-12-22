@@ -5,16 +5,15 @@ class Config extends React.Component {
         this.state = {messages: []};
     }
 
-    update = (e) => {
+    update = async (e) => {
         e.preventDefault()
-        apiQuery(e.target.parentNode)
-          .then(json => this.setState({messages: json.messages}))
+        let json = await msQuery('configUpdate', e.target.parentNode)
+        this.setState({messages: json.messages})
     }
 
-    restore = (e) => {
-        fetch(umaker({action: 'restore', ajax: 1}))
-          .then(response => response.json())
-          .then(json => this.setState({messages: json.messages}))
+    restore = async (e) => {
+        let json = await msQuery('configRestore', '')
+        this.setState({messages: json.messages})
     }
 
     render() {
