@@ -68,7 +68,7 @@ class Actions extends React.Component {
                           <fieldset className="msGeneralForm">
                               <legend>Скопировать таблицу в (база данных.таблица):</legend>
                               <form>
-                                  <HtmlSelector data={this.props.dbs} value={this.props.db} name="newDB" auto="false" />
+                                  <HtmlSelector data={this.props.dbs} value={this.props.db} name="newDB" />
                                   .
                                   <input name="newName" type="text" required defaultValue={this.props.table} />
                                   <div className="mt-10">

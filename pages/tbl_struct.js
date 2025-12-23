@@ -170,10 +170,11 @@ class Tbl_struct extends React.Component {
     }
 
     chbx_action(opt, event) {
-        $('#formTableStructure input[type="checkbox"]').prop('checked', function () {
-            return opt == 'check'
+        event.preventDefault()
+        forElements('#formTableStructure input[type="checkbox"]', function(e) {
+            this.checked = opt === 'check'
         })
-    }
+     }
 
     msImageAction = (opt, e) => {
         msImageAction('formTableStructure', opt)
@@ -185,7 +186,7 @@ class Tbl_struct extends React.Component {
     }
 
     selectOnFocus = (e) => {
-        get('f3').checked = true
+        document.getElementById('f3').checked = true
     }
 
     checkDelete = (e) => {

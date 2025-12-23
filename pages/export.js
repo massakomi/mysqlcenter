@@ -6,13 +6,13 @@ class Export extends React.Component {
     }
 
     msMultiSelect = (event) => {
-        if (event.target.classList.contains('invert')) {
-            $('[name="'+this.props.selectMultName+'"] option').prop('selected', function() {
-                return !this.selected
-            })
-        } else {
-            $('[name="'+this.props.selectMultName+'"] option').prop('selected', event.target.classList.contains('select'))
-        }
+        forElements('[name="'+this.props.selectMultName+'"] option', function(e) {
+            if (event.target.classList.contains('invert')) {
+                this.selected = !this.selected
+            } else {
+                this.selected = event.target.classList.contains('select')
+            }
+        })
     }
 
     render() {

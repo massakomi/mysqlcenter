@@ -271,34 +271,34 @@ function changeCurrentPage(obj) {
     if (obj.target) {
         obj = obj.target
     }
-    get('rowsForm').action = `?s=${obj.value}&table=${options.table}&db=${options.db}`;
+    document.getElementById('rowsForm').action = `?s=${obj.value}&table=${options.table}&db=${options.db}`;
 }
 
 /**
  * Назначает события функций processNullInput / processNull
  */
 function refreshActions() {
-    var inputs = get('rowsForm').getElementsByTagName('INPUT')
+    var inputs = document.getElementById('rowsForm').getElementsByTagName('INPUT')
     for (var i = 0; i < inputs.length; i++) {
         if (inputs[i].type == 'checkbox') {
             var idName = inputs[i].name.substr(6);
             var chbxFieldName = inputs[i].name;
             var textFieldName = 'row' + idName;
-            list(get('rowsForm')[textFieldName], 'keyup', function () {
+            list(document.getElementById('rowsForm')[textFieldName], 'keyup', function () {
                 var chbxFieldName = 'isNull' + this.name.substr(3);
-                processNullInput(get('rowsForm')[chbxFieldName], this)
+                processNullInput(document.getElementById('rowsForm')[chbxFieldName], this)
             });
-            list(get('rowsForm')[chbxFieldName], 'click', function () {
+            list(document.getElementById('rowsForm')[chbxFieldName], 'click', function () {
                 var textFieldName = 'row' + this.name.substr(6);
-                processNull(this, get('rowsForm')[textFieldName])
+                processNull(this, document.getElementById('rowsForm')[textFieldName])
             });
         }
     }
 }
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function() {
         refreshActions()
-        changeCurrentPage(get('f2'));
+        changeCurrentPage(document.getElementById('f2'));
     }, 500);
 });
 

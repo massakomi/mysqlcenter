@@ -80,8 +80,13 @@ A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
 /* Таблица основная */
 table.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
 table.contentTable TD { padding: 3px; font-size:12px}
-table.contentTable th { padding: 3px; font-size:12px; text-align:left; white-space:nowrap; color: var(--head-text-color)}
-table.contentTable th:not(.wide) span {display: block}
+table.contentTable th { padding: 3px; font-size:12px; text-align:left; color: var(--head-text-color)}
+table.contentTable th:not(.wide) span {
+  overflow-wrap: anywhere;
+  width: 20px;
+  display: block;
+  word-break: break-all;
+}
 table.contentTable .cb { margin:0; width:18px; height:18px}
 table.contentTable .sort { text-decoration:none; font-size:10px}
 table.contentTable .sort:hover { text-decoration:underline}
@@ -167,7 +172,9 @@ table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
 .login form > div label {width: 20%}
 
 /* Разное */
-#msAjaxQueryDiv {position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
+#msAjaxQueryDiv {position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px; transition: opacity 0.5s ease-out, visibility 0.5s ease-out; opacity: 0;
+  visibility: hidden;}
+#msAjaxQueryDiv.visible {opacity: 1; visibility: visible;}
 h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
 .dateString {color: var(--head-text-color)}
 a.truncate { color: var(--text-color)!important}
@@ -184,7 +191,6 @@ textarea.wide {width: 100%; height: 100px}
   animation: spin 2s linear infinite;
   position:absolute;
   top:0; right:0;
-  display: none;
 }
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -229,8 +235,8 @@ TABLE.contentTable TH,
 FORM.tableFormEdit .editHeader TD,
 FORM.tableFormEdit TH  { background-color:#CCCCCC }
 
-.interlace   { background-color:#eee }
-.selectedRow { background-color:#eea}
+.interlace   { background-color:#eee}
+.selectedRow { background-color:#eea!important;}
 
 /* Рамка */
 

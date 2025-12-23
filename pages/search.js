@@ -26,13 +26,13 @@ class Search extends React.Component {
     }
 
     msMultiSelect(event) {
-        if (event.target.classList.contains('invert')) {
-            $('[name="table[]"] option').prop('selected', function() {
-                return !this.selected
-            })
-        } else {
-            $('[name="table[]"] option').prop('selected', event.target.classList.contains('select'))
-        }
+        forElements('[name="table[]"] option', function(e) {
+            if (event.target.classList.contains('invert')) {
+                this.selected = !this.selected
+            } else {
+                this.selected = event.target.classList.contains('select')
+            }
+        })
     }
 
     render() {
@@ -52,10 +52,10 @@ class Search extends React.Component {
                       </td>
                       <td valign="top">
                           искать по всем полям    <br />
-                          <input name="query" id="queryAll" type="text" size="50" onChange={this.updateState} value={this.state.query} /><br />
+                          <input name="query" id="queryAll" type="text" size="50" onChange={this.updateState} defaultValue={this.state.query} /><br />
                           искать имя поля    <br />
-                          <input name="queryField" type="text" size="50" onChange={this.updateState} value={this.state.queryField} /><br /> <br />
-                          <input type="submit" value="Искать!" className="submit" disabled={this.state.disabled} />
+                          <input name="queryField" type="text" size="50" onChange={this.updateState} defaultValue={this.state.queryField} /><br /> <br />
+                          <input type="submit" defaultValue="Искать!" className="submit" disabled={this.state.disabled} />
                       </td>
                   </tr></tbody>
               </table>

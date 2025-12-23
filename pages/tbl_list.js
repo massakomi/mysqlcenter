@@ -132,7 +132,7 @@ class TableList extends React.Component {
 
         return (
           <tr key={table.Name} id={idRow}>
-              <td><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" onClick={checkboxer.bind(this, sumTable, '#row')} /></td>
+              <td><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" /></td>
               <td className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name)}>{valueName}</label></td>
               <td><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
               <td><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{this.image("generate.png")}</a></td>
@@ -232,9 +232,9 @@ class Tbl_list extends React.Component {
     }
 
     filterByDate() {
-        let year = $('[name="ds_year"]').val()
-        let month = $('[name="ds_month"]').val()
-        let day = $('[name="ds_day"]').val()
+        let year = document.querySelector('[name="ds_year"]').value
+        let month = document.querySelector('[name="ds_month"]').value
+        let day = document.querySelector('[name="ds_day"]').value
         let date = new Date(year, month, day)
 
         let tables = Object.values(this.props.tables).filter((table, key) => {

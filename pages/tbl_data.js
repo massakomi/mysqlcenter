@@ -62,7 +62,10 @@ class Table extends React.Component {
             for (let field in this.props.data[0]) {
                 let a = {}
                 a.Field = field;
-                a.Type = $.isNumeric(this.props.data[0][field]) ? 'int' : 'varchar';
+                a.Type = 'varchar'
+                if (isNumeric(this.props.data[0][field])) {
+                    a.Type = 'int'
+                }
                 fields.push(a)
             }
         }
@@ -110,7 +113,7 @@ class Table extends React.Component {
             // создание ссылок на действия
             let u1 = umaker({s: 'tbl_change', row: idRow});
             let values = [
-                <input name="row[]" type="checkbox" value={idRow} className="cb" id={`c${idRow}`} onClick={checkboxer.bind(this, j, '#row')} />,
+                <input name="row[]" type="checkbox" value={idRow} className="cb" id={`c${idRow}`} />,
                 <a href={u1} title="Редактировать ряд"><img src={`${this.props.dirImage}edit.gif`} alt="" border="0" /></a>,
                 <a href="#" onClick={this.deleteRow.bind(this, idRow, j)} title="Удалить ряд"><img src={`${this.props.dirImage}close.png`} alt="" border="0" /></a>
             ]
@@ -238,39 +241,49 @@ class Tbl_data extends React.Component {
     }
 
     componentDidMount() {
-        jQuery('.contentTable TD').click(function(){
-            var tr = jQuery(this).parent();
-            var ch = tr.find('input').prop('checked');
-            if (jQuery(this).index() == 0) {
-                tr.toggleClass('selectedRow', ch);
+
+        forElements('.contentTable th', function() {
+            let span = this.querySelector('span')
+            if (span === null) {
+                return
+            }
+            span.style.width = window.getComputedStyle(this).width
+        })
+
+        forElementsEvent('click', '.contentTable td', function(e) {
+            let tr = this.parentNode;
+            let ch = tr.querySelector('input').checked;
+            if (e.target.tagName === 'INPUT') {
+                tr.classList.toggle('selectedRow', ch)
                 return true;
             }
-            tr.toggleClass('selectedRow', !ch);
-            jQuery(this).parent().find('input').attr('checked', !ch)
-        });
+            tr.classList.toggle('selectedRow', !ch)
+            tr.querySelector('input').checked = !ch
+        })
 
-        jQuery('.contentTable TR').dblclick(function(){
-            location.href = jQuery(this).find('a').attr('href');
-        });
+        forElementsEvent('dblclick', '.contentTable tr', function(e) {
+            location.href = this.querySelector('a').getAttribute('href');
+        })
 
-        jQuery('.contentTable TH').mouseover(function(){
+        forElementsEvent('mouseover', '.contentTable th', function(e) {
             this.classList.add('wide')
-        });
+        })
 
-        jQuery('.contentTable TD').click(function(){
-            if (jQuery(this).index() <= 2) {
+        // todo реализовать inline редактирование значений (пока сделано только вот это)
+        forElementsEvent('click', '.contentTable td', function(e) {
+            if (getElementIndex(this) <= 2) {
                 return true;
             }
             if (globalCtrlKeyMode) {
-                jQuery(this).html('<input type="text" value="'+jQuery(this).html()+'" id="editable">');
-                jQuery('#editable').focus();
-                jQuery('#editable').focusout(function() {
-                    var html = jQuery(this).val();
-                    jQuery(this).parent().html(html);
-                });
+                let value = this.innerHTML
+                this.innerHTML = `<input type="text" value="${value}" id="editable" />`
+                document.getElementById('editable').focus()
+                document.getElementById('editable').addEventListener('focusout', function() {
+                    this.parentNode.innerHTML = this.value
+                })
             }
             return true;
-        });
+        })
     }
 
     image(src) {

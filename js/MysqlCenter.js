@@ -119,9 +119,11 @@ function showMessages(json) {
         return;
     }
 
-    $("#msAjaxQueryDiv").show()
-    if ($("#msAjaxQueryDiv div").length > 2) {
-        $("#msAjaxQueryDiv div").last().remove()
+    let div = document.getElementById('msAjaxQueryDiv')
+    div.classList.add('visible')
+
+    if (div.querySelectorAll('table').length > 2) {
+        div.querySelector('table:last-child').remove()
     }
 
     let messages = [];
@@ -131,7 +133,7 @@ function showMessages(json) {
             let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
             textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
         }
-        if (message.error !== '') {
+        if (message.error !== '' && message.error !== null) {
             textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
         }
         messages.push(textError)
@@ -139,21 +141,18 @@ function showMessages(json) {
     messages = messages.join('<br />')
 
     let messageId = 'msg-' + Math.random()
-    $("#msAjaxQueryDiv").prepend(`
+    div.insertAdjacentHTML('afterbegin', `
         <table class="globalMessage">
         <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide('${messageId}')">close</a></th></tr>
         <tr id="${messageId}"><td>${messages}</td></tr>
-        </table>`)
+        </table>`);
 
-    if ($("#msAjaxQueryDiv div").length > 2) {
-        $("#msAjaxQueryDiv div").last().remove()
-    }
     if (typeof (msAjaxQueryDivTm) != 'undefined') {
         clearTimeout(msAjaxQueryDivTm);
     }
     msAjaxQueryDivTm = setTimeout(function () {
-        $("#msAjaxQueryDiv").fadeOut()
-    }, 2000);
+        div.classList.remove('visible')
+    }, 5000);
 }
 
 /**
@@ -241,10 +240,12 @@ function msImageAction(formName, param, actionReplace) {
  * Функция, которая отвечает за механизм отображения/скрытия блока быстрого SQL запроса на всех страницах MSC
  */
 function msDisplaySql() {
-    if (jQuery('#sqlPopupQueryForm').is(':visible')) {
-        jQuery('#sqlPopupQueryForm').hide()
+    let form = document.getElementById('sqlPopupQueryForm')
+    if (form.checkVisibility()) {
+        form.style.display = 'none'
     } else {
-        jQuery('#sqlPopupQueryForm').show().find('textarea').focus()
+        form.style.display = 'block'
+        form.querySelector('textarea').focus()
     }
 }
 
@@ -258,9 +259,6 @@ function msDisplaySql() {
  * @pack 13.03.2010
  */
 
-get = function (id) {
-    return document.getElementById(id);
-}
 
 
 /**
@@ -269,7 +267,7 @@ get = function (id) {
  * @return object Вставленная строка
  */
 function addRow(tableId, from = 'last', after = true) {
-    var table = get(tableId);
+    var table = document.getElementById(tableId);
     // сколько всего рядов
     var i = table.rows.length;
     // берём последний/первый ряд
@@ -283,7 +281,7 @@ function addRow(tableId, from = 'last', after = true) {
         insertAfter('trAfterId' + i, 'TR', 'trNewId' + i);
     }
     // вот она!
-    var tr2 = get('trNewId' + i);
+    var tr2 = document.getElementById('trNewId' + i);
     // копируем ячейки из одной строки в другую
     for (var j = 0; j < tr.cells.length; j++) {
         td = document.createElement('TD')
@@ -297,14 +295,14 @@ function addRow(tableId, from = 'last', after = true) {
  * Вставляет элемент после другого элемента
  */
 function insertAfter(sAfterId, sTag, sId) {
-    let objSibling = get(sAfterId);
+    let objSibling = document.getElementById(sAfterId);
     objElement = document.createElement(sTag);
     objElement.setAttribute('id', sId);
     objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling);
 }
 
 function insertBefore(sAfterId, sTag, sId) {
-    let objSibling = get(sAfterId);
+    let objSibling = document.getElementById(sAfterId);
     objElement = document.createElement(sTag);
     objElement.setAttribute('id', sId);
     objSibling.parentNode.insertBefore(objElement, objSibling);
@@ -314,7 +312,7 @@ function insertBefore(sAfterId, sTag, sId) {
  * Удаляет ряд таблицы с конца
  */
 function removeRow(tableId) {
-    let r = get(tableId).rows;
+    let r = document.getElementById(tableId).rows;
     if (r.length === 1) {
         return false;
     }
@@ -366,7 +364,7 @@ function trim(s) {
  */
 function showhide(id) {
     if (typeof (id) != 'object') {
-        id = get(id);
+        id = document.getElementById(id);
     }
     if (id.style.display === '') {
         id.style.display = 'block';
@@ -475,27 +473,27 @@ formatSize = (bytes, digits = 0) => {
 
 function dbHiddenMenu() {
     let hideTimeout = null;
-    $('#appNameId').mouseover(function () {
-        $('#dbHiddenMenu').show();
+    let div = document.getElementById('dbHiddenMenu')
+    forElementsEvent('mouseover', '#appNameId', function(e) {
+        div.style.display = 'block'
     })
 
-    function menuHidder(e) {
-        var w = parseInt($('#dbHiddenMenu').width());
+    forElementsEvent('mouseout', '#dbHiddenMenu', function(e) {
+        let w = parseInt(window.getComputedStyle(div).width);
         if (e.pageX > w) {
             hideTimeout = setTimeout(function () {
-                $('#dbHiddenMenu').hide()
+                div.style.display = 'none'
             }, 300);
         }
-    }
+    })
 
-    $('#dbHiddenMenu').mouseout(menuHidder);
-    $('#dbHiddenMenu').mouseover(function (e) {
+    forElementsEvent('mouseover', '#dbHiddenMenu', function(e) {
         if (hideTimeout != null) {
             clearInterval(hideTimeout);
         }
     })
-    $('#dbHiddenMenu').on('click', function (e) {
-        $('#dbHiddenMenu').hide();
+    forElementsEvent('click', '#dbHiddenMenu', function(e) {
+        div.style.display = 'none'
     })
 }
 
@@ -519,126 +517,25 @@ function ctrlKeyMode() {
 }
 
 function searchEvents() {
-    $('.search-top [name="query"]').on('focus', function () {
+    forElementsEvent('focus', '.search-top [name="query"]', function () {
         this.value = '';
         this.closest('form').querySelector('[name=query]').value = ''
     })
-    $('.search-top [name="field"]').on('change', function () {
-        $('.search-top [name="byField"]').val('')
+    forElementsEvent('change', '.search-top [name="field"]', function () {
+        document.querySelector('.search-top [name="byField"]').value = ''
     })
-    $('.search-top [name="byField"]').on('focus', function () {
-        $('.search-top [name="query"]').val('')
+    forElementsEvent('focus', '.search-top [name="byField"]', function () {
+        document.querySelector('.search-top [name="query"]').value = ''
         this.style.width = 'auto'
     })
 }
 
 function mysqlCenterInit() {
-
-    $(document).ready(function () {
+    document.addEventListener("DOMContentLoaded", function() {
         dbHiddenMenu();
         ctrlKeyMode();
         searchEvents();
     });
-
-    // Мультиселектор чекбоксов. Указать индекс чекбокса и селектор элемента где он находится
-    // <input name="table[]" type="checkbox" value="1" onclick="checkboxer(5, '#row');">
-    window.globalCheckboxLastIndex = null;
-}
-
-function checkboxer(index, selector) {
-    if (globalCheckboxLastIndex == null) {
-        globalCheckboxLastIndex = index;
-        //return true;
-    } else if (globalCtrlKeyMode && index != globalCheckboxLastIndex) {
-        var from = globalCheckboxLastIndex > index ? index : globalCheckboxLastIndex;
-        var to = globalCheckboxLastIndex > index ? globalCheckboxLastIndex : index;
-        // Добавляем класс если надо
-        var addClass = null;
-        if (jQuery(selector + from).hasClass('selectedRow') || jQuery(selector + to).hasClass('selectedRow')) {
-            var addClass = 'selectedRow';
-        }
-        for (var i = from; i <= to; i++) {
-            var o = jQuery(selector + i + ' input');
-            o.attr('checked', true);
-            if (addClass != null) {
-                jQuery(selector + i).addClass(addClass);
-            }
-        }
-    }
-}
-
-function wordwrap(str, intWidth, strBreak, cut) {
-    //  discuss at: https://locutus.io/php/wordwrap/
-    // original by: Jonas Raoni Soares Silva (https://www.jsfromhell.com)
-    // improved by: Nick Callen
-    // improved by: Kevin van Zonneveld (https://kvz.io)
-    // improved by: Sakimori
-    //  revised by: Jonas Raoni Soares Silva (https://www.jsfromhell.com)
-    // bugfixed by: Michael Grier
-    // bugfixed by: Feras ALHAEK
-    // improved by: Rafał Kukawski (https://kukawski.net)
-    //   example 1: wordwrap('Kevin van Zonneveld', 6, '|', true)
-    //   returns 1: 'Kevin|van|Zonnev|eld'
-    //   example 2: wordwrap('The quick brown fox jumped over the lazy dog.', 20, '<br />\n')
-    //   returns 2: 'The quick brown fox<br />\njumped over the lazy<br />\ndog.'
-    //   example 3: wordwrap('Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.')
-    //   returns 3: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod\ntempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim\nveniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea\ncommodo consequat.'
-    intWidth = arguments.length >= 2 ? +intWidth : 75
-    strBreak = arguments.length >= 3 ? '' + strBreak : '\n'
-    cut = arguments.length >= 4 ? !!cut : false
-    let i, j, line
-    str += ''
-    if (intWidth < 1) {
-        return str
-    }
-    const reLineBreaks = /\r\n|\n|\r/
-    const reBeginningUntilFirstWhitespace = /^\S*/
-    const reLastCharsWithOptionalTrailingWhitespace = /\S*(\s)?$/
-    const lines = str.split(reLineBreaks)
-    const l = lines.length
-    let match
-    // for each line of text
-    for (i = 0; i < l; lines[i++] += line) {
-        line = lines[i]
-        lines[i] = ''
-        while (line.length > intWidth) {
-            // get slice of length one char above limit
-            const slice = line.slice(0, intWidth + 1)
-            // remove leading whitespace from rest of line to parse
-            let ltrim = 0
-            // remove trailing whitespace from new line content
-            let rtrim = 0
-            match = slice.match(reLastCharsWithOptionalTrailingWhitespace)
-            // if the slice ends with whitespace
-            if (match[1]) {
-                // then perfect moment to cut the line
-                j = intWidth
-                ltrim = 1
-            } else {
-                // otherwise cut at previous whitespace
-                j = slice.length - match[0].length
-                if (j) {
-                    rtrim = 1
-                }
-                // but if there is no previous whitespace
-                // and cut is forced
-                // cut just at the defined limit
-                if (!j && cut && intWidth) {
-                    j = intWidth
-                }
-                // if cut wasn't forced
-                // cut at next possible whitespace after the limit
-                if (!j) {
-                    const charsUntilNextWhitespace = (line.slice(intWidth).match(reBeginningUntilFirstWhitespace) || [''])[0]
-                    j = slice.length + charsUntilNextWhitespace.length
-                }
-            }
-            lines[i] += line.slice(0, j - rtrim)
-            line = line.slice(j + ltrim)
-            lines[i] += line.length ? strBreak : ''
-        }
-    }
-    return lines.join('\n')
 }
 
 function htmlspecialchars(text) {
@@ -659,7 +556,7 @@ function htmlspecialchars(text) {
 }
 
 function loader() {
-    $('.loader').toggle()
+    document.querySelector('.loader').toggleAttribute('hidden')
 }
 
 /**
@@ -687,11 +584,38 @@ function processRowValue(v, type, textCut) {
                 v = v.substring(0, textCut)
             }
         }
-        // дата
-        if (type.match(/(int)/i) && v.length == 10 && $.isNumeric(v)) {
-            //$e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
-            //$v = '<span className="dateString"'.$e.'>'.$v.'</span>';
-        }
     }
     return v
+}
+
+// gQuery to js
+
+function forElements(selector, callback) {
+    let all = [].slice.call(document.querySelectorAll(selector))
+    all.map(function (el) {
+        callback.call(el)
+    })
+}
+
+function forElementsEvent(event, selector, callback) {
+    forElements(selector, function() {
+        this.addEventListener(event, function(e){
+            callback.call(this, e)
+        })
+    })
+}
+
+function getElementIndex(el) {
+    return Array.prototype.indexOf.call(el.parentNode.children, el)
+}
+
+function isNumeric(value) {
+    if (typeof(value) == 'number') {
+        return true
+    } else if (typeof(value) == 'string') {
+        if (value.match(/^\d+$/) !== null) {
+            return true
+        }
+    }
+    return false
 }

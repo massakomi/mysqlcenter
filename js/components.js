@@ -70,7 +70,7 @@ function Messages(props) {
       if (item.rows) {
         extra.push(<div key="v2" style={{color: '#ccc'}}>затронуто рядов: {item.rows}</div>)
       }
-      if (item.error) {
+      if (item.error !== '' && item.error != null) {
         extra.push(<div key="v3" className="mysqlError"><b>Ошибка:</b> {item.error}</div>)
       }
     }
@@ -78,7 +78,7 @@ function Messages(props) {
   }
 
   const CloseMessage = (e) => {
-    $(e.target).closest('tr').next().toggle()
+      e.target.closest('tr').nextElementSibling.toggleAttribute('hidden')
   }
 
   return <div className="messages">{props.messages.map((item, key) =>
@@ -214,7 +214,6 @@ function getTableHeaders(fields, sortEnabled=true, headWrap=false) {
     let u = umaker({s: 'tbl_data', order: v.Field+"-"}, {order: v.Field})
     let link = v.Field;
     if (isWrapped) {
-      v.Field = wordwrap(v.Field, headWrap, "\n", true);
       v.Field = v.Field.split("\n")
       let f = []
       let i = 0

@@ -22,26 +22,28 @@ class Login extends React.Component {
             return
         }
         let maxValue = 0
-        $('select option').each(function() {
+
+        forElements('select option', function(e) {
             if (!maxValue || this.value > maxValue) {
                 maxValue = this.value
             }
         })
         maxValue ++
-        $('select').append(`<option value="${maxValue}">${name}</option>`)
+        document.querySelector('.login select').insertAdjacentHTML("beforeend", `<option value="${maxValue}">${name}</option>`);
     }
 
     rename() {
-        let selected = $('select option:selected')
-        if (!selected.length) {
+        let selector =  document.querySelector('.login select')
+        if (selector.selectedIndex === -1) {
             alert('Не выбрано ничего')
             return
         }
-        let name = prompt('Введите название', selected.text())
+        let selected = selector.options[selector.selectedIndex]
+        let name = prompt('Введите название', selected.text)
         if (!name) {
             return
         }
-        $('select option:selected').text(name)
+        selected.text = name
     }
 
     connect(e) {

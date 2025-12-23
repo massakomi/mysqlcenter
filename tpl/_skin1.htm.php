@@ -9,7 +9,6 @@ global $umaker, $msc;
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title><?php echo $msc->getWindowTitle()?></title>
-    <script language="javascript" src="/js/lib/jquery-2.2.4.min.js"></script>
     <script language="JavaScript" src="/js/MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
     <script language="javascript">
     let debug = '1';
@@ -24,7 +23,7 @@ global $umaker, $msc;
     <script src="/js/components.js" type="text/babel"></script>
 </head>
 <body>
-<div class="loader"></div>
+<div class="loader" hidden></div>
 <div class="pageBlock">
   <b id="appNameId"><a href="?db_list"><?php echo MS_APP_NAME?></a></b> &nbsp; &nbsp;
     <?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;

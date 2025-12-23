@@ -37,9 +37,9 @@ class MSC_DrawFields extends React.Component {
     }
 
     clearKeys(k) {
-        get('key1'+k).checked = false;
-        get('key2'+k).checked = false;
-        get('key3'+k).checked = false;
+        document.getElementById('key1'+k).checked = false;
+        document.getElementById('key2'+k).checked = false;
+        document.getElementById('key3'+k).checked = false;
         return false;
     }
 
@@ -234,25 +234,21 @@ class Tbl_add extends React.Component {
     }
 
     componentDidMount() {
-
-        // В зависимости от выбранного типа поля можно что-то изменить в других полях строки
-        jQuery('[name="ftype[]"]').change(function() {
-            var curType = jQuery(this).val();
-            console.log(curType)
+        forElementsEvent('change', '[name="ftype[]"]', function() {
+            let curType = this.value;
             if (curType === 'SERIAL') {
-                var autoinc = jQuery(this).closest('tr').find('input:eq(5)');
-                autoinc.attr('checked', true);
-                autoinc.attr('disabled', true);
-                var nulled = jQuery(this).closest('tr').find('input:eq(3)');
-                nulled.attr('disabled', true);
+                let autoinc = this.closest('tr').querySelector('td:nth-child(6) input');
+                autoinc.checked = true
+                autoinc.disabled = true
+                let nulled = this.closest('tr').querySelector('td:nth-child(4) input');
+                nulled.disabled = true
             }
             if (curType === 'ENUM' || curType === 'SET') {
-                var value = jQuery(this).closest('tr').find('[name="length[]"]');
-                value.val("'','',''");
+                let value = this.closest('tr').querySelector('[name="length[]"]');
+                value.value = "'','',''"
             }
-        });
-
-        jQuery('[name="table_name"]').focus()
+        })
+        document.querySelector('[name="table_name"]').focus()
     }
 
 
@@ -261,12 +257,12 @@ class Tbl_add extends React.Component {
      * Далее меняются индексы у аттрибутов name, если требуется. Ид и прочие аттрибуты не трогаются пока.
      */
     addDataRow(id) {
-        var newTR = addRow(id);
-        var inputs = newTR.getElementsByTagName('INPUT')
-        for (var i = 0; i < inputs.length; i++) {
-            var res = /([a-z]+)\[(\d+)\]/i.exec(inputs[i].name)
+        let newTR = addRow(id);
+        let inputs = newTR.getElementsByTagName('INPUT')
+        for (let i = 0; i < inputs.length; i++) {
+            let res = /([a-z]+)\[(\d+)\]/i.exec(inputs[i].name)
             if (res != null) {
-                var nextName = res[1] + '['+ (Number(res[2]) + 1) +']';
+                let nextName = res[1] + '['+ (Number(res[2]) + 1) +']';
                 inputs[i].name = nextName;
             }
         }
