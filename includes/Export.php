@@ -454,20 +454,16 @@ class Export
                 return $this->get();
             }
             if ($type == 'zip') {
-                include_once 'zip.lib.php';
-                $a = new zipfile();
-                $a->addFile($this->get(), $file . '.sql');
-                $content = $a->file();
-
                 $dir = $_SERVER['DOCUMENT_ROOT'] . '/data';
                 if (!file_exists($dir)) {
                     mkdir($dir, 0777);
                 }
-                $file = fopen($dir . '/download.zip', 'a+');
-                fwrite($file, $content);
-                fclose($file);
 
-                return 'https://' . $_SERVER['HTTP_HOST'] . '/data/download.zip';
+                $fp = gzopen($dir . '/download.sql.gz', 'w9');
+                gzwrite($fp, $this->get());
+                gzclose($fp);
+
+                return 'https://' . $_SERVER['HTTP_HOST'] . '/data/download.sql.gz';
             }
         }
         // текстовое поле
@@ -476,19 +472,23 @@ class Export
                 '<textarea name="sql" rows="40" style="width:100%; font-size:11px; overflow:scroll" wrap="OFF">' .
                 htmlspecialchars($this->get()) .
                 '</textarea>';
-            // zip архив
-        } else if ($type == 'zip') {
+        // архив
+        } elseif ($type == 'zip') {
             if (headers_sent()) {
                 return '<h3>headers_sent...</h3>';
             }
-            ob_clean();
-            header("Content-type: application/zip");
-            header("Content-Disposition: attachment; filename=$file.zip");
-            include_once 'zip.lib.php';
-            $a = new zipfile();
-            $a->addFile($this->get(), $file . '.sql');
-            echo $a->file();
-            exit();
+            $attachment_name = "$file.sql.gz";
+            $gzipped_data = gzencode($this->get(), 9);
+            header('Content-Type: application/x-gzip'); // Or 'application/octet-stream' for a generic download
+            header('Content-Disposition: attachment; filename="' . $attachment_name . '"');
+            header('Content-Length: ' . strlen($gzipped_data));
+
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            echo $gzipped_data;
+            exit;
         }
     }
 
