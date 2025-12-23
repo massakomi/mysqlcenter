@@ -4,7 +4,15 @@
  */
 
 spl_autoload_register(function ($class) {
-    include_once 'includes/' . $class . '.php';
+    $path = [
+        'includes/' . $class . '.php',
+        $class . '.php',
+    ];
+    foreach ($path as $value) {
+        if (file_exists($value)) {
+            include_once $value;
+        }
+    }
 });
 
 // CORE

@@ -157,6 +157,15 @@ form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left
 .links-block a + a {margin-left: 10px}
 table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
 
+/* login page */
+.login {display: flex}
+.login .list {width: 50%}
+.login .list select {width: 200px; height: 150px; display: block; margin-bottom: 5px}
+.login .list [type="button"] {margin-right: 5px}
+.login form {margin-top: 10px; width: 50%}
+.login form > div {display: flex; margin-bottom: 10px; align-items: center;}
+.login form > div label {width: 20%}
+
 /* Разное */
 #msAjaxQueryDiv {position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px;}
 h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}

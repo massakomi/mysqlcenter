@@ -8,6 +8,8 @@
  */
 class PageLayout
 {
+    private ?string $controller = null;
+
     public function __construct()
     {
     }
@@ -63,22 +65,19 @@ class PageLayout
     public function display()
     {
         global $msc;
-        $currentHandler = $this->_getHandler();
         $currentPage = $msc->getCurrentPage();
+        $currentHandler = $this->getHandler();
+        $this->initController();
 
-        if (!$msc->connected()) {
-            $contentMain = $this->getContentByHandler('login');
-            include(MS_DIR_TPL . '_skin1.htm.php');
-            return;
-        }
-
-        if ($currentHandler == null) {
+        if ($currentHandler == null && $this->controller == null) {
             $msc->page = 'db_list';
             $msc->addMessage('Страница не найдена');
-            $currentHandler = $this->_getHandler();
+            $currentHandler = $this->getHandler();
         }
 
-        $msc->dbViewStat();
+        if ($msc->connected()) {
+            $msc->dbViewStat();
+        }
 
         if (isajax()) {
             $this->ajaxResult($currentHandler);
@@ -98,8 +97,8 @@ class PageLayout
         global $msc, $umaker; // нужны в подключаемом хендлере, не везде там прописаны глобалы
         $contentMain = null;
         ob_start();
-        if ($handler == 'login') {
-            $this->template([]);
+        if ($this->controller) {
+            new $this->controller();
         } else {
             include $handler;
         }
@@ -139,7 +138,7 @@ class PageLayout
      * Определяем обработчик
      * @static
      */
-    function _getHandler()
+    public function getHandler(): ?string
     {
         global $msc;
         $handlers = array(
@@ -154,6 +153,20 @@ class PageLayout
             return $currentHandler;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Определяем обработчик
+     * @static
+     */
+    private function initController(): void
+    {
+        global $msc;
+        $className = ucfirst($msc->page);
+        $path = 'controller/'.$className.'.php';
+        if (file_exists($path)) {
+            $this->controller = '\controller\\'.$className;
         }
     }
 
@@ -387,35 +400,6 @@ class PageLayout
             $link = '?db=' . $msc->db . '&table=' . $table . '&s=tbl_data';
         }
         return $link;
-    }
-
-    /**
-     * Селектор баз данных
-     * @param string  Имя селектора
-     * @param boolean Создать автопереходчик по БД
-     */
-    function getDBSelector($name = 'db', $auto = true, $exclude = null)
-    {
-        global $msc;
-        if ($auto) {
-            $selectorDB = '<select name="' . $name . '" onChange="d = this.options[this.selectedIndex].text; cook.set(\'mc_db\', d, 31, \'/\'); location=\'?db=\'+d">' . "\r\n";
-            $selectorDB .= "  <option>Выберите базу данных</option>\r\n";
-        } else {
-            $selectorDB = '<select name="' . $name . '">' . "\r\n";
-        }
-        $dbs = Server::getDatabases();
-        foreach ($dbs as $db) {
-            if ($exclude == $db) {
-                continue;
-            }
-            if ($msc->db == $db) {
-                $selectorDB .= "  <option selected>$db</option>\r\n";
-            } else {
-                $selectorDB .= "  <option>$db</option>\r\n";
-            }
-        }
-        $selectorDB .= '</select>' . "\r\n";
-        return $selectorDB;
     }
 
     /**

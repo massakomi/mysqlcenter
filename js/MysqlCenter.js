@@ -92,7 +92,7 @@ async function queryResponse(response, callback, type = 'json') {
             }
         }
         if (callback && typeof (callback) == 'function') {
-            callback()
+            callback(content)
         }
         return content;
     } else {

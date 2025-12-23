@@ -145,12 +145,11 @@ class MSCenter extends DatabaseQuery
     function getCurrentPage()
     {
         if (!$this->connected()) {
-            $defaultPage = 'login';
-        } else {
-            $defaultPage = 'tbl_list';
-            if (conf('tblliststart') == '0' || !$this->db) {
-                $defaultPage = 'db_list';
-            }
+            return $this->page = 'login';
+        }
+        $defaultPage = 'tbl_list';
+        if (conf('tblliststart') == '0' || !$this->db) {
+            $defaultPage = 'db_list';
         }
         if ($this->page == null) {
             if (count($_GET) > 0) {

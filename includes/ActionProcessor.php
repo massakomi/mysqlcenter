@@ -10,39 +10,9 @@
 class ActionProcessor
 {
 
-
-    /**
-     * Возвращет параметр запроса
-     *
-     * @param string  Имя параметра
-     * @return mixed  Возвращает false если парметра нет, иначе сам параметр
-     */
-    public function param($name)
-    {
-        // 1. GET-параметры имеют первичное значение (?db=...)
-        if (isset($_GET[$name])) {
-            return $_GET[$name];
-        }
-        // 2. POST-параметры ищем во вторую очередь
-        if (isset($_POST[$name])) {
-            return $_POST[$name];
-        }
-        return false;
-    }
-
-    /**
-     * Конструктор
-     * @param boolean True, если запускается из ajax-скрипта ajax.php
-     */
     public function __construct()
     {
-        global $msc;
-        if (!$msc->connected()) {
-            return false;
-        }
-
         if ($_POST['ajax']) {
-            //$this->params  = $_POST;
             $queryMode = POST('mode');
         } else {
             $queryMode = GET('action') != null ? GET('action') : POST('action');
@@ -52,13 +22,80 @@ class ActionProcessor
             return false;
         }
 
+        $this->generalActions($queryMode);
+
+        $this->databaseActions($queryMode);
+    }
+
+    /**
+     * @param $queryMode
+     * @return void
+     */
+    public function generalActions($queryMode): void
+    {
+        global $msc;
+
+        switch ($queryMode) {
+
+            case 'configUpdate' :
+                $data = file(MS_CONFIG_FILE);
+                $newFileContent = [];
+                $changed = false;
+                foreach ($data as $k => $line) {
+                    if (empty($line) || substr_count($line, '|') < 3) {
+                        continue;
+                    }
+                    list($name, $title, $value, $type) = explode('|', trim($line));
+                    if ($type == 'boolean') {
+                        if (intval(POST($name)) != intval($value)) {
+                            $value = intval(POST($name));
+                            $changed = true;
+                        }
+                    } elseif (isset($_POST[$name]) && POST($name) != $value) {
+                        $value = POST($name);
+                        $changed = true;
+                    }
+                    $newFileContent [] = "$name|$title|$value|$type";
+                }
+                if ($changed) {
+                    $f = fopen(MS_CONFIG_FILE, 'w+');
+                    if (fwrite($f, implode("\n", $newFileContent))) {
+                        $msc->addMessage('Конфиг обновлён');
+                    } else {
+                        $msc->addMessage('Не удалось записать конфиг в файл');
+                    }
+                    fclose($f);
+                } else {
+                    $msc->addMessage('Нечего обновлять');
+                }
+                break;
+
+            case 'configRestore' :
+                if (copy('docs/config_default.txt', MS_CONFIG_FILE)) {
+                    $msc->addMessage('Значения по умолчанию восстановлены');
+                }
+                break;
+        }
+
+    }
+
+
+    /**
+     * Действия с базой данных
+     * @param $queryMode
+     * @return bool|void
+     */
+    public function databaseActions($queryMode)
+    {
+        global $msc;
+
+        if (!$msc->connected()) {
+            return false;
+        }
+
         $db = $this->param('db');
         $tbl = $this->param('table');
 
-        // Если указана БД, сразу её выбираем. Но дальше в запросах, всё равно проверяем,
-        // может БД требуется, но пустая, значит ошибка
-        // $db          - та, с которой производятся действия
-        // $msc->getCurrentDatabase() - которая отображается (она берётся из GET>куки>сессии>конфига)
         if ($db != '') {
             $msc->selectDb($db);
         }
@@ -68,24 +105,15 @@ class ActionProcessor
          */
         define('DBI_MSC_MSG_OBJECT', 'msc');
         define('DBI_MSC_MSG_METHOD', 'addMessage');
-        require_once dirname(__FILE__) . '/DatabaseManager.php';
-        require_once dirname(__FILE__) . '/DatabaseTable.php';
-        require_once dirname(__FILE__) . '/DatabaseRow.php';
+//        require_once dirname(__FILE__) . '/DatabaseManager.php';
+//        require_once dirname(__FILE__) . '/DatabaseTable.php';
+//        require_once dirname(__FILE__) . '/DatabaseRow.php';
         $dbm = new DatabaseManager();
         $dbm->_init();
         $dbt = new DatabaseTable();
         $dbr = new DatabaseRow();
 
         // Выполнение запросов
-        // Данные из POST должны считываться самостоятельно
-
-        /*ajaxResult([
-            'status' => true,
-            'message' => ["queryMode=$queryMode db=$db tbl=".(is_array($tbl) ? implode(',', $tbl) : $tbl)]
-        ]);
-        $msc->addMessage('Выполняем $queryMode='.$queryMode.' $db='.$db.'
-            tbl='.(is_array($tbl) ? '['.implode(',', $tbl).']' : $tbl), '', MS_MSG_NOTICE);*/
-
         switch ($queryMode) {
             case 'querysql':
                 if ($_POST['type'] == 'pair-value') {
@@ -458,45 +486,6 @@ class ActionProcessor
                 }
                 break;
 
-            case 'configUpdate' :
-                $data = file(MS_CONFIG_FILE);
-                $newFileContent = [];
-                $changed = false;
-                foreach ($data as $k => $line) {
-                    if (empty($line) || substr_count($line, '|') < 3) {
-                        continue;
-                    }
-                    list($name, $title, $value, $type) = explode('|', trim($line));
-                    if ($type == 'boolean') {
-                        if (intval(POST($name)) != intval($value)) {
-                            $value = intval(POST($name));
-                            $changed = true;
-                        }
-                    } elseif (isset($_POST[$name]) && POST($name) != $value) {
-                        $value = POST($name);
-                        $changed = true;
-                    }
-                    $newFileContent [] = "$name|$title|$value|$type";
-                }
-                if ($changed) {
-                    $f = fopen(MS_CONFIG_FILE, 'w+');
-                    if (fwrite($f, implode("\n", $newFileContent))) {
-                        $msc->addMessage('Конфиг обновлён');
-                    } else {
-                        $msc->addMessage('Не удалось записать конфиг в файл');
-                    }
-                    fclose($f);
-                } else {
-                    $msc->addMessage('Нечего обновлять');
-                }
-                break;
-
-            case 'configRestore' :
-                if (copy('docs/config_default.txt', MS_CONFIG_FILE)) {
-                    $msc->addMessage('Значения по умолчанию восстановлены');
-                }
-                break;
-
             default:
                 return false;
 
@@ -505,6 +494,26 @@ class ActionProcessor
         if (isajax()) {
             ajaxResultWithMessages();
         }
+    }
+
+
+    /**
+     * Возвращет параметр запроса
+     *
+     * @param string  Имя параметра
+     * @return mixed  Возвращает false если парметра нет, иначе сам параметр
+     */
+    public function param($name)
+    {
+        // 1. GET-параметры имеют первичное значение (?db=...)
+        if (isset($_GET[$name])) {
+            return $_GET[$name];
+        }
+        // 2. POST-параметры ищем во вторую очередь
+        if (isset($_POST[$name])) {
+            return $_POST[$name];
+        }
+        return false;
     }
 }
 
