@@ -14,7 +14,7 @@ class ActionProcessor
 
     public function __construct()
     {
-        if ($_POST['ajax']) {
+        if (POST('ajax')) {
             $queryMode = POST('mode');
         } else {
             $queryMode = GET('action') != null ? GET('action') : POST('action');

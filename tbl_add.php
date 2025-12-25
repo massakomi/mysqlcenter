@@ -20,6 +20,7 @@ if (!$fields) {
 
 // Получаем массив имён полей из формы.
 $names = POST('name');
+$afterSql = '';
 if (is_array($names) && count($names) > 0 && POST('action') != '') {
     // Ключи
     $uk = $_POST['uni'] ?? [];
@@ -197,7 +198,6 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
     }
     // создание запроса на добавление
     if (POST('action') == 'fieldsAddEnd') {
-        $afterSql = '';
         if (POST('afterOption') == 'start') {
             $afterSql = 'FIRST';
         } elseif (POST('afterOption') == 'field') {
@@ -275,7 +275,7 @@ $pageProps = [
     'dirImage' => MS_DIR_IMG,
     'action' => GET('s')=='tbl_add'&&empty($_POST)&&!isset($_GET['field'])?'tableAddEnd':(POST('action') == 'fieldsAdd'?'fieldsAddEnd':'fieldsEditEnd'),
     'afterSql' => $afterSql,
-    'showTableName' => POST('action') != 'fieldsAdd'&&!isset($_GET['field'])&&$_POST['action'] != 'fieldsEdit',
+    'showTableName' => POST('action') != 'fieldsAdd'&&!isset($_GET['field'])&&POST('action') != 'fieldsEdit',
     'tableName' => POST('tableName') ?: $msc->table,
     'array' => $array,
     'post' => $_POST,

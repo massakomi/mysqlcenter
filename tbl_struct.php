@@ -64,7 +64,7 @@ function getKeys() {
     return [$dataKeys, $foreignKeys];
 }
 $dataKeys = $foreignKeys = [];
-if ($_GET['keys']) {
+if (GET('keys')) {
     [$dataKeys, $foreignKeys] = getKeys();
 }
 

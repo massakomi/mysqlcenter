@@ -1026,7 +1026,7 @@ function getData($sql) {
  * @return bool
  */
 function isajax() {
-    return $_GET['ajax'] || $_POST['ajax'];
+    return POST('ajax') || GET('ajax');
 }
 
 function ajaxResult($data) {

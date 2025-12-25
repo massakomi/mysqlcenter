@@ -350,7 +350,7 @@ showhide("' . $messageId . '");
         if (!array_key_exists($this->db, $json)) {
             $json[$this->db] = [];
         }
-        if ($_GET['resetPopular']) {
+        if (GET('resetPopular')) {
             unset($json[$this->db]);
             file_put_contents($this->popularTablesFile, json_encode($json));
         }

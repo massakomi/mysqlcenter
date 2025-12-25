@@ -80,7 +80,7 @@ global $umaker, $msc;
 
 <form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post" name="sqlPopupQueryForm" id="sqlPopupQueryForm" style="text-align:right">
   <input type="submit" value="Отправить запрос!" />
-  <textarea name="sql" rows="15" wrap="off"><?=$_POST['sql']?></textarea>
+  <textarea name="sql" rows="15" wrap="off"><?=POST('sql')?></textarea>
   <a href="#" onclick="msDisplaySql(); return false">закрыть</a>
 </form>
 <div id="dbHiddenMenu">

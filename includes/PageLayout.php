@@ -47,10 +47,10 @@ class PageLayout
         if ($msc->page == 'search' && $msc->table) {
             $page = 'searchTable';
         }
-        if ($msc->page == 'tbl_list' && $_GET['action'] == 'structure') {
+        if ($msc->page == 'tbl_list' && GET('action') == 'structure') {
             $page = 'tbl_struct_view';
         }
-        if ($msc->page == 'tbl_struct' && $_GET['action'] == 'add_key') {
+        if ($msc->page == 'tbl_struct' && GET('action') == 'add_key') {
             $page = 'tbl_key_add';
         }
         if ($msc->page == 'msc_configuration') {
@@ -423,6 +423,9 @@ class PageLayout
                 $class = 'freq1';
             } elseif ($info['count'] < 5) {
                 $class = 'freq2';
+            }
+            if (!array_key_exists('info', $info)) {
+                $info ['time'] = '';
             }
             if ($info['time']) {
                 $lastTime = time() - $info['time'];

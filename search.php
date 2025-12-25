@@ -52,7 +52,7 @@ if (GET('table') != null) {
 
     $msc->pageTitle = 'Поиск по базе данных';
 
-    if (strlen($queryField) > 0) {
+    if ($queryField && strlen($queryField) > 0) {
         $results = [];
         $founded = 0;
         $foundedTotal = 0;
@@ -91,7 +91,7 @@ if (GET('table') != null) {
             echo $t->make();
         }
 
-    } elseif (strlen($query) > 0) {
+    } elseif ($query && strlen($query) > 0) {
         $msc->pageTitle = "Поиск: '$query'";
         if ($array == null || count($array) == 0) {
             if ($msc->table != null) {

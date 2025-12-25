@@ -160,12 +160,11 @@ class DatabaseTable extends DatabaseInterface
      *
      * @return boolean
      */
-    function isExists()
+    function isExists(): bool
     {
         global $msc;
         $sql = 'SELECT COUNT(1) AS c FROM ' . $this->table;
-        $this->exists = ($msc->fetchPdo($sql) !== null);
-        return $this->exists;
+        return $msc->fetchPdo($sql) !== null;
     }
 
     /**

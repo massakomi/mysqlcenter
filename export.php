@@ -251,7 +251,7 @@ USE `'.$db.'`;'."\r\n"."\r\n";
             'selectMultName' => $selectMultName,
             'optionsData' => $optionsData,
             'optionsSelected' => $optionsSelected,
-            'fields' => $_GET['table'] ? getFields($_GET['table'], true) : [],
+            'fields' => GET('table') ? getFields(GET('table'), true) : [],
         ];
         if (isajax()) {
             return $pageProps;
