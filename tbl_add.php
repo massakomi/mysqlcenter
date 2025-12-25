@@ -12,10 +12,12 @@ if (!defined('DIR_MYSQL')) {
 }
 
 // Получаем начальную инфо о полях таблицы
-$fields = getFields($msc->table);
-if (!$fields) {
-    $msc->addMessage('Таблица не найдена', '', MS_MSG_FAULT);
-    return ;
+if ($msc->table) {
+    $fields = getFields($msc->table);
+    if (!$fields) {
+        $msc->addMessage('Таблица не найдена', '', MS_MSG_FAULT);
+        return ;
+    }
 }
 
 // Получаем массив имён полей из формы.

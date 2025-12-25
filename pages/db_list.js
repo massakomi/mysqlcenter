@@ -263,8 +263,9 @@ class ColumnRight extends React.Component {
               <DbCreateForm />
 
               <div className="mt-10">
-                  {tableLink} <br />
-                  <a href={`?s=db_list&db=${this.props.dbname}&mode=speedtest`}>Тест скорости</a>
+                  {tableLink} <br/>
+                  <a href={`?s=speedtest`}>Тест скорости</a><br/>
+                  <a href={`?s=actions&users=1`}>Информация о пользователях и правах</a>
               </div>
 
               <div className="mt-10">{this.props.appName}</div>

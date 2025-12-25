@@ -3,11 +3,17 @@
   --hidden-text-color: #CCCCCC;
   --light-text-color: #999999;
   --head-text-color: #CC0000;
+  --bg-color: white;
+  --cur-color: green;
 }
 
 /* Основные стили для шаблона, используются глобально во всех страницах*/
 
-BODY {font-size:12px; font-family: Arial, serif; color: var(--text-color); }
+body {font-size:12px; font-family: Arial, serif; color: var(--text-color); background-color: var(--bg-color)}
+
+/* Верх и низ */
+div.pageBlock { padding:5px; margin: 5px 0; }
+div.pageBlock b a { text-decoration:none; color: var(--text-color)}
 
 /* Каркасная таблица */
 .outerTable {display: flex; gap: 10px}
@@ -23,44 +29,34 @@ BODY {font-size:12px; font-family: Arial, serif; color: var(--text-color); }
 
 /* Меню главное */
 div.globalMenu { display:inline; }
-div.globalMenu A, .globalMenu A.cur { margin:0 10px 0 0; text-decoration:none}
-div.globalMenu A:hover { text-decoration:underline}
-div.globalMenu .delim {  margin:0 10px 0 0; text-decoration:none; color: var(--hidden-text-color)}
-div.globalMenu A.cur { text-decoration:underline; margin:0 10px 0 0;}
+div.globalMenu a { margin:0 10px 0 0; text-decoration:none}
+div.globalMenu a.cur, div.globalMenu a:hover { text-decoration:underline; color: var(--cur-color)}
+div.globalMenu .delim {  margin:0 10px 0 0; color: var(--hidden-text-color)}
 
 /* Меню цепочка */
-SPAN.menuChain A { text-decoration:none; color: var(--light-text-color)}
-SPAN.menuChain A:hover {color: var(--text-color)}
+span.menuChain a { text-decoration:none; color: var(--light-text-color)}
+span.menuChain a:hover {color: var(--text-color)}
 
 /* Меню таблиц */
 div.menuTables { position: relative}
-div.menuTables A { font-size:10px; text-decoration:none; line-height:120%; display:block}
-div.menuTables A:hover { text-decoration:underline}
-div.menuTables A.cur {color: var(--head-text-color)}
+div.menuTables a { font-size:10px; text-decoration:none; line-height:120%; display:block}
+div.menuTables a:hover { text-decoration:underline}
+div.menuTables a.cur {color: var(--head-text-color)}
 div.menuTables .t1 { margin-left:5px; color: var(--text-color)}
-div.menuTables .t2 { }
+div.menuTables .t2 { color: var(--cur-color) }
 div.menuTables .freq0 {color: #ccc}
 div.menuTables .freq1 {color: #aaa}
 div.menuTables .freq2 {color: #888} /* fedcba9876543210 */
 
 /* Меню баз данных */
-div#dbHiddenMenu { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid #aaa; color: var(--text-color)}
-div#dbHiddenMenu A { font-size:12px}
-div#dbHiddenMenu A:hover {color:black}
-
-/* Форма поиска в футере */
-form.formSearch { display:inline; margin:0; padding:0}
-form.formSearch input { font-size:12px; padding:2px}
-form.formSearch input.img { margin:0; border:0; vertical-align:middle}
-
-/* Блок страницы */
-div.pageBlock { padding:5px; margin: 5px 0; }
-div.pageBlock B A { text-decoration:none; color: var(--text-color)}
+div.menuDb { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid #aaa; color: var(--text-color)}
+div.menuDb a { line-height:120%; font-size:12px; text-decoration: none; display: block}
+div.menuDb a:hover {color:black; text-decoration:underline}
 
 /* Форма SQL запроса всплывающая */
-form.popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px}
-form.popupGeneralForm TEXTAREA { font-size:12px; width:800px; padding:5px; display:block;}
-form.popupGeneralForm input { text-align:right; margin:5px 0 }
+form.popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px; background-color: var(--bg-color); text-align:right}
+form.popupGeneralForm textarea { font-size:12px; width:800px; padding:5px; display:block;}
+form.popupGeneralForm input { margin:5px 0 }
 
 /* Таблица сообщения */
 table.globalMessage { margin:5px 0; border-collapse:collapse; empty-cells:show}
@@ -68,15 +64,6 @@ table.globalMessage td, .globalMessage th { padding: 5px; font-size:12px;}
 table.globalMessage th {text-align:left; }
 table.globalMessage .sqlQuery { font-size:10px; font-weight:bold; margin:2px 10px; white-space:pre; max-width: 1024px; overflow: auto;}
 table.globalMessage .mysqlError { font-size:10px; font-weight:bold; }
-
-/* Отображения времени выполнения */
-span.hiddenText {color: var(--hidden-text-color)}
-/* Для ссылок */
-A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
-
-
-/* Прочие стили */
-
 
 /* Таблица основная */
 table.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
@@ -91,9 +78,6 @@ table.contentTable .tbl { width:200px; font-size:14px}
 table.contentTable .num { width:80px; text-align:right;}
 table.contentTable .rig { text-align:right;}
 table.contentTable a { text-decoration:none}
-table.optionstable {empty-cells:show; border-collapse:collapse;}
-table.optionstable th {background-color: #eee}
-table.optionstable th, table.optionstable td {border:1px solid #ccc; padding: 2px 4px; vertical-align: top;}
 /* db_compare tbl_compare */
 .contentTable .r {text-align:right}
 .contentTable .b { font-size:14px;}
@@ -132,7 +116,7 @@ form.tableFormEdit td.inner { padding: 0; }
 
 /* Общая форма внтури fieldset actionsdb actions */
 fieldset.msGeneralForm { margin:20px 0; padding: 10px}
-fieldset.msGeneralForm form { margin:0;}
+fieldset.msGeneralForm form, fieldset.msGeneralForm table { margin:0;}
 fieldset.msGeneralForm LEGEND { font-size:14px; }
 fieldset.msGeneralForm [type="checkbox"] { vertical-align: middle }
 fieldset.msGeneralForm input.submit { display:block; margin-top:5px;}
@@ -177,6 +161,10 @@ h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; wid
 a.truncate { color: var(--text-color)!important}
 a.delete { color: var(--head-text-color)!important}
 textarea.wide {width: 100%; height: 100px}
+/* Отображения времени выполнения */
+span.hiddenText {color: var(--hidden-text-color)}
+/* Для ссылок */
+A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
 
 /* Loader */
 .loader {
@@ -212,20 +200,15 @@ textarea.wide {width: 100%; height: 100px}
 
 A,
 TABLE.contentTable A,
-DIV#dbHiddenMenu A,
+DIV.menuDb A,
 DIV.globalMenu A       { color:#0000FF }
-DIV.globalMenu A.cur,
-DIV.menuTables .t2     { color:green   }
 DIV.formSet H2         { color:#FFFFFF }
 
 TABLE.globalMessage .mysqlError { color:#FF0000 }
 
 /* Фон */
 
-BODY,
-FORM.popupGeneralForm  { background-color:#FFFFFF }
-
-DIV#dbHiddenMenu { background-color:#eee }
+DIV.menuDb { background-color:#eee }
 
 TABLE.globalMessage th,
 TABLE.contentTable TH,

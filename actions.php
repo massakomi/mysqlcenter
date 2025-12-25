@@ -7,19 +7,20 @@
 /**
  * Возвращает оптионсы для селектора кодировок
  *
- * @package
- * @param  string Выбранное значение кодировки
+ * @param string Выбранное значение кодировки
  * @return string HTML
+ * @package
  */
-function getCharsetSelector($selected=null) {
-   	$charsetList = getCharsetArray(true);
+function getCharsetSelector($selected = null)
+{
+    $charsetList = getCharsetArray(true);
     $charsetSelector = '';
     foreach ($charsetList as $row) {
         $sel = null;
         if ($selected == $row['Charset']) {
             $sel = ' selected="selected"';
         }
-        $charsetSelector .= "\n".'<option title="'.$row['Description'].' (default:'.$row['Default collation'].')"'.$sel.'>'.$row['Charset'].'</option>';
+        $charsetSelector .= "\n" . '<option title="' . $row['Description'] . ' (default:' . $row['Default collation'] . ')"' . $sel . '>' . $row['Charset'] . '</option>';
     }
     return $charsetSelector;
 }
@@ -27,16 +28,17 @@ function getCharsetSelector($selected=null) {
 /**
  * Возвращает массив баз данных с полной информацией о них
  *
- * @param   string      База данных
- * @param   boolean     Извлечь статистику для MySQL < 5
- * @param   resource    mysql connection
- * @param   string      Сортировка по колонке
- * @param   string      ASC or DESC
- * @param   integer     Старт для LIMIT
- * @param   bool|int    Максимум для LIMIT
+ * @param string      База данных
+ * @param boolean     Извлечь статистику для MySQL < 5
+ * @param resource    mysql connection
+ * @param string      Сортировка по колонке
+ * @param string      ASC or DESC
+ * @param integer     Старт для LIMIT
+ * @param bool|int    Максимум для LIMIT
  * @return  array       Массив объектов с инфо баз данных
  */
-function get_databases_full($database=null, $force_stats=false, $sort_by='SCHEMA_NAME', $sort_order='ASC', $limit_offset=0, $limit_count=false) {
+function get_databases_full($database = null, $force_stats = false, $sort_by = 'SCHEMA_NAME', $sort_order = 'ASC', $limit_offset = 0, $limit_count = false)
+{
     global $msc;
     $sort_order = strtoupper($sort_order);
 
@@ -53,7 +55,7 @@ function get_databases_full($database=null, $force_stats=false, $sort_by='SCHEMA
 
     // get table information from information_schema
     if ($database) {
-        $sql_where_schema = 'WHERE `SCHEMA_NAME` LIKE \''. addslashes($database) . '\'';
+        $sql_where_schema = 'WHERE `SCHEMA_NAME` LIKE \'' . addslashes($database) . '\'';
     } else {
         $sql_where_schema = '';
     }
@@ -91,7 +93,7 @@ function get_databases_full($database=null, $force_stats=false, $sort_by='SCHEMA
           ' . $sql_where_schema . '
        GROUP BY BINARY `information_schema`.`SCHEMATA`.`SCHEMA_NAME`
        ORDER BY BINARY `' . $sort_by . '` ' . $sort_order
-       . $limit;
+        . $limit;
     $databases = $msc->fetchPdo($sql)->fetchAll();
     unset($sql_where_schema, $sql, $drops);
 
@@ -100,7 +102,8 @@ function get_databases_full($database=null, $force_stats=false, $sort_by='SCHEMA
     //(caused by older MySQL < 5 or $GLOBALS['cfg']['NaturalOrder'])
     if ($apply_limit_and_order_manual) {
 
-        function _usort_comparison_callback($a, $b) {
+        function _usort_comparison_callback($a, $b)
+        {
             $sorter = 'strnatcasecmp';
             return ($GLOBALS['callback_sort_order'] == 'ASC' ? 1 : -1) * $sorter($a[$GLOBALS['callback_sort_by']], $b[$GLOBALS['callback_sort_by']]);
         }
@@ -131,25 +134,48 @@ if (isset($_REQUEST['sort_order']) && strtolower($_REQUEST['sort_order']) == 'de
 }
 
 if (!defined('DIR_MYSQL')) {
-	exit('Hacking attempt');
+    exit('Hacking attempt');
 }
-if ($msc->table == '') {
-	$msc->pageTitle = "Действия - БД";
-	$DQuery = $umaker->make('db', $msc->db, 's', 'actions');
+
+if (GET('users')) {
+
+    $msc->pageTitle = 'Различная информация';
+
+    $users = $msc->getData('SELECT * FROM mysql.user');
+    $grants = $msc->getData('SHOW GRANTS');
+    $privileges = $msc->getData('SHOW PRIVILEGES');
+    $engines = $msc->getData('SHOW ENGINES');
+
+    $pageProps = [
+        'users' => $users,
+        'grants' => $grants,
+        'privileges' => $privileges,
+        'engines' => $engines,
+    ];
+    if (isajax()) {
+        return $pageProps;
+    }
+
+    $this->template($pageProps);
+
+} elseif ($msc->table == '') {
+    $msc->pageTitle = "Действия - БД";
+    $DQuery = $umaker->make('db', $msc->db, 's', 'actions');
 
     $charsetSelector = '';
-    $dbInfo = get_databases_full($msc->db, GET('act')=='fullinfo', $sort_by, $sort_order, 0);
+    $dbInfo = get_databases_full($msc->db, GET('act') == 'fullinfo', $sort_by, $sort_order, 0);
     $dbInfo = $dbInfo[0];
     $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
     $charsetSelector = getCharsetSelector(substr($dbInfo['collation'], 0, strpos($dbInfo['collation'], '_')));
-    //$charsetList = getCharsetArray(true);
     $charsetList = getCharsetArray();
+    $processes = $msc->getData('SHOW FULL PROCESSLIST');
 
     $pageProps = [
         'db' => $_GET['db'],
         'url' => $DQuery,
         'dbInfo' => $dbInfo,
-        'charsets' => $charsetList
+        'charsets' => $charsetList,
+        'processes' => $processes,
     ];
     if (isajax()) {
         return $pageProps;
@@ -158,10 +184,10 @@ if ($msc->table == '') {
     $this->template($pageProps);
 
 } else {
-	$msc->pageTitle = "Действия - таблица $msc->table";
-	$DTQuery = MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table";
+    $msc->pageTitle = "Действия - таблица $msc->table";
+    $DTQuery = MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table";
 
-    $result = $msc->fetchPdoObject('SHOW TABLE STATUS FROM '.$msc->db.' LIKE "'.$msc->table.'"');
+    $result = $msc->fetchPdoObject('SHOW TABLE STATUS FROM ' . $msc->db . ' LIKE "' . $msc->table . '"');
     $charset = null;
     if ($row = $result->fetch()) {
         $charset = substr($row->Collation, 0, strpos($row->Collation, '_'));

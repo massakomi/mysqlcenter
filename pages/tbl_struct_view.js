@@ -94,7 +94,7 @@ class Tbl_struct_view extends React.Component {
             return (
               <div key={table.Name.toString()}>
                   <h4>{table.Name} <span className="grey">{table.Rows}</span></h4>
-                  <table className="optionstable">
+                  <table className="contentTable">
                       <tbody>
                       <tr>
                           {Object.values(fields).map((field) => {

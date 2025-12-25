@@ -78,16 +78,16 @@ global $umaker, $msc;
 </div>
 
 
-<form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post" name="sqlPopupQueryForm" id="sqlPopupQueryForm" style="text-align:right">
+<form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post">
   <input type="submit" value="Отправить запрос!" />
   <textarea name="sql" rows="15" wrap="off"><?=POST('sql')?></textarea>
   <a href="#" onclick="msDisplaySql(); return false">закрыть</a>
 </form>
-<div id="dbHiddenMenu">
+<div class="menuDb">
 <?php
 $dbs = Server::getDatabasesWithoutHidden();
 foreach ($dbs as $db) {
-	echo '<a href="?db='.$db.'">'.$db.'</a><br />';
+    echo '<a href="?db='.$db.'">'.$db.'</a>';
 }
 ?>
 </div>

@@ -130,7 +130,7 @@ if (!isset($directSQL)) {
     $part  = 0;
 
     // Для директ sql сообщение выводим тут
-    $msc->addMessage('Выбрано', $directSQL);
+    $msc->addMessage($directSQL);
     $sql = $directSQL;
 }
 

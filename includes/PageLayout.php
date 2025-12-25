@@ -53,9 +53,6 @@ class PageLayout
         if ($msc->page == 'tbl_struct' && GET('action') == 'add_key') {
             $page = 'tbl_key_add';
         }
-        if ($msc->page == 'msc_configuration') {
-            $page = 'config';
-        }
         return $page;
     }
 
@@ -163,10 +160,18 @@ class PageLayout
     private function initController(): void
     {
         global $msc;
-        $className = ucfirst($msc->page);
-        $path = 'controller/'.$className.'.php';
-        if (file_exists($path)) {
-            $this->controller = '\controller\\'.$className;
+        $classNames = [
+            ucfirst($msc->page),
+            ucfirst(preg_replace_callback('~_([a-z])~i', function($match) {
+                return strtoupper($match[1]);
+            }, $msc->page)),
+        ];
+        foreach ($classNames as $className) {
+            $path = 'controller/'.$className.'.php';
+            if (file_exists($path)) {
+                $this->controller = '\controller\\'.$className;
+                break;
+            }
         }
     }
 
@@ -196,10 +201,7 @@ class PageLayout
             $dbMenu = array_merge(array(
                 'базы данных' => array('db_list', ''),
                 'логин' => array('login', ''),
-                'статус' => array('server_status', ''),
                 'переменные' => array('server_variables', ''),
-                //'кодировки'   => array('server_collations', ''),
-                'инфо' => array('server_users', ''),
             ), $dbMenuGlobal);
 
         } elseif (($msc->db != '' && $msc->table == '') || $msc->page == 'tbl_list') {
@@ -278,7 +280,7 @@ class PageLayout
             $url = UrlMaker::edit($url, 'table', $msc->table);
         }
         $dbMenu = array(
-            'Настройки' => array('msc_configuration', '')
+            'Настройки' => array('config', '')
         );
         $menu = '<div class="globalMenu">' . "\r\n";
         foreach ($dbMenu as $title => $array) {
@@ -362,18 +364,17 @@ class PageLayout
             $end = strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0 ? strpos($t->Name, '_', 3) : 50;
             $p = substr($t->Name, 0, $end);
             if (array_key_exists($p, $prefixes) && $prefixes[$p] > 1) {
-                $style = 't1';
+                $class = 't1';
             } else {
-                $style = 't2';
+                $class = 't2';
             }
             if ($greyEmpty && $t->Rows == 0) {
-                $style .= '" style="color:#ccc';
+                $class .= ' empty';
             }
+            $menuTables .= $this->makeTableMenuItem($t->Name, $class);
             if ($msc->table == $t->Name) {
-                $menuTables .= $this->makeTableMenuItem($t->Name, 'cur');
                 $selectorTables .= '  <option value="" selected><b>' . $t->Name . '</b></option>' . "\r\n";
             } else {
-                $menuTables .= $this->makeTableMenuItem($t->Name, $style);
                 $selectorTables .= '  <option value="' . $this->getMenuTableLink($t->Name) . '">' . $t->Name . '</option>' . "\r\n";
             }
         }
@@ -388,6 +389,10 @@ class PageLayout
 
     function makeTableMenuItem($table, $class, $title = '')
     {
+        global $msc;
+        if ($msc->table == $table){
+            $class .= ' cur';
+        }
         return '  <a class="' . $class . '" title="' . $title . '" href="' . $this->getMenuTableLink($table) . '">' . $table . '</a>' . "\r\n";
     }
 
@@ -395,7 +400,7 @@ class PageLayout
     {
         global $msc;
         // если есть текущая страница, то переход на неё (переход по структурам всех таблиц)
-        if (!is_null($msc->page) && $msc->page == 'tbl_struct') {
+        if ($msc->page == 'tbl_struct') {
             $link = '?db=' . $msc->db . '&table=' . $table . '&s=' . $msc->page;
         } else {
             $link = '?db=' . $msc->db . '&table=' . $table . '&s=tbl_data';

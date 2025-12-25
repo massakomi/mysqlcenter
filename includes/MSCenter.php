@@ -277,7 +277,7 @@ showhide("' . $messageId . '");
     {
         $textError = $text;
         if ($sql != '') {
-            $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>';
+            $aff = $this->affectedRows ? '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>' : '';
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200) . ';' . $aff . '</div>';
             if ($error != null) {
                 $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';

@@ -184,3 +184,34 @@ class ExportOptions extends React.Component {
         );
     }
 }
+
+
+
+function Table(props) {
+
+    let ths = []
+    for (let key in props.data[0]) {
+        ths.push(<th key={`th-${key}`}>{key}</th>)
+    }
+
+    let trs = []
+    for (let index in props.data) {
+        let tds = []
+        for (let key in props.data[index]) {
+            const item = props.data[index][key]
+            tds.push(<td key={`td-${key}`}>{item}</td>)
+        }
+        trs.push(<tr key={`tr-${index}`}>{tds}</tr>)
+    }
+
+    return (
+      <table className="contentTable">
+          <thead>
+          <tr>{ths}</tr>
+          </thead>
+          <tbody>
+          {trs}
+          </tbody>
+      </table>
+    )
+}

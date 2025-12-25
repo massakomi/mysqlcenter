@@ -63,7 +63,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             //$sheet = array();
 
             echo '
-            <table class="optionstable">';
+            <table class="contentTable">';
             foreach ($data->sheets[$sheet]['cells'] as $cell => $values) {
                 //$sheet [][]= ;
                 $str = trim(implode(' ', $values));

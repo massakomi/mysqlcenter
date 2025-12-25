@@ -240,7 +240,7 @@ function msImageAction(formName, param, actionReplace) {
  * Функция, которая отвечает за механизм отображения/скрытия блока быстрого SQL запроса на всех страницах MSC
  */
 function msDisplaySql() {
-    let form = document.getElementById('sqlPopupQueryForm')
+    let form = document.querySelector('.popupGeneralForm')
     if (form.checkVisibility()) {
         form.style.display = 'none'
     } else {
@@ -473,12 +473,12 @@ formatSize = (bytes, digits = 0) => {
 
 function dbHiddenMenu() {
     let hideTimeout = null;
-    let div = document.getElementById('dbHiddenMenu')
+    let div = document.querySelector('.menuDb')
     forElementsEvent('mouseover', '#appNameId', function(e) {
         div.style.display = 'block'
     })
 
-    forElementsEvent('mouseout', '#dbHiddenMenu', function(e) {
+    forElementsEvent('mouseout', '.menuDb', function(e) {
         let w = parseInt(window.getComputedStyle(div).width);
         if (e.pageX > w) {
             hideTimeout = setTimeout(function () {
@@ -487,12 +487,12 @@ function dbHiddenMenu() {
         }
     })
 
-    forElementsEvent('mouseover', '#dbHiddenMenu', function(e) {
+    forElementsEvent('mouseover', '.menuDb', function(e) {
         if (hideTimeout != null) {
             clearInterval(hideTimeout);
         }
     })
-    forElementsEvent('click', '#dbHiddenMenu', function(e) {
+    forElementsEvent('click', '.menuDb', function(e) {
         div.style.display = 'none'
     })
 }

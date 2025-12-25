@@ -1,0 +1,69 @@
+<?php
+
+namespace controller;
+
+/**
+ *
+ */
+class DbCompare
+{
+
+    public function __construct()
+    {
+        global $msc, $pagel;
+        $msc->pageTitle = 'Сравнение баз данных';
+
+        $databases = [];
+        if (POST('dbs')) {
+            $databases = explode(';', POST('dbs'));
+        }
+        if (!$databases) {
+            $databases = POST('databases');
+        }
+        if ($databases && count($databases) < 2) {
+            $msc->addMessage('Вы не выбрали базы данных для сравнения');
+            return null;
+        }
+
+        $pageProps = $this->pageProps($databases);
+        if (isajax()) {
+            return $pageProps;
+        }
+        $pagel->template($pageProps);
+    }
+
+    /**
+     * @param $databases
+     * @return array
+     */
+    function pageProps($databases)
+    {
+        global $msc;
+
+        // Создание начальных массивов
+        $dbArray = [];
+        foreach ($databases as $k => $v) {
+            $data = $msc->getData('SHOW TABLE STATUS FROM ' . $v, \PDO::FETCH_OBJ);
+            foreach ($data as $row) {
+                $dbArray[$v][$row->Name] = $row;
+            }
+        }
+
+        $exportArray = [];
+        $export = new \Export();
+        $export->setComments(0);
+        $export->setOptionsStruct(0, $addAuto = 0, 0);
+        foreach ($dbArray as $db => $tables) {
+            foreach ($tables as $table => $values) {
+                $export->data = null;
+                $export->setDatabase($db);
+                $export->setTable($table);
+                $exportData = $export->exportStructure(0, 0);
+                $exportData = str_replace(' PACK_KEYS=0', '', $exportData);
+                $exportData = preg_replace('~COMMENT=".*"~U', '', $exportData);
+                $exportArray [$db][$table] = $exportData;
+            }
+        }
+        return compact('databases', 'dbArray', 'exportArray');
+    }
+}
