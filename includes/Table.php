@@ -1,8 +1,4 @@
-<?php 
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
+<?php
 
 /**
  * Класс Table для создания красивых таблиц средствами PHP
@@ -17,9 +13,21 @@
  */
 class Table
 {
-    public $className, $border, $cpadd, $cspace, $width, $id, $tableTitle, $tableStyle; // top
-    public $tableCont, $rowsCont, $headerCont;
-    public $interlace, $colClass, $headerClass;
+    public $className;
+    public $border;
+    public $cpadd;
+    public $cspace;
+    public $width;
+    public $id;
+    public $tableTitle;
+    public $tableStyle;
+
+    public $tableCont;
+    public $rowsCont;
+    public $headerCont;
+    public $interlace;
+    public $colClass;
+    public $headerClass;
     public $rowsCount;  // счётчик рядов
     public $rn = "\r\n";
     public $tab = '  '; // отступ td от tr (tab)
@@ -251,4 +259,3 @@ class Table
     }
     // и т.д.
 }
-

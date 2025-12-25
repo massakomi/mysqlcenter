@@ -118,8 +118,8 @@ class PageLayout
             $data = [
                 'messages' => $msc->getMessagesData(),
                 'databases' => Server::getDatabasesWithoutHidden(),
-                'DB_HOST' => DB_HOST,
-                'DB_USERNAME' => DB_USERNAME,
+                'DB_HOST' => $msc->host,
+                'DB_USERNAME' => $msc->user,
             ];
         } else {
             $pageProps = include $currentHandler;
@@ -191,10 +191,11 @@ class PageLayout
             $dbMenu = [
                 'ввести доступы к базе данных' => array('login', ''),
             ];
-        } elseif ((GET('s') == 'db_list' || $msc->page == 'db_list' || $msc->page == 'users') || substr(GET('s'), 0, 7) == 'server_') {
+        } elseif ((GET('s') == 'db_list' || $msc->page == 'db_list' || $msc->page == 'users' || $msc->page == 'login') || substr(GET('s'), 0, 7) == 'server_') {
             $type = 'server';
             $dbMenu = array_merge(array(
                 'базы данных' => array('db_list', ''),
+                'логин' => array('login', ''),
                 'статус' => array('server_status', ''),
                 'переменные' => array('server_variables', ''),
                 //'кодировки'   => array('server_collations', ''),

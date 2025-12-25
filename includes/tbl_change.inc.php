@@ -52,6 +52,9 @@ function processRowsEdit($editType) {
                 $type = 'varchar';
             }
             $isNull = isset($_POST['isNull'][$numRow][$key]);
+            if ($isNull) {
+                $value = null;
+            }
             if ($editType == 0) {
                 $field = $fields[$key]->Field;
                 if ($value != $cValue->$field) {
@@ -83,129 +86,3 @@ function processRowsEdit($editType) {
         $msc->addMessage($lang[2][$editType]);
     }
 }
-
-/**
- * Добавляет ряд в объект $table
- *
- * @package msc
- * @access private
- * @param object Table
- * @param string Имя поля
- * @param string Значение поля
- * @param string Номер вставляемой записи
- * @param integer Номер поля
- * @param array Массив полей таблицы
- */
-/*function addRow(&$table, $name, $value, $j, $i, $fields) {
-    if ($value == 'CURRENT_TIMESTAMP') {
-        $value = null;
-    }
-    $null = '&nbsp;';
-    $attr = null;
-    //pre($fields[$name]);
-    $type = str_replace(',', ', ', $fields[$name]->Type);
-    if ($fields[$name]->Null) {
-        // если нулл, то отмечаем
-        $checked = null;
-        if ($value == null && $fields[$name]->Null == 'YES') {
-            $checked = ' checked="checked"';
-        }
-        $null = '<input name="isNull['.$j.']['.$i.']" type="checkbox" value="1"'.$checked.'/>';
-    }
-    $table -> makeRow(
-        '<b class="field">'.$name.'</b><br />'.wordwrap($type, 100, '<br />'),
-        $null,
-        MSC_InsertInput($j, $type, $value, false, $attr, $i),
-        plDrawSelector(array('','md5'), ' name="func['.$j.']['.$i.']"', '', '', false)
-    );
-}*/
-
-/**
- * Возвращает поле формы в зависимости от номера и типа поля
- *
- * @package msc
- * @access private
- * @param integer Номер поля
- * @param string Тип поля
- * @param string Значение поля
- * @param boolean Дифференцировать ли длину поля в зависимости от его длины(length)
- * @param string Аттрибуты, которые необходимо добавить к тегу поля формы
- * @param string Номер вставляемой записи
- * @return string HTML код поля формы
- */
-/*function MSC_InsertInput($i, $type, $value=null, $diffLength=true, $attr=null, $j=null) {
-    //$value = $type;
-    global $msc;
-    $length = null;
-    if (preg_match('/\(([0-9]+)\)/', $type, $a)) {
-        $length = intval($a[1]);
-    }
-    if ($length == 1) {
-        //return '<input name="row['.$i.'][]" type="checkbox" value="1" />';
-    }
-    if (stristr($type, 'enum')) {
-        preg_match_all('~(\'|")(.*)(\'|")~iU', $type, $items);
-        if (isset($items[2])) {
-            array_unshift($items[2], '');
-            // убираем двойные пробелы
-            foreach ($items[2] as $k => $v) {
-                $items[2][$k] = preg_replace('~\s+~i', ' ', $v);
-            }
-            $value = preg_replace('~\s+~i', ' ', $value);
-            $attr = str_replace('onkeyup', 'onchange', $attr);
-            //var_dump($value);
-            //echo '<pre>'; print_r($items[2]); echo '</pre>';
-            //var_dump(array_search($value, $items[2]));
-            return plDrawSelector(
-                $items[2],
-                ' name="row['.$i.']['.$j.']"'.$attr,
-                array_search($value, $items[2]),
-                '',
-                false
-            );
-        }
-    }
-
-    // текст
-    if (stristr($type, 'text') || stristr($type, 'blob')) {
-        $rows = 10;
-        if (!is_null($value)) {
-            $rows = round(strlen($value) / 60);
-            if ($rows < 10) {
-                $rows = 10;
-            }
-        }
-        return '<textarea name="row['.$i.']['.$j.']" cols="70" rows="'.$rows.'"'.$attr.'>'.$value.'</textarea>';
-    }
-    // числа
-    $size = 80;
-    if ($diffLength) {
-        if ($length <= 15) {
-            $size = $length;
-        } else if ($length < 30) {
-            $size = round($length / 1.2);
-        } else if ($length >= 30) {
-            $size = round($length / 3);
-        }
-    } else {
-        if ($length <= 15) {
-            $size = 15;
-        } else if ($length < 128) {
-            $size = 50;
-        } else {
-            $size = 80;
-        }
-    }
-    if ($type == 'datetime') {
-        //$value = date('Y-m-d H:i:s');
-        $size = 30;
-    }
-    // дата
-    if ($type == 'timestamp' && $value != null) {
-        $size = 50;
-        //return plDrawDateSelector(strtotime($value), 'date'.$i.'_');
-    }
-    $value = htmlspecialchars($value);
-    return '<input name="row['.$i.']['.$j.']" type="text" size="'.$size.'" value="'.$value.'" class="si"'.$attr.'/>';
-}*/
-

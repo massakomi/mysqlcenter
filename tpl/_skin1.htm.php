@@ -43,12 +43,14 @@ global $umaker, $msc;
             <h1><?php echo $msc->getPageTitle()?></h1>
             <div>
                 <?php
-                if (GET('table') != '') {
+                if ($msc->table) {
                     $url = '?db='.$msc->db.'&table='.$msc->table.'&s=tbl_data';
                     $fields = getFields($msc->table, true);
                     ?>
                     <form action="<?php echo $url?>" method="post" class="search-top">
-                        <input type="text" name="query" value="Поиск по таблице" />
+                        <input type="hidden" name="order" value="<?=POST('order')?>" />
+                        <input type="hidden" name="go" value="<?=POST('go')?>" />
+                        <input type="text" name="query" value="<?=htmlspecialchars(POST('query', 'Поиск или where'))?>" />
                         <?=plDrawSelector($fields, ' name="field"', POST('field'), '', false) ?>
                         <?=plDrawSelector(['=', 'like'], ' name="like"', POST('like'), '', false) ?>
                         <input type="text" name="byField" value="<?=POST('byField')?>" />
@@ -93,8 +95,8 @@ foreach ($dbs as $db) {
 <div class="pageBlock">
 	<?php echo $this->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
   &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
-  <strong>Хост:</strong> <?php echo DB_HOST ?> &nbsp;&nbsp;
-  <strong>Пользователь:</strong> <?php echo DB_USERNAME ?> &nbsp;&nbsp;
+  <strong>Хост:</strong> <?php echo $msc->host ?> &nbsp;&nbsp;
+  <strong>Пользователь:</strong> <?php echo $msc->user ?> &nbsp;&nbsp;
 <?php
 if (function_exists('memory_get_peak_usage')) {
 ?>

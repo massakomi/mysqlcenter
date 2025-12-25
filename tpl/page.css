@@ -16,6 +16,7 @@ BODY {font-size:12px; font-family: Arial, serif; color: var(--text-color); }
 .outerTable h1 { margin:0; font-size:18px; padding:0; line-height:100%; margin-right: 20px}
 .outerTable .headTop {display: flex; align-items: center;}
 .search-top {display: inline}
+.search-top [name="query"].wide {position: absolute; width: 1024px; }
 .search-top [name="field"] {max-width: 100px}
 .search-top [name="byField"] {width: 80px}
 .search-top [type="submit"] {display: none}
@@ -81,15 +82,11 @@ A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
 table.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
 table.contentTable TD { padding: 3px; font-size:12px}
 table.contentTable th { padding: 3px; font-size:12px; text-align:left; color: var(--head-text-color)}
-table.contentTable th:not(.wide) span {
-  overflow-wrap: anywhere;
-  width: 20px;
-  display: block;
-  word-break: break-all;
-}
+table.contentTable th:not(.wide) a {overflow-wrap: anywhere; width: 20px; display: block; word-break: break-all;}
 table.contentTable .cb { margin:0; width:18px; height:18px}
-table.contentTable .sort { text-decoration:none; font-size:10px}
-table.contentTable .sort:hover { text-decoration:underline}
+table.contentTable th a { text-decoration:none; font-size:10px}
+table.contentTable th a:hover { text-decoration:underline}
+table.contentTable th a.current { color:red; font-weight: bold }
 table.contentTable .tbl { width:200px; font-size:14px}
 table.contentTable .num { width:80px; text-align:right;}
 table.contentTable .rig { text-align:right;}
@@ -163,13 +160,13 @@ form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left
 table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
 
 /* login page */
-.login {display: flex}
+.login {display: flex; gap: 10px}
 .login .list {width: 50%}
 .login .list select {width: 200px; height: 150px; display: block; margin-bottom: 5px}
 .login .list [type="button"] {margin-right: 5px}
-.login form {margin-top: 10px; width: 50%}
-.login form > div {display: flex; margin-bottom: 10px; align-items: center;}
-.login form > div label {width: 20%}
+.login form {margin-top: 10px; width: 30%}
+.login form > div {display: flex; margin-bottom: 10px; align-items: center; gap: 10px;}
+.login form > div label {width: 90px}
 
 /* Разное */
 #msAjaxQueryDiv {position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 200px; padding-right:20px; transition: opacity 0.5s ease-out, visibility 0.5s ease-out; opacity: 0;

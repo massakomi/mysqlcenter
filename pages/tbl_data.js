@@ -1,24 +1,65 @@
-function TableHeader(props) {
+class TableHeader extends React.Component {
+    constructor(props) {
+        super(props);
+    }
 
-    let headers = getTableHeaders(props.fieldsEx, !props.directSQL, props.headWrap);
+    order(field, e) {
+        e.preventDefault()
+        const form = document.querySelector('.search-top')
+        if (this.props.order === field) {
+            field += '-'
+        }
+        form.querySelector('[name="order"]').value = field
+        form.submit()
+    }
 
-    return (
-      <table className="contentTable interlaced">
-          <thead>
-          <tr valign="top">
-              <th><a href={umaker({'fullText': '1'}, true)} title="Показать полные значения всех полей и убрать переносы заголовков полей" className="hiddenSmallLink" style={{color:'white'}}>full</a></th>
-              <th></th>
-              <th></th>
-              {headers.map((h, k) =>
-                <th key={k}>{h}</th>
-              )}
-          </tr>
-          </thead>
-          <tbody>
-          {props.children}
-          </tbody>
-      </table>
-    );
+    /**
+     * (для tbl_data и tbl_compare) Получить массив заголовков для таблицы данных. Заголовки для таблиц данных
+     * формируются особым образом, с переносом.
+     *
+     * @package data view
+     * @return array  Массив заголовков
+     * @param fields
+     * @param sortEnabled
+     */
+    getTableHeaders(fields, sortEnabled=true) {
+        let headers = [];
+        Object.keys(fields).forEach((k) =>  {
+            let v = fields[k]
+            let link = v.Field;
+            if (sortEnabled) {
+                let cls = ''
+                if (this.props.order && this.props.order.indexOf(v.Field) === 0) {
+                    cls = 'current'
+                }
+                link = <a href="#" onClick={this.order.bind(this, v.Field)} key={k} className={cls}>{v.Field}</a>
+            }
+            headers.push(link)
+        })
+        return headers;
+    }
+
+    render () {
+        const headers = this.getTableHeaders(this.props.fieldsEx, !this.props.directSQL, this.props.headWrap);
+        return (
+          <table className="contentTable interlaced">
+              <thead>
+              <tr valign="top">
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  {headers.map((h, k) =>
+                    <th key={k}>{h}</th>
+                  )}
+              </tr>
+              </thead>
+              <tbody>
+              {this.props.children}
+              </tbody>
+          </table>
+        );
+    }
+
 }
 
 class Table extends React.Component {
@@ -27,16 +68,11 @@ class Table extends React.Component {
         super(props);
     }
 
-    deleteRow(idRow, j, e) {
+    deleteRow(idRow, e) {
         e.preventDefault()
         e.target.closest('tr').remove()
-        /*let msquery = 'db='+this.props.db+'&table='+this.props.table+'&s=tbl_struct'
-        let urlDelete = msquery + '&field=' + field
-        let query = urlDelete + '&id=f-' + encodeURIComponent(field)
-        msQuery('deleteField', query)*/
-
         const u2 = umaker({s: 'tbl_data', row: idRow})
-        let query = `${u2}&db=${this.props.db}&table=${this.props.table}&id=row${j}`
+        let query = `${u2}&db=${this.props.db}&table=${this.props.table}`
         msQuery('deleteRow', query)
     }
 
@@ -113,9 +149,9 @@ class Table extends React.Component {
             // создание ссылок на действия
             let u1 = umaker({s: 'tbl_change', row: idRow});
             let values = [
-                <input name="row[]" type="checkbox" value={idRow} className="cb" id={`c${idRow}`} />,
+                <input name="row[]" type="checkbox" value={idRow} className="cb" />,
                 <a href={u1} title="Редактировать ряд"><img src={`${this.props.dirImage}edit.gif`} alt="" border="0" /></a>,
-                <a href="#" onClick={this.deleteRow.bind(this, idRow, j)} title="Удалить ряд"><img src={`${this.props.dirImage}close.png`} alt="" border="0" /></a>
+                <a href="#" onClick={this.deleteRow.bind(this, idRow)} title="Удалить ряд"><img src={`${this.props.dirImage}close.png`} alt="" border="0" /></a>
             ]
 
             // загрузка данных
@@ -126,8 +162,8 @@ class Table extends React.Component {
                     type = fields[i].Type
                 }
                 let val = processRowValue(row[k], type, this.props.textCut)
-                if (k === 'query') {
-                    //val = '<a href="http://yandex.ru/yandsearch?text='.$v.'" target="_blank">'.$val.'</a>';
+                if (val === 'null') {
+                    val = <span className="hiddenText">{val}</span>
                 }
                 values.push(val)
                 i ++
@@ -140,7 +176,7 @@ class Table extends React.Component {
                 z ++;
             }
             trs.push(
-              <tr key={j} id={`row${j}`}>{tds}</tr>
+              <tr key={j}>{tds}</tr>
             )
             j ++
         }
@@ -171,12 +207,17 @@ class TableLinks extends React.Component {
         return pages;
     }
 
+    page(page, e) {
+        e.preventDefault()
+        const form = document.querySelector('.search-top')
+        form.querySelector('[name="go"]').value = page
+        form.submit()
+    }
+
     render() {
 
         let getPart = new URL(location.href).searchParams.get('part');
-        let getGo = new URL(location.href).searchParams.get('go');
-        //let getSql = new URL(location.href).searchParams.get('sql');
-        //let getOrder = new URL(location.href).searchParams.get('order');
+        let getGo = this.props.go;
         let linksRange = this.props.linksRange;
 
         let count = this.props.count
@@ -192,12 +233,10 @@ class TableLinks extends React.Component {
         let endPage = Math.min(countPages, currentPage + linksRange)
 
         for (let i = beginPage; i < endPage; i ++) {
-            let url = new URL(location.href)
-            url.searchParams.set('go', i * part)
             if (getGo == i * part) {
-                links.push(<a key={i} href={url} className="cur">{i + 1}</a>)
+                links.push(<a key={i} href="#" onClick={this.page.bind(this, i * part)} className="cur">{i + 1}</a>)
             } else {
-                links.push(<a key={i} href={url}>{i + 1}</a>)
+                links.push(<a key={i} href="#" onClick={this.page.bind(this, i * part)}>{i + 1}</a>)
             }
         }
 
@@ -243,7 +282,7 @@ class Tbl_data extends React.Component {
     componentDidMount() {
 
         forElements('.contentTable th', function() {
-            let span = this.querySelector('span')
+            let span = this.querySelector('a')
             if (span === null) {
                 return
             }
@@ -292,16 +331,17 @@ class Tbl_data extends React.Component {
 
     render() {
 
-        return (
-          <div>
+        let links = <TableLinks count={this.props.count} go={this.props.go} linksRange={this.props.linksRange} part={this.props.part} />
 
+        return (
+          <React.Fragment>
               <form action={this.props.url.replace('#s#', 'tbl_data')} method="post" name="formTableRows" id="formTableRows">
                   <input type="hidden" name="rowMulty" value="1" />
                   <input type="hidden" name="action" value="" />
 
-                  <TableLinks count={this.props.count} linksRange={this.props.linksRange} part={this.props.part} />
-
+                  {links}
                   <Table {...this.props} />
+                  {links}
 
                   <div className="chbxAction">
                       <img src={this.image("arrow_ltr.png")} alt="" border="0" align="absmiddle" />
@@ -332,7 +372,7 @@ class Tbl_data extends React.Component {
                   <HtmlSelector data={this.props.dbs} name="database" /> &nbsp;
                   <input type="submit" value="Сравнить" />
               </form>
-          </div>
+          </React.Fragment>
         );
     }
 }

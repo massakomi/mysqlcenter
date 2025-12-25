@@ -36,13 +36,11 @@ if (GET('action') == 'add_key') {
 
 
 if ($msc->table == '') {
-    $msc->pageTitle = NULL;
     $msc->addMessage('Не указана таблица в запросе', null, MS_MSG_FAULT);
     return null;
 }
 $dbt = new DatabaseTable($msc->db, $msc->table);
 if (!$dbt->isExists()) {
-    $msc->pageTitle = NULL;
     $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT);
     return null;
 }

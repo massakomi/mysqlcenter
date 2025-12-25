@@ -234,12 +234,10 @@ function processValueType($value, $type, $isNull) {
     global $pdo;
     if ($isNull) {
         return 'NULL';
+    } elseif (stripos($type, 'int') > -1 && !empty($value) && is_numeric($value)) {
+        return $value;
     } else {
-        if (preg_match('~^[a-z]+int~iU', trim($type)) && !empty($value) && is_numeric($value)) {
-            return $value;
-        } else {
-            return '"' . $pdo->quote($value) . '"';
-        }
+        return $pdo->quote($value);
     }
 }
 

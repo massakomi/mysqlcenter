@@ -22,7 +22,7 @@ $dumpHeader =
 '-- '.MS_APP_NAME.' SQL Экспорт
 -- версия '.MS_APP_VERSION.'
 --
--- Хост: '.DB_HOST.'
+-- Хост: '.$msc->host.'
 -- Время создания: '.date('j.m.Y, H-i').'
 -- Версия сервера: '.$vs.'
 -- Версия PHP: '.phpversion().'

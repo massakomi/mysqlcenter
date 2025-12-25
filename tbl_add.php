@@ -13,6 +13,10 @@ if (!defined('DIR_MYSQL')) {
 
 // Получаем начальную инфо о полях таблицы
 $fields = getFields($msc->table);
+if (!$fields) {
+    $msc->addMessage('Таблица не найдена', '', MS_MSG_FAULT);
+    return ;
+}
 
 // Получаем массив имён полей из формы.
 $names = POST('name');
@@ -102,12 +106,6 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         $sql .= "\r\n)";
         if ($msc->execPdo($sql)) {
             $msc->addMessage('Таблица '.POST('table_name').' создана', $sql, MS_MSG_SUCCESS);
-            if (!isajax()) {
-                $msc->table = POST('table_name');
-                $msc->pageTitle = 'Обзор таблицы ' . POST('table_name');
-                include_once(DIR_MYSQL . 'tbl_data.php');
-                return null;
-            }
         } else {
             $msc->addMessage('При создании таблицы возникли ошибки '.POST('table_name'), $sql, MS_MSG_NOTICE, $msc->error);
         }
@@ -190,19 +188,11 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         if ($sql != '') {
             if ($msc->execPdo($sql)) {
                 $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-                if (!isajax()) {
-                    include DIR_MYSQL . 'tbl_struct.php';
-                    return null;
-                }
             } else {
                 $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
             }
         } else {
             $msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
-            if (!isajax()) {
-                include DIR_MYSQL . 'tbl_struct.php';
-                return null;
-            }
         }
     }
     // создание запроса на добавление
@@ -224,10 +214,6 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         // выполнение
         if ($msc->execPdo($sql)) {
             $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
-            if (!isajax()) {
-                include DIR_MYSQL . 'tbl_struct.php';
-                return null;
-            }
         } else {
             $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
         }
@@ -282,11 +268,6 @@ if ($msc->table == null || POST('action') == 'fieldsAdd') {
         }
         $array []= $row;
     }
-    if (count($array) == 0 && !isajax()) {
-        redirect('?s=tbl_List');
-    }
-
-    //$cont = MSC_DrawFields($array);
     $msc->pageTitle = 'Редактировать структуру';
 }
 

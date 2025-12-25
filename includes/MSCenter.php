@@ -1,7 +1,4 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
 
 // типы сообщений
 const MS_MSG_SIMPLE = 1; // инфо
@@ -19,9 +16,9 @@ const MS_MSG_NOTICE = 5; // непонятная ситуация, замеча�
  */
 class MSCenter extends DatabaseQuery
 {
-
-    // public
-    public $db, $table, $page;
+    public $db;
+    public $table;
+    public $page;
 
     // private
     public array $messages = [];
@@ -36,13 +33,15 @@ class MSCenter extends DatabaseQuery
      */
     public float $timer;
 
-    public $allowRepeatMessages;
+    public bool $allowRepeatMessages = false;
+    public string $host;
+    public string $user;
 
     /**
      * Конструктор, для начала анализа скорости
      * @access private
      */
-    function __construct()
+    public function __construct()
     {
         $this->timer = round(array_sum(explode(" ", microtime())), 10);
     }
@@ -51,7 +50,7 @@ class MSCenter extends DatabaseQuery
      * Инициализация - отдельно от конструтора, чтобы тот раньше запустился
      * @access private
      */
-    function init()
+    public function init()
     {
         $this->db = $this->getCurrentDatabase();
         $this->table = $this->getCurrentTable();
@@ -62,7 +61,7 @@ class MSCenter extends DatabaseQuery
      * Возвращает заголовок страницы, вызывается только в основном шаблоне
      * @access private
      */
-    function getPageTitle()
+    public function getPageTitle()
     {
         if ($this->pageTitle == null) {
             $this->pageTitle = $this->getWindowTitle();
@@ -74,7 +73,7 @@ class MSCenter extends DatabaseQuery
      * Возвращает заголовок окна, относится только к основному шаблону
      * @access private
      */
-    function getWindowTitle()
+    public function getWindowTitle()
     {
         $mainTitle = null;
         $mainTitle .= $this->table != null ? "$this->table < " : null;
@@ -123,14 +122,40 @@ class MSCenter extends DatabaseQuery
      */
     public function connected(): bool
     {
-        return defined('DB_HOST');
+        return file_exists(MS_CONNECT_CONFIG_FILE);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function connect(): void
+    {
+        global $pdo;
+        $settings = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
+        $current = $settings['current'];
+        $config = $settings['config'][$current];
+        if (!$config) {
+            exitError("Конфиг не найден, current='$current'");
+        }
+        extract($config);
+        $this->host  = $host;
+        $this->user  = $user;
+        try {
+            $pdo = new PDO('mysql:host='.$host.';dbname='.$database, $user, $password, [
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=".MS_COLLATION.', character_set_server='.MS_CHARACTER_SET.', sql_mode=""'
+            ]);
+        } catch (PDOException $e) {
+            $this->clearCurrentDatabase();
+            exitError('Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />' . $e->getMessage());
+        }
     }
 
     /**
      * Возвращает текущую таблицу, вызывается при инициализации
      * @access private
      */
-    function getCurrentTable()
+    public function getCurrentTable()
     {
         if ($this->table == null && $this->db != null) {
             $this->table = GET('table');
@@ -142,7 +167,7 @@ class MSCenter extends DatabaseQuery
      * Возвращает алиас текущего раздела, вызывается при инициализации
      * @access private
      */
-    function getCurrentPage()
+    public function getCurrentPage()
     {
         if (!$this->connected()) {
             return $this->page = 'login';
@@ -174,7 +199,7 @@ class MSCenter extends DatabaseQuery
     /**
      * @return array
      */
-    function getMessagesData()
+    public function getMessagesData()
     {
         if ($this->allowRepeatMessages == '' && !isajax()) {
             $messages = array_count_values($this->messages);
@@ -192,7 +217,7 @@ class MSCenter extends DatabaseQuery
      * Возвращает блок накопленных за время выполнения скрипта сообщений
      * @return string
      */
-    function getMessages()
+    public function getMessages()
     {
         $messages = $this->getMessagesData();
         if (count($messages) == 0) {
@@ -221,7 +246,7 @@ showhide("' . $messageId . '");
      * @param string
      * @param integer
      */
-    function error($message, $file = null, $line = null)
+    public function error($message, $file = null, $line = null)
     {
         echo $message;
         if ($file != null && $line != null) {
@@ -235,7 +260,7 @@ showhide("' . $messageId . '");
      *
      * @param string
      */
-    function notice($text, $sql = null)
+    public function notice($text, $sql = null)
     {
         $this->addMessage($text, $sql, MS_MSG_NOTICE, $this->error);
     }
@@ -248,12 +273,12 @@ showhide("' . $messageId . '");
      * @param integer тип сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @return boolean
      */
-    function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = ''): bool
+    public function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = ''): bool
     {
         $textError = $text;
         if ($sql != '') {
             $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>';
-            $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200, "\r\n") . ';' . $aff . '</div>';
+            $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200) . ';' . $aff . '</div>';
             if ($error != null) {
                 $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
             }
@@ -389,20 +414,21 @@ showhide("' . $messageId . '");
             return;
         }
         $this->disableLog();
+        $d = date('Y-m-d H:i:s');
         $a = $this->getData('SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"', PDO::FETCH_OBJ);
         if (count($a) == 0) {
-            $this->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . date('Y-m-d H:i:s') . '")');
+            $this->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . $d . '")');
         } else {
-            $this->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') . '" WHERE db_name="' . $this->db . '"');
+            $this->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . $d . '" WHERE db_name="' . $this->db . '"');
         }
 
         // Статистика просмотров таблиц
         if ($this->table != '') {
             $a = $this->getData($t = 'SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"', PDO::FETCH_OBJ);
             if (count($a) == 0) {
-                $this->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $this->db . '", "' . $this->table . '", 1, 1, "' . date('Y-m-d H:i:s') . '")');
+                $this->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $this->db . '", "' . $this->table . '", 1, 1, "' . $d . '")');
             } else {
-                $this->execPdo('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . date('Y-m-d H:i:s') .
+                $this->execPdo('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . $d .
                     '" WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"');
             }
         }

@@ -34,6 +34,7 @@ const MS_DIR_IMG = 'tpl/images/';
 const MS_DIR_JS = 'js/';
 const MS_DIR_CSS = 'tpl/';
 
+const MS_CONNECT_CONFIG_FILE = 'docs/connect.txt';
 const MS_CONFIG_FILE = 'docs/config.txt';
 const MS_CHARACTER_SET = 'utf8';
 const MS_COLLATION = 'utf8_general_ci';
@@ -71,15 +72,7 @@ if (!$msc->connected()) {
     return;
 }
 
-// 3. проверка соединения с базой
-try {
-    $pdo = new PDO('mysql:host='.DB_HOST.';dbname='.$msc->getCurrentDatabase(), DB_USERNAME, DB_PASSWORD, [
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=".MS_COLLATION.', character_set_server='.MS_CHARACTER_SET.', sql_mode=""'
-    ]);
-} catch (PDOException $e) {
-    $msc->clearCurrentDatabase();
-    exitError('Unable to pdo-connect to database on "' . DB_HOST . '" as ' . DB_USERNAME . '<br />' . $e->getMessage());
-}
+$msc->connect();
 
 $auth->afterConnect();
 

@@ -1,27 +1,27 @@
 <?php
+
 /**
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
 class UrlMaker
 {
-
     /**
      * База данных в функции make() может автоматически браться либо из $_GET, либо из $msc
      * Эта переменная указывает на то, чтобы брать базу данных из $_GET
      */
-    var $useGet = false;
+    public $useGet = false;
 
     /**
      * Строка URL, которая используется как базовая (для switcher)
      */
-    var $url;
+    public $url;
 
     /**
      * Конструктор. Определяет $this->url
      * @access private
      */
-    function __construct()
+    public function __construct()
     {
         $this->url = $_SERVER['REQUEST_URI'];
     }
@@ -43,7 +43,7 @@ class UrlMaker
      *
      * @return string
      */
-    function make()
+    public function make()
     {
         global $msc;
         /**
@@ -81,23 +81,22 @@ class UrlMaker
     }
 
     /**
-     * Переключает указанное значение $value1 на $value2 и обратно в УРЛ. Если $value2 не указано, то перключает первое значение.
+     * Переключает указанное значение $value1 на $value2 и обратно в УРЛ.
+     * Если $value2 не указано, то перключает первое значение.
      *
      * @param string
      * @param string
      * @param string
      * @return string
      */
-    function switcher($name, $value1, $value2 = null)
+    public function switcher($name, $value1, $value2 = null): ?string
     {
         if (GET($name) == null) {
             return UrlMaker::edit($this->url, $name, $value1);
+        } elseif ($value2 == null) {
+            return UrlMaker::delete($this->url, $name);
         } else {
-            if ($value2 == null) {
-                return UrlMaker::delete($this->url, $name);
-            } else {
-                return UrlMaker::edit($this->url, $name, GET($name) == $value1 ? $value2 : $value1);
-            }
+            return UrlMaker::edit($this->url, $name, GET($name) == $value1 ? $value2 : $value1);
         }
     }
 
@@ -114,7 +113,9 @@ class UrlMaker
             if (($c == "&") || ($c == "?")) {
                 $result = substr($url, 0, $first);
                 $p = strpos($url, "&", $first);
-                if (is_integer($p)) $result .= substr($url, $p + 1);
+                if (is_integer($p)) {
+                    $result .= substr($url, $p + 1);
+                }
                 return UrlMaker::edit($result, $name, $value);
             }
         } else {
@@ -123,7 +124,9 @@ class UrlMaker
                 $url .= "?";
             } else {
                 $c = substr($url, strlen($url) - 1, 1);
-                if (($c != "&") && ($c != "?")) $url .= "&";
+                if (($c != "&") && ($c != "?")) {
+                    $url .= "&";
+                }
             }
             $url .= $name . "=" . $value;
             $url = str_replace("&", "&amp;", $url);
@@ -134,7 +137,7 @@ class UrlMaker
     /**
      *
      */
-    function delete($url, $name)
+    public function delete($url, $name)
     {
         $url = str_replace("&amp;", "&", $url);
         $first = strpos($url, ($name . "="));
@@ -143,20 +146,18 @@ class UrlMaker
             if (($c == "&") || ($c == "?")) {
                 $result = substr($url, 0, $first);
                 $p = strpos($url, "&", $first);
-                if (is_integer($p))
+                if (is_integer($p)) {
                     $result .= substr($url, $p + 1);
+                }
                 $c = substr($result, strlen($result) - 1, 1);
-                if ($c == "&")
+                if ($c == "&") {
                     $result = substr($result, 0, strlen($result) - 1);
+                }
                 $result = str_replace("&", "&amp;", $result);
                 return $result;
             }
         } else {
-            $url = str_replace("&", "&amp;", $url);
-            return $url;
+            return str_replace("&", "&amp;", $url);
         }
     }
 }
-
-
-?>

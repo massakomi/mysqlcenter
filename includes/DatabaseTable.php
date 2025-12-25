@@ -93,7 +93,7 @@ class DatabaseTable extends DatabaseInterface
         }
         $msc->selectDb($db);
         if ($msc->execPdo($sql)) {
-            $msc->execPdo("ANALYZE TABLE `$table`;");
+            $msc->fetchPdo("ANALYZE TABLE `$table`;");
             return $msc->addMessage("Таблица $table $text", $sql, MS_MSG_SUCCESS);
         } else {
             return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, $msc->error);

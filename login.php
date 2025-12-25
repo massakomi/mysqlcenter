@@ -2,13 +2,8 @@
 
 $msc->pageTitle = 'Login';
 
-if ($_POST) {
-    //echo '<pre>'; print_r($_POST); echo '</pre>'; exit;
-}
+$pageProps = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
 
-$pageProps = [
-
-];
 if (isajax()) {
     return $pageProps;
 }

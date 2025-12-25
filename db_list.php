@@ -80,7 +80,7 @@ if (GET('mode') == 'speedtest') {
 // Получаем массив баз данных
 $dbs = Server::getDatabases();
 
-$msc->pageTitle = 'Список баз данных сервера ' . DB_HOST . ' (всего: ' . count($dbs) . ')';
+$msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
 $table = new Table('contentTable', null, null, null, null, 'structureTableId');
 
 // Определяем, показывать ли полную информацию или нет
@@ -120,7 +120,7 @@ $pageProps = [
     'hiddens' => $hidden,
     'appName' => MS_APP_NAME,
     'appVersion' => MS_APP_VERSION,
-    'dbHost' => DB_HOST,
+    'dbHost' => $msc->host,
     'showFullInfo' => $showFullInfo,
     'folder' => MS_DIR_IMG,
     'url' => MS_URL,

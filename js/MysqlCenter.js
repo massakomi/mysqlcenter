@@ -52,7 +52,7 @@ async function msQuery(mode, query = '', callback = '') {
     }
 
     loader()
-    let response = await fetch('index.php', getFetchOptions(mode, query))
+    let response = await fetch('', getFetchOptions(mode, query))
     loader()
 
     return await queryResponse(response, callback);
@@ -518,8 +518,17 @@ function ctrlKeyMode() {
 
 function searchEvents() {
     forElementsEvent('focus', '.search-top [name="query"]', function () {
-        this.value = '';
-        this.closest('form').querySelector('[name=query]').value = ''
+        this.classList.add('wide')
+        if (this.value.indexOf('Поиск') === 0) {
+            this.dataset['default'] = this.value
+            this.value = '';
+        }
+    })
+    forElementsEvent('blur', '.search-top [name="query"]', function () {
+        this.classList.remove('wide')
+        if (this.dataset['default']) {
+            this.value = this.dataset['default']
+        }
     })
     forElementsEvent('change', '.search-top [name="field"]', function () {
         document.querySelector('.search-top [name="byField"]').value = ''
@@ -565,9 +574,10 @@ function loader() {
  * для нулевых значений - значение возвращается оформленным курсивом.
  *
  * @package data view
- * @param string Значение
- * @param string Тип поля
  * @return string Обработанное значение
+ * @param v
+ * @param type
+ * @param textCut
  */
 function processRowValue(v, type, textCut) {
     if (v === null) {
@@ -577,7 +587,6 @@ function processRowValue(v, type, textCut) {
         if (type.match(/(blob|text|char)/i)) {
             v = htmlspecialchars(v)
         }
-
         if (v.length > textCut) {
             let fullText = new URL(location.href).searchParams.get('fullText');
             if (fullText === null) {
@@ -605,6 +614,7 @@ function forElementsEvent(event, selector, callback) {
     })
 }
 
+// Возвращает число, под которым элемент находится на текущем уровне (аналог jQuery.index() )
 function getElementIndex(el) {
     return Array.prototype.indexOf.call(el.parentNode.children, el)
 }
@@ -618,4 +628,12 @@ function isNumeric(value) {
         }
     }
     return false
+}
+
+function qs(selector) {
+    let element = document.querySelector(selector)
+    if (element == null) {
+        element = document.createElement('div')
+    }
+    return element
 }

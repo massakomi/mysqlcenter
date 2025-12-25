@@ -12,7 +12,7 @@
  * Возвращает порядок текущей сортировки
  */
 function mscGetOrder($default=null) {
-    $order = (GET('order') != null ? GET('order') : $default);
+    $order = (POST('order') != null ? POST('order') : $default);
     if ($order != null) {
         if (!strchr($order, '-')) {
             $order .= ' DESC';
@@ -26,18 +26,21 @@ function mscGetOrder($default=null) {
     return $order;
 }
 
+/**
+ * @param $query
+ * @return bool
+ */
+function isWhere($query): bool
+{
+    return preg_match('~([=<>]| (like|in) )~i', $query);
+}
 
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
-if (isset($_GET['fullText'])) {
-    $_GET['fullText'] = conf('tblfullstart') == '1' ? '1' : $_GET['fullText'];
-}
-
 // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
 if (isset($directSQL) && $msc->table == '') {
-    //echo '"'.$directSQL.'"';
     if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
         $msc->table = str_replace('`', '', $t[1]);
     } else {
@@ -66,7 +69,7 @@ foreach ($fields as $k => $v) {
 
 // Определяем параметры сортировки, старт и части
 $order = mscGetOrder(isset($pk[0]) ? $pk[0] : '');
-$start = intval(GET('go'));
+$start = intval(GET('go', POST('go')));
 $part  = intval(GET('part', MS_DEFAULT_PART));
 
 // Составляем запрос, если не определён запрос из вне
@@ -74,8 +77,13 @@ if (!isset($directSQL)) {
 
     // Собираем where условие если требуется, для выборки
     $whereCondition = null;
-    if (POST('query') != '') {
-        $whereCondition = ' WHERE `' . implode('` LIKE "%'.POST('query').'%" OR `', $fieldsNames) . '` LIKE "%'.POST('query').'%"';
+    $query = POST('query');
+    if ($query != '' && $query != 'Поиск или where') {
+        if (isWhere($query)) {
+            $whereCondition = ' WHERE ' . $query;
+        } else {
+            $whereCondition = ' WHERE `' . implode('` LIKE "%'.POST('query').'%" OR `', $fieldsNames) . '` LIKE "%'.POST('query').'%"';
+        }
     } elseif (GET('where') != null) {
         $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
     } elseif (POST('byField') != null) {
@@ -136,8 +144,6 @@ if (!$result = $msc->fetchPdo($sql)) {
 
 
 // Создаём таблицу из результата $result
-$headers = ['<a href="'.$umaker->switcher('fullText', '1').'" title="Показать полные значения всех полей '.
-    'и убрать переносы заголовков полей" class="hiddenSmallLink" style="color:white">full</a>', '&nbsp;', '&nbsp;'];
 $table = new Table('contentTable');
 $table->setInterlaceClass('', 'interlace');
 $data = [];
@@ -162,6 +168,8 @@ $pageProps = [
     'db' => $msc->db,
     'table' => $msc->table,
     'count' => $count,
+    'go' => $start,
+    'order' => POST('order'),
     'part' => $part,
     'url' => $umaker->make('s', '#s#'),
     'showtablecompare' => conf('showtablecompare'),

@@ -9,6 +9,8 @@
  */
 class ActionProcessor
 {
+    // Куда редиректить в случае не ajax запроса
+    public string $redirect = '';
 
     public function __construct()
     {
@@ -23,8 +25,13 @@ class ActionProcessor
         }
 
         $this->generalActions($queryMode);
-
         $this->databaseActions($queryMode);
+
+        if (isajax()) {
+            ajaxResultWithMessages();
+        } elseif ($this->redirect) {
+            header('Location: ' . $this->redirect);
+        }
     }
 
     /**
@@ -75,6 +82,26 @@ class ActionProcessor
                     $msc->addMessage('Значения по умолчанию восстановлены');
                 }
                 break;
+
+            case 'connectSave' :
+            case 'connectCheck' :
+                $config = json_decode($_POST['config'], true);
+                $config = [
+                    'current' => $_POST['current'],
+                    'config' => $config,
+                ];
+                $res = file_put_contents(MS_CONNECT_CONFIG_FILE, json_encode($config));
+                if ($queryMode == 'connectSave') {
+                    if ($res) {
+                        $msc->addMessage('Конфиг сохранен');
+                    } else {
+                        $msc->addMessage('Ошибка сохранения конфига', '', MS_MSG_ERROR);
+                    }
+                    break;
+                }
+                $msc->connect();
+                $msc->addMessage('Connect success!');
+                break;
         }
 
     }
@@ -87,7 +114,7 @@ class ActionProcessor
      */
     public function databaseActions($queryMode)
     {
-        global $msc;
+        global $msc, $umaker;
 
         if (!$msc->connected()) {
             return false;
@@ -128,15 +155,18 @@ class ActionProcessor
 
             case 'tableDelete'    :
                 $dbt->tableAction($db, $tbl, 'DROP');
+                $this->redirect = "?s=tbl_list&db=$db";
                 break;
 
             case 'tableTruncate'  :
                 $dbt->tableAction($db, $tbl, 'TRUNCATE');
+                $this->redirect = $umaker->make('s', 'tbl_data', 'action', '');
                 break;
 
             case 'tableRename':
                 if ($dbt->tableAction($db, $tbl, 'RENAME', $this->param('newName'))) {
                     $msc->table = $this->param('newName');
+                    $this->redirect = $umaker->make('table', $msc->table, 'action', '');
                 }
                 break;
 
@@ -489,10 +519,6 @@ class ActionProcessor
             default:
                 return false;
 
-        }
-
-        if (isajax()) {
-            ajaxResultWithMessages();
         }
     }
 

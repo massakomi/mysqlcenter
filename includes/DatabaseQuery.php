@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  *
  */
@@ -40,9 +39,11 @@ class DatabaseQuery
      * @param string $sql
      * @return false|int|PDOStatement
      */
-    private function queryPdo($mode, string $sql) {
+    private function queryPdo($mode, string $sql)
+    {
         global $pdo;
         try {
+            //echo $sql." ($mode)<hr />";
             $this->affectedRows = 0;
             if ($mode == 'exec') {
                 $result = $pdo->exec($sql);
@@ -56,7 +57,7 @@ class DatabaseQuery
         } catch (\PDOException $e) {
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
-            //echo $this->error."<br />";
+            //echo $this->error."<br />"; exit;
             msclog('query()', $sql);
         }
         if ($this->logEnabled) {
@@ -70,7 +71,7 @@ class DatabaseQuery
      * @param bool $type
      * @return array
      */
-    public function getData($sql, $type=PDO::FETCH_ASSOC): array
+    public function getData($sql, $type = PDO::FETCH_ASSOC): array
     {
         if (!is_numeric($type)) {
             $type = PDO::FETCH_ASSOC;
@@ -120,10 +121,12 @@ class DatabaseQuery
     }
 
     private $logEnabled = true;
-    function disableLog() {
+    function disableLog()
+    {
         $this->logEnabled = false;
     }
-    function enableLog() {
+    function enableLog()
+    {
         $this->logEnabled = true;
     }
 }

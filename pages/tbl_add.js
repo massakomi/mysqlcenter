@@ -248,7 +248,7 @@ class Tbl_add extends React.Component {
                 value.value = "'','',''"
             }
         })
-        document.querySelector('[name="table_name"]').focus()
+        qs('[name="table_name"]').focus()
     }
 
 
@@ -268,10 +268,21 @@ class Tbl_add extends React.Component {
         }
     }
 
+    save(e) {
+        e.preventDefault()
+        msQuery('', e.target, (data) => {
+            if (this.props.showTableName) {
+                location.href = umaker({s: 'tbl_struct', table: document.querySelector('[name="table_name"]').value})
+            } else {
+                location.href = umaker({s: 'tbl_struct', field: false})
+            }
+        })
+    }
+
     render() {
 
         return (
-          <form method="post" action="" className="tableFormEdit" name="addForm">
+          <form method="post" action="" className="tableFormEdit" name="addForm" onSubmit={this.save.bind(this)}>
               {this.props.showTableName &&
                 <React.Fragment>
                     <input tabIndex="1" type="text" name="table_name" size="40" defaultValue={this.props.tableName} /> имя таблицы <br />

@@ -7,53 +7,7 @@ class Auth
 {
     public function __construct()
     {
-        $useLocal = 1;
-
-        if ($useLocal) {
-            $this->useLocalFile();
-        } else {
-
-        }
-
         $this->logout();
-
-        // 2. проверка пользователя на знание логина и пароля к базе
-        // На удаленном-ремоте сервере проверяем, чтобы входили только под конфигурац. данными
-        if (!defined('MSC_LOCAL_USE')) {
-            $enterErrors = array();
-            if (isset($_POST['pass']) && isset($_POST['user'])) {
-                if ($_POST['user'] != DB_USERNAME) {
-                    $enterErrors [] = 'Username is not equal config param DB_USERNAME';
-                }
-                if ($_POST['pass'] != DB_PASSWORD) {
-                    $enterErrors [] = 'Password is not equal config param DB_PASSWORD';
-                }
-            }
-            // не вошли
-            if (count($enterErrors) != 0) {
-                $errorMessage = '<strong>You are not entered</strong> <br />';
-                $errorMessage .= implode('<br />', $enterErrors);
-                //$pagel->loginPage($errorMessage);
-                exit;
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function useLocalFile()
-    {
-        // 1. загрузка локального конфига
-        if (!file_exists(DIR_MYSQL . 'config_local.php')) {
-            exitError('File "config_local.php" was not founded<br />
-            You need to create this file with db config parameters LIKE this: <br /> <br />
-            define("DB_HOST",       "localhost"); <br />
-            define("DB_USERNAME",   "user_name"); <br />
-            define("DB_PASSWORD",   "");
-        ');
-        }
-        include DIR_MYSQL . 'config_local.php';
     }
 
     /**
@@ -85,4 +39,3 @@ class Auth
         }
     }
 }
-
