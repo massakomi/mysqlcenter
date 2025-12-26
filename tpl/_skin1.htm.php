@@ -1,20 +1,19 @@
 <?php
-/* @var $this PageLayout */
 /* @var $msc MSCenter */
 /* @var $umaker UrlMaker */
 global $umaker, $msc;
 $menu = new Menu();
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE>
+<html lang="ru">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title><?php echo $msc->getWindowTitle()?></title>
-    <script language="JavaScript" src="/js/MysqlCenter.js?<?=filemtime(MS_DIR_JS.'MysqlCenter.js')?>"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title><?php echo $msc->getWindowTitle() ?></title>
+    <script language="JavaScript" src="/js/MysqlCenter.js?<?= filemtime(MS_DIR_JS . 'MysqlCenter.js') ?>"></script>
     <script language="javascript">
-    let debug = '1';
+        let debug = '1';
     </script>
-    <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS?>page.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
 
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
@@ -26,10 +25,11 @@ $menu = new Menu();
 <body>
 <div class="loader" hidden></div>
 <div class="pageBlock">
-  <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
-    <?php echo $menu->getGlobalMenu()?> &nbsp; &nbsp;
-  <span class="hiddenText" onclick="msDisplaySql()" title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
-  <span class="menuChain"><?php echo $menu->getChainMenu()?></span>
+    <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
+    <?php echo $menu->getGlobalMenu() ?> &nbsp; &nbsp;
+    <span class="hiddenText" onclick="msDisplaySql()"
+          title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
+    <span class="menuChain"><?php echo $menu->getChainMenu() ?></span>
 </div>
 
 <div id="msAjaxQueryDiv"></div>
@@ -41,73 +41,73 @@ $menu = new Menu();
     </div>
     <div class="rightCol">
         <div class="headTop">
-            <h1><?php echo $msc->getPageTitle()?></h1>
+            <h1><?php echo $msc->getPageTitle() ?></h1>
             <div>
                 <?php
                 if ($msc->table) {
-                    $url = '?db='.$msc->db.'&table='.$msc->table.'&s=tbl_data';
+                    $url = '?db=' . $msc->db . '&table=' . $msc->table . '&s=tbl_data';
                     $fields = DatabaseTable::getFields($msc->table, true);
                     ?>
-                    <form action="<?php echo $url?>" method="post" class="search-top">
-                        <input type="hidden" name="order" value="<?=POST('order')?>" />
-                        <input type="hidden" name="go" value="<?=POST('go')?>" />
-                        <input type="text" name="query" value="<?=htmlspecialchars(POST('query', 'Поиск или where'))?>" />
-                        <?=plDrawSelector($fields, ' name="field"', POST('field'), '', false) ?>
-                        <?=plDrawSelector(['=', 'like'], ' name="like"', POST('like'), '', false) ?>
-                        <input type="text" name="byField" value="<?=POST('byField')?>" />
+                    <form action="<?php echo $url ?>" method="post" class="search-top">
+                        <input type="hidden" name="order" value="<?= POST('order') ?>"/>
+                        <input type="hidden" name="go" value="<?= POST('go') ?>"/>
+                        <input type="text" name="query"
+                               value="<?= htmlspecialchars(POST('query', 'Поиск или where')) ?>"/>
+                        <?= $menu->selector($fields, ' name="field"', POST('field'), '', false) ?>
+                        <?= $menu->selector(['=', 'like'], ' name="like"', POST('like'), '', false) ?>
+                        <input type="text" name="byField" value="<?= POST('byField') ?>"/>
                         <input type="submit">
                     </form>
                     <?php
                 }
                 if ($msc->db) {
-                ?>
-                    <form action="?db=<?=$msc->db?>&s=search" method="post" style="display:inline" onsubmit="this.action=this.action+'&query='+this.query.value">
-                        <input type="text" name="query" value="Поиск по базе" onfocus="this.value=''; this.style.width='auto'" style="width: 100px" />
+                    ?>
+                    <form action="?db=<?= $msc->db ?>&s=search" method="post" style="display:inline"
+                          onsubmit="this.action=this.action+'&query='+this.query.value">
+                        <input type="text" name="query" value="Поиск по базе"
+                               onfocus="this.value=''; this.style.width='auto'" style="width: 100px"/>
                     </form>
-                <?php
+                    <?php
                 }
                 ?>
             </div>
         </div>
-    <?php
-    if (conf('showmessages') == '1') {
-        echo $msc->getMessages();
-    }
-    ?>
-    <?php echo $contentMain?>
+        <?php
+        if (conf('showmessages') == '1') {
+            echo $msc->getMessages();
+        }
+        ?>
+        <?php echo $contentMain ?>
     </div>
 </div>
 
-
 <form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post">
-  <input type="submit" value="Отправить запрос!" />
-  <textarea name="sql" rows="15" wrap="off"><?=POST('sql')?></textarea>
-  <a href="#" onclick="msDisplaySql(); return false">закрыть</a>
+    <input type="submit" value="Отправить запрос!"/>
+    <textarea name="sql" rows="15" wrap="off"><?= POST('sql') ?></textarea>
+    <a href="#" onclick="msDisplaySql(); return false">закрыть</a>
 </form>
+
 <div class="menuDb">
-<?php
-$dbs = Server::getDatabasesWithoutHidden();
-foreach ($dbs as $db) {
-    echo '<a href="?db='.$db.'">'.$db.'</a>';
-}
-?>
+    <?php
+    $dbs = Server::getDatabasesWithoutHidden();
+    foreach ($dbs as $db) {
+        echo '<a href="?db=' . $db . '">' . $db . '</a>';
+    }
+    ?>
 </div>
 
 <div class="pageBlock">
-	<?php echo $menu->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
-  &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
-  <strong>Хост:</strong> <?php echo $msc->host ?> &nbsp;&nbsp;
-  <strong>Пользователь:</strong> <?php echo $msc->user ?> &nbsp;&nbsp;
-<?php if (function_exists('memory_get_peak_usage')) { ?>
-  пиковая память <?php echo formatSize(memory_get_peak_usage()) ?> &nbsp;
-  сейчас <?php echo formatSize(memory_get_usage()) ?> &nbsp;
-  inc <?php echo formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files())))  ?>
-  limit <?php echo ini_get('memory_limit') ?> &nbsp; &nbsp;&nbsp;
-<?php } ?>
-  <strong><a href="?s=login">Логин</a></strong>
+    <?php echo $menu->getFooterMenu() ?> &nbsp;&nbsp;&nbsp;
+    &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
+    <strong>Хост:</strong> <?php echo $msc->host ?> &nbsp;&nbsp;
+    <strong>Пользователь:</strong> <?php echo $msc->user ?> &nbsp;&nbsp;
+    <?php if (function_exists('memory_get_peak_usage')) { ?>
+        пиковая память <?php echo Utils::formatSize(memory_get_peak_usage()) ?> &nbsp;
+        сейчас <?php echo Utils::formatSize(memory_get_usage()) ?> &nbsp;
+        inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?>
+        limit <?php echo ini_get('memory_limit') ?> &nbsp; &nbsp;&nbsp;
+    <?php } ?>
+    <strong><a href="?s=login">Логин</a></strong>
 </div>
 
-<script type="text/javascript">
-  mysqlCenterInit()
-</script>
 </html>

@@ -395,18 +395,6 @@ cook = {
     }
 }
 
-/**
- * Назначает выполнение функции 'a' при наступлении события 'e' с объектом 'o'
- */
-function list(object, event, action) {
-    if (object.addEventListener) {
-        object.addEventListener(event, action, false);
-    } else if (object.attachEvent) {
-        object.attachEvent("on" + event, action);
-    } else {
-        return null;
-    }
-}
 
 formatSize = (bytes, digits = 0) => {
     if (bytes < Math.pow(1024, 1)) {
@@ -488,13 +476,11 @@ function searchEvents() {
     })
 }
 
-function mysqlCenterInit() {
-    document.addEventListener("DOMContentLoaded", function() {
-        dbHiddenMenu();
-        ctrlKeyMode();
-        searchEvents();
-    });
-}
+document.addEventListener("DOMContentLoaded", function() {
+    dbHiddenMenu();
+    ctrlKeyMode();
+    searchEvents();
+});
 
 function htmlspecialchars(text) {
     if (typeof (text) != 'string') {
@@ -599,6 +585,17 @@ function forElementsEvent(event, selector, callback) {
             callback.call(this, e)
         })
     })
+}
+
+// Назначает выполнение функции 'a' при наступлении события 'e' с объектом 'o'
+function list(object, event, action) {
+    if (object.addEventListener) {
+        object.addEventListener(event, action, false);
+    } else if (object.attachEvent) {
+        object.attachEvent("on" + event, action);
+    } else {
+        return null;
+    }
 }
 
 // Возвращает число, под которым элемент находится на текущем уровне (аналог jQuery.index() )

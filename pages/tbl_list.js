@@ -195,6 +195,7 @@ class TableList extends React.Component {
 }
 
 
+
 class Tbl_list extends React.Component {
 
     constructor(props) {
@@ -242,6 +243,10 @@ class Tbl_list extends React.Component {
     }
 
     render() {
+
+        if (this.props.full) {
+            return <Table data={this.props.tables} />
+        }
 
         return (
           <div>

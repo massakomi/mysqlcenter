@@ -271,4 +271,36 @@ class Menu
         $menu .= '<a href="#" style="position: absolute; right: 0; top: 0" onclick="location.href=location.href + \'&resetPopular=1\'; return false;">reset</a> <hr />';
         return $menu;
     }
+
+    /**
+     * Создание селектора <SELECT>...</SELECT> на основе массива $array, с атрибутами $attributes
+     * значениями будут ключи массива, текстом - значения массива, $checked - ключ selected элемента
+     *
+     * @param array   Массив значений для селектора
+     * @param string  Аттрибуты тега SELECT
+     * @param mixed   Ключ или массив ключей в массиве, OPTION которых будет выбран selected
+     * @param string  Строка пробелов - базовый отступ (для красоты кода)
+     * @param boolean Надо ли устанавливать прописывать ключи в аттрибуте value="" тегов OPTION
+     * @param string  Дополнительный код после первого тега <SELECT>, обычно это пустые OPTIONs
+     * @return string HTML код селектора
+     * @package html
+     */
+    public function selector($array, $attributes, $checked = null, $basetab = '', $keyValue = true, $extra = null)
+    {
+        $s = $basetab . '<select' . $attributes . '>' . "\r\n" . $extra;
+        $wasSelected = false; // флаг, чтобы 1 селектед только
+        foreach ($array as $k => $v) {
+            $sel = null;
+            if (($checked == $k || (!$keyValue && $checked == $v)) && !$wasSelected) {
+                $sel = ' selected="selected"';
+                $wasSelected = true;
+            }
+            $val = '';
+            if ($keyValue) {
+                $val = ' value="' . $k . '"';
+            }
+            $s .= $basetab . '  <option' . $val . '' . $sel . '>' . $v . '</option>' . "\r\n";
+        }
+        return $s .= $basetab . '</select>' . "\r\n";
+    }
 }

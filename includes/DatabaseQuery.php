@@ -7,6 +7,7 @@ class DatabaseQuery
 {
     public int $affectedRows;
     public string $lastSql = '';
+    public string $error = '';
 
     /**
      * Единый для всех запрос в БД
@@ -47,7 +48,6 @@ class DatabaseQuery
         global $pdo;
         try {
             $this->lastSql = $sql;
-            //echo $sql." ($mode)<hr />";
             $this->affectedRows = 0;
             if ($mode == 'exec') {
                 $result = $pdo->exec($sql);
@@ -61,8 +61,12 @@ class DatabaseQuery
         } catch (\PDOException $e) {
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
-            echo '<pre>'; throw new Exception($this->error);
-            msclog('query()', $sql);
+            // При USE ошибка перехватывается и выводится другой html
+            if (!str_starts_with($sql, 'USE')) {
+                echo '<pre>';
+            }
+            msclog($this->error, $sql);
+            throw new Exception($this->error);
         }
         if ($this->logEnabled) {
             $this->loqQuery($sql, $result);
@@ -122,21 +126,6 @@ class DatabaseQuery
         $string = preg_replace('/[\r\n\t]+/', ' ', $string);
         $string = str_replace('  ', ' ', $string);
         $this->logInFile($string);
-    }
-
-
-    /**
-     * @param $table
-     */
-    function getAutoIncrement($table) {
-        $fields = DatabaseTable::getFields($table);
-        $ai = null;
-        foreach ($fields as $k => $v) {
-            if ($v->Extra != null) {
-                $ai = $v->Field;
-            }
-        }
-        return $ai;
     }
 
     private $logEnabled = true;

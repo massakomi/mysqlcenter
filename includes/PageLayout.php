@@ -26,7 +26,7 @@ class PageLayout
             ReactDOM.render(
               <<?=$component?> {...options} />,
               document.getElementById('root')
-            );
+            )
         </script>
         <?php
     }
@@ -56,7 +56,7 @@ class PageLayout
     /**
      * Отображение страницы
      */
-    public function display()
+    public function display(): void
     {
         global $msc;
         $currentPage = $msc->page;
@@ -135,9 +135,9 @@ class PageLayout
     public function getHandler(): ?string
     {
         global $msc;
-        $handlers = array(
+        $handlers = [
             'exportSp' => 'export'
-        );
+        ];
         if (isset($handlers[$msc->page])) {
             $currentHandler = DIR_MYSQL . $handlers[$msc->page] . '.php';
         } else {

@@ -421,14 +421,6 @@ class ActionProcessor
                 }
                 break;
 
-            case 'rowsAdd':
-                processRowsEdit(1);
-                break;
-
-            case 'rowsEdit':
-                processRowsEdit(0);
-                break;
-
             // операции с полями
 
             case 'deleteField' :

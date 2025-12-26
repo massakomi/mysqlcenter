@@ -166,7 +166,7 @@ class AddRows extends React.Component {
         }
 
         return (
-          <form action="" method="post" name="rowsForm" id="rowsForm" className="tableFormEdit">
+          <form method="post" name="rowsForm" id="rowsForm" className="tableFormEdit">
               <input type="hidden" name="action" value="rowsAdd" />
               <img src={`${this.props.dirImage}nolines_plus.gif`} alt="" border="0" onClick={this.addDataRow.bind(this, 1)} title="Добавить поле" style={{cursor: 'pointer'}} />
               <img src={`${this.props.dirImage}nolines_minus.gif`} alt="" border="0" onClick={this.addDataRow.bind(this, -1)} title="Удалить поле" style={{cursor: 'pointer'}} /><br />
@@ -177,9 +177,9 @@ class AddRows extends React.Component {
               </table>
               <br />
               после вставки
-              <input name="a" type="radio" id="f2" onClick={changeCurrentPage.bind(this)} value="tbl_data" defaultChecked /> <label htmlFor="f2">обзор таблицы</label>
-              <input name="a" type="radio" id="f3" onClick={changeCurrentPage.bind(this)} value="tbl_list" /> <label htmlFor="f3">список таблиц</label>
-              <input name="a" type="radio" id="f4" onClick={changeCurrentPage.bind(this)} value="tbl_change" /> <label htmlFor="f4">вставить новую запись</label>
+              <input name="redirect" type="radio" value="tbl_data" id="f2" defaultChecked /> <label htmlFor="f2">обзор таблицы</label>
+              <input name="redirect" type="radio" value="tbl_list" id="f3" /> <label htmlFor="f3">список таблиц</label>
+              <input name="redirect" type="radio" value="tbl_change" id="f4" /> <label htmlFor="f4">вставить новую запись</label>
               <br /><br />
               <input tabIndex="100" type="submit" value="Вставить данные!" />
           </form>
@@ -237,7 +237,7 @@ class EditRows extends React.Component {
         }
 
         return (
-          <form method="post" action="" name="rowsForm" className="tableFormEdit" id="rowsForm">
+          <form method="post" name="rowsForm" className="tableFormEdit" id="rowsForm">
               <input type="hidden" name="action" value="rowsEdit" />
               {outerRows}
 
@@ -246,9 +246,9 @@ class EditRows extends React.Component {
 
               <br />
               после вставки
-              <input name="a" type="radio" id="f2" onClick={changeCurrentPage.bind(this)} value="tbl_data" defaultChecked /> <label htmlFor="f2">обзор таблицы</label>
-              <input name="a" type="radio" id="f3" onClick={changeCurrentPage.bind(this)} value="tbl_list" /> <label htmlFor="f3">список таблиц</label>
-              <input name="a" type="radio" id="f4" onClick={changeCurrentPage.bind(this)} value="tbl_change" /> <label htmlFor="f4">вставить новую запись</label>
+              <input name="redirect" type="radio" id="f2" value="tbl_data" defaultChecked /> <label htmlFor="f2">обзор таблицы</label>
+              <input name="redirect" type="radio" id="f3" value="tbl_list" /> <label htmlFor="f3">список таблиц</label>
+              <input name="redirect" type="radio" id="f4" value="tbl_change" /> <label htmlFor="f4">вставить новую запись</label>
 
               <input tabIndex="100" type="submit" value="Вставить данные!" className="submit" />
           </form>
@@ -258,7 +258,19 @@ class EditRows extends React.Component {
 
 
 class Tbl_change extends React.Component {
+
+    componentDidMount() {
+        refreshActions()
+    }
+
     render() {
+
+        if (options.redirect) {
+            setTimeout(function() {
+                location.href = options.redirect
+            }, 2000);
+        }
+
         return (
           <React.Fragment>
               {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} /> }
@@ -267,50 +279,24 @@ class Tbl_change extends React.Component {
     }
 }
 
-function changeCurrentPage(obj) {
-    if (obj.target) {
-        obj = obj.target
-    }
-    document.getElementById('rowsForm').action = `?s=${obj.value}&table=${options.table}&db=${options.db}`;
-}
-
 /**
  * Назначает события функций processNullInput / processNull
  */
 function refreshActions() {
-    var inputs = document.getElementById('rowsForm').getElementsByTagName('INPUT')
-    for (var i = 0; i < inputs.length; i++) {
-        if (inputs[i].type == 'checkbox') {
-            var idName = inputs[i].name.substr(6);
-            var chbxFieldName = inputs[i].name;
-            var textFieldName = 'row' + idName;
-            list(document.getElementById('rowsForm')[textFieldName], 'keyup', function () {
-                var chbxFieldName = 'isNull' + this.name.substr(3);
-                processNullInput(document.getElementById('rowsForm')[chbxFieldName], this)
+    const inputs = document.getElementById('rowsForm').getElementsByTagName('INPUT')
+    for (let i = 0; i < inputs.length; i++) {
+        if (inputs[i].type === 'checkbox') {
+            let textInput = inputs[i].closest('tr').querySelector('[type="text"]')
+            list(textInput, 'keyup', function () {
+                if (this.value !== '') {
+                    inputs[i].checked = false
+                }
             });
-            list(document.getElementById('rowsForm')[chbxFieldName], 'click', function () {
-                var textFieldName = 'row' + this.name.substr(6);
-                processNull(this, document.getElementById('rowsForm')[textFieldName])
+            list(inputs[i], 'click', function () {
+                if (this.checked) {
+                    textInput.value = ''
+                }
             });
         }
-    }
-}
-document.addEventListener("DOMContentLoaded", function () {
-    setTimeout(function() {
-        refreshActions()
-        changeCurrentPage(document.getElementById('f2'));
-    }, 500);
-});
-
-// Если чекбокс отмечен, то значение текстового поля обнуляется
-function processNull(checkbox, textinput) {
-    if (checkbox.checked) {
-        textinput.value = '';
-    }
-}
-// Если значение текстового поля оказывается пустым, то чекбокс отмечается
-function processNullInput(checkbox, textinput) {
-    if (textinput.value != '') {
-        checkbox.checked = false;
     }
 }

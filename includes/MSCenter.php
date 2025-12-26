@@ -102,9 +102,10 @@ class MSCenter extends DatabaseQuery
 
     public function clearCurrentDatabase(): void
     {
-        setcookie('mc_db', null, -1, '/');
+        unset($_COOKIE['mc_db']);
+        setcookie('mc_db', '', -1, '/');
         $_SESSION['db'] = '';
-        $this->db = null;
+        $this->db = '';
     }
 
     /**
@@ -112,7 +113,6 @@ class MSCenter extends DatabaseQuery
      */
     public function connected(): bool
     {
-       // return false;
         return file_exists(MS_CONNECT_CONFIG_FILE);
     }
 

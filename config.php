@@ -44,7 +44,6 @@ if (conf('errorlog') == '1') {
 
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше
 $umaker = new UrlMaker();
-$auth = new Auth();
 
 global $msc, $umaker, $pagel, $pdo;
 
@@ -60,7 +59,7 @@ define('MS_DATE_FORMAT', conf('datetimeformat'));
 define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
 define('MS_FIELDS_COUNT', conf('fieldsmax'));
 define('MS_NULL_DESIGN', conf('nulldesign'));
-define('MAX_UPLOAD_SIZE', getMaxUploadSize());
+define('MAX_UPLOAD_SIZE', Utils::getMaxUploadSize());
 
 if (!$msc->connected()) {
     return;
@@ -69,4 +68,6 @@ if (!$msc->connected()) {
 $msc->connect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
-$msc->selectDb($msc->db);
+;if (!$msc->selectDb($msc->db)) {
+    $msc->clearCurrentDatabase();
+}

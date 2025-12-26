@@ -253,7 +253,6 @@ class DatabaseTable
      * @return string Определение поля (field definition)
      */
     public static function getFieldDefinition($type=null, $null=null, $default=null, $extra=null, $length=null) {
-        //echo "<br />$type, $null, $default, $extra, $length";
         if (is_object($type)) {
             foreach ($type as $param => $value) {
                 $param = strtolower($param);
@@ -393,10 +392,21 @@ class DatabaseTable
     function rowCopy($table, $row)
     {
         global $msc;
-        if (!$msc->getAutoIncrement($table)) {
+        $fields = DatabaseTable::getFields($table);
+        $fieldsWithoutKey = [];
+        $ai = null;
+        foreach ($fields as $field) {
+            if (!strchr($field->Key, 'PRI')) {
+                $fieldsWithoutKey [] = $field->Field;
+            }
+            if ($field->Extra != null) {
+                $ai = $field->Field;
+            }
+        }
+        if (!$ai) {
             return $msc->addMessage('Невозможно скопировать ряд, т.к. в таблице нет поля auto_increment', null, MS_MSG_FAULT);
         }
-        $fields = DatabaseTable::getFields($table, true);
+        $fields = implode(',',  $fieldsWithoutKey);
         $row = stripslashes(urldecode($row));
         $sql = "INSERT INTO $table ($fields) SELECT $fields FROM $table WHERE $row";
         return $msc->execPdo($sql);

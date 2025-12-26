@@ -9,14 +9,9 @@ if (count($tables) == 0) {
     $msc->addMessage('В базе данных нет таблиц');
 }
 
-// Простая таблица
-if (GET('action') == 'full') {
-    $msc->pageTitle = 'Полные данные таблиц "'.$msc->db.'" ';
-    echo $contentMain = MSC_printObjectTable($tables);
-    return;
 
 // Исследование структуры
-} elseif (GET('action') == 'structure' || GET('mode') == 'structure') {
+if (GET('action') == 'structure' || GET('mode') == 'structure') {
     $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
     foreach ($tables as $key => $table) {
         $tables [$key]->fields = DatabaseTable::getFields($table->Name);
@@ -50,6 +45,7 @@ if (GET('action') == 'full') {
 
     $pageProps = [
         'showtableupdated' => conf('showtableupdated') == '1',
+        'full' => GET('action') == 'full',
         'tables' => $tables,
         'dirImage' => MS_DIR_IMG,
         'db' => $msc->db

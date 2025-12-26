@@ -3,6 +3,128 @@
 $msc->pageTitle = 'SQL запрос в БД';
 $db = GET('db') ?: POST('db');
 
+/**
+ * Ускоренное выполнение большого кол-ва запросов с логом
+ *
+ * @param string База данных
+ * @param string SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
+ * @package msc
+ */
+function execSql($db, &$sql, $log = true)
+{
+    global $msc;
+    $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
+    if (!$msc->selectDb($db)) {
+        return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);;
+    }
+    if ($log) {
+        $msc->logInFile($sql);
+    }
+    $sql = str_replace("\r\n", "\n", $sql);
+    $array = explode(";\n", $sql);
+    $errors = array();
+    $c = 0;
+    $affected = 0;
+    $count = count($array);
+    for ($i = 0; $i < $count; $i++) {
+        $q = trim($array[$i]);
+        if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
+            continue;
+        }
+        $c++;
+        if (!$msc->execPdo($q)) {
+            $errors [] = $msc->error . ' (' . substr($q, 0, 100) . ')';
+        } else {
+            $affected += $msc->affectedRows;
+        }
+    }
+    $fault = count($errors);
+    $succ = $c - $fault;
+    $info = " $succ запросов выполнено, $fault неудач. ";
+    if (count($errors) == 0) {
+        $msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
+    } else {
+        $msc->addMessage('Запрос выполнен с ошибками' . $info, null, MS_MSG_FAULT);
+        $msc->addMessage(implode('<br />', $errors), null, MS_MSG_FAULT);
+
+    }
+    $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
+    $msc->addMessage("Выполнено за $mysqlGenerationTime с.");
+    $msc->addMessage("Затронуто рядов: $affected");
+}
+
+
+
+
+/**
+ * Считывает (и распаковывает сжатый) файл в строку
+ *
+ * @param string   Путь к файлу
+ * @param string   MIME тип файла, иначе определяется автоматически
+ * @return  mixed    string контент файла либо boolean FALSE в случае ошибок
+ * @package file
+ */
+function readZipFile($path, $mime = '')
+{
+    if (!file_exists($path)) {
+        return FALSE;
+    }
+    switch ($mime) {
+        case '':
+            $file = @fopen($path, 'rb');
+            if (!$file) {
+                return FALSE;
+            }
+            $test = fread($file, 3);
+            fclose($file);
+            if ($test[0] == chr(31) && $test[1] == chr(139)) return readZipFile($path, 'application/x-gzip');
+            if ($test == 'BZh') return readZipFile($path, 'application/x-bzip');
+            return readZipFile($path, 'text/plain');
+        case 'zip':
+            break;
+        case 'text/plain':
+            $file = @fopen($path, 'rb');
+            if (!$file) {
+                return FALSE;
+            }
+            $content = fread($file, filesize($path));
+            fclose($file);
+            break;
+        case 'application/x-gzip':
+            if (function_exists('gzopen')) {
+                $file = @gzopen($path, 'rb');
+                if (!$file) {
+                    return FALSE;
+                }
+                $content = '';
+                while (!gzeof($file)) {
+                    $content .= gzgetc($file);
+                }
+                gzclose($file);
+            } else {
+                return FALSE;
+            }
+            break;
+        case 'application/x-bzip':
+            if (@function_exists('bzdecompress')) {
+                $file = @fopen($path, 'rb');
+                if (!$file) {
+                    return FALSE;
+                }
+                $content = fread($file, filesize($path));
+                fclose($file);
+                $content = bzdecompress($content);
+            } else {
+                return FALSE;
+            }
+            break;
+        default:
+            return FALSE;
+    }
+    return $content;
+}
+
+
 // Запрос из файла
 if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
     if ($_FILES['sqlFile']['size'] <= MAX_UPLOAD_SIZE) {

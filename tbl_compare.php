@@ -24,24 +24,9 @@ if (count($_POST)) {
 
 
 /**
- * Обработка массива/объекта $row для отображения в таблице
- * Конвертация в массив
+ * @param $fields
+ * @return array
  */
-function processValues($row, $fields, $process = true)
-{
-    $a = [];
-    $i = 0;
-    foreach ($row as $k => $v) {
-        if ($process) {
-            $type = $fields[$i]->Type;
-            $v = processRowValue($v, $type);
-        }
-        $a [$k] = $v;
-        $i++;
-    }
-    return $a;
-}
-
 function getPrimaryKeys($fields) {
     $pk = [];
     foreach ($fields as $v) {
@@ -52,6 +37,13 @@ function getPrimaryKeys($fields) {
     return $pk;
 }
 
+/**
+ * @param $databases
+ * @param $table
+ * @param $pk
+ * @return array[]
+ * @throws Exception
+ */
 function selectDataFromDatabase($databases, $table, $pk) {
     global $msc;
     $msc->selectDb($databases[0]);
