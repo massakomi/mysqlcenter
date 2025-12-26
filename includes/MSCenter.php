@@ -78,9 +78,6 @@ class MSCenter extends DatabaseQuery
         $mainTitle = null;
         $mainTitle .= $this->table != null ? "$this->table < " : null;
         $mainTitle .= $this->db != null ? $this->db : $this->page;
-        if ($mainTitle == '') {
-            $mainTitle .= MS_APP_NAME . ' ' . MS_APP_VERSION;
-        }
         return $mainTitle;
     }
 
@@ -390,7 +387,7 @@ showhide("' . $messageId . '");
         }
         $tables[$this->db] [$table]['time'] = time();
         if (date('i') % 10 == 0) {
-            $tablesAll = array_column(DatabaseTable::getCashedTablesArray(), 'Name');
+            $tablesAll = DatabaseTable::getTables();
             $exists = array_intersect(array_keys($tables[$this->db]), $tablesAll);
             $notExists = array_diff(array_keys($tables[$this->db]), $exists);
             if (count($notExists) > 0) {

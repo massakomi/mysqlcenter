@@ -1,29 +1,24 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
 
-require_once dirname(__FILE__) . '/DatabaseInterface.php';
 
 /**
  * Класс, отвечающий за работу с таблицами базы данных
  */
-class DatabaseTable extends DatabaseInterface
+class DatabaseTable
 {
 
     public ?string $database;
-    public ?string $tableb;
     public ?string $table;
+    private Validate $validate;
 
     /**
      * @access private
      */
     function __construct($db = null, $table = null)
     {
-        $this->_init();
         $this->database = $db;
-        $this->tableb = $table;
         $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
+        $this->validate = new Validate();
     }
 
     /**
@@ -39,9 +34,9 @@ class DatabaseTable extends DatabaseInterface
     public function tableAction($db, $table, $type = 'DROP', $param = null): bool
     {
         global $msc;
-        $this->queryCheck($db, $table);
+        $this->validate->queryCheck($db, $table);
         if (($type == 'RENAME' || $type == 'CHARSET' || $type == 'ORDER') && $param == null) {
-            return $this->addMessage('Не указан требуемый параметр', null, MS_MSG_ERROR);
+            return $msc->addMessage('Не указан требуемый параметр', null, MS_MSG_ERROR);
         }
         switch ($type) {
             case 'DROP'        :
@@ -114,7 +109,7 @@ class DatabaseTable extends DatabaseInterface
     function copyTable($db, $table, $struct = true, $data = false, $newName = null, $database = null)
     {
         global $msc;
-        $this->queryCheck($db, $table);
+        $this->validate->queryCheck($db, $table);
         // дамп структуры
         if ($newName == null) {
             $newName = $table . '_copy';
@@ -156,57 +151,6 @@ class DatabaseTable extends DatabaseInterface
     }
 
     /**
-     * Проверяет существование таблицы $this->table
-     *
-     * @return boolean
-     */
-    function isExists(): bool
-    {
-        global $msc;
-        $sql = 'SELECT COUNT(1) AS c FROM ' . $this->table;
-        return $msc->fetchPdo($sql) !== null;
-    }
-
-    /**
-     * Возвращает таблицу с полной информацией о таблице $this->table
-     *
-     * @return array
-     */
-    function insertDetailsTable()
-    {
-        global $msc;
-        $comments = array(
-            'Engine' => ' title="Тип хранилища"',
-            'Version' => ' title="Версия .frm файла таблицы"',
-            'Row_format' => ' title="Формат хранения строки (Fixed, Dynamic, Compressed, Redundant, Compact). Начиная с MySQL/InnoDB 5.0.3, InnoDB таблицы хранятся в форматах Redundant или Compact. До 5.0.3, InnoDB таблицы всегда были в формате Redundant"',
-            'Rows' => ' title="Количество рядов. Некоторые типы хранилищ, такие как MyISAM, отображают точное количество. Но в некоторых других, таких как InnoDB, это значение является приблизительным и может отличаться от действительного количество на 40-50%. В таких случаях лучше всего использовать запрос SELECT COUNT(*). Также это значение равно NULL для таблиц INFORMATION_SCHEMA базы данных"',
-            'Avg_row_length' => ' title="Средняя длина строки"',
-            'Data_length' => ' title="Размер файла данных таблицы"',
-            'Max_data_length' => ' title="Максимальный размер файла данных. Это общее количество байтов данных, которое может быть сохранено в таблице, given the data pointer size used."',
-            'Index_length' => ' title="Размер индексного файла"',
-            'Data_free' => ' title="Размер занятого, но не использованного пространства"',
-            'Auto_increment' => ' title="Следующее значение поля Auto_increment"',
-            'Update_time' => ' title="Когда дата файл был обновлён. Для некоторых типов хранилищ, это значение NULL. Например, InnoDB хранит таблицы в собственном хранилище и время изменения файла данных не даст ничего"',
-            'Check_time' => ' title="Когда таблицы были проверены в последний раз. Не все типы хранилищ обновляют этот параметр, в этих случаях он всегда NULL"',
-            'Collation' => ' title="Кодировка и сравнение таблиц"',
-            'Checksum' => ' title="The live checksum value (if any)."',
-            'Create_options' => ' title="Дополнительные опции, заданные при создании таблицы через CREATE TABLE."',
-            'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может получить доступ к информации о таблице"'
-        );
-        $sql = 'SHOW TABLE STATUS LIKE "' . $this->tableb . '"';
-
-        $result = $msc->getData($sql);
-        foreach ($comments as $k => &$v) {
-            $v = str_replace('"', '', $v);
-            $v = str_replace(' title=', '', $v);
-        }
-        if (isajax()) {
-            return $result[0];
-        }
-        return [$comments, $result];
-    }
-
-    /**
      * @return array
      */
     public static function getCashedTablesArray(): array
@@ -215,6 +159,27 @@ class DatabaseTable extends DatabaseInterface
         if (!isset($array)) {
             global $msc;
             $array = $msc->getData('SHOW TABLE STATUS', PDO::FETCH_OBJ);
+        }
+        return $array;
+    }
+
+    /**
+     * Возвращает массив таблиц базы данных
+     *
+     * @param string База данных
+     * @return array
+     */
+    public static function getTables($database = null)
+    {
+        global $msc;
+        if (!is_null($database)) {
+            $msc->selectDb($database);
+        }
+
+        $tables = DatabaseTable::getCashedTablesArray();
+        $array = [];
+        foreach ($tables as $o) {
+            $array[] = $o->Name;
         }
         return $array;
     }

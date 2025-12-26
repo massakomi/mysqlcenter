@@ -53,9 +53,6 @@ global $msc, $umaker, $pagel, $pdo;
 
 $msc->init();
 
-// Настройки
-define('MS_APP_NAME', 'MySQL React');
-define('MS_APP_VERSION', substr('$Revision: 1.124 $', 10, 6));
 // Настройки 2
 define('MS_DEFAULT_PART', conf('rpage'));
 define('MS_LIST_LINKS_RANGE', conf('linksrange'));
@@ -73,8 +70,6 @@ if (!$msc->connected()) {
 }
 
 $msc->connect();
-
-$auth->afterConnect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
 $msc->selectDb($msc->getCurrentDatabase());

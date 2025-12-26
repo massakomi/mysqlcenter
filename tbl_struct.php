@@ -1,20 +1,53 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
 
 /**
- * Обзор стркутуры таблицы
+ * Возвращает таблицу с полной информацией о таблице $this->table
+ *
+ * @param $table
+ * @return array
  */
+function insertDetailsTable($table): array
+{
+    global $msc;
+    $comments = [
+        'Engine' => ' title="Тип хранилища"',
+        'Version' => ' title="Версия .frm файла таблицы"',
+        'Row_format' => ' title="Формат хранения строки (Fixed, Dynamic, Compressed, Redundant, Compact). Начиная с MySQL/InnoDB 5.0.3, InnoDB таблицы хранятся в форматах Redundant или Compact. До 5.0.3, InnoDB таблицы всегда были в формате Redundant"',
+        'Rows' => ' title="Количество рядов. Некоторые типы хранилищ, такие как MyISAM, отображают точное количество. Но в некоторых других, таких как InnoDB, это значение является приблизительным и может отличаться от действительного количество на 40-50%. В таких случаях лучше всего использовать запрос SELECT COUNT(*). Также это значение равно NULL для таблиц INFORMATION_SCHEMA базы данных"',
+        'Avg_row_length' => ' title="Средняя длина строки"',
+        'Data_length' => ' title="Размер файла данных таблицы"',
+        'Max_data_length' => ' title="Максимальный размер файла данных. Это общее количество байтов данных, которое может быть сохранено в таблице, given the data pointer size used."',
+        'Index_length' => ' title="Размер индексного файла"',
+        'Data_free' => ' title="Размер занятого, но не использованного пространства"',
+        'Auto_increment' => ' title="Следующее значение поля Auto_increment"',
+        'Update_time' => ' title="Когда дата файл был обновлён. Для некоторых типов хранилищ, это значение NULL. Например, InnoDB хранит таблицы в собственном хранилище и время изменения файла данных не даст ничего"',
+        'Check_time' => ' title="Когда таблицы были проверены в последний раз. Не все типы хранилищ обновляют этот параметр, в этих случаях он всегда NULL"',
+        'Collation' => ' title="Кодировка и сравнение таблиц"',
+        'Checksum' => ' title="The live checksum value (if any)."',
+        'Create_options' => ' title="Дополнительные опции, заданные при создании таблицы через CREATE TABLE."',
+        'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может получить доступ к информации о таблице"'
+    ];
+    $sql = 'SHOW TABLE STATUS LIKE "' . $table .'"' ;
+
+    $result = $msc->getData($sql);
+    foreach ($comments as $k => &$v) {
+        $v = str_replace('"', '', $v);
+        $v = str_replace(' title=', '', $v);
+    }
+    if (isajax()) {
+        return $result[0];
+    }
+    return [$comments, $result];
+}
 
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
-$fields = getFields($msc->table);
 
 
 if (GET('action') == 'add_key') {
-     $fieldRows = ['' => ''];
+    $fieldRows = ['' => ''];
+    $fields = getFields($msc->table);
     foreach ($fields as $field) {
         $fieldRows [$field->Field] = "$field->Field [$field->Type]";
     }
@@ -39,13 +72,12 @@ if ($msc->table == '') {
     $msc->addMessage('Не указана таблица в запросе', null, MS_MSG_FAULT);
     return null;
 }
-$dbt = new DatabaseTable($msc->db, $msc->table);
-if (!$dbt->isExists()) {
+$fields = getFields($msc->table);
+if (!$fields) {
     $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT);
     return null;
 }
 $msc->pageTitle = 'Структура таблицы ' . $msc->table;
-
 
 function getKeys() {
     global $msc;
@@ -75,7 +107,7 @@ if ($res) {
 }
 
 
-$data = $dbt->insertDetailsTable();
+$data = insertDetailsTable($msc->table);
 
 $pageProps = [
     'db' => $msc->db,

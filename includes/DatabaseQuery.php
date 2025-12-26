@@ -5,13 +5,15 @@
  */
 class DatabaseQuery
 {
-    public $affectedRows;
+    public int $affectedRows;
+    public string $lastSql = '';
 
     /**
      * Единый для всех запрос в БД
      *
      * @param string $sql
-     * @return false|int|PDOStatement
+     * @return bool
+     * @throws Exception
      */
     public function execPdo(string $sql)
     {
@@ -20,6 +22,7 @@ class DatabaseQuery
 
     /**
      * @return false|int|PDOStatement
+     * @throws Exception
      */
     public function fetchPdo(string $sql)
     {
@@ -43,6 +46,7 @@ class DatabaseQuery
     {
         global $pdo;
         try {
+            $this->lastSql = $sql;
             //echo $sql." ($mode)<hr />";
             $this->affectedRows = 0;
             if ($mode == 'exec') {
@@ -57,7 +61,7 @@ class DatabaseQuery
         } catch (\PDOException $e) {
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
-            //echo $this->error."<br />"; exit;
+            echo '<pre>'; throw new Exception($this->error);
             msclog('query()', $sql);
         }
         if ($this->logEnabled) {
@@ -118,6 +122,21 @@ class DatabaseQuery
         $string = preg_replace('/[\r\n\t]+/', ' ', $string);
         $string = str_replace('  ', ' ', $string);
         $this->logInFile($string);
+    }
+
+
+    /**
+     * @param $table
+     */
+    function getAutoIncrement($table) {
+        $fields = getFields($table);
+        $ai = null;
+        foreach ($fields as $k => $v) {
+            if ($v->Extra != null) {
+                $ai = $v->Field;
+            }
+        }
+        return $ai;
     }
 
     private $logEnabled = true;

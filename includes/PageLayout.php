@@ -201,7 +201,6 @@ class PageLayout
             $dbMenu = array_merge(array(
                 'базы данных' => array('db_list', ''),
                 'логин' => array('login', ''),
-                'переменные' => array('server_variables', ''),
             ), $dbMenuGlobal);
 
         } elseif (($msc->db != '' && $msc->table == '') || $msc->page == 'tbl_list') {

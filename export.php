@@ -19,8 +19,7 @@ list($vi, $vs) = getServerVersion();
 
 // шапка дампа
 $dumpHeader =
-'-- '.MS_APP_NAME.' SQL Экспорт
--- версия '.MS_APP_VERSION.'
+'-- SQL Экспорт
 --
 -- Хост: '.$msc->host.'
 -- Время создания: '.date('j.m.Y, H-i').'
@@ -174,7 +173,7 @@ if ($msc->page == 'exportSp') {
                 $exp->data .= "\r\n".'CREATE DATABASE `'.$db.'` DEFAULT CHARACTER SET '.MS_CHARACTER_SET.' COLLATE '.MS_COLLATION.';
 USE `'.$db.'`;'."\r\n"."\r\n";
                 $exp->setDatabase($db);
-                $array = DatabaseManager::getTables($db);
+                $array = DatabaseTable::getTables($db);
                 foreach ($array as $t) {
                     $exp->setTable($t);
                     $exp->startFull($isStruct, $isData, true, $isDrop, $exType, $exWhere);
@@ -211,7 +210,7 @@ USE `'.$db.'`;'."\r\n"."\r\n";
         // 3.2.2.1. только если указана в запросе!
         if (GET('db') != '') {
             // массив таблиц из списка таблиц
-            $tablesAll = DatabaseManager::getTables();
+            $tablesAll = DatabaseTable::getTables();
             $tables = isset($_POST['table']) ? $_POST['table'] : array();
             if (is_null($tables) || count($tables) == 0) {
                 if ($msc->table == '') {

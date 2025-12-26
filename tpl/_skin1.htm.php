@@ -25,7 +25,7 @@ global $umaker, $msc;
 <body>
 <div class="loader" hidden></div>
 <div class="pageBlock">
-  <b id="appNameId"><a href="?db_list"><?php echo MS_APP_NAME?></a></b> &nbsp; &nbsp;
+  <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
     <?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;
   <span class="hiddenText" onclick="msDisplaySql()" title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
   <span class="menuChain"><?php echo $this->getChainMenu()?></span>
@@ -107,7 +107,7 @@ if (function_exists('memory_get_peak_usage')) {
 <?php
 }
 ?>$
-  <strong><a href="?s=logout">Выход</a></strong>
+  <strong><a href="?s=login">Логин</a></strong>
 </div>
 
 <script type="text/javascript">

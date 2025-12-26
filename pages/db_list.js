@@ -268,11 +268,8 @@ class ColumnRight extends React.Component {
                   <a href={`?s=actions&users=1`}>Информация о пользователях и правах</a>
               </div>
 
-              <div className="mt-10">{this.props.appName}</div>
-              <div>Версия {this.props.appVersion}</div>
-              <div>Хост: {this.props.dbHost}</div>
-
-              <div className="mt-10">Версия сервера: {this.props.mysqlVersion}</div>
+              <div className="mt-10">Хост: {this.props.dbHost}</div>
+              <div>Версия сервера: {this.props.mysqlVersion}</div>
               <div>Версия PHP: {this.props.phpversion}</div>
               <div>БД: {this.props.dbname}<br /></div>
 

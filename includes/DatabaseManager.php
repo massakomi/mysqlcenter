@@ -1,18 +1,19 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-require_once dirname(__FILE__) . '/DatabaseInterface.php';
 
 /**
  * Класс, отвечающий за работу с базой данных
  */
-class DatabaseManager extends DatabaseInterface
+class DatabaseManager
 {
+    private Validate $validate;
 
-    var $tables = array();
-
+    /**
+     * @access private
+     */
+    function __construct()
+    {
+        $this->validate = new Validate();
+    }
 
     /**
      * Удаляет / создаёт БД
@@ -24,7 +25,7 @@ class DatabaseManager extends DatabaseInterface
     function DatabaseAction($db, $type = 'DROP')
     {
         global $msc;
-        $this->queryCheck($db);
+        $this->validate->queryCheck($db);
         switch ($type) {
             case 'DROP'   :
                 $sql = "DROP DATABASE `$db`";
@@ -53,12 +54,12 @@ class DatabaseManager extends DatabaseInterface
      */
     function DatabaseTruncate($db, $delete = false)
     {
-        require_once dirname(__FILE__) . '/DatabaseTable.php';
+        global $msc;
         $dbt = new DatabaseTable();
-        $this->queryCheck($db);
-        $a = DatabaseManager::getTables($db);
+        $this->validate->queryCheck($db);
+        $a = DatabaseTable::getTables($db);
         if (count($a) == 0) {
-            return $this->addMessage('Таблиц нет', null, MS_MSG_FAULT);
+            return $msc->addMessage('Таблиц нет', null, MS_MSG_FAULT);
         }
         $errors = 0;
         foreach ($a as $t) {
@@ -66,10 +67,8 @@ class DatabaseManager extends DatabaseInterface
                 if (!$dbt->tableAction($db, $t, 'DROP')) {
                     $errors++;
                 }
-            } else {
-                if ($dbt->tableAction($db, $t, 'TRUNCATE')) {
-                    $errors++;
-                }
+            } elseif ($dbt->tableAction($db, $t, 'TRUNCATE')) {
+                $errors++;
             }
         }
         return ($errors == 0);
@@ -88,10 +87,9 @@ class DatabaseManager extends DatabaseInterface
     function DatabaseCopy($dbFrom, $dbTo, $isMove = false, $struct = true, $data = true)
     {
         if ($this->DatabaseAction($dbTo, 'CREATE')) {
-            require_once dirname(__FILE__) . '/DatabaseTable.php';
             $dbt = new DatabaseTable();
             // скопировать все таблицы туда и удалить из старой БД
-            $a = DatabaseManager::getTables($dbFrom);
+            $a = DatabaseTable::getTables($dbFrom);
             foreach ($a as $table) {
                 $dbt->copyTable($dbFrom, $table, $struct, $data, $table, $dbTo);
                 if ($isMove) {
@@ -118,39 +116,12 @@ class DatabaseManager extends DatabaseInterface
     function DatabaseAlterCharset($db, $charset, $isCharset = true)
     {
         global $msc;
-        $this->queryCheck($db, 'table', $charset);
+        $this->validate->queryCheck($db, 'table', $charset);
         if (!$isCharset) {
             $sql = "ALTER DATABASE $db COLLATE `$charset`";
         } else {
             $sql = "ALTER DATABASE $db CHARACTER SET `$charset`";
         }
-        if ($msc->execPdo($sql)) {
-            return $msc->addMessage("Успешно выполнено", $sql, MS_MSG_SUCCESS);
-        } else {
-            return $msc->addMessage("Ошибка при выполнении операции с $db", $sql, MS_MSG_FAULT, $msc->error);
-        }
-    }
-
-    /**
-     * Возвращает массив таблиц базы данных
-     *
-     * @param string База данных
-     * @return array
-     */
-    public static function getTables($database = null)
-    {
-        global $msc;
-        if (!is_null($database)) {
-            $msc->selectDb($database);
-        }
-
-        $tables = DatabaseTable::getCashedTablesArray();
-        $array = array();
-        foreach ($tables as $o) {
-            $array[] = $o->Name;
-        }
-        return $array;
+        return $msc->execPdo($sql);
     }
 }
-
-?>

@@ -130,15 +130,10 @@ class ActionProcessor
         /**
          * Подгружаем и инициализируем функции для работы с БД
          */
-        define('DBI_MSC_MSG_OBJECT', 'msc');
-        define('DBI_MSC_MSG_METHOD', 'addMessage');
-//        require_once dirname(__FILE__) . '/DatabaseManager.php';
-//        require_once dirname(__FILE__) . '/DatabaseTable.php';
-//        require_once dirname(__FILE__) . '/DatabaseRow.php';
         $dbm = new DatabaseManager();
-        $dbm->_init();
         $dbt = new DatabaseTable();
         $dbr = new DatabaseRow();
+        $validate = new Validate();
 
         // Выполнение запросов
         switch ($queryMode) {
@@ -171,7 +166,7 @@ class ActionProcessor
                 break;
 
             case 'tableMove':
-                $dbt->queryCheck($db, $tbl, $this->param('newName'), $this->param('newDB'));
+                $validate->queryCheck($db, $tbl, $this->param('newName'), $this->param('newDB'));
                 if ($dbt->copyTable($db, $tbl, true, true, $this->param('newName'), $this->param('newDB'))) {
                     $dbt->tableAction($db, $tbl, 'DROP');
                 }
@@ -272,7 +267,7 @@ class ActionProcessor
                 if ($a == false) {
                     break;
                 }
-                $dbt->queryCheck($db);
+                $validate->queryCheck($db);
                 $cs = (POST('copy_struct') != '');
                 $cd = (POST('copy_data') != '');
                 foreach ($a as $t) {
@@ -332,21 +327,24 @@ class ActionProcessor
 
             case 'dbCollate'       :
             case 'dbCharset'       :
-                $dbm->DatabaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset');
+                if ($dbm->DatabaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset')) {
+                    $msc->addMessage("Успешно выполнено", $msc->lastSql, MS_MSG_SUCCESS);
+                } else {
+                    $msc->addMessage("Ошибка при выполнении операции с $db", $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                }
                 break;
 
-
             case 'dbAllAction'       :
-                $tables = DatabaseTable::getCashedTablesArray();
+                $tables = DatabaseTable::getTables();
                 $action = POST('act');
-                foreach ($tables as $o) {
+                foreach ($tables as $table) {
                     if ($action === 'drop-query') {
-                        $sql = 'DROP TABLE `' . $o->Name . '`;';
+                        $sql = 'DROP TABLE `' . $table . '`;';
                         $msc->addMessage($sql, '', MS_MSG_SUCCESS);
                     }
 
                     if (in_array($action, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
-                        $sql = strtoupper($action) . ' TABLE `' . $o->Name . '`';
+                        $sql = strtoupper($action) . ' TABLE `' . $table . '`';
                         if ($msc->execPdo($sql)) {
                             $msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
                         } else {
@@ -394,44 +392,51 @@ class ActionProcessor
 
             // операции с рядами
 
+            case 'deleteRows' :
             case 'deleteRow':
-                $dbr->rowDelete($db, $tbl, $this->param('row'));
+                $row = $this->param('row');
+                $validate->queryCheck($db, $tbl, $row);
+                if (!is_array($row)) {
+                    $row = [$row];
+                }
+                if ($dbr->rowDelete($db, $tbl, implode(' OR ', $row), count($row))) {
+                    return $msc->addMessage("Ряд $row удалён", $msc->lastSql, MS_MSG_SUCCESS);
+                } else {
+                    return $msc->addMessage("Ошибка удаления ряда $row", $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                }
                 break;
 
+            case 'copyRows' :
             case 'copyRow':
-                $dbr->rowCopy($db, $tbl, $this->param('row'));
+                $row = $this->param('row');
+                $validate->queryCheck($db, $tbl, $row);
+                if (is_array($row)) {
+                    $row = implode(' OR ', $row);
+                }
+                if ($dbr->rowCopy($tbl, $row)) {
+                    $n = $msc->affectedRows;
+                    if ($n > 0) {
+                        return $msc->addMessage('Добавлено ' . $n . ' рядов', $msc->lastSql, MS_MSG_SUCCESS);
+                    } else {
+                        return $msc->addMessage('Всё в порядке', $msc->lastSql, MS_MSG_SUCCESS);
+                    }
+                } else {
+                    return $msc->addMessage('Ошибка копирования ряда ' . $row, $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                }
                 break;
 
             case 'rowsAdd':
-                require_once DIR_MYSQL . 'includes/tbl_change.inc.php';
                 processRowsEdit(1);
                 break;
 
             case 'rowsEdit':
-                require_once DIR_MYSQL . 'includes/tbl_change.inc.php';
                 processRowsEdit(0);
-                break;
-
-            // массовые действия с рядами
-
-            case 'deleteRows' :
-            case 'copyRows' :
-                $a = $this->param('row');
-                if ($a == false) {
-                    break;
-                }
-                $dbr->queryCheck($db, $tbl);
-                if ($queryMode == 'copyRows') {
-                    $dbr->rowCopy($db, $tbl, implode(' OR ', $a));
-                } else if ($queryMode == 'deleteRows') {
-                    $dbr->rowDelete($db, $tbl, implode(' OR ', $a), count($a));
-                }
                 break;
 
             // операции с полями
 
             case 'deleteField' :
-                $dbm->queryCheck($db, $tbl, $this->param('field'));
+                $validate->queryCheck($db, $tbl, $this->param('field'));
                 $sql = "ALTER TABLE `$tbl` DROP " . $this->param('field');
                 if ($msc->execPdo($sql, $db)) {
                     $msc->addMessage('Поле удалено', $sql, MS_MSG_SUCCESS);
@@ -460,8 +465,7 @@ class ActionProcessor
             // операции с ключами
 
             case 'deleteKey' :
-                $dbm->queryCheck($db, $tbl, $this->param('key'), $this->param('field'));
-                $field = $this->param('field');
+                $validate->queryCheck($db, $tbl, $this->param('key'), $this->param('field'));
                 if ($this->param('key') == 'PRIMARY') {
                     dropPrimaryKey($tbl);
                 } else {
@@ -477,7 +481,7 @@ class ActionProcessor
             case 'addKey' :
                 $keyName = POST('keyName');
                 $keyDefinition = POST('keyType');
-                $dbm->queryCheck($db, $tbl, $keyName, $keyDefinition);
+                $validate->queryCheck($db, $tbl, $keyName, $keyDefinition);
                 if ($keyName != '') {
                     $keyDefinition .= ' `' . $keyName . '`';
                 }

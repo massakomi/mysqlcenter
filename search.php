@@ -16,7 +16,7 @@ if (!defined('DIR_MYSQL')) {
 $array = POST('table');
 $query = POST('query');
 $queryField = POST('queryField');
-$listTables = DatabaseManager::getTables();
+$listTables = DatabaseTable::getTables();
 
 if (isajax()) {
     if (GET('db') && !in_array(GET('db'), Server::getDatabases())) {
@@ -98,7 +98,7 @@ if (GET('table') != null) {
                 $array = [$msc->table];
                 $msc->pageTitle = "Поиск - таблица $msc->table";
             } else {
-                $array = DatabaseManager::getTables();
+                $array = DatabaseTable::getTables();
                 $msc->pageTitle = "Поиск - база данных $msc->db";
             }
         }
