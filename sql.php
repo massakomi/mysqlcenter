@@ -1,11 +1,4 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-/**
- * SQL запрос в БД
- */
 
 $msc->pageTitle = 'SQL запрос в БД';
 $db = GET('db') ?: POST('db');

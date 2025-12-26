@@ -1,42 +1,3 @@
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-/*
-
-
-Все эти функции предназначены для ajax.php то есть только для ActionProcessor событий
-
-msQuery(mode, query) - обертка над xajax  query+'&'+'mode='+mode  (db_list, tbl_list, tbl_struct)
-xajax - делает запрос на ajax.php + options POST + response eval -- по сути больше нигде не используется
-
--------------------
-querySql - асинхронный аналог xajax
-querySql - выполнить запрос удаленно - возвращает Promise, делает запрос на ajax + options POST, querySql(params, responseType='text') - server_variables, msc_help
-  // пример применения
-  async function printTable(sql) {
-    let data = await querySql({sql, mode: 'querysql'}, 'json')
-    for (let item of data) {
-    }
-  }
-
-async loadAll() {
-    sql = 'SHOW GLOBAL VARIABLES';
-    mode = 'querysql'
-    type = 'pair-value'
-    let globalVars = await querySql({sql, mode, type}, 'json')
-    this.setState({globalVars, sessionVars})
-}
-
-componentDidMount () {
-    this.loadAll()
-}
--------------------
-
-
-apiQuery async - (НЕ РАБОТАЕТ) fetch GET json return -
-
-*/
 
 /**
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
@@ -248,18 +209,6 @@ function msDisplaySql() {
         form.querySelector('textarea').focus()
     }
 }
-
-
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-/**
- * Пакет общих функций и библиотек для разработки приложений
- * @pack 13.03.2010
- */
-
-
 
 /**
  * Копирует последний ряд таблицы вниз

@@ -1,7 +1,4 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
 
 spl_autoload_register(function ($class) {
     $path = [

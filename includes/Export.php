@@ -1,7 +1,4 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
 
 global $memory_limit;
 $memory_limit = (intval(ini_get('memory_limit')) * 1024 * 1024) / 2;

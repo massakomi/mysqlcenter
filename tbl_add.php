@@ -1,11 +1,4 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-/**
- * Скрипт создание таблицы в БД
- */
 
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');

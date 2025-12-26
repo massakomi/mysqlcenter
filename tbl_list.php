@@ -1,38 +1,13 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-/**
- * Главная страница -  таблица таблиц БД а также удаление / очистка таблиц
- */
 
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
-function textm() {
-    echo '2';
-    echo '2';
-    echo '2';
-    echo '2';
-}
-
 $tables = DatabaseTable::getCashedTablesArray();
-
 if (count($tables) == 0) {
     $msc->addMessage('В базе данных нет таблиц');
 }
-
-/*foreach ($tables as $k => $v) {
-    if ($v->Data_length < 100000000) {
-        unset($tables[$k]);
-    }
-}
-
-
-*/
-
 
 // Простая таблица
 if (GET('action') == 'full') {

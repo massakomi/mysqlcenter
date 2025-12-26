@@ -1,7 +1,4 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
 
 /**
  * Управление запросами. Здесь должны быть централизованы все запросы на изменение данных
@@ -130,9 +127,8 @@ class ActionProcessor
         /**
          * Подгружаем и инициализируем функции для работы с БД
          */
-        $dbm = new DatabaseManager();
         $dbt = new DatabaseTable();
-        $dbr = new DatabaseRow();
+        $server = new Server();
         $validate = new Validate();
 
         // Выполнение запросов
@@ -293,7 +289,7 @@ class ActionProcessor
                 }
                 if ($databases) {
                     foreach ($databases as $db) {
-                        $dbm->DatabaseAction($db, 'DROP');
+                        $server->databaseAction($db, 'DROP');
                     }
                     $msc->clearCurrentDatabase();
                     $msc->page = 'db_list';
@@ -301,7 +297,7 @@ class ActionProcessor
                 break;
 
             case 'dbTruncate'     :
-                $dbm->DatabaseTruncate($db);
+                $server->databaseTruncate($db);
                 break;
 
             case 'dbHide'     :
@@ -315,11 +311,11 @@ class ActionProcessor
                 break;
 
             case 'dbTablesDelete' :
-                $dbm->DatabaseTruncate($db, true);
+                $server->databaseTruncate($db, true);
                 break;
 
             case 'dbCreate'       :
-                if ($dbm->DatabaseAction($this->param('dbName'), 'CREATE')) {
+                if ($server->databaseAction($this->param('dbName'), 'CREATE')) {
                     $msc->db = $this->param('dbName');
                     $msc->selectDb($msc->db);
                 }
@@ -327,7 +323,7 @@ class ActionProcessor
 
             case 'dbCollate'       :
             case 'dbCharset'       :
-                if ($dbm->DatabaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset')) {
+                if ($server->databaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset')) {
                     $msc->addMessage("Успешно выполнено", $msc->lastSql, MS_MSG_SUCCESS);
                 } else {
                     $msc->addMessage("Ошибка при выполнении операции с $db", $msc->lastSql, MS_MSG_FAULT, $msc->error);
@@ -381,7 +377,7 @@ class ActionProcessor
                 }
                 if (count($newName) > 0 && count($databases) == count($newName)) {
                     foreach ($databases as $k => $db) {
-                        $dbm->DatabaseCopy($db, $newName[$k], $isMove, $struct, $data);
+                        $server->databaseCopy($db, $newName[$k], $isMove, $struct, $data);
                     }
                     if ($isMove || POST('switch') != null) {
                         $msc->db = $newName[$k]; // last
@@ -399,7 +395,7 @@ class ActionProcessor
                 if (!is_array($row)) {
                     $row = [$row];
                 }
-                if ($dbr->rowDelete($db, $tbl, implode(' OR ', $row), count($row))) {
+                if ($dbt->rowDelete($db, $tbl, implode(' OR ', $row), count($row))) {
                     return $msc->addMessage("Ряд $row удалён", $msc->lastSql, MS_MSG_SUCCESS);
                 } else {
                     return $msc->addMessage("Ошибка удаления ряда $row", $msc->lastSql, MS_MSG_FAULT, $msc->error);
@@ -413,7 +409,7 @@ class ActionProcessor
                 if (is_array($row)) {
                     $row = implode(' OR ', $row);
                 }
-                if ($dbr->rowCopy($tbl, $row)) {
+                if ($dbt->rowCopy($tbl, $row)) {
                     $n = $msc->affectedRows;
                     if ($n > 0) {
                         return $msc->addMessage('Добавлено ' . $n . ' рядов', $msc->lastSql, MS_MSG_SUCCESS);
