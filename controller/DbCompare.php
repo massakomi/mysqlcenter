@@ -7,7 +7,6 @@ namespace controller;
  */
 class DbCompare
 {
-
     public function __construct()
     {
         global $msc, $pagel;
@@ -36,7 +35,7 @@ class DbCompare
      * @param $databases
      * @return array
      */
-    function pageProps($databases)
+    public function pageProps($databases)
     {
         global $msc;
 

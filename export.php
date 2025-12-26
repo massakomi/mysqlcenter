@@ -14,12 +14,12 @@ list($vi, $vs) = Server::getServerVersion();
 $dumpHeader =
 '-- SQL Экспорт
 --
--- Хост: '.$msc->host.'
--- Время создания: '.date('j.m.Y, H-i').'
--- Версия сервера: '.$vs.'
--- Версия PHP: '.phpversion().'
+-- Хост: ' . $msc->host . '
+-- Время создания: ' . date('j.m.Y, H-i') . '
+-- Версия сервера: ' . $vs . '
+-- Версия PHP: ' . phpversion() . '
 -- 
--- БД: `'.$msc->db.'`
+-- БД: `' . $msc->db . '`
 -- 
 
 -- --------------------------------------------------------
@@ -53,7 +53,7 @@ if ($msc->page == 'exportSp') {
             if (!$id_set = $msct->insertSet(POST('new'))) {
                 return $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, $msc->error);
             }
-            foreach ($_POST['table'] as $key => $t){
+            foreach ($_POST['table'] as $key => $t) {
                 $struct = intval(isset($_POST['struct'][$key]));
                 $data   = intval(isset($_POST['data'][$key]));
                 $pk_top = intval($_POST['to'][$key]);
@@ -64,13 +64,13 @@ if ($msc->page == 'exportSp') {
                     $from = intval($_POST['from'][$key]);
                     $to   = intval($_POST['to'][$key]);
                     if ($from < 1) {
-                        $where []= "$pri >= $from";
+                        $where [] = "$pri >= $from";
                     }
                     if ($to > 0) {
-                        $where []= "$pri <= $to";
+                        $where [] = "$pri <= $to";
                     }
                     if ($where_sql != '') {
-                        $where []= $where_sql;
+                        $where [] = $where_sql;
                     }
                     $where_sql = implode(' AND ', $where);
                 }
@@ -88,11 +88,11 @@ if ($msc->page == 'exportSp') {
             $exp->setComments(POST('addComment') != null);
             $exp->setOptionsStruct($addIfNot, $addAuto, $addKav);
             $exp->setOptionsData($insFull, $insExpand, $insZapazd, $insIgnor);
-            foreach ($_POST['table'] as $key => $t){
+            foreach ($_POST['table'] as $key => $t) {
                 $exp->setTable($t);
                 $whereLocal = stripslashes($_POST['where'][$key]);
                 if (isset($_POST['struct'][$key])) {
-                    $exp->exportStructure($addDelim=1, $isDrop);
+                    $exp->exportStructure($addDelim = 1, $isDrop);
                 }
                 if (isset($_POST['data'][$key])) {
                     $where = array();
@@ -100,13 +100,13 @@ if ($msc->page == 'exportSp') {
                     $from = intval($_POST['from'][$key]);
                     $to   = intval($_POST['to'][$key]);
                     if ($from < 1) {
-                        $where []= "$pri >= $from";
+                        $where [] = "$pri >= $from";
                     }
                     if ($to > 0) {
-                        $where []= "$pri <= $to";
+                        $where [] = "$pri <= $to";
                     }
                     if ($whereLocal != '') {
-                        $where []= $whereLocal;
+                        $where [] = $whereLocal;
                     }
                     $exp->exportData($exType, implode(' AND ', $where));
                 }
@@ -124,10 +124,10 @@ if ($msc->page == 'exportSp') {
         $cSet = $msct->getSetInfo(GET('set'));
         $data = [];
         if ($msc->db) {
-            $result = $msc->getData('SHOW TABLE STATUS FROM '.$msc->db, PDO::FETCH_OBJ);
+            $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db, PDO::FETCH_OBJ);
             foreach ($result as $o) {
                 $o->Fields = DatabaseTable::getFields($o->Name);
-                $data []= $o;
+                $data [] = $o;
             }
         }
         $pageProps = [
@@ -145,7 +145,6 @@ if ($msc->page == 'exportSp') {
     }
 
 // 3. ОБЫЧНЫЙ ЭКСПОРТ
-
 } else {
     $msc->pageTitle = 'Экспорт данных';
 
@@ -163,8 +162,8 @@ if ($msc->page == 'exportSp') {
         // Экспорт БД
         if ($exportDb && count($exportDb) > 0) {
             foreach ($exportDb as $db) {
-                $exp->data .= "\r\n".'CREATE DATABASE `'.$db.'` DEFAULT CHARACTER SET '.MS_CHARACTER_SET.' COLLATE '.MS_COLLATION.';
-USE `'.$db.'`;'."\r\n"."\r\n";
+                $exp->data .= "\r\n" . 'CREATE DATABASE `' . $db . '` DEFAULT CHARACTER SET ' . MS_CHARACTER_SET .
+                    ' COLLATE ' . MS_COLLATION . ';' . "\r\n" . ' USE `' . $db . '`;' . "\r\n" . "\r\n";
                 $exp->setDatabase($db);
                 $array = DatabaseTable::getTables($db);
                 foreach ($array as $t) {
@@ -172,9 +171,8 @@ USE `'.$db.'`;'."\r\n"."\r\n";
                     $exp->startFull($isStruct, $isData, true, $isDrop, $exType, $exWhere);
                 }
             }
-        }
-        // Экспорт таблицы
-        else {
+        } else {
+            // Экспорт таблицы
             $exp->setDatabase(GET('db'));
             foreach ($array as $t) {
                 $exp->setTable($t);
@@ -194,9 +192,8 @@ USE `'.$db.'`;'."\r\n"."\r\n";
             ];
         }
         echo $content;
-    }
-    // 3.2.2. HTML форма экспорта
-    else {
+    } else {
+        // 3.2.2. HTML форма экспорта
         $structChecked = ' defaultChecked';
         $whereCondition = null;
         $tableSelectMult = null;
@@ -217,7 +214,7 @@ USE `'.$db.'`;'."\r\n"."\r\n";
             // массив рядов из обзора таблицы
             if (POST('rowMulty') != '') {
                 $_POST['row'] = array_map('urldecode', array_map('stripslashes', $_POST['row']));
-                $whereCondition = '('.implode(') OR (', $_POST['row']).')';
+                $whereCondition = '(' . implode(') OR (', $_POST['row']) . ')';
             }
             // селектор таблиц мульти
             $selectMultName  = 'export_table[]';
@@ -225,13 +222,12 @@ USE `'.$db.'`;'."\r\n"."\r\n";
                 $structChecked = null;
             }
             $optionsData = $tablesAll;
-        }
-        // 3.2.2.2. Если бд не указана, то список БД
-        else {
+        } else {
+            // 3.2.2.2. Если бд не указана, то список БД
             $selectMultName  = 'export_db[]';
             $dbAll = Server::getDatabases();
             $optionsSelected = POST('databases');
-            if ($optionsSelected == '' || count($optionsSelected)== 0) {
+            if ($optionsSelected == '' || count($optionsSelected) == 0) {
                 $optionsSelected = array();
             }
             $optionsData = $dbAll;
@@ -250,5 +246,4 @@ USE `'.$db.'`;'."\r\n"."\r\n";
         }
         $this->template($pageProps);
     }
-
 }

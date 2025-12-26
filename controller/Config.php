@@ -7,7 +7,6 @@ namespace controller;
  */
 class Config
 {
-
     public function __construct()
     {
         global $msc, $pagel;

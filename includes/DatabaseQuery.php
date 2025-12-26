@@ -95,7 +95,7 @@ class DatabaseQuery
      * Выполняет выбор БД (select_db) на сервера
      * @param string
      */
-    function selectDb($db): bool
+    public function selectDb($db): bool
     {
         if ($db == null) {
             return false;
@@ -129,11 +129,11 @@ class DatabaseQuery
     }
 
     private $logEnabled = true;
-    function disableLog()
+    public function disableLog()
     {
         $this->logEnabled = false;
     }
-    function enableLog()
+    public function enableLog()
     {
         $this->logEnabled = true;
     }

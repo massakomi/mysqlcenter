@@ -40,8 +40,7 @@ class ActionProcessor
         global $msc;
 
         switch ($queryMode) {
-
-            case 'configUpdate' :
+            case 'configUpdate':
                 $data = file(MS_CONFIG_FILE);
                 $newFileContent = [];
                 $changed = false;
@@ -74,14 +73,14 @@ class ActionProcessor
                 }
                 break;
 
-            case 'configRestore' :
+            case 'configRestore':
                 if (copy('docs/config_default.txt', MS_CONFIG_FILE)) {
                     $msc->addMessage('Значения по умолчанию восстановлены');
                 }
                 break;
 
-            case 'connectSave' :
-            case 'connectCheck' :
+            case 'connectSave':
+            case 'connectCheck':
                 $config = json_decode($_POST['config'], true);
                 $config = [
                     'current' => $_POST['current'],
@@ -100,7 +99,6 @@ class ActionProcessor
                 $msc->addMessage('Connect success!');
                 break;
         }
-
     }
 
 
@@ -144,12 +142,12 @@ class ActionProcessor
             // операции с таблицами
             // в запросе обязательно должна быть указана БД и таблица
 
-            case 'tableDelete'    :
+            case 'tableDelete':
                 $dbt->tableAction($db, $tbl, 'DROP');
                 $this->redirect = "?s=tbl_list&db=$db";
                 break;
 
-            case 'tableTruncate'  :
+            case 'tableTruncate':
                 $dbt->tableAction($db, $tbl, 'TRUNCATE');
                 $this->redirect = $umaker->make('s', 'tbl_data', 'action', '');
                 break;
@@ -169,18 +167,18 @@ class ActionProcessor
                 break;
 
             // Копирование в другую БД
-            case 'tableCopyTo';
+            case 'tableCopyTo':
                 $withData = !$this->param('tableCopyNoData');
                 $dbt->copyTable($db, $tbl, true, $withData, $this->param('newName'), $this->param('newDB'));
                 break;
 
             // Изменение кодировки
-            case 'tableCharset';
+            case 'tableCharset':
                 $dbt->tableAction($db, $tbl, 'CHARSET', $this->param('charset'));
                 break;
 
             // Изменение опций
-            case 'tableOptions';
+            case 'tableOptions':
                 if (count($_POST) == 0) {
                     break;
                 }
@@ -189,7 +187,7 @@ class ActionProcessor
                 $pk = intval($this->param('pack_keys'));
                 $cs = intval($this->param('checksum'));
                 $dkv = intval($this->param('delay_key_write'));
-                $sql = "ALTER TABLE `$table` PACK_KEYS = $pk CHECKSUM = $cs DELAY_KEY_WRITE = $dkv AUTO_INCREMENT = $ai";
+                $sql = "ALTER TABLE `$table` PACK_KEYS=$pk CHECKSUM=$cs DELAY_KEY_WRITE=$dkv AUTO_INCREMENT=$ai";
                 if ($msc->execPdo($sql)) {
                     return $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
                 } else {
@@ -198,7 +196,7 @@ class ActionProcessor
                 break;
 
             // Коммент
-            case 'tableComment';
+            case 'tableComment':
                 // !!! внимание, некоторые действия должны выполнятся только с POSTa
                 // если идёт пустой GET запрос, он всё перетирает!!!
                 if (count($_POST) == 0) {
@@ -208,16 +206,17 @@ class ActionProcessor
                 break;
 
             // Найти и заменить
-            case 'tableReplace';
+            case 'tableReplace':
                 $field = POST('field');
                 $search_for = POST('search_for');
                 $replace_in = POST('replace_in');
                 if ($field && $search_for) {
-                    $sql = 'UPDATE `'.$tbl.'` SET '.$field.' = REPLACE(`'.$field.'`, "'.$search_for.'", "'.$replace_in.'")';
+                    $sql = 'UPDATE `' . $tbl . '` SET ' . $field . ' = REPLACE(`' . $field . '`, "' .
+                        $search_for . '", "' . $replace_in . '")';
                     if ($msc->execPdo($sql)) {
                         $c = $msc->affectedRows;
                         if ($c > 0) {
-                            $msc->addMessage('Таблица изменена, затронуто рядов: '.$c, $sql, MS_MSG_SUCCESS);
+                            $msc->addMessage('Таблица изменена, затронуто рядов: ' . $c, $sql, MS_MSG_SUCCESS);
                         } else {
                             $msc->addMessage('Ничего не найдено и не заменено', $sql, MS_MSG_NOTICE);
                         }
@@ -228,7 +227,7 @@ class ActionProcessor
                 break;
 
             // Порядок
-            case 'tableOrder';
+            case 'tableOrder':
                 if (count($_POST) == 0) {
                     break;
                 }
@@ -252,12 +251,12 @@ class ActionProcessor
                 break;
 
             // массовые действия с таблицами
-            case 'delete_all' :
-            case 'truncate_all' :
-            case 'copy_all' :
+            case 'delete_all':
+            case 'truncate_all':
+            case 'copy_all':
                 $a = $tbl;
                 if (!is_array($a)) {
-                    $msc->addMessage('table не массив',  '', MS_MSG_ERROR);
+                    $msc->addMessage('table не массив', '', MS_MSG_ERROR);
                     break;
                 }
                 if ($a == false) {
@@ -269,9 +268,9 @@ class ActionProcessor
                 foreach ($a as $t) {
                     if ($queryMode == 'delete_all') {
                         $dbt->tableAction($db, $t, 'DROP');
-                    } else if ($queryMode == 'truncate_all') {
+                    } elseif ($queryMode == 'truncate_all') {
                         $dbt->tableAction($db, $t, 'TRUNCATE');
-                    } else if ($queryMode == 'copy_all') {
+                    } elseif ($queryMode == 'copy_all') {
                         $dbt->copyTable($db, $t, $cs, $cd);
                     }
                 }
@@ -281,7 +280,7 @@ class ActionProcessor
             // операции с БД
 
             // удаление баз данных (массово + единично)
-            case 'dbDelete'       :
+            case 'dbDelete':
                 if ($this->param('dbMulty')) {
                     $databases = $this->param('databases');
                 } else {
@@ -296,11 +295,11 @@ class ActionProcessor
                 }
                 break;
 
-            case 'dbTruncate'     :
+            case 'dbTruncate':
                 $server->databaseTruncate($db);
                 break;
 
-            case 'dbHide'     :
+            case 'dbHide':
                 if ($this->param('act') == 'show') {
                     $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 1)');
                     $msc->addMessage("База $db открыта");
@@ -310,19 +309,19 @@ class ActionProcessor
                 }
                 break;
 
-            case 'dbTablesDelete' :
+            case 'dbTablesDelete':
                 $server->databaseTruncate($db, true);
                 break;
 
-            case 'dbCreate'       :
+            case 'dbCreate':
                 if ($server->databaseAction($this->param('dbName'), 'CREATE')) {
                     $msc->db = $this->param('dbName');
                     $msc->selectDb($msc->db);
                 }
                 break;
 
-            case 'dbCollate'       :
-            case 'dbCharset'       :
+            case 'dbCollate':
+            case 'dbCharset':
                 if ($server->databaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset')) {
                     $msc->addMessage("Успешно выполнено", $msc->lastSql, MS_MSG_SUCCESS);
                 } else {
@@ -330,7 +329,7 @@ class ActionProcessor
                 }
                 break;
 
-            case 'dbAllAction'       :
+            case 'dbAllAction':
                 $tables = DatabaseTable::getTables();
                 $action = POST('act');
                 foreach ($tables as $table) {
@@ -352,8 +351,8 @@ class ActionProcessor
 
 
             // массово + единично
-            case 'dbRename'       :
-            case 'dbCopy'         :
+            case 'dbRename':
+            case 'dbCopy':
                 $isMove = ($queryMode == 'dbRename');
                 if ($this->param('dbMulty')) {
                     $databases = $this->param('databases');
@@ -388,7 +387,7 @@ class ActionProcessor
 
             // операции с рядами
 
-            case 'deleteRows' :
+            case 'deleteRows':
             case 'deleteRow':
                 $row = $this->param('row');
                 $validate->queryCheck($db, $tbl, $row);
@@ -402,7 +401,7 @@ class ActionProcessor
                 }
                 break;
 
-            case 'copyRows' :
+            case 'copyRows':
             case 'copyRow':
                 $row = $this->param('row');
                 $validate->queryCheck($db, $tbl, $row);
@@ -417,13 +416,14 @@ class ActionProcessor
                         return $msc->addMessage('Всё в порядке', $msc->lastSql, MS_MSG_SUCCESS);
                     }
                 } else {
-                    return $msc->addMessage('Ошибка копирования ряда ' . $row, $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                    $text = 'Ошибка копирования ряда ' . $row;
+                    return $msc->addMessage($text, $msc->lastSql, MS_MSG_FAULT, $msc->error);
                 }
                 break;
 
             // операции с полями
 
-            case 'deleteField' :
+            case 'deleteField':
                 $validate->queryCheck($db, $tbl, $this->param('field'));
                 $sql = "ALTER TABLE `$tbl` DROP " . $this->param('field');
                 if ($msc->execPdo($sql, $db)) {
@@ -434,7 +434,7 @@ class ActionProcessor
                 break;
 
             // Удаление множества полей через POST
-            case 'fieldsDelete' :
+            case 'fieldsDelete':
                 $deleteFields = $this->param('field');
                 $fields = DatabaseTable::getFields($tbl);
                 // если в таблице осталось только 1 поле, то удаляем таблицу
@@ -452,7 +452,7 @@ class ActionProcessor
 
             // операции с ключами
 
-            case 'deleteKey' :
+            case 'deleteKey':
                 $validate->queryCheck($db, $tbl, $this->param('key'), $this->param('field'));
                 if ($this->param('key') == 'PRIMARY') {
                     DatabaseTable::dropPrimaryKey($tbl);
@@ -466,7 +466,7 @@ class ActionProcessor
                 }
                 break;
 
-            case 'addKey' :
+            case 'addKey':
                 $keyName = POST('keyName');
                 $keyDefinition = POST('keyType');
                 $validate->queryCheck($db, $tbl, $keyName, $keyDefinition);
@@ -491,13 +491,13 @@ class ActionProcessor
 
             // операции с пользователем
 
-            case 'userAdd' :
+            case 'userAdd':
                 Server::userAdd();
                 break;
 
             // разное
 
-            case 'killProcess' :
+            case 'killProcess':
                 $kill = POST('id');
                 if (!empty($kill)) {
                     if ($msc->execPdo($sql = 'KILL ' . $kill)) {
@@ -510,7 +510,6 @@ class ActionProcessor
 
             default:
                 return false;
-
         }
     }
 
@@ -534,4 +533,3 @@ class ActionProcessor
         return false;
     }
 }
-

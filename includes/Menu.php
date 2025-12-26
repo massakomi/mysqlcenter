@@ -5,7 +5,6 @@
  */
 class Menu
 {
-
     /**
      * Цепочка-меню
      */
@@ -14,12 +13,15 @@ class Menu
         global $msc;
         $chain = '<a href="?s=db_list">DB</a>';
         if ($msc->db != null) {
-            $chain .= ' &nbsp; <a href="?s=tbl_list&db=' . $msc->db . '&action=structure">&#8250;</a> &nbsp; <a href="?s=tbl_list&db=' . $msc->db . '">' . $msc->db . '</a>';
+            $chain .= ' &nbsp; <a href="?s=tbl_list&db=' . $msc->db . '&action=structure">&#8250;</a> &nbsp; ';
+            $chain .= '<a href="?s=tbl_list&db=' . $msc->db . '">' . $msc->db . '</a>';
         }
         if ($msc->table != null) {
-            $chain .= ' &nbsp; &#8250; &nbsp; <a href="?db=' . $msc->db . '&table=' . $msc->table . '&s=tbl_data">' . $msc->table . '</a>';
+            $chain .= ' &nbsp; &#8250; &nbsp; ';
+            $chain .= "<a href='?s=tbl_data&db=$msc->db&table=$msc->table'>$msc->page</a>";
             if ($msc->page != 'tbl_data') {
-                $chain .= ' &nbsp; &#8250; &nbsp; <a href="?s=' . $msc->page . '&db=' . $msc->db . '&table=' . $msc->table . '">' . $msc->page . '</a>';
+                $chain .= ' &nbsp; &#8250; &nbsp; ';
+                $chain .= "<a href='?s=$msc->page&db=$msc->db&table=$msc->table'>$msc->page</a>";
             }
         }
         return $chain;
@@ -117,12 +119,11 @@ class Menu
             $dbMenu = [
                 'ввести доступы к базе данных' => ['login', ''],
             ];
-        } elseif ((GET('s') == 'db_list' || $msc->page == 'db_list' || $msc->page == 'users' || $msc->page == 'login') || substr(GET('s'), 0, 7) == 'server_') {
+        } elseif (in_array($msc->page, ['db_list', 'users', 'login'])) {
             $dbMenu = array_merge([
                 'базы данных' => ['db_list', ''],
                 'логин' => ['login', ''],
             ], $dbMenuGlobal);
-
         } elseif (($msc->db != '' && $msc->table == '') || $msc->page == 'tbl_list') {
             $dbMenu = array_merge([
                 'таблицы' => ['tbl_list', ''],
@@ -133,7 +134,6 @@ class Menu
                 'удалить' => [$msc->page, 'dbDelete'],
                 'удалить таблицы' => [$msc->page, 'dbTablesDelete']
             ]);
-
         } else {
             $dbMenu = array_merge([
                 'обзор' => ['tbl_data', ''],
@@ -189,7 +189,11 @@ class Menu
         }
         $greyEmpty = conf('greyempty');
         foreach ($rows as $t) {
-            $end = strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0 ? strpos($t->Name, '_', 3) : 50;
+            if (strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0) {
+                $end = strpos($t->Name, '_', 3);
+            } else {
+                $end = 50;
+            }
             $p = substr($t->Name, 0, $end);
             if (array_key_exists($p, $prefixes) && $prefixes[$p] > 1) {
                 $class = 't1';
@@ -203,7 +207,8 @@ class Menu
             if ($msc->table == $t->Name) {
                 $selectorTables .= '  <option value="" selected><b>' . $t->Name . '</b></option>' . "\r\n";
             } else {
-                $selectorTables .= '  <option value="' . $this->getMenuTableLink($t->Name) . '">' . $t->Name . '</option>' . "\r\n";
+                $value = $this->getMenuTableLink($t->Name);
+                $selectorTables .= '  <option value="' . $value . '">' . $t->Name . '</option>' . "\r\n";
             }
         }
         $menuTables .= '</div>' . "\r\n";
@@ -218,10 +223,11 @@ class Menu
     private function makeTableMenuItem($table, $class, $title = '')
     {
         global $msc;
-        if ($msc->table == $table){
+        if ($msc->table == $table) {
             $class .= ' cur';
         }
-        return '  <a class="' . $class . '" title="' . $title . '" href="' . $this->getMenuTableLink($table) . '">' . $table . '</a>' . "\r\n";
+        $href = $this->getMenuTableLink($table);
+        return '  <a class="' . $class . '" title="' . $title . '" href="' . $href . '">' . $table . '</a>' . "\r\n";
     }
 
     private function getMenuTableLink($table)
@@ -241,7 +247,7 @@ class Menu
      */
     private function addPopularTables(): string
     {
-        global $msc;
+        global $msc, $umaker;
         $tables = $msc->getPopularTablesDb();
         if (count($tables) == 0) {
             return '';
@@ -268,7 +274,8 @@ class Menu
             }
             $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $info['time']);
         }
-        $menu .= '<a href="#" style="position: absolute; right: 0; top: 0" onclick="location.href=location.href + \'&resetPopular=1\'; return false;">reset</a> <hr />';
+        $url = $umaker->make('resetPopular', 1);
+        $menu .= '<a href="' . $url . '" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
         return $menu;
     }
 

@@ -5,13 +5,12 @@
  */
 class Server
 {
-
     private Validate $validate;
 
     /**
      * @access private
      */
-    function __construct()
+    public function __construct()
     {
         $this->validate = new Validate();
     }
@@ -53,7 +52,8 @@ class Server
      * @package sql
      * @return array Числовое и строковое значение версии
      */
-    public static function getServerVersion() {
+    public static function getServerVersion()
+    {
         global $msc;
         $result = $msc->fetchPdo('SELECT VERSION() AS version');
         if (!$result) {
@@ -73,12 +73,13 @@ class Server
      * @param boolean Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
      * @return array
      */
-    public static function getCharsetArray($extended=false) {
+    public static function getCharsetArray($extended = false)
+    {
         global $msc;
         $charsetList = array();
         $res = $msc->fetchPdo('SHOW CHARACTER SET');
         foreach ($res as $row) {
-            $charsetList [$row['Charset']]= $extended ? $row : $row['Charset'];
+            $charsetList [$row['Charset']] = $extended ? $row : $row['Charset'];
         }
         ksort($charsetList);
         return $charsetList;
@@ -101,41 +102,42 @@ class Server
         exit;*/
 
         // Проверяем, может уже есть такой пользователь
-        $sql = 'SELECT * FROM mysql.user WHERE User="'.$username.'"';
+        $sql = 'SELECT * FROM mysql.user WHERE User="' . $username . '"';
         $result = $msc->fetchPdo($sql);
         if ($result) {
-            $msc->addMessage('Пользователь с именем "'.$username.'" уже существует', '', MS_MSG_NOTICE);
+            $msc->addMessage('Пользователь с именем "' . $username . '" уже существует', '', MS_MSG_NOTICE);
             return false;
         }
 
 
         // Сначала добавляем пользователя
-        $sql = 'CREATE USER `'.$username.'` IDENTIFIED BY "'.$userpass.'"';
+        $sql = 'CREATE USER `' . $username . '` IDENTIFIED BY "' . $userpass . '"';
         $result = $msc->execPdo($sql);
         if ($result) {
-            $msc->addMessage('Пользователь "'.$username.'" добавлен', $sql, MS_MSG_SUCCESS);
+            $msc->addMessage('Пользователь "' . $username . '" добавлен', $sql, MS_MSG_SUCCESS);
         } else {
-            $msc->addMessage('Ошибка добавления пользователя "'.$username.'"', $sql, MS_MSG_FAULT);
+            $msc->addMessage('Ошибка добавления пользователя "' . $username . '"', $sql, MS_MSG_FAULT);
             return false;
         }
 
         // Теперь добавляем базу данных
-        $sql = 'CREATE DATABASE `'.$database.'`';
+        $sql = 'CREATE DATABASE `' . $database . '`';
         $result = $msc->execPdo($sql);
         if ($result) {
-            $msc->addMessage('База данных "'.$database.'" создана', $sql, MS_MSG_SUCCESS);
+            $msc->addMessage('База данных "' . $database . '" создана', $sql, MS_MSG_SUCCESS);
         } else {
-            $msc->addMessage('Ошибка создания базы данных "'.$database.'"', $sql, MS_MSG_FAULT);
+            $msc->addMessage('Ошибка создания базы данных "' . $database . '"', $sql, MS_MSG_FAULT);
             return false;
         }
 
         // Теперь наделяем привелегиями пользователя на эту базу
-        $sql = 'GRANT ALL ON `'.$database.'`.* TO `'.$username.'`';
+        $sql = 'GRANT ALL ON `' . $database . '`.* TO `' . $username . '`';
         $result = $msc->execPdo($sql);
         if ($result) {
-            $msc->addMessage('Права на базу "'.$database.'" отданы пользоватлю "'.$username.'"', $sql, MS_MSG_SUCCESS);
+            $str = 'Права на базу "' . $database . '" отданы пользоватлю "' . $username . '"';
+            $msc->addMessage($str, $sql, MS_MSG_SUCCESS);
         } else {
-            $msc->addMessage('Ошибка наделения прав на базу "'.$database.'"', $sql, MS_MSG_FAULT);
+            $msc->addMessage('Ошибка наделения прав на базу "' . $database . '"', $sql, MS_MSG_FAULT);
             return false;
         }
         return true;
@@ -155,15 +157,15 @@ class Server
         global $msc;
         $this->validate->queryCheck($db);
         switch ($type) {
-            case 'DROP'   :
+            case 'DROP':
                 $sql = "DROP DATABASE `$db`";
                 $text = 'удалена';
                 break;
-            case 'CREATE' :
+            case 'CREATE':
                 $sql = "CREATE DATABASE `$db`";
                 $text = 'создана';
                 break;
-            default :
+            default:
                 return $msc->addMessage('Неверный тип обработки', null, MS_MSG_ERROR);
         }
         if ($msc->execPdo($sql)) {
@@ -255,4 +257,3 @@ class Server
         return $msc->execPdo($sql);
     }
 }
-

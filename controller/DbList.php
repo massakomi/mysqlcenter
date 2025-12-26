@@ -7,7 +7,6 @@ namespace controller;
  */
 class DbList
 {
-
     /**
      *
      */

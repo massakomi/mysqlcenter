@@ -1,5 +1,7 @@
 <?php
 
+global $umaker;
+
 /**
  * Возвращает оптионсы для селектора кодировок
  *
@@ -16,7 +18,8 @@ function getCharsetSelector($selected = null)
         if ($selected == $row['Charset']) {
             $sel = ' selected="selected"';
         }
-        $charsetSelector .= "\n" . '<option title="' . $row['Description'] . ' (default:' . $row['Default collation'] . ')"' . $sel . '>' . $row['Charset'] . '</option>';
+        $title = $row['Description'] . ' (default:' . $row['Default collation'] . ')';
+        $charsetSelector .= "\n" . '<option title="' . $title . '"' . $sel . '>' . $row['Charset'] . '</option>';
     }
     return $charsetSelector;
 }
@@ -33,8 +36,14 @@ function getCharsetSelector($selected = null)
  * @param bool|int    Максимум для LIMIT
  * @return  array       Массив объектов с инфо баз данных
  */
-function get_databases_full($database = null, $force_stats = false, $sort_by = 'SCHEMA_NAME', $sort_order = 'ASC', $limit_offset = 0, $limit_count = false)
-{
+function get_databases_full(
+    $database = null,
+    $force_stats = false,
+    $sort_by = 'SCHEMA_NAME',
+    $sort_order = 'ASC',
+    $limit_offset = 0,
+    $limit_count = false
+): array {
     global $msc;
     $sort_order = strtoupper($sort_order);
 
@@ -101,7 +110,8 @@ function get_databases_full($database = null, $force_stats = false, $sort_by = '
         function _usort_comparison_callback($a, $b)
         {
             $sorter = 'strnatcasecmp';
-            return ($GLOBALS['callback_sort_order'] == 'ASC' ? 1 : -1) * $sorter($a[$GLOBALS['callback_sort_by']], $b[$GLOBALS['callback_sort_by']]);
+            $by = $GLOBALS['callback_sort_by'];
+            return ($GLOBALS['callback_sort_order'] == 'ASC' ? 1 : -1) * $sorter($a[$by], $b[$by]);
         }
 
         $GLOBALS['callback_sort_order'] = $sort_order;
@@ -134,7 +144,6 @@ if (!defined('DIR_MYSQL')) {
 }
 
 if (GET('users')) {
-
     $msc->pageTitle = 'Различная информация';
 
     $users = $msc->getData('SELECT * FROM mysql.user');
@@ -153,7 +162,6 @@ if (GET('users')) {
     }
 
     $this->template($pageProps);
-
 } elseif ($msc->table == '') {
     $msc->pageTitle = "Действия - БД";
     $DQuery = $umaker->make('db', $msc->db, 's', 'actions');
@@ -178,7 +186,6 @@ if (GET('users')) {
     }
 
     $this->template($pageProps);
-
 } else {
     $msc->pageTitle = "Действия - таблица $msc->table";
     $DTQuery = MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table";

@@ -27,7 +27,8 @@ if (count($_POST)) {
  * @param $fields
  * @return array
  */
-function getPrimaryKeys($fields) {
+function getPrimaryKeys($fields)
+{
     $pk = [];
     foreach ($fields as $v) {
         if (strchr($v->Key, 'PRI')) {
@@ -44,7 +45,8 @@ function getPrimaryKeys($fields) {
  * @return array[]
  * @throws Exception
  */
-function selectDataFromDatabase($databases, $table, $pk) {
+function selectDataFromDatabase($databases, $table, $pk)
+{
     global $msc;
     $msc->selectDb($databases[0]);
     // Порядок

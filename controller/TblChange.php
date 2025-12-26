@@ -7,7 +7,6 @@ namespace controller;
  */
 class TblChange
 {
-
     public function __construct()
     {
         global $msc, $pagel, $umaker;
@@ -30,7 +29,6 @@ class TblChange
             $fields = \DatabaseTable::getFields($msc->table);
             $isAdd = true;
         } else {
-
             $msc->pageTitle = 'Редактировать данные';
 
             // если в запросе есть ряд (и таблица), то редактируем этот ряд
@@ -52,7 +50,7 @@ class TblChange
             // создания таблицы для данных
             $fields = \DatabaseTable::getFields($msc->table);
             if ($whereCondition != null) {
-                $tableData = $msc->getData('SELECT * FROM '.$msc->table.' WHERE '.$whereCondition);
+                $tableData = $msc->getData('SELECT * FROM ' . $msc->table . ' WHERE ' . $whereCondition);
                 if (!$tableData) {
                     $msc->notice('Ничего не выбрано');
                     return;
@@ -150,7 +148,8 @@ class TblChange
             if ($editType == 0) {
                 $sql = 'UPDATE `' . $msc->table . '` SET ' . implode(', ', $arrayValues) . ' WHERE ' . $where;
             } else {
-                $sql = 'INSERT INTO `' . $msc->table . '` (`' . implode('`, `', $arrayFields) . '`) VALUES (' . implode(', ', $arrayValues) . ')';
+                $sql = 'INSERT INTO `' . $msc->table . '` (`' . implode('`, `', $arrayFields) . '`) VALUES ('
+                    . implode(', ', $arrayValues) . ')';
             }
             if ($msc->execPdo($sql)) {
                 $msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);

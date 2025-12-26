@@ -3,7 +3,8 @@
 /**
  * Возвращает порядок текущей сортировки
  */
-function mscGetOrder($default=null) {
+function mscGetOrder($default = null)
+{
     $order = (POST('order') != null ? POST('order') : $default);
     if ($order != null) {
         if (!strchr($order, '-')) {
@@ -33,10 +34,11 @@ if (!defined('DIR_MYSQL')) {
 
 // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
 if (isset($directSQL) && $msc->table == '') {
-    if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
+    if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL . ' ', $t)) {
         $msc->table = str_replace('`', '', $t[1]);
     } else {
-        return $msc->addMessage('SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе', null, MS_MSG_FAULT);
+        $text = 'SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе';
+        return $msc->addMessage($text, null, MS_MSG_FAULT);
     }
 } elseif ($msc->table == '') {
     return $msc->addMessage('Не указана таблица в запросе', null, MS_MSG_FAULT);
@@ -53,9 +55,9 @@ if (!$fields || count($fields) == 0) {
 $pk = array();
 $fieldsNames = array();
 foreach ($fields as $k => $v) {
-    $fieldsNames []= $v->Field;
+    $fieldsNames [] = $v->Field;
     if (strchr($v->Key, 'PRI')) {
-        $pk []= $v->Field;
+        $pk [] = $v->Field;
     }
 }
 
@@ -66,7 +68,6 @@ $part  = intval(GET('part', MS_DEFAULT_PART));
 
 // Составляем запрос, если не определён запрос из вне
 if (!isset($directSQL)) {
-
     // Собираем where условие если требуется, для выборки
     $whereCondition = null;
     $query = POST('query');
@@ -74,21 +75,22 @@ if (!isset($directSQL)) {
         if (isWhere($query)) {
             $whereCondition = ' WHERE ' . $query;
         } else {
-            $whereCondition = ' WHERE `' . implode('` LIKE "%'.POST('query').'%" OR `', $fieldsNames) . '` LIKE "%'.POST('query').'%"';
+            $where = implode('` LIKE "%' . POST('query') . '%" OR `', $fieldsNames);
+            $whereCondition = ' WHERE `' . $where . '` LIKE "%' . POST('query') . '%"';
         }
     } elseif (GET('where') != null) {
         $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
     } elseif (POST('byField') != null) {
         if (POST('like') == 'like') {
-            $whereCondition  = " WHERE `".POST('field')."` LIKE '%".POST('byField')."%'";
+            $whereCondition  = " WHERE `" . POST('field') . "` LIKE '%" . POST('byField') . "%'";
         } else {
-            $whereCondition  = " WHERE `".POST('field')."`='".POST('byField')."'";
+            $whereCondition  = " WHERE `" . POST('field') . "`='" . POST('byField') . "'";
         }
     }
 
     // Получаем кол-во рядов в таблице
     $count = 0;
-    $result = $msc->fetchPdo('SELECT COUNT(*) as c FROM '.$msc->table.' '.$whereCondition);
+    $result = $msc->fetchPdo('SELECT COUNT(*) as c FROM ' . $msc->table . ' ' . $whereCondition);
     if ($result && $row = $result->fetchObject()) {
         $count = $row->c;
     }
@@ -110,7 +112,6 @@ if (!isset($directSQL)) {
 
 // Прямой запрос
 } else {
-
     // выборка общего кол-ва записей (пока такой вариант, нужно улучшать)
     // Внимание - тут возможно несколько вложенных таблиц или запросов
     $result = $msc->fetchPdo('EXPLAIN ' . $directSQL);
@@ -140,7 +141,7 @@ $table = new Table('contentTable');
 $table->setInterlaceClass('', 'interlace');
 $data = [];
 while ($row = $result->fetchObject()) {
-    $data []= $row;
+    $data [] = $row;
 }
 $j = count($data);
 if (!$count) {

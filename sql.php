@@ -15,7 +15,7 @@ function execSql($db, &$sql, $log = true)
     global $msc;
     $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
     if (!$msc->selectDb($db)) {
-        return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);;
+        return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);
     }
     if ($log) {
         $msc->logInFile($sql);
@@ -46,7 +46,6 @@ function execSql($db, &$sql, $log = true)
     } else {
         $msc->addMessage('Запрос выполнен с ошибками' . $info, null, MS_MSG_FAULT);
         $msc->addMessage(implode('<br />', $errors), null, MS_MSG_FAULT);
-
     }
     $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
     $msc->addMessage("Выполнено за $mysqlGenerationTime с.");
@@ -67,25 +66,29 @@ function execSql($db, &$sql, $log = true)
 function readZipFile($path, $mime = '')
 {
     if (!file_exists($path)) {
-        return FALSE;
+        return false;
     }
     switch ($mime) {
         case '':
             $file = @fopen($path, 'rb');
             if (!$file) {
-                return FALSE;
+                return false;
             }
             $test = fread($file, 3);
             fclose($file);
-            if ($test[0] == chr(31) && $test[1] == chr(139)) return readZipFile($path, 'application/x-gzip');
-            if ($test == 'BZh') return readZipFile($path, 'application/x-bzip');
+            if ($test[0] == chr(31) && $test[1] == chr(139)) {
+                return readZipFile($path, 'application/x-gzip');
+            }
+            if ($test == 'BZh') {
+                return readZipFile($path, 'application/x-bzip');
+            }
             return readZipFile($path, 'text/plain');
         case 'zip':
             break;
         case 'text/plain':
             $file = @fopen($path, 'rb');
             if (!$file) {
-                return FALSE;
+                return false;
             }
             $content = fread($file, filesize($path));
             fclose($file);
@@ -94,7 +97,7 @@ function readZipFile($path, $mime = '')
             if (function_exists('gzopen')) {
                 $file = @gzopen($path, 'rb');
                 if (!$file) {
-                    return FALSE;
+                    return false;
                 }
                 $content = '';
                 while (!gzeof($file)) {
@@ -102,24 +105,24 @@ function readZipFile($path, $mime = '')
                 }
                 gzclose($file);
             } else {
-                return FALSE;
+                return false;
             }
             break;
         case 'application/x-bzip':
             if (@function_exists('bzdecompress')) {
                 $file = @fopen($path, 'rb');
                 if (!$file) {
-                    return FALSE;
+                    return false;
                 }
                 $content = fread($file, filesize($path));
                 fclose($file);
                 $content = bzdecompress($content);
             } else {
-                return FALSE;
+                return false;
             }
             break;
         default:
-            return FALSE;
+            return false;
     }
     return $content;
 }
@@ -144,30 +147,26 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
                     zip_close($zip);
                 }
             }
-
         } elseif (POST('compress') == 'csv') {
-
             $fields = DatabaseTable::getFields('');
 
             $data = file_get_contents($_FILES['sqlFile']['tmp_name']);
             $data = iconv('windows-1251', 'utf-8', $data);
             $data = explode("\n", $data);
             foreach ($data as $k => $v) {
-                $row = array_map(function($value) {
+                $row = array_map(function ($value) {
                     global $pdo;
                     return $pdo->quote($value);
                 }, explode(';', trim($v)));
-                echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("'.implode('","', $row).'");';
+                echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("' . implode('","', $row) . '");';
             }
-
         } elseif (POST('compress') == 'excel') {
-
             //include_once 'includes/excel_reader.php';
 
             //$data = new Spreadsheet_Excel_Reader($_FILES['sqlFile']['tmp_name'], false);
 
             foreach ($data->boundsheets as $k => $v) {
-                echo '<a href="?sheet='.$k.'">'.$v['name'].'</a> &nbsp; ';
+                echo '<a href="?sheet=' . $k . '">' . $v['name'] . '</a> &nbsp; ';
             }
             // excel_reader.php
 
@@ -188,7 +187,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
                 echo '<tr>';
                 //array_shift($values);
                 foreach ($values as $k => $v) {
-                   echo '<td>'.$v.'</td>';
+                    echo '<td>' . $v . '</td>';
                 }
                 echo '</tr>';
             }
@@ -196,10 +195,9 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 
             unset($data->sheets[$sheet]['cells']);
 
-            echo '<pre>'; print_r($data->sheets[$sheet]); echo '</pre>';
-
-
-
+            echo '<pre>';
+            print_r($data->sheets[$sheet]);
+            echo '</pre>';
         } else {
             $mime = '';
             if (POST('compress') == '') {
@@ -211,7 +209,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
         }
         // Применяем кодировку если надо
         if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
-            $msc->execPdo("SET NAMES '".POST('sqlFileCharset')."'");
+            $msc->execPdo("SET NAMES '" . POST('sqlFileCharset') . "'");
         }
         $log = strlen($s) < 10000;
         execSql($db, $s, $log);

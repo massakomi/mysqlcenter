@@ -7,7 +7,6 @@ namespace controller;
  */
 class Speedtest
 {
-
     public function __construct()
     {
         global $msc;
@@ -73,6 +72,5 @@ class Speedtest
         fclose($f);
 
         $msc->selectDb($msc->db);
-
     }
 }

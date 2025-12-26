@@ -130,9 +130,10 @@ class MSCenter extends DatabaseQuery
         }
         extract($config);
         try {
-            $pdo = new PDO('mysql:host='.$host.';dbname='.$database, $user, $password, [
+            $pdo = new PDO('mysql:host=' . $host . ';dbname=' . $database, $user, $password, [
                 PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=".MS_COLLATION.', character_set_server='.MS_CHARACTER_SET.', sql_mode=""'
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
+                    ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
             ]);
             $this->host  = $host;
             $this->user  = $user;
@@ -205,7 +206,8 @@ class MSCenter extends DatabaseQuery
         $messageId = "mid" . time();    // если много сообщений
         $s =
             '<table class="globalMessage">' .
-            '  <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide(\'' . $messageId . '\')">close</a></th></tr>' .
+            '  <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide(\'' .
+                $messageId . '\')">close</a></th></tr>' .
             '  <tr id="' . $messageId . '"><td>' . implode('<br />', $this->messages) . '  </td></tr>' .
             '</table>';
         if (conf('hidemessages') == '1') {
@@ -256,7 +258,10 @@ showhide("' . $messageId . '");
     {
         $textError = $text;
         if ($sql != '') {
-            $aff = $this->affectedRows ? '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>' : '';
+            $aff = '';
+            if ($this->affectedRows) {
+                $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>';
+            }
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200) . ';' . $aff . '</div>';
             if ($error != null) {
                 $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
@@ -313,7 +318,7 @@ showhide("' . $messageId . '");
         $result = fwrite($fo, $string);
         fclose($fo);
         if (!$result) {
-            return $this->addMessage('Не смог создать/записать файл "' . $file . '"', null, MS_MSG_FAULT);
+            return $this->addMessage('Не смог создать/записать файл ' . $file, null, MS_MSG_FAULT);
         }
     }
 
@@ -330,7 +335,7 @@ showhide("' . $messageId . '");
             $json[$this->db] = [];
         }
         if (GET('resetPopular')) {
-            unset($json[$this->db]);
+            $json[$this->db] = [];
             file_put_contents($this->popularTablesFile, json_encode($json));
         }
         ksort($json[$this->db]);
@@ -394,18 +399,24 @@ showhide("' . $messageId . '");
         }
         $this->disableLog();
         $d = date('Y-m-d H:i:s');
-        $a = $this->getData('SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"', PDO::FETCH_OBJ);
+        $a = $this->getData(
+            'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"',
+            PDO::FETCH_OBJ
+        );
         if (count($a) == 0) {
             $this->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . $d . '")');
         } else {
-            $this->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . $d . '" WHERE db_name="' . $this->db . '"');
+            $this->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . $d .
+                '" WHERE db_name="' . $this->db . '"');
         }
 
         // Статистика просмотров таблиц
         if ($this->table != '') {
-            $a = $this->getData($t = 'SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"', PDO::FETCH_OBJ);
+            $a = $this->getData('SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $this->db .
+                '" AND table_name="' . $this->table . '"', PDO::FETCH_OBJ);
             if (count($a) == 0) {
-                $this->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $this->db . '", "' . $this->table . '", 1, 1, "' . $d . '")');
+                $values = $this->db . '", "' . $this->table . '", 1, 1, "' . $d;
+                $this->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $values . '")');
             } else {
                 $this->execPdo('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . $d .
                     '" WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"');

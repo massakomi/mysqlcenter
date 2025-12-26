@@ -106,7 +106,8 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         if ($msc->execPdo($sql)) {
             $msc->addMessage('Таблица ' . POST('table_name') . ' создана', $sql, MS_MSG_SUCCESS);
         } else {
-            $msc->addMessage('При создании таблицы возникли ошибки ' . POST('table_name'), $sql, MS_MSG_NOTICE, $msc->error);
+            $text = 'При создании таблицы возникли ошибки ' . POST('table_name');
+            $msc->addMessage($text, $sql, MS_MSG_NOTICE, $msc->error);
         }
     }
     // создание запроса на изменение полей
@@ -152,7 +153,8 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         }
         foreach ($newKeys as $k => $addKey) {
             list($fieldName, $addKeyType, $addKeyName) = explode(' ', $addKey);
-            $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD ' . ($addKeyType == 'UNI' ? 'UNIQUE' : 'INDEX') . ' (`' . $fieldName . '`)';
+            $str = $addKeyType == 'UNI' ? 'UNIQUE' : 'INDEX';
+            $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD ' . $str . ' (`' . $fieldName . '`)';
         }
         if ($currentPrimaryKey != $primaryKey) {
             if ($currentPrimaryKey != '') {
@@ -224,7 +226,8 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
 // HTML форма
 // Создание таблицы или добавление полей
 if ($msc->table == null || POST('action') == 'fieldsAdd') {
-    $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
+    $numFields = POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
+    $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : $numFields;
     if (is_array(POST('name'))) {
         //$cont = MSC_DrawFields();
     } else {
@@ -268,11 +271,27 @@ if ($msc->table == null || POST('action') == 'fieldsAdd') {
     $msc->pageTitle = 'Редактировать структуру';
 }
 
+/**
+ * @return string
+ */
+$getAction = function () {
+    if (GET('s') == 'tbl_add' && empty($_POST) && !isset($_GET['field'])) {
+        return 'tableAddEnd';
+    } elseif (POST('action') == 'fieldsAdd') {
+        return 'fieldsAddEnd';
+    }
+    return 'fieldsEditEnd';
+};
+
+$showTableName = function () {
+    return POST('action') != 'fieldsAdd' && !isset($_GET['field']) && POST('action') != 'fieldsEdit';
+};
+
 $pageProps = [
     'dirImage' => MS_DIR_IMG,
-    'action' => GET('s') == 'tbl_add' && empty($_POST) && !isset($_GET['field']) ? 'tableAddEnd' : (POST('action') == 'fieldsAdd' ? 'fieldsAddEnd' : 'fieldsEditEnd'),
+    'action' => $getAction(),
     'afterSql' => $afterSql,
-    'showTableName' => POST('action') != 'fieldsAdd' && !isset($_GET['field']) && POST('action') != 'fieldsEdit',
+    'showTableName' => $showTableName(),
     'tableName' => POST('tableName') ?: $msc->table,
     'array' => $array,
     'post' => $_POST,

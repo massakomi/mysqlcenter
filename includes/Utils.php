@@ -5,7 +5,6 @@
  */
 class Utils
 {
-
     /**
      * Преобразует размер в байтах в строковое смотрибельное представление в форме " .. Kb .. Mb"
      *
@@ -17,11 +16,11 @@ class Utils
     {
         if ($bytes < pow(1024, 1)) {
             return "$bytes b";
-        } else if ($bytes < pow(1024, 2)) {
+        } elseif ($bytes < pow(1024, 2)) {
             return round($bytes / pow(1024, 1), 2) . ' Kb';
-        } else if ($bytes < pow(1024, 3)) {
+        } elseif ($bytes < pow(1024, 3)) {
             return round($bytes / pow(1024, 2), 2) . ' Mb';
-        } else if ($bytes < pow(1024, 4)) {
+        } elseif ($bytes < pow(1024, 4)) {
             return round($bytes / pow(1024, 3), 2) . ' Gb';
         }
     }

@@ -1,12 +1,10 @@
 <?php
 
-
 /**
  * Класс, отвечающий за работу с таблицами базы данных
  */
 class DatabaseTable
 {
-
     public ?string $database;
     public ?string $table;
     private Validate $validate;
@@ -14,7 +12,7 @@ class DatabaseTable
     /**
      * @access private
      */
-    function __construct($db = null, $table = null)
+    public function __construct($db = null, $table = null)
     {
         $this->database = $db;
         $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
@@ -39,51 +37,51 @@ class DatabaseTable
             return $msc->addMessage('Не указан требуемый параметр', null, MS_MSG_ERROR);
         }
         switch ($type) {
-            case 'DROP'        :
+            case 'DROP':
                 $sql = "DROP TABLE `$table`";
                 $text = 'удалена';
                 break;
-            case 'TRUNCATE'    :
+            case 'TRUNCATE':
                 $sql = "TRUNCATE TABLE `$table`";
                 $text = 'очищена';
                 break;
-            case 'CHECK'    :
+            case 'CHECK':
                 $sql = "CHECK TABLE `$table`";
                 $text = 'обработана';
                 break;
-            case 'ANALYZE'    :
+            case 'ANALYZE':
                 $sql = "ANALYZE TABLE `$table`";
                 $text = 'обработана';
                 break;
-            case 'REPAIR'    :
+            case 'REPAIR':
                 $sql = "REPAIR TABLE `$table`";
                 $text = 'обработана';
                 break;
-            case 'OPTIMIZE'    :
+            case 'OPTIMIZE':
                 $sql = "OPTIMIZE TABLE `$table`";
                 $text = 'обработана';
                 break;
-            case 'FLUSH'    :
+            case 'FLUSH':
                 $sql = "FLUSH TABLE `$table`";
                 $text = 'обработана';
                 break;
-            case 'RENAME'    :
+            case 'RENAME':
                 $sql = "ALTER TABLE `$table` RENAME `$param`";
                 $text = 'переименована';
                 break;
-            case 'CHARSET'    :
+            case 'CHARSET':
                 $sql = "ALTER TABLE `$table` CONVERT TO CHARACTER SET `$param`";
                 $text = 'изменена';
                 break;
-            case 'COMMENT'    :
+            case 'COMMENT':
                 $sql = "ALTER TABLE `$table` COMMENT = '$param'";
                 $text = 'изменена';
                 break;
-            case 'ORDER'    :
+            case 'ORDER':
                 $sql = "ALTER TABLE `$table` ORDER BY $param";
                 $text = 'изменена';
                 break;
-            default :
+            default:
                 return $msc->addMessage('Неверный тип обработки', null, MS_MSG_ERROR);
         }
         $msc->selectDb($db);
@@ -91,7 +89,8 @@ class DatabaseTable
             $msc->fetchPdo("ANALYZE TABLE `$table`;");
             return $msc->addMessage("Таблица $table $text", $sql, MS_MSG_SUCCESS);
         } else {
-            return $msc->addMessage("Ошибка при выполнении операции с таблицей $table", $sql, MS_MSG_FAULT, $msc->error);
+            $text = "Ошибка при выполнении операции с таблицей $table";
+            return $msc->addMessage($text, $sql, MS_MSG_FAULT, $msc->error);
         }
     }
 
@@ -106,7 +105,7 @@ class DatabaseTable
      * @param string  База данных, куда надо копировать
      * @return boolean
      */
-    function copyTable($db, $table, $struct = true, $data = false, $newName = null, $database = null)
+    public function copyTable($db, $table, $struct = true, $data = false, $newName = null, $database = null)
     {
         global $msc;
         $this->validate->queryCheck($db, $table);
@@ -121,7 +120,12 @@ class DatabaseTable
         $exp->setDatabase($db);
         $exp->setTable($table);
         $sql = $exp->exportStructure(1, false);
-        $sql = preg_replace('/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i', 'CREATE TABLE `' . $newName . '`', $sql, 1);
+        $sql = preg_replace(
+            '/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i',
+            'CREATE TABLE `' . $newName . '`',
+            $sql,
+            1
+        );
         $msc->selectDb($database);
         if ($msc->execPdo($sql)) {
             $msc->addMessage("Таблица $table скопирована", $sql, MS_MSG_SUCCESS);
@@ -157,7 +161,7 @@ class DatabaseTable
      * @param bool $onlyNames возвратить только массив имён полей
      * @return array Массив полей
      */
-    public static function getFields(string $table, bool $onlyNames=false): array
+    public static function getFields(string $table, bool $onlyNames = false): array
     {
         if (empty($table)) {
             return [];
@@ -167,13 +171,13 @@ class DatabaseTable
         $cacheId = $table;
         if (!isset($cache[$cacheId])) {
             $cache[$cacheId] = [];
-            $table = str_replace('`', '``', $table );
-            $result = $msc->fetchPdoObject('SHOW FIELDS FROM `'.$table.'`');
+            $table = str_replace('`', '``', $table);
+            $result = $msc->fetchPdoObject('SHOW FIELDS FROM `' . $table . '`');
             if (!$result) {
                 return [];
             }
             foreach ($result as $row) {
-                $cache[$cacheId] [$row->Field]= $row;
+                $cache[$cacheId] [$row->Field] = $row;
             }
         }
         if ($onlyNames) {
@@ -190,21 +194,22 @@ class DatabaseTable
      * @param string $table Имя таблицы
      * @return array
      */
-    public static function getTableKeys($table) {
+    public static function getTableKeys($table)
+    {
         if (empty($table)) {
             return [];
         }
         global $msc;
         $keys = [];
-        $result = $msc->fetchPdoObject('SHOW KEYS FROM `'.$table.'`');
+        $result = $msc->fetchPdoObject('SHOW KEYS FROM `' . $table . '`');
         if (!$result) {
             return [];
         }
         foreach ($result as $row) {
             if ($row->Key_name == 'PRIMARY') {
-                $keys [$row->Column_name][$row->Key_name]= 'PRI';
+                $keys [$row->Column_name][$row->Key_name] = 'PRI';
             } else {
-                $keys [$row->Column_name][$row->Key_name]= $row->Non_unique == 0 ? 'UNI' : 'MUL';
+                $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
             }
         }
         return $keys;
@@ -216,7 +221,8 @@ class DatabaseTable
      * @param string  Имя таблицы
      * @return boolean Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
      */
-    public static function dropPrimaryKey($tbl) {
+    public static function dropPrimaryKey($tbl)
+    {
         global $msc;
         $fields = self::getFields($tbl);
         foreach ($fields as $f) {
@@ -228,7 +234,7 @@ class DatabaseTable
         if (isset($definition)) {
             if (stristr($definition, 'auto_increment')) {
                 $definition = str_ireplace('auto_increment', '', $definition);
-                $sql = 'ALTER TABLE `'.$tbl.'` CHANGE '.$field.' '.$field.' '.$definition;
+                $sql = 'ALTER TABLE `' . $tbl . '` CHANGE ' . $field . ' ' . $field . ' ' . $definition;
                 $msc->execPdo($sql);
             }
             $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
@@ -252,7 +258,13 @@ class DatabaseTable
      * @param string Длина поля, если необходимо
      * @return string Определение поля (field definition)
      */
-    public static function getFieldDefinition($type=null, $null=null, $default=null, $extra=null, $length=null) {
+    public static function getFieldDefinition(
+        $type = null,
+        $null = null,
+        $default = null,
+        $extra = null,
+        $length = null
+    ) {
         if (is_object($type)) {
             foreach ($type as $param => $value) {
                 $param = strtolower($param);
@@ -268,7 +280,7 @@ class DatabaseTable
             }
             if (preg_match('~\((.*)\)~U', $type, $length)) {
                 $length = $length[1];
-                $type = trim(str_replace('('.$length.')', '', $type));
+                $type = trim(str_replace('(' . $length . ')', '', $type));
             }
         }
         $type = strtoupper($type);
@@ -281,19 +293,19 @@ class DatabaseTable
                 $length = 255;
             }
             $type .= "($length)";
-        } else if ($type == 'SET' || $type == 'ENUM') {
+        } elseif ($type == 'SET' || $type == 'ENUM') {
             if (empty($length)) {
                 return false;
             }
             $type .= "($length)";
-        } else if ($type == 'FLOAT' || $type == 'DOUBLE') {
+        } elseif ($type == 'FLOAT' || $type == 'DOUBLE') {
             if (empty($length)) {
                 return false;
             } else {
                 $length = str_replace('.', ',', $length);
             }
             $type .= "($length)";
-        } else if (is_numeric($length) && !stristr($type, 'text')) {
+        } elseif (is_numeric($length) && !stristr($type, 'text')) {
             $type .= "($length)";
         }
         $field_info  = $type;
@@ -312,13 +324,13 @@ class DatabaseTable
             $field_info .=  ' NOT NULL';
         }
         if (trim($extra) != null) {
-            $field_info .= ' '.$extra;
+            $field_info .= ' ' . $extra;
         }
         if ($default != null) {
             if (is_numeric($default)) {
-                $field_info .=  ' DEFAULT '.intval($default);
+                $field_info .=  ' DEFAULT ' . intval($default);
             } else {
-                $field_info .=  ' DEFAULT "'.$default.'"';
+                $field_info .=  ' DEFAULT "' . $default . '"';
             }
         }
         $field_info = str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
@@ -389,7 +401,7 @@ class DatabaseTable
      * @return boolean
      * @throws Exception
      */
-    function rowCopy($table, $row)
+    public function rowCopy($table, $row)
     {
         global $msc;
         $fields = DatabaseTable::getFields($table);
@@ -404,13 +416,12 @@ class DatabaseTable
             }
         }
         if (!$ai) {
-            return $msc->addMessage('Невозможно скопировать ряд, т.к. в таблице нет поля auto_increment', null, MS_MSG_FAULT);
+            $text = 'Невозможно скопировать ряд, т.к. в таблице нет поля auto_increment';
+            return $msc->addMessage($text, null, MS_MSG_FAULT);
         }
-        $fields = implode(',',  $fieldsWithoutKey);
+        $fields = implode(',', $fieldsWithoutKey);
         $row = stripslashes(urldecode($row));
         $sql = "INSERT INTO $table ($fields) SELECT $fields FROM $table WHERE $row";
         return $msc->execPdo($sql);
     }
-
 }
-

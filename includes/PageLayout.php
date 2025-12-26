@@ -159,14 +159,14 @@ class PageLayout
         global $msc;
         $classNames = [
             ucfirst($msc->page),
-            ucfirst(preg_replace_callback('~_([a-z])~i', function($match) {
+            ucfirst(preg_replace_callback('~_([a-z])~i', function ($match) {
                 return strtoupper($match[1]);
             }, $msc->page)),
         ];
         foreach ($classNames as $className) {
-            $path = 'controller/'.$className.'.php';
+            $path = 'controller/' . $className . '.php';
             if (file_exists($path)) {
-                $this->controller = '\controller\\'.$className;
+                $this->controller = '\controller\\' . $className;
                 break;
             }
         }

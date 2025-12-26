@@ -8,16 +8,3 @@ $actPro = new ActionProcessor();
 
 $pagel = new PageLayout();
 $pagel->display();
-
-
-
-
-
-
-
-
-
-
-
-
-

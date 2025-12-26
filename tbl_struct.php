@@ -12,22 +12,31 @@ function insertDetailsTable($table): array
     $comments = [
         'Engine' => ' title="Тип хранилища"',
         'Version' => ' title="Версия .frm файла таблицы"',
-        'Row_format' => ' title="Формат хранения строки (Fixed, Dynamic, Compressed, Redundant, Compact). Начиная с MySQL/InnoDB 5.0.3, InnoDB таблицы хранятся в форматах Redundant или Compact. До 5.0.3, InnoDB таблицы всегда были в формате Redundant"',
-        'Rows' => ' title="Количество рядов. Некоторые типы хранилищ, такие как MyISAM, отображают точное количество. Но в некоторых других, таких как InnoDB, это значение является приблизительным и может отличаться от действительного количество на 40-50%. В таких случаях лучше всего использовать запрос SELECT COUNT(*). Также это значение равно NULL для таблиц INFORMATION_SCHEMA базы данных"',
+        'Row_format' => ' title="Формат хранения строки (Fixed, Dynamic, Compressed, Redundant, Compact). 
+            Начиная с MySQL/InnoDB 5.0.3, InnoDB таблицы хранятся в форматах Redundant или Compact. 
+            До 5.0.3, InnoDB таблицы всегда были в формате Redundant"',
+        'Rows' => ' title="Количество рядов. Некоторые типы хранилищ, такие как MyISAM, отображают точное количество. 
+            Но в некоторых других, таких как InnoDB, это значение является приблизительным и может отличаться 
+            от действительного количество на 40-50%. В таких случаях лучше всего использовать запрос SELECT COUNT(*). 
+            Также это значение равно NULL для таблиц INFORMATION_SCHEMA базы данных"',
         'Avg_row_length' => ' title="Средняя длина строки"',
         'Data_length' => ' title="Размер файла данных таблицы"',
-        'Max_data_length' => ' title="Максимальный размер файла данных. Это общее количество байтов данных, которое может быть сохранено в таблице, given the data pointer size used."',
+        'Max_data_length' => ' title="Максимальный размер файла данных. Это общее количество байтов данных, которое 
+            может быть сохранено в таблице, given the data pointer size used."',
         'Index_length' => ' title="Размер индексного файла"',
         'Data_free' => ' title="Размер занятого, но не использованного пространства"',
         'Auto_increment' => ' title="Следующее значение поля Auto_increment"',
-        'Update_time' => ' title="Когда дата файл был обновлён. Для некоторых типов хранилищ, это значение NULL. Например, InnoDB хранит таблицы в собственном хранилище и время изменения файла данных не даст ничего"',
-        'Check_time' => ' title="Когда таблицы были проверены в последний раз. Не все типы хранилищ обновляют этот параметр, в этих случаях он всегда NULL"',
+        'Update_time' => ' title="Когда дата файл был обновлён. Для некоторых типов хранилищ, это значение NULL. 
+            Например, InnoDB хранит таблицы в собственном хранилище и время изменения файла данных не даст ничего"',
+        'Check_time' => ' title="Когда таблицы были проверены в последний раз. Не все типы хранилищ обновляют 
+            этот параметр, в этих случаях он всегда NULL"',
         'Collation' => ' title="Кодировка и сравнение таблиц"',
         'Checksum' => ' title="The live checksum value (if any)."',
         'Create_options' => ' title="Дополнительные опции, заданные при создании таблицы через CREATE TABLE."',
-        'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может получить доступ к информации о таблице"'
+        'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может 
+            получить доступ к информации о таблице"'
     ];
-    $sql = 'SHOW TABLE STATUS LIKE "' . $table .'"' ;
+    $sql = 'SHOW TABLE STATUS LIKE "' . $table . '"' ;
 
     $result = $msc->getData($sql);
     foreach ($comments as $k => &$v) {
@@ -79,7 +88,8 @@ if (!$fields) {
 }
 $msc->pageTitle = 'Структура таблицы ' . $msc->table;
 
-function getKeys() {
+function getKeys()
+{
     global $msc;
     $a = $msc->table != '' ? $msc->getData('
     SELECT i.*, k.*  FROM information_schema.TABLE_CONSTRAINTS i
@@ -101,7 +111,7 @@ if (GET('keys')) {
 }
 
 $sqlCreateTable = '';
-$res = $msc->fetchPdo('SHOW CREATE TABLE '.$msc->table);
+$res = $msc->fetchPdo('SHOW CREATE TABLE ' . $msc->table);
 if ($res) {
     $sqlCreateTable = $res->fetch()['Create Table'];
 }

@@ -7,7 +7,6 @@ namespace controller;
  */
 class Login
 {
-
     public function __construct()
     {
         global $msc, $pagel;

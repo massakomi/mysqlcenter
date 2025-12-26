@@ -1,30 +1,30 @@
 <?php
 
-global $memory_limit;
-$memory_limit = (intval(ini_get('memory_limit')) * 1024 * 1024) / 2;
-
 /**
  * Библиотека общих функций по экспорту таблиц БД
  */
 class Export
 {
-    var $db, $table, $data, $tableStructure = array();
-    var $comments = true;
-    var $fields = array();
+    public $db;
+    public $table;
+    public $data;
+    public $tableStructure = [];
+    public $comments = true;
+    public $fields = [];
 
-    var $addIfNot = false;
-    var $addAuto = true;
-    var $addKav = true;
+    public $addIfNot = false;
+    public $addAuto = true;
+    public $addKav = true;
 
-    var $insFull = false;
-    var $insExpand = false;
-    var $insZapazd = false;
-    var $insIgnor = false;
+    public $insFull = false;
+    public $insExpand = false;
+    public $insZapazd = false;
+    public $insIgnor = false;
 
     /**
      * Позволяет сразу установить опции экспорта
      */
-    function __construct($db = null, $table = null, $header = null)
+    public function __construct($db = null, $table = null, $header = null)
     {
         $this->table = $this->tableb = $table;
         $this->db = $db;
@@ -41,17 +41,25 @@ class Export
      * $type
      * $where
      */
-    function startFull($isStruct = true, $isData = true, $addDelim = true, $addDrop = false, $type = 'INSERT', $where = null)
-    {
-        if ($isStruct)
+    public function startFull(
+        $isStruct = true,
+        $isData = true,
+        $addDelim = true,
+        $addDrop = false,
+        $type = 'INSERT',
+        $where = null
+    ) {
+        if ($isStruct) {
             $this->exportStructure($addDelim, $addDrop);
-        if ($isData)
+        }
+        if ($isData) {
             $this->exportData($type, $where);
+        }
         return $this->get();
     }
 
     // Установить текущую базу данных
-    function setDatabase($a)
+    public function setDatabase($a)
     {
         global $msc;
         if ($this->db != $a) {
@@ -61,7 +69,7 @@ class Export
     }
 
     // Установить текущую таблицу
-    function setTable($a)
+    public function setTable($a)
     {
         $this->table = $a;
         if ($this->addKav) {
@@ -72,7 +80,7 @@ class Export
     }
 
     // Установить шапку к дампу
-    function setHeader($a)
+    public function setHeader($a)
     {
         if ($this->comments) {
             $this->data .= $a;
@@ -80,7 +88,7 @@ class Export
     }
 
     // Добавлять или нет комментарии
-    function setComments($a)
+    public function setComments($a)
     {
         $this->comments = (bool)$a;
     }
@@ -88,7 +96,7 @@ class Export
     /**
      * Установить некоторые опции экспорта структуры
      */
-    function setOptionsStruct($addIfNot, $addAuto, $addKav)
+    public function setOptionsStruct($addIfNot, $addAuto, $addKav)
     {
         $this->addIfNot = $addIfNot;
         $this->addAuto = $addAuto;
@@ -98,7 +106,7 @@ class Export
     /**
      * УСтавноить некоорые опции экспорта данных
      */
-    function setOptionsData($insFull, $insExpand, $insZapazd, $insIgnor)
+    public function setOptionsData($insFull, $insExpand, $insZapazd, $insIgnor)
     {
         $this->insFull = $insFull;
         $this->insExpand = $insExpand;
@@ -110,7 +118,7 @@ class Export
      * Получить полный текст дампа
      * @ $clear - очистить объект (экономия памяти)
      */
-    function get()
+    public function get()
     {
         return $this->data;
     }
@@ -123,9 +131,9 @@ class Export
      *   'zip' - создаёт архив и отправляет
      * @ $file - имя файла дампа для типа 'zip'
      */
-    function send($type = 'textarea', $file = null)
+    public function send($type = 'textarea', $file = null)
     {
-        return $this->_sendSQLDamp($type, $file);
+        return $this->sendSQLDamp($type, $file);
     }
 
 
@@ -137,7 +145,7 @@ class Export
      * @$addDrop - добавить к запросу удаление таблицы + форматировать через ;
      * @$this->comments - добавить комментарий
      */
-    function exportStructure($addDelim = true, $addDrop = false)
+    public function exportStructure($addDelim = true, $addDrop = false)
     {
         global $msc;
         $delim = ";\r\n";
@@ -158,16 +166,6 @@ class Export
         if ($this->addIfNot) {
             $ife = 'IF NOT EXISTS ';
         }
-        /*$result = mysql_query('SHOW CREATE TABLE '.$this->tableb);
-        if (!$result) {
-          return null;
-        }
-        $row = mysql_fetch_array($result);
-            if ($this->addIfNot) {
-                $row['Create Table'] = str_replace('CREATE TABLE ', 'CREATE TABLE IF NOT EXISTS ', $row['Create Table']);
-            }
-            $dump .= $row['Create Table'].$delim;
-            return $this->data .= $dump;*/
         $dump .= 'CREATE TABLE ' . $ife . $this->tableb . ' (' . $wr . $tab;
 
         // дамп полей
@@ -193,19 +191,19 @@ class Export
                     $row->Default = $row->Default == 'CURRENT_TIMESTAMP' ? $row->Default : '\'' . $row->Default . '\'';
                     $field_info .= ' default ' . $row->Default;
                 }
-            } else if ($row->Default != null || ($row->Null != 'YES' && !strchr($row->Type, 'text'))) {
+            } elseif ($row->Default != null || ($row->Null != 'YES' && !strchr($row->Type, 'text'))) {
                 if (!stristr($row->Extra, 'auto')) {
                     if ($row->Null != 'YES' && $row->Default == '') {
-
                     } else {
                         $field_info .= ' default \'' . $row->Default . '\'';
                     }
                 }
-            } else if (!strchr($row->Type, 'text')) {
+            } elseif (!strchr($row->Type, 'text')) {
                 $field_info .= ' default NULL';
             }
-            if ($row->Extra != '')
+            if ($row->Extra != '') {
                 $field_info .= ' ' . $row->Extra;
+            }
             $fields [] = $field_info;
         }
         // ключи
@@ -221,9 +219,9 @@ class Export
             }
             if ($row->Key_name == 'PRIMARY') {
                 $keys['PRI'][] = $row->Column_name;
-            } else if ($row->Index_type == 'FULLTEXT') {
+            } elseif ($row->Index_type == 'FULLTEXT') {
                 $keys['FULL'][$row->Key_name][] = $row->Column_name;
-            } else if ($row->Non_unique == '0') {
+            } elseif ($row->Non_unique == '0') {
                 $keys['UNI'][$row->Key_name][] = $row->Column_name;
             } else {
                 $keys['MUL'][$row->Key_name][] = $row->Column_name;
@@ -309,9 +307,10 @@ class Export
      * @param string   SQL условие
      * @param boolean  пропускать ли поля с auto_increment
      */
-    function exportData($type = 'INSERT', $where = null, $skipAi = false)
+    public function exportData($type = 'INSERT', $where = null, $skipAi = false)
     {
-        global $memory_limit, $msc, $pdo;
+        global $msc, $pdo;
+        $memory_limit = (intval(ini_get('memory_limit')) * 1024 * 1024) / 2;
         $delim = ";\r\n";
         $wr = "\r\n";
         $tab = '    ';
@@ -395,9 +394,10 @@ class Export
                         $a[] = $b . '=' . $val;
                     }
                 }
-                $dump .= 'UPDATE ' . $this->tableb . ' SET ' . implode(', ', $a) . ' WHERE ' . implode(' AND ', $primary) . $delim;
-            } // INSERT - REPLACE
-            else if ($typeName == 'INSERT' || $typeName == 'REPLAC') {
+                $dump .= 'UPDATE ' . $this->tableb . ' SET ' . implode(', ', $a) .
+                    ' WHERE ' . implode(' AND ', $primary) . $delim;
+            } elseif ($typeName == 'INSERT' || $typeName == 'REPLAC') {
+                // INSERT - REPLACE
                 $values = array();
                 foreach ($f as $i => $v) {
                     if ($skipAi && $v->Extra != '') {
@@ -441,7 +441,7 @@ class Export
         return $isFullDump;
     }
 
-    function _sendSQLDamp($type = 'textarea', $file = null)
+    public function sendSQLDamp($type = 'textarea', $file = null)
     {
         if (is_null($file)) {
             $this->table != null ? $file = $this->table : $file = $this->db;
@@ -489,11 +489,11 @@ class Export
         }
     }
 
-    function getFields($table, $onlyNames = false)
+    public function getFields($table, $onlyNames = false)
     {
         global $msc;
         $a = [];
-        $result = $msc->fetchPdo( 'SHOW FIELDS FROM ' . $table);
+        $result = $msc->fetchPdo('SHOW FIELDS FROM ' . $table);
         if (!$result) {
             return false;
         }
@@ -507,5 +507,3 @@ class Export
         return $a;
     }
 }
-
-?>

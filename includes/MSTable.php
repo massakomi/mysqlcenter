@@ -5,7 +5,6 @@
  */
 class MSTable
 {
-
     public $data;
 
     /**
@@ -65,7 +64,8 @@ class MSTable
         if ($struct + $data == 0) {
             return false;
         }
-        $sql = "INSERT INTO mysqlcenter.export_table(id_set, table_name, struct, data, where_sql, pk_top) VALUES ('$id_set', '$table_name', '$struct', '$data', '$where_sql', '$pk_top')";
+        $sql = "INSERT INTO mysqlcenter.export_table(id_set, table_name, struct, data, where_sql, pk_top) VALUES
+            ('$id_set', '$table_name', '$struct', '$data', '$where_sql', '$pk_top')";
         if ($msc->execPdo($sql)) {
             return $pdo->lastInsertId();
         } else {

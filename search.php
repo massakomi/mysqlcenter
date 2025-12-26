@@ -46,7 +46,6 @@ if (GET('table') != null) {
 
 // 2. Режим поиска по БД
 } else {
-
     $msc->pageTitle = 'Поиск по базе данных';
 
     if ($queryField && strlen($queryField) > 0) {
@@ -58,14 +57,14 @@ if (GET('table') != null) {
             $founds = [];
             foreach ($fields as $field) {
                 if (preg_match('~[a-z][A-Z]~', $field,)) {
-                    $founds []= $field;
-                    $foundedTotal ++;
+                    $founds [] = $field;
+                    $foundedTotal++;
                 }
             }
             // найдено что-то
             if (count($founds) > 0) {
-                $founded ++;
-                $results []= [
+                $founded++;
+                $results [] = [
                     'table' => ['href' => "/tbl_data/$msc->db/$table", 'text' => $table],
                     'fields' => implode(', ', $founds),
                 ];
@@ -81,13 +80,12 @@ if (GET('table') != null) {
             foreach ($results as $row) {
                 $table = $row['table']['text'];
                 $t->makeRow([
-                    "<a href='/?db=$msc->db&table=$table&s=tbl_data'>".$table."</a>",
+                    "<a href='/?db=$msc->db&table=$table&s=tbl_data'>" . $table . "</a>",
                     $row['fields'],
                 ], " style='color:black'");
             }
             echo $t->make();
         }
-
     } elseif ($query && strlen($query) > 0) {
         $msc->pageTitle = "Поиск: '$query'";
         if ($array == null || count($array) == 0) {
@@ -104,7 +102,7 @@ if (GET('table') != null) {
         $founded = 0;
         foreach ($array as $table) {
             $fields = DatabaseTable::getFields($table, true);
-            $whereCondition = " WHERE " . implode(' LIKE "%'.$query.'%" OR ', $fields) . ' LIKE "%'.$query.'%"';
+            $whereCondition = " WHERE " . implode(' LIKE "%' . $query . '%" OR ', $fields) . ' LIKE "%' . $query . '%"';
             $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
             $result = $msc->fetchPdoObject($sql);
             if (!$result) {
@@ -113,9 +111,9 @@ if (GET('table') != null) {
             // найдено что-то
             if ($row = $result->fetch()) {
                 if ($row->c > 0) {
-                    $founded ++;
-                    $results []= [
-                        'table' =>$table,
+                    $founded++;
+                    $results [] = [
+                        'table' => $table,
                         'rows' => [
                             'href' => "/tbl_data/$msc->db/$table/?query=$query",
                             'text' => $row->c
@@ -134,14 +132,13 @@ if (GET('table') != null) {
             foreach ($results as $row) {
                 $table = $row['table'];
                 $t->makeRow([
-                    "<a href='/?db=$msc->db&table=$table&s=tbl_data'>".$table."</a>",
+                    "<a href='/?db=$msc->db&table=$table&s=tbl_data'>" . $table . "</a>",
                     $row['rows']['text'],
                 ], " style='color:black'");
             }
             echo $t->make();
             echo '<hr />';
         }
-
     }
 
     if (isajax()) {
@@ -149,5 +146,4 @@ if (GET('table') != null) {
     }
 
     $this->template($pageProps);
-
 }
