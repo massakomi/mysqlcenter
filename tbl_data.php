@@ -51,7 +51,7 @@ if (isset($directSQL) && $msc->table == '') {
 }
 
 // Получение полей таблицы
-$fields = getFields($msc->table);
+$fields = DatabaseTable::getFields($msc->table);
 // Если полей нет, значит и таблицы нет
 if (!$fields || count($fields) == 0) {
     return $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, $msc->error);

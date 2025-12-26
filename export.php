@@ -13,9 +13,9 @@ if (!defined('DIR_MYSQL')) {
 
 // 1. ИНИЦИАЛИЗАЦИЯ
 
-$msct = new MSTable;
+$msct = new MSTable();
 
-list($vi, $vs) = getServerVersion();
+list($vi, $vs) = Server::getServerVersion();
 
 // шапка дампа
 $dumpHeader =
@@ -133,7 +133,7 @@ if ($msc->page == 'exportSp') {
         if ($msc->db) {
             $result = $msc->getData('SHOW TABLE STATUS FROM '.$msc->db, PDO::FETCH_OBJ);
             foreach ($result as $o) {
-                $o->Fields = getFields($o->Name);
+                $o->Fields = DatabaseTable::getFields($o->Name);
                 $data []= $o;
             }
         }
@@ -143,7 +143,7 @@ if ($msc->page == 'exportSp') {
             'data' => $data,
             'configSet' => $cSet,
             'setsArray' => $msct->getSetsArray(),
-            'fields' => $table ? getFields($table, true) : [],
+            'fields' => $table ? DatabaseTable::getFields($table, true) : [],
         ];
         if (isajax()) {
             return $pageProps;
@@ -250,7 +250,7 @@ USE `'.$db.'`;'."\r\n"."\r\n";
             'selectMultName' => $selectMultName,
             'optionsData' => $optionsData,
             'optionsSelected' => $optionsSelected,
-            'fields' => GET('table') ? getFields(GET('table'), true) : [],
+            'fields' => GET('table') ? DatabaseTable::getFields(GET('table'), true) : [],
         ];
         if (isajax()) {
             return $pageProps;

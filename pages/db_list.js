@@ -111,7 +111,6 @@ class Table extends React.Component {
     }
 
     dbHide(db, action) {
-        alert('hide')
         msQuery('dbHide', `db=${db}&id=db${db}&action=${action}`)
     }
 

@@ -72,4 +72,4 @@ if (!$msc->connected()) {
 $msc->connect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
-$msc->selectDb($msc->getCurrentDatabase());
+$msc->selectDb($msc->db);

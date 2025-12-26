@@ -1,236 +1,17 @@
 <?php
-/**
- * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
- */
-
-/**
- * Создаёт определение поля из объекта или на основе параметров, со свойствами поля (field, type...)
- *
- * @package sql
- * @param mixed  Либо field-объект, либо тип поля (в случае указания параметров по отдельности)
- * @param string Значение Null field-объекта (YES|NO - строка, определяющая, является ли поле NULL)
- * @param string Значение по умолчанию
- * @param string Значение Extra field-объекта
- * @param string Длина поля, если необходимо
- * @return string Определение поля (field definition)
- */
-function getFieldDefinition($type=null, $null=null, $default=null, $extra=null, $length=null) {
-    //echo "<br />$type, $null, $default, $extra, $length";
-    if (is_object($type)) {
-        foreach ($type as $param => $value) {
-            $param = strtolower($param);
-            $$param = $value;
-        }
-        if (stristr($type, 'UNSIGNED')) {
-            $extra .= ' UNSIGNED';
-            $type   = str_ireplace('UNSIGNED', '', $type);
-        }
-        if (stristr($type, 'ZEROFILL')) {
-            $extra .= ' ZEROFILL';
-            $type = str_ireplace('ZEROFILL', '', $type);
-        }
-        if (preg_match('~\((.*)\)~U', $type, $length)) {
-            $length = $length[1];
-            $type = trim(str_replace('('.$length.')', '', $type));
-        }
-    }
-    $type = strtoupper($type);
-    // особый тип, без доп. параметров
-    if ($type == 'SERIAL') {
-        return 'SERIAL';
-    }
-    if ($type == 'VARCHAR') {
-        if (!is_numeric($length) || $length > 255 || $length < 1) {
-            $length = 255;
-        }
-        $type .= "($length)";
-    } else if ($type == 'SET' || $type == 'ENUM') {
-        if (empty($length)) {
-            return false;
-        }
-        $type .= "($length)";
-    } else if ($type == 'FLOAT' || $type == 'DOUBLE') {
-        if (empty($length)) {
-            return false;
-        } else {
-            $length = str_replace('.', ',', $length);
-        }
-        $type .= "($length)";
-    } else if (is_numeric($length) && !stristr($type, 'text')) {
-        $type .= "($length)";
-    }
-    $field_info  = $type;
-    if (stristr($extra, 'UNSIGNED')) {
-        // это алиас
-        if ($type != 'BOOLEAN') {
-            $field_info .= ' UNSIGNED';
-        }
-        $extra = str_replace('UNSIGNED', '', $extra); // UNSIGNED - после типа поля
-    }
-    if (stristr($extra, 'ZEROFILL')) {
-        $field_info .= ' ZEROFILL';
-        $extra = str_replace('ZEROFILL', '', $extra);
-    }
-    if ($null != 'YES') {
-        $field_info .=  ' NOT NULL';
-    }
-    if (trim($extra) != null) {
-        $field_info .= ' '.$extra;
-    }
-    if ($default != null) {
-        if (is_numeric($default)) {
-            $field_info .=  ' DEFAULT '.intval($default);
-        } else {
-            $field_info .=  ' DEFAULT "'.$default.'"';
-        }
-    }
-    $field_info = str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
-    //pre($field_info);
-    return $field_info;
-}
-
-/**
- * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть
- *
- * @package sql
- * @param string  Имя таблицы
- * @return boolean Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
- */
-function dropPrimaryKey($tbl) {
-    global $msc;
-    $fields = getFields($tbl);
-    foreach ($fields as $f) {
-        if ($f->Key == 'PRI') {
-            $definition = getFieldDefinition($f);
-            $field      = $f->Field;
-        }
-    }
-    if (isset($definition)) {
-        if (stristr($definition, 'auto_increment')) {
-            $definition = str_ireplace('auto_increment', '', $definition);
-            $sql = 'ALTER TABLE `'.$tbl.'` CHANGE '.$field.' '.$field.' '.$definition;
-            $msc->execPdo($sql);
-        }
-        $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
-        if ($msc->execPdo($sql)) {
-            return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
-        } else {
-            return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, $msc->error);
-        }
-    }
-    return '';
-}
-
-
-/**
- * Определение версии сервера в виде числа и строки
- *
- * @package sql
- * @return array Числовое и строковое значение версии
- */
-function getServerVersion() {
-    global $msc;
-    $result = $msc->fetchPdo('SELECT VERSION() AS version');
-    if (!$result) {
-        return ['-', '-'];
-    }
-    $row   = $result->fetch();
-    $match = explode('.', $row['version']);
-    $vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
-    $vs = $row['version'];
-    return [$vi, $vs];
-}
-
-/**
- * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа]
- *
- * @package sql
- * @param string $table Имя таблицы
- * @return array
- */
-function getTableKeys($table) {
-    if (empty($table)) {
-        return [];
-    }
-    global $msc;
-    $keys = [];
-    $result = $msc->fetchPdoObject('SHOW KEYS FROM `'.$table.'`');
-    if (!$result) {
-        return [];
-    }
-    foreach ($result as $row) {
-         if ($row->Key_name == 'PRIMARY') {
-            $keys [$row->Column_name][$row->Key_name]= 'PRI';
-         } else {
-            $keys [$row->Column_name][$row->Key_name]= $row->Non_unique == 0 ? 'UNI' : 'MUL';
-         }
-    }
-    return $keys;
-}
-
-
-/**
- * Возвращает массив SQL объектов-полей таблицы $table
- *
- * @param string $table таблица
- * @param bool $onlyNames возвратить только массив имён полей
- * @return array Массив полей
- */
-function getFields(string $table, bool $onlyNames=false): array
-{
-    if (empty($table)) {
-        return [];
-    }
-    global $msc;
-    static $cache;
-    $cacheId = $table;
-    if (!isset($cache[$cacheId])) {
-        $cache[$cacheId] = [];
-        $table = str_replace('`', '``', $table );
-        $result = $msc->fetchPdoObject('SHOW FIELDS FROM `'.$table.'`');
-        if (!$result) {
-            return [];
-        }
-        foreach ($result as $row) {
-            $cache[$cacheId] [$row->Field]= $row;
-        }
-    }
-    if ($onlyNames) {
-        return array_keys($cache[$cacheId]);
-    } else {
-        return $cache[$cacheId];
-    }
-}
-
-/**
- * Возвращает массив кодировок сервера.
- *
- * @package sql
- * @param boolean Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
- * @return array
- */
-function getCharsetArray($extended=false) {
-    global $msc;
-    $charsetList = array();
-    $res = $msc->fetchPdo('SHOW CHARACTER SET');
-    foreach ($res as $row) {
-       $charsetList [$row['Charset']]= $extended ? $row : $row['Charset'];
-    }
-    ksort($charsetList);
-    return $charsetList;
-}
 
 /**
  * Преобразует значение в sql-оптимальное значение для использования в запросе (edit,add). Значение либо
  * остаётся прежним (для чисел), либо становится NULL, либо закавычивается и экранируется
  *
- * @package sql
  * @param string Значение
  * @param string Тип поля
  * @param boolean Является ли значение NULL-пустым
  * @return string Результат
+ * @package sql
  */
-function processValueType($value, $type, $isNull) {
+function processValueType($value, $type, $isNull)
+{
     global $pdo;
     if ($isNull) {
         return 'NULL';
@@ -244,12 +25,13 @@ function processValueType($value, $type, $isNull) {
 /**
  * Возвращает ключ $name массива $_GET
  *
- * @package url
  * @param string Ключ
  * @param string Значение по умолчанию, если ключ не будет найден
  * @return mixed Значение параметра
+ * @package url
  */
-function GET($name, $default=null) {
+function GET($name, $default = '')
+{
     if (isset($_GET[$name])) {
         return $_GET[$name];
     } else {
@@ -260,12 +42,13 @@ function GET($name, $default=null) {
 /**
  * Возвращает ключ $name массива $_POST
  *
- * @package url
  * @param string Ключ
  * @param string Значение по умолчанию, если ключ не будет найден
  * @return mixed Значение параметра
+ * @package url
  */
-function POST($name, $default=null) {
+function POST($name, $default = null)
+{
     if (array_key_exists($name, $_POST)) {
         $res = $_POST[$name];
         if (is_numeric(ini_get('magic_quotes_gpc'))) {
@@ -279,32 +62,14 @@ function POST($name, $default=null) {
 
 
 /**
- * Перенаправление на $url либо с помощью header, либо скриптом
- *
- * @package url
- * @param string URL
- */
-function redirect($url) {
-    if (!headers_sent()) {
-        header('Location: '.$url);
-        exit;
-    } else {
-        echo '
-        <script language="javascript">
-        window.location = "'.$url.'"
-        </script>';
-    }
-}
-
-
-/**
  * Аналог stripslashes(), но применяемый также рекурсивно к массивам
  *
- * @package string
  * @param mixed  Массив либо строка
  * @return mixed Обработанный массив либо строка
+ * @package string
  */
-function stripslashesRecursive($array) {
+function stripslashesRecursive($array)
+{
     if (is_array($array)) {
         foreach ($array as $k => $v) {
             if (is_array($v)) {
@@ -323,7 +88,6 @@ function stripslashesRecursive($array) {
  * Создание селектора <SELECT>...</SELECT> на основе массива $array, с атрибутами $attributes
  * значениями будут ключи массива, текстом - значения массива, $checked - ключ selected элемента
  *
- * @package html
  * @param array   Массив значений для селектора
  * @param string  Аттрибуты тега SELECT
  * @param mixed   Ключ или массив ключей в массиве, OPTION которых будет выбран selected
@@ -331,9 +95,11 @@ function stripslashesRecursive($array) {
  * @param boolean Надо ли устанавливать прописывать ключи в аттрибуте value="" тегов OPTION
  * @param string  Дополнительный код после первого тега <SELECT>, обычно это пустые OPTIONs
  * @return string HTML код селектора
+ * @package html
  */
-function plDrawSelector($array, $attributes, $checked=null, $basetab='', $keyValue=true, $extra=null) {
-    $s = $basetab.'<select'.$attributes.'>'."\r\n".$extra;
+function plDrawSelector($array, $attributes, $checked = null, $basetab = '', $keyValue = true, $extra = null)
+{
+    $s = $basetab . '<select' . $attributes . '>' . "\r\n" . $extra;
     $wasSelected = false; // флаг, чтобы 1 селектед только
     foreach ($array as $k => $v) {
         $sel = null;
@@ -343,89 +109,22 @@ function plDrawSelector($array, $attributes, $checked=null, $basetab='', $keyVal
         }
         $val = '';
         if ($keyValue) {
-            $val = ' value="'.$k.'"';
+            $val = ' value="' . $k . '"';
         }
-        $s .= $basetab.'  <option'.$val.''.$sel.'>'.$v.'</option>'."\r\n";
+        $s .= $basetab . '  <option' . $val . '' . $sel . '>' . $v . '</option>' . "\r\n";
     }
-    return $s .= $basetab.'</select>'."\r\n";
-}
-
-/**
- * Селектор даты полный
- *
- * @package html
- * @param integer Время
- * @param string  Префикс к именам полей
- * @param string HTML код селектора
- */
-function plDrawDateSelector($time=null, $prf=null) {
-    if (!function_exists('plDrawSelector')) {
-        return null;
-    }
-    $plDrawDateSelectorPad = create_function('&$v', '$v = str_pad($v, 2, "0", STR_PAD_LEFT);');
-    $time = ($time == null ? time() : $time);
-    // Год
-    $aYear = range(1900, date('Y'));
-    arsort($aYear);
-    $sYear = plDrawSelector($aYear, ' name="'.$prf.'year"', array_search(date('Y', $time), $aYear), '', false);
-    // Месяц
-    $months[0] = array(
-    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',
-    'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
-    $months[1] = array(
-    'января', 'февраля', 'марта', 'апреля', 'май', 'июня', 'июля',
-    'августа', 'сентября', 'октября', 'ноября', 'декабря');
-    $sMonth = plDrawSelector($months[1], ' name="'.$prf.'month"', date('m', $time)-1, '', true);
-    // День
-    $sDay = plDrawSelector(range(1,31), ' name="'.$prf.'day"', date('d', $time)-1, '', false);
-    // Час
-    $aHour = range(0,23);
-    array_walk($aHour, $plDrawDateSelectorPad);
-    $sHour = plDrawSelector($aHour, ' name="'.$prf.'hour"', date('H', $time)-1, '', false);
-    // Минуты
-    $aMinut = range(0,59);
-    array_walk($aMinut, $plDrawDateSelectorPad);
-    $sMinut = plDrawSelector($aMinut, ' name="'.$prf.'minut"', date('i', $time)-1, '', false);
-    // Секунды
-    $sSec = plDrawSelector($aMinut, ' name="'.$prf.'second"', date('s', $time)-1, '', false);
-    return "$sDay . $sMonth . $sYear Время: $sHour : $sMinut : $sSec";
-}
-
-
-
-/**
- * Создаёт option теги для массива $array
- *
- * @package html
- * @param string Опция (opt=keys именами будут ключи массива opt=base значениями будут basename значений)
- * @param string выбранное значение
- * @return string HTML код селектора
- */
-function draw_array_options($array, $opt = '', $selected_value = '') {
-    $s = '';
-    if (!is_array($array)) {
-        return '';
-    }
-    foreach ($array as $k => $v) {
-        $opt == 'keys' ? $value = "value='$k'" : $value = '';
-        $opt == 'base' ? $v = basename($v) : true;
-        if (!empty($selected_value) && $v == $selected_value) {
-            $s .= "<option $value selected>$v</option>";
-        } else {
-            $s .= "<option $value>$v</option>";
-        }
-    }
-    return $s;
+    return $s .= $basetab . '</select>' . "\r\n";
 }
 
 
 /**
  * Получить максимальный допустимый размер аплоада файла
  *
- * @package file
  * @return integer Размер в байтах
+ * @package file
  */
-function getMaxUploadSize() {
+function getMaxUploadSize()
+{
     if (!$filesize = ini_get('upload_max_filesize')) {
         $filesize = "5M";
     }
@@ -443,91 +142,93 @@ function getMaxUploadSize() {
 /**
  * Считывает (и распаковывает сжатый) файл в строку
  *
- * @package file
- * @param   string   Путь к файлу
- * @param   string   MIME тип файла, иначе определяется автоматически
+ * @param string   Путь к файлу
+ * @param string   MIME тип файла, иначе определяется автоматически
  * @return  mixed    string контент файла либо boolean FALSE в случае ошибок
+ * @package file
  */
-function readZipFile($path, $mime = '') {
-  if (!file_exists($path)) {
-    return FALSE;
-  }
-  switch ($mime) {
-    case '':
-      $file = @fopen($path, 'rb');
-      if (!$file) {
+function readZipFile($path, $mime = '')
+{
+    if (!file_exists($path)) {
         return FALSE;
-      }
-      $test = fread($file, 3);
-      fclose($file);
-      if ($test[0] == chr(31) && $test[1] == chr(139)) return readZipFile($path, 'application/x-gzip');
-      if ($test == 'BZh') return readZipFile($path, 'application/x-bzip');
-      return readZipFile($path, 'text/plain');
-    case 'zip':
-      break;
-    case 'text/plain':
-      $file = @fopen($path, 'rb');
-      if (!$file) {
-        return FALSE;
-      }
-      $content = fread($file, filesize($path));
-      fclose($file);
-      break;
-    case 'application/x-gzip':
-      if (function_exists('gzopen')) {
-        $file = @gzopen($path, 'rb');
-        if (!$file) {
-          return FALSE;
-        }
-        $content = '';
-        while (!gzeof($file)) {
-          $content .= gzgetc($file);
-        }
-        gzclose($file);
-      } else {
-        return FALSE;
-      }
-       break;
-    case 'application/x-bzip':
-      if (@function_exists('bzdecompress')) {
-        $file = @fopen($path, 'rb');
-        if (!$file) {
-          return FALSE;
-        }
-        $content = fread($file, filesize($path));
-        fclose($file);
-        $content = bzdecompress($content);
-      } else {
-        return FALSE;
-      }
-       break;
-    default:
-       return FALSE;
-  }
-  return $content;
+    }
+    switch ($mime) {
+        case '':
+            $file = @fopen($path, 'rb');
+            if (!$file) {
+                return FALSE;
+            }
+            $test = fread($file, 3);
+            fclose($file);
+            if ($test[0] == chr(31) && $test[1] == chr(139)) return readZipFile($path, 'application/x-gzip');
+            if ($test == 'BZh') return readZipFile($path, 'application/x-bzip');
+            return readZipFile($path, 'text/plain');
+        case 'zip':
+            break;
+        case 'text/plain':
+            $file = @fopen($path, 'rb');
+            if (!$file) {
+                return FALSE;
+            }
+            $content = fread($file, filesize($path));
+            fclose($file);
+            break;
+        case 'application/x-gzip':
+            if (function_exists('gzopen')) {
+                $file = @gzopen($path, 'rb');
+                if (!$file) {
+                    return FALSE;
+                }
+                $content = '';
+                while (!gzeof($file)) {
+                    $content .= gzgetc($file);
+                }
+                gzclose($file);
+            } else {
+                return FALSE;
+            }
+            break;
+        case 'application/x-bzip':
+            if (@function_exists('bzdecompress')) {
+                $file = @fopen($path, 'rb');
+                if (!$file) {
+                    return FALSE;
+                }
+                $content = fread($file, filesize($path));
+                fclose($file);
+                $content = bzdecompress($content);
+            } else {
+                return FALSE;
+            }
+            break;
+        default:
+            return FALSE;
+    }
+    return $content;
 }
 
 /**
  * Возвращает реальный размер в байтах строкового php ini  представления числа
  *
- * @package number
  * @param string   Строковое php ini представление
  * @return integer Размер файла в байтах
+ * @package number
  */
-function get_real_size($size=0) {
+function get_real_size($size = 0)
+{
     if (!$size) {
         return 0;
     }
     $scan['MB'] = 1048576;
     $scan['Mb'] = 1048576;
-    $scan['M']  = 1048576;
-    $scan['m']  = 1048576;
+    $scan['M'] = 1048576;
+    $scan['m'] = 1048576;
     $scan['KB'] = 1024;
     $scan['Kb'] = 1024;
-    $scan['K']  = 1024;
-    $scan['k']  = 1024;
+    $scan['K'] = 1024;
+    $scan['k'] = 1024;
     foreach (array_keys($scan) as $key) {
-        if ((strlen($size)>strlen($key))&&(substr($size, strlen($size) - strlen($key))==$key)) {
+        if ((strlen($size) > strlen($key)) && (substr($size, strlen($size) - strlen($key)) == $key)) {
             $size = substr($size, 0, strlen($size) - strlen($key)) * $scan[$key];
             break;
         }
@@ -539,56 +240,37 @@ function get_real_size($size=0) {
 /**
  * Преобразует размер в байтах в строковое смотрибельное представление в форме " .. Kb .. Mb"
  *
- * @package number
  * @param integer Размер файла в байтах
  * @return string Строковое представление
+ * @package number
  */
-function formatSize($bytes) {
+function formatSize($bytes)
+{
     if ($bytes < pow(1024, 1)) {
         return "$bytes b";
     } else if ($bytes < pow(1024, 2)) {
-        return round($bytes / pow(1024, 1), 2).' Kb';
+        return round($bytes / pow(1024, 1), 2) . ' Kb';
     } else if ($bytes < pow(1024, 3)) {
-        return round($bytes / pow(1024, 2), 2).' Mb';
+        return round($bytes / pow(1024, 2), 2) . ' Mb';
     } else if ($bytes < pow(1024, 4)) {
-        return round($bytes / pow(1024, 3), 2).' Gb';
+        return round($bytes / pow(1024, 3), 2) . ' Gb';
     }
 }
 
-
-/**
- * Округляет число, выравнивая нули (модификация round()). Например, '2' => '2.0'
- *
- * @package number
- * @param float   Округляемое значение
- * @param integer Количество знаков после точки, которое надо дозаполнить нулями
- * @return string Строковое значение числа
- */
-function MSC_roundZero(float $number, int $precision):int {
-    $number = round($number, $precision);
-    if (strchr($number,".")){
-        $begin = strpos($number, ".");
-        $int = substr($number, 0, $begin);
-        $float = substr($number , $begin + 1);
-        $number = "$int.$float" . str_repeat("0", $precision - strlen($float));
-    } else {
-        $number = $number . "." . str_repeat("0", $precision);
-    }
-    return $number;
-}
 
 
 /**
  * Распечатка объекта в таблицу
  *
- * @package debug
  * @param mixed   Либо ассоциативный массив, либо mysql result
  * @param boolean Распечатать ТОЛЬКО первый элемент! Причём сделает он это вертикально!
  * @param object  Передаваемый объект Table, можно заранее задать какие-то свои значения, стили
  * @param array   Массив HTML аттрибутов к ключам массива
  * @return string HTML код таблицы
+ * @package debug
  */
-function MSC_printObjectTable($object, $first=false, $table=null, $attributes=array()) {
+function MSC_printObjectTable($object, $first = false, $table = null, $attributes = array())
+{
     if (!is_object($table)) {
         $table = new Table('contentTable');
         $table->setInterlace('', '#eeeeee');
@@ -598,7 +280,7 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
     // Преобразование входного объекта/массива
     if (!is_array($object)) {
         while ($o = $object->fetch()) {
-            $dataArray []= $o;
+            $dataArray [] = $o;
         }
     } else {
         $dataArray = $object;
@@ -610,7 +292,7 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
             if ($first) {
                 foreach ($o as $k => $v) {
                     if (isset($attributes[$k])) {
-                        $k = '<span'.$attributes[$k].'>'.$k.'</span>';
+                        $k = '<span' . $attributes[$k] . '>' . $k . '</span>';
                     }
                     $table->makeRow($k, $v);
                 }
@@ -619,15 +301,15 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
             $data = array();
             if (count($headers) == 0) {
                 foreach ($o as $k => $v) {
-                    $headers []= $k;
-                    $data []= $v;
+                    $headers [] = $k;
+                    $data [] = $v;
                 }
                 $table->makeRow($headers);
                 $table->makeRow($data);
                 continue;
             }
             foreach ($o as $k => $v) {
-                $data []= $v;
+                $data [] = $v;
             }
             $table->makeRow($data);
         }
@@ -641,62 +323,14 @@ function MSC_printObjectTable($object, $first=false, $table=null, $attributes=ar
 }
 
 /**
- * Распечатка запроса в таблицу. Нигде не используется, используется для отладки.
- *
- * @package debug
- * @param string SQL запрос
- * @param string HTML код таблицы
- */
-function printSqlTable($sql) {
-    global $msc;
-    $table = new Table('sqlTable', 1, 1, 0);
-    $result = $msc->fetchPdo($sql);
-    while ($row = $result->fetch()) {
-        if ($table->tableCont == null) {
-            $a = array();
-            foreach ($row as $k => $v) {
-                $a []= $k;
-            }
-            $table->makeRowHead($a);
-        }
-        $a = array();
-        foreach ($row as $k => $v) {
-            $a []= $v;
-        }
-        $table->makeRow($a);
-    }
-    $c = '<style>
-    .sqlTable {font:12px Arial;}
-    .sqlTable td {vertical-align:top; background-color:white}
-    </style>';
-    return $c.$table->make();
-}
-
-/**
- * Печатает массивы и объекты для отладки
- * Аналог print_r(), но печатает внутри [pre] уменьшенным шрифтом
- *
- * @package debug
- * @param array Массив
- * @param boolean Надо ли делать htmlspecialchars (если массив содержит html, которые не будет виден через браузер)
- */
-function pre($arrray, $html=false) {
-    $a = print_r($arrray, 1);
-    if ($html) {
-        $a = htmlspecialchars($a);
-    }
-    echo '<pre style="font-size:11px">' . $a . '</pre>';
-}
-
-
-/**
  * Пишет сообщение в лог, добавляя дату/время
  *
- * @package debug
  * @param string  Сообщение
  * @param string  SQL запрос (добавляется к сообщению)
+ * @package debug
  */
-function msclog($message, $sql=null) {
+function msclog($message, $sql = null)
+{
     global $pdo;
     $logFile = 'data/error.log';
     if (!file_exists($logFile)) {
@@ -708,10 +342,10 @@ function msclog($message, $sql=null) {
     if ($sql) {
         $sql = str_replace("\n", ' ', $sql);
     }
-    $time    = date('d.m.y H:i:s ');
-    $string  = "\n".$time.$message;
+    $time = date('d.m.y H:i:s ');
+    $string = "\n" . $time . $message;
     if ($sql != null) {
-        $string  .= '('.$sql.' '.$pdo->errorInfo()[2].')';
+        $string .= '(' . $sql . ' ' . $pdo->errorInfo()[2] . ')';
     }
     @fwrite($file, $string);
     @fclose($file);
@@ -723,14 +357,15 @@ function msclog($message, $sql=null) {
  *
  * @package debug
  */
-function mscErrorHandler($errno, $errstr, $errfile, $errline) {
+function mscErrorHandler($errno, $errstr, $errfile, $errline)
+{
     global $mscGlobalErrorsCash, $pdo;
-    $logstr = $errstr.'['.$errfile.':'.$errline.']';
+    $logstr = $errstr . '[' . $errfile . ':' . $errline . ']';
     if (!isset($mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash = array();
     }
     if (!in_array($logstr, $mscGlobalErrorsCash)) {
-        $mscGlobalErrorsCash []= $logstr;
+        $mscGlobalErrorsCash [] = $logstr;
     } else {
         return;
     }
@@ -738,68 +373,27 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline) {
         return;
     }
     if (stristr($errstr, 'Unable to save result set')) {
-        $logstr  .= '('.$pdo->errorInfo()[2].')';
+        $logstr .= '(' . $pdo->errorInfo()[2] . ')';
     }
     $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
     if (function_exists('msclog')) {
-        msclog($errno.' '.$logstr);
+        msclog($errno . ' ' . $logstr);
     }
 }
 
-
-if (!function_exists('str_ireplace')) {
-    function str_ireplace($search, $replace, $subject){
-        $token = chr(1);
-        $haystack = strtolower($subject);
-        $needle = strtolower($search);
-        while (($pos = strpos($haystack,$needle)) !== FALSE){
-            $subject = substr_replace($subject, $token, $pos, strlen($search));
-            $haystack = substr_replace($haystack, $token, $pos, strlen($search));
-        }
-        $subject = str_replace($token, $replace, $subject);
-        return $subject;
-    }
-}
-
-/**
- * Время форматирует в русское "Вчера-сегодня-позавчера и последние дни недели"
- *
- * @package date
- * @param string  Формат date() для обычного форматирование
- * @param integer Timestamp дата
- * @return string Отформатированная дата
- */
-function date2rusString($format, $ldate) {
-    // дата сегодня 00:00
-    $tmsTodayBegin = strtotime(date('m').'/'.date('d').'/'.date('y'));
-    // дата заданного времени 00:00
-    $tmsBegin = strtotime(date('m',$ldate).'/'.date('d',$ldate).'/'.date('y',$ldate));
-    $params   = array('Сегодня', 'Вчера', 'Позавчера');
-    $weekdays = array('Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота');
-    for ($i = 0; $i <= 6; $i ++ ) {
-        $tms = $tmsTodayBegin - 3600 * 24 * $i;
-        if ($tmsBegin == $tms) {
-            if (isset($params[$i])) {
-                return $params[$i].', '.date('H-i', $ldate);
-            } else {
-                return $weekdays[date('w', $ldate)].', '.date('H-i', $ldate);
-            }
-        }
-    }
-    return date($format, $ldate);
-}
 
 /**
  * (для tbl_data и tbl_compare) Обрабатывает значения полей базы данных перед выводом их в виде таблицы.
  * Обработка заключается в: для текстовых - htmlspecialchars+обрезка, для даты - отображение в поле id=tblDataInfoId
  * для нулевых значений - значение возвращается оформленным курсивом.
  *
- * @package data view
  * @param string Значение
  * @param string Тип поля
  * @return string Обработанное значение
+ * @package data view
  */
-function processRowValue($v, $type) {
+function processRowValue($v, $type)
+{
     if ($v === NULL) {
         $v = MS_NULL_DESIGN;
     } else {
@@ -816,8 +410,8 @@ function processRowValue($v, $type) {
         }
         // дата
         if (stristr($type, 'int') && strlen($v) == 10 && is_numeric($v)) {
-            $e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\''.date(MS_DATE_FORMAT, $v).'\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
-            $v = '<span class="dateString"'.$e.'>'.$v.'</span>';
+            $e = ' onmouseover="get(\'tblDataInfoId\').innerHTML=\'' . date(MS_DATE_FORMAT, $v) . '\'" onmouseout="get(\'tblDataInfoId\').innerHTML=\'\'"';
+            $v = '<span class="dateString"' . $e . '>' . $v . '</span>';
         }
     }
     return $v;
@@ -825,56 +419,15 @@ function processRowValue($v, $type) {
 
 
 /**
- * (для tbl_data и tbl_compare) Получить массив заголовков для таблицы данных. Заголовки для таблиц данных
- * формируются особым образом, с переносом.
- *
- * @package data view
- * @param array   Массив SQL объектов-полей (SHOW FIELDS...)
- * @param boolean С возможностью сортировки или без
- * @return array  Массив заголовков
- */
-function getTableHeaders($fields, $sorts=true) {
-    global $umaker;
-    $headers   = array();
-    $pk = array();
-    $fieldsCount = count($fields);
-    $fieldsNames = array();
-    // фиксим урл после перехода со страницы
-    if (GET('s') != 'tbl_data') {
-        $umaker->url = UrlMaker::edit($_SERVER['REQUEST_URI'], 's', 'tbl_data');
-    }
-    foreach ($fields as $k => $v) {
-        $isWrapped = (
-        (
-            strchr($v->Type, 'int') ||
-            strchr($v->Type, 'enum') ||
-            strchr($v->Type, 'float')
-        ) &&
-        MS_HEAD_WRAP &&
-        strlen($v->Field) > MS_HEAD_WRAP + 2 &&
-        $fieldsCount > 10 &&
-        GET('fullText') == ''
-        );
-        $u = $umaker->switcher('order', $v->Field.'-', $v->Field);
-        // HTML обработка
-        if ($isWrapped) {
-            $v->Field = wordwrap($v->Field, MS_HEAD_WRAP, '<br />', true);
-        }
-        $link = !$sorts ? $v->Field : "<a href='$u' class='sort' title='Сортировать'>$v->Field</a>";
-        $headers[]= $link;
-    }
-    return $headers;
-}
-
-/**
  * Возвращает значение указанного параметра конфигурации
  *
- * @package msc
  * @param string  Параметр
  * @param string  Значение по умолчанию, если параметра нет
  * @return string Значение
+ * @package msc
  */
-function conf($param, $default='') {
+function conf($param, $default = '')
+{
     global $mscConfigCash;
     if (!isset($mscConfigCash)) {
         $mscConfigCash = array();
@@ -884,7 +437,7 @@ function conf($param, $default='') {
                 continue;
             }
             list($name, $title, $value, $type) = explode('|', trim($line));
-            $mscConfigCash [$name]= $value;
+            $mscConfigCash [$name] = $value;
         }
     }
     return isset($mscConfigCash[$param]) ? $mscConfigCash[$param] : $default;
@@ -893,11 +446,12 @@ function conf($param, $default='') {
 /**
  * Ускоренное выполнение большого кол-ва запросов с логом
  *
- * @package msc
  * @param string База данных
  * @param string SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
+ * @package msc
  */
-function execSql($db, &$sql, $log=true) {
+function execSql($db, &$sql, $log = true)
+{
     global $msc;
     $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
     if (!$msc->selectDb($db)) {
@@ -912,14 +466,14 @@ function execSql($db, &$sql, $log=true) {
     $c = 0;
     $affected = 0;
     $count = count($array);
-    for ($i = 0; $i < $count; $i ++) {
+    for ($i = 0; $i < $count; $i++) {
         $q = trim($array[$i]);
         if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
             continue;
         }
-        $c ++;
+        $c++;
         if (!$msc->execPdo($q)) {
-            $errors []= $msc->error.' ('.substr($q, 0, 100).')';
+            $errors [] = $msc->error . ' (' . substr($q, 0, 100) . ')';
         } else {
             $affected += $msc->affectedRows;
         }
@@ -942,24 +496,25 @@ function execSql($db, &$sql, $log=true) {
 /**
  * Общая обработка для редактирования/добавления ряда
  *
+ * @param integer Тип редактирования: 0-update, 1-insert
  * @package msc
  * @access private
- * @param integer Тип редактирования: 0-update, 1-insert
  */
-function processRowsEdit($editType) {
+function processRowsEdit($editType)
+{
     global $msc;
     if (POST('option') == 'insert') {
         $editType = 1;
     }
     $countInsert = 0;
-    $fields = array_values(getFields($msc->table));
+    $fields = array_values(DatabaseTable::getFields($msc->table));
     if ($editType == 1) {
         $arrayFields = array();
         foreach ($fields as $v) {
             if (POST('option') == 'insert' && $v->Extra != null) {
                 continue;
             }
-            $arrayFields []= $v->Field;
+            $arrayFields [] = $v->Field;
         }
     }
     $lang = array(
@@ -968,18 +523,18 @@ function processRowsEdit($editType) {
         array('Ничего не обновилось', 'Ничего не добавилось')
     );
     $rows = POST('row');
-    $_POST['cond'] =  POST('cond');
+    $_POST['cond'] = POST('cond');
     foreach ($rows as $numRow => $data) {
         if ($editType == 0) {
-            $where  = urldecode($_POST['cond'][$numRow]);
-            $cValue = $msc->fetchPdo('SELECT * FROM `'.$msc->table.'` WHERE '.$where)->fetchObject();
+            $where = urldecode($_POST['cond'][$numRow]);
+            $cValue = $msc->fetchPdo('SELECT * FROM `' . $msc->table . '` WHERE ' . $where)->fetchObject();
         }
         $arrayValues = array();
         $countEmpty = 0;
         foreach ($data as $key => $value) {
             $default = $fields[$key]->Default;
             if ($default == $value) {
-                $countEmpty ++;
+                $countEmpty++;
             }
             $type = $fields[$key]->Type;
             if ($_POST['func'][$numRow][$key] != '') {
@@ -993,26 +548,26 @@ function processRowsEdit($editType) {
             if ($editType == 0) {
                 $field = $fields[$key]->Field;
                 if ($value != $cValue->$field) {
-                    $arrayValues []= '`'.$field. '`='.processValueType($value, $type, $isNull);
+                    $arrayValues [] = '`' . $field . '`=' . processValueType($value, $type, $isNull);
                 }
             } else {
                 if (POST('option') == 'insert' && $fields[$key]->Extra != null) {
                     continue;
                 }
-                $arrayValues []= processValueType($value, $type, $isNull);
+                $arrayValues [] = processValueType($value, $type, $isNull);
             }
         }
         if ($countEmpty == count($data) || count($arrayValues) == 0) {
             continue;
         }
         if ($editType == 0) {
-            $sql = 'UPDATE `'.$msc->table.'` SET '.implode(', ', $arrayValues).' WHERE '.$where;
+            $sql = 'UPDATE `' . $msc->table . '` SET ' . implode(', ', $arrayValues) . ' WHERE ' . $where;
         } else {
-            $sql = 'INSERT INTO `'.$msc->table.'` (`'.implode('`, `', $arrayFields).'`) VALUES ('.implode(', ', $arrayValues).')';
+            $sql = 'INSERT INTO `' . $msc->table . '` (`' . implode('`, `', $arrayFields) . '`) VALUES (' . implode(', ', $arrayValues) . ')';
         }
         if ($msc->execPdo($sql)) {
             $msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
-            $countInsert ++;
+            $countInsert++;
         } else {
             $msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, $msc->error);
         }
@@ -1038,17 +593,17 @@ function processRowsEdit($editType) {
         }
     ]);
 */
-function printTable($offersData, $opts=[])
+function printTable($offersData, $opts = [])
 {
     if (!$offersData) {
         echo '<p>Пустой массив</p>';
-        return ;
+        return;
     }
     $hsc = isset($opts['htmlspecialchars']) ? $opts['htmlspecialchars'] : true;
     $hdr = isset($opts['headers']) ? $opts['headers'] : true;
     $attrs = '';
     if ($opts['style']) {
-        $attrs = ' style="'.$opts['style'].'"';
+        $attrs = ' style="' . $opts['style'] . '"';
     }
     /*
         // Вариант шапки без бутстрапа
@@ -1062,19 +617,19 @@ function printTable($offersData, $opts=[])
     */
     $class = $opts['class'] ?: 'table table-bordered table-condensed table-sm table-hover';
     echo '
-    <table class="'.$class.'" '.$attrs.'>';
+    <table class="' . $class . '" ' . $attrs . '>';
     $headers = array();
     foreach ($offersData as $vals) {
         if (is_array($vals)) {
             foreach ($vals as $k => $v) {
-                $headers [$k]= $k;
+                $headers [$k] = $k;
             }
         }
     }
     if ($hdr) {
         echo '<tr>';
         foreach ($headers as $k => $v) {
-            echo '<th>'.($hsc ? htmlspecialchars($k) : $k).'</th>';
+            echo '<th>' . ($hsc ? htmlspecialchars($k) : $k) . '</th>';
         }
     }
     echo '</tr>';
@@ -1087,10 +642,10 @@ function printTable($offersData, $opts=[])
                 if ($opts['callbackValue']) {
                     $v = call_user_func($opts['callbackValue'], $header, $v);
                 }
-                echo '<td>'.$v.'</td>';
+                echo '<td>' . $v . '</td>';
             }
         } else {
-            echo '<td>'.$vals.'</td>';
+            echo '<td>' . $vals . '</td>';
         }
         echo '</tr>';
     }
@@ -1098,38 +653,38 @@ function printTable($offersData, $opts=[])
 }
 
 
-function getData($sql) {
-    global $msc;
-    return $msc->fetchPdo($sql)>fetchAll();
-}
-
 /**
  * @return bool
  */
-function isajax() {
+function isajax()
+{
     return POST('ajax') || GET('ajax');
 }
 
-function ajaxResult($data) {
+function ajaxResult($data)
+{
     header('Content-Type: application/json');
     exit(json_encode($data, JSON_INVALID_UTF8_IGNORE));
 }
 
-function ajaxError($message) {
+function ajaxError($message)
+{
     ajaxResult([
         'status' => false,
         'messages' => $message
     ]);
 }
 
-function ajaxSuccess($message) {
+function ajaxSuccess($message)
+{
     ajaxResult([
         'status' => true,
         'messages' => $message
     ]);
 }
 
-function ajaxResultWithMessages() {
+function ajaxResultWithMessages()
+{
     global $msc;
     $data = $msc->getMessagesData();
     foreach ($data as $item) {
@@ -1140,7 +695,8 @@ function ajaxResultWithMessages() {
     ajaxSuccess($data);
 }
 
-function exitError($message) {
+function exitError($message)
+{
     if (isajax()) {
         global $msc;
         $msc->addMessage($message, null, MS_MSG_FAULT);

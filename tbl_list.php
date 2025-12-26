@@ -44,7 +44,7 @@ if (GET('action') == 'full') {
 } elseif (GET('action') == 'structure' || GET('mode') == 'structure') {
     $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
     foreach ($tables as $key => $table) {
-        $tables [$key]->fields = getFields($table->Name);
+        $tables [$key]->fields = DatabaseTable::getFields($table->Name);
         $tables [$key]->data = $msc->getData('SELECT * FROM '.$table->Name.' LIMIT 3');
     }
     $pageProps = [

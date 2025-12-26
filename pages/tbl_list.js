@@ -104,31 +104,28 @@ class TableList extends React.Component {
         let sumTable = key + 1
         // Форматирование даты
         let updateTime = null;
+
         if (table.Update_time) {
-            var now = new Date(table.Update_time);
-            updateTime = now.toLocaleString() // TODO сделать date2rusString
+            const dateUt = new Date(table.Update_time);
+            updateTime = date2rusString(dateUt)
+            if (updateTime.match(/(дня|ера)/i)) {
+                updateTime = <b>{updateTime}</b>
+            }
         }
-        /*if ($o->Update_time > 0) {
-          $updateTime = strtotime($o->Update_time);
-          $updateTime = date2rusString(MS_DATE_FORMAT, $updateTime);
-          if (strpos($updateTime, 'дня') !== false || strpos($updateTime, 'ера') !== false) {
-            $updateTime = "<b>$updateTime</b>";
-          }
-        }*/
         // Форматирование названия таблицы
         let valueName = table.Name
         if (table.Rows === '0') {
             valueName = <span style={{color: '#aaa'}}> {valueName}</span>
         }
         // Определение размера таблицы
-        let size = parseInt(table.Data_length) + parseInt(table.Index_length);
+        const size = parseInt(table.Data_length) + parseInt(table.Index_length);
         this.sumSize += parseInt(size);
         this.sumRows += parseInt(table.Rows);
         // Сборка значения рядов
-        let msquery = `db=${this.props.db}&table=${table.Name}`;
-        let idRow = "row" + sumTable;
-        let idChbx = 'table_' + table.Name
-        let engine = table.Engine === 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
+        const msquery = `db=${this.props.db}&table=${table.Name}`;
+        const idRow = "row" + sumTable;
+        const idChbx = 'table_' + table.Name
+        const engine = table.Engine === 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
 
         return (
           <tr key={table.Name} id={idRow}>
@@ -154,10 +151,10 @@ class TableList extends React.Component {
 
     render() {
 
-        let tables = Object.values(this.props.tables)
+        const tables = Object.values(this.props.tables)
         this.sumSize = 0;
         this.sumRows = 0;
-        let trs = tables.map((table, key) => this.renderRow(table, key))
+        const trs = tables.map((table, key) => this.renderRow(table, key))
 
         return (
           <table className="contentTable interlaced">

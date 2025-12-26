@@ -448,7 +448,7 @@ class ActionProcessor
             // Удаление множества полей через POST
             case 'fieldsDelete' :
                 $deleteFields = $this->param('field');
-                $fields = getFields($tbl);
+                $fields = DatabaseTable::getFields($tbl);
                 // если в таблице осталось только 1 поле, то удаляем таблицу
                 if (count($fields) == 1) {
                     $sql = 'DROP TABLE `' . $tbl . '`';
@@ -467,7 +467,7 @@ class ActionProcessor
             case 'deleteKey' :
                 $validate->queryCheck($db, $tbl, $this->param('key'), $this->param('field'));
                 if ($this->param('key') == 'PRIMARY') {
-                    dropPrimaryKey($tbl);
+                    DatabaseTable::dropPrimaryKey($tbl);
                 } else {
                     $sql = "ALTER TABLE `$tbl` DROP KEY " . $this->param('key');
                     if ($msc->execPdo($sql)) {

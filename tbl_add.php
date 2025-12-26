@@ -13,7 +13,7 @@ if (!defined('DIR_MYSQL')) {
 
 // Получаем начальную инфо о полях таблицы
 if ($msc->table) {
-    $fields = getFields($msc->table);
+    $fields = DatabaseTable::getFields($msc->table);
     if (!$fields) {
         $msc->addMessage('Таблица не найдена', '', MS_MSG_FAULT);
         return ;
@@ -62,7 +62,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         $extra   = (isset($_POST['auto'][$k])) ? 'AUTO_INCREMENT' : null;
         $extra  .= $_POST['attr'][$k] != '' ? ' '.$_POST['attr'][$k] : null;
         $length  = $_POST['length'][$k];
-        $define  = getFieldDefinition($type, $null, $default, $extra, $length);
+        $define  = DatabaseTable::getFieldDefinition($type, $null, $default, $extra, $length);
         if (empty($define)) {
             $msc->addMessage('Не удалось создать поле "'.$name.'". Не указаны дополнительные параметры поля',
                 '', MS_MSG_FAULT);
@@ -118,7 +118,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         // определение полей
         $a = array();
         foreach ($fieldsDefEdit as $oldFieldName => $def) {
-            $oldDefinition = "`$oldFieldName` ".getFieldDefinition($fields[$oldFieldName]);
+            $oldDefinition = "`$oldFieldName` ".DatabaseTable::getFieldDefinition($fields[$oldFieldName]);
             //echo "<br />$oldDefinition == $def";exit;
             if ($oldDefinition == $def) {
                 continue;
@@ -128,7 +128,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         $sql  = count($a) == 0 ? '' : 'ALTER TABLE `'.GET('table') . "`\r\n" . implode(",\r\n", $a);
         // ключи
         $currentKeys = array();
-        $a = getTableKeys($msc->table);
+        $a = DatabaseTable::getTableKeys($msc->table);
         $currentPrimaryKey = '';
         foreach ($a as $fieldName => $currentKeyNames) {
             foreach ($currentKeyNames as $k => $currentKeyName) {
@@ -169,10 +169,10 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
                         }
                     }
                     if ($drop) {
-                        dropPrimaryKey(GET('table'));
+                        DatabaseTable::dropPrimaryKey(GET('table'));
                     }
                 } else {
-                    dropPrimaryKey(GET('table'));
+                    DatabaseTable::dropPrimaryKey(GET('table'));
                 }
             }
             if ($primaryKey != '') {
@@ -212,7 +212,7 @@ if (is_array($names) && count($names) > 0 && POST('action') != '') {
         }
         $sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
         // ключи
-        $oldFields = getFields(GET('table'));
+        $oldFields = DatabaseTable::getFields(GET('table'));
         // выполнение
         if ($msc->execPdo($sql)) {
             $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
@@ -281,8 +281,8 @@ $pageProps = [
     'tableName' => POST('tableName') ?: $msc->table,
     'array' => $array,
     'post' => $_POST,
-    'keys' => getTableKeys($msc->table),
-    'fields' => getFields($msc->table, true)
+    'keys' => DatabaseTable::getTableKeys($msc->table),
+    'fields' => DatabaseTable::getFields($msc->table, true)
 ];
 if (isajax()) {
     return $pageProps;

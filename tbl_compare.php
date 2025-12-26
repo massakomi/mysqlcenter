@@ -3,8 +3,6 @@
  * MySQL Center Менеджер Базы данных MySQL (c) 2007-2024
  */
 
-require_once DIR_MYSQL . 'includes/Export.class.php';
-
 /**
  * Сравнение баз данных
  */
@@ -98,7 +96,7 @@ $pageProps = [
     'tables' => []
 ];
 foreach ($tables as $k => $table) {
-    $fields = getFields($table);
+    $fields = DatabaseTable::getFields($table);
     $pk = getPrimaryKeys($fields);
     [$data1, $data2] = selectDataFromDatabase($databases, $table, $pk);
     $tableData = compact('fields', 'pk', 'data1', 'data2');

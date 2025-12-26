@@ -597,6 +597,44 @@ function processRowValue(v, type, textCut) {
     return v
 }
 
+Date.prototype.getDayReal = function() {
+    let weekDay = this.getDay() - 1;
+    if (weekDay < 0) {
+        weekDay = 6;
+    }
+    return weekDay;
+};
+
+/**
+ * Время форматирует в русское "Вчера-сегодня-позавчера и последние дни недели"
+ * @param date
+ * @returns {string}
+ */
+function date2rusString (date) {
+    if (!date) {
+        return 'invalid date'
+    }
+    const now = new Date();
+    let tmsTodayBegin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    tmsTodayBegin = (tmsTodayBegin / 1000)
+    let tmsBegin = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+    tmsBegin = (tmsBegin / 1000)
+    const params = ['Сегодня', 'Вчера', 'Позавчера']
+    const weekDays = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+    for (let i = 0; i < 6; i ++) {
+        let tms = tmsTodayBegin - 3600 * 24 * i;
+        if (tms === tmsBegin) {
+            const time = ', ' + date.toLocaleTimeString().substring(0, 5)
+            if (params[i]) {
+                return params[i] + time;
+            } else {
+                return weekDays[date.getDayReal()] + time
+            }
+        }
+    }
+    return date.toLocaleString()
+}
+
 // gQuery to js
 
 function forElements(selector, callback) {

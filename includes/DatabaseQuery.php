@@ -129,7 +129,7 @@ class DatabaseQuery
      * @param $table
      */
     function getAutoIncrement($table) {
-        $fields = getFields($table);
+        $fields = DatabaseTable::getFields($table);
         $ai = null;
         foreach ($fields as $k => $v) {
             if ($v->Extra != null) {

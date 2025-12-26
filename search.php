@@ -38,7 +38,7 @@ $pageProps = [
 
 // 1. Режим поиска по таблице
 if (GET('table') != null) {
-    $pageProps ['fields'] = getFields(GET('table'), true);
+    $pageProps ['fields'] = DatabaseTable::getFields(GET('table'), true);
     if (isajax()) {
         return $pageProps;
     }
@@ -57,7 +57,7 @@ if (GET('table') != null) {
         $founded = 0;
         $foundedTotal = 0;
         foreach ($listTables as $table) {
-            $fields = getFields($table, true);
+            $fields = DatabaseTable::getFields($table, true);
             $founds = [];
             foreach ($fields as $field) {
                 if (preg_match('~[a-z][A-Z]~', $field,)) {
@@ -106,7 +106,7 @@ if (GET('table') != null) {
         $results = [];
         $founded = 0;
         foreach ($array as $table) {
-            $fields = getFields($table, true);
+            $fields = DatabaseTable::getFields($table, true);
             $whereCondition = " WHERE " . implode(' LIKE "%'.$query.'%" OR ', $fields) . ' LIKE "%'.$query.'%"';
             $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
             $result = $msc->fetchPdoObject($sql);

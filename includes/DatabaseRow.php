@@ -48,7 +48,7 @@ class DatabaseRow
         if (!$msc->getAutoIncrement($table)) {
             return $msc->addMessage('Невозможно скопировать ряд, т.к. в таблице нет поля auto_increment', null, MS_MSG_FAULT);
         }
-        $fields = getFields($table, true);
+        $fields = DatabaseTable::getFields($table, true);
         $row = stripslashes(urldecode($row));
         $sql = "INSERT INTO $table ($fields) SELECT $fields FROM $table WHERE $row";
         return $msc->execPdo($sql);

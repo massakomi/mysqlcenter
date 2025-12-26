@@ -151,6 +151,183 @@ class DatabaseTable
     }
 
     /**
+     * Возвращает массив SQL объектов-полей таблицы $table
+     *
+     * @param string $table таблица
+     * @param bool $onlyNames возвратить только массив имён полей
+     * @return array Массив полей
+     */
+    public static function getFields(string $table, bool $onlyNames=false): array
+    {
+        if (empty($table)) {
+            return [];
+        }
+        global $msc;
+        static $cache;
+        $cacheId = $table;
+        if (!isset($cache[$cacheId])) {
+            $cache[$cacheId] = [];
+            $table = str_replace('`', '``', $table );
+            $result = $msc->fetchPdoObject('SHOW FIELDS FROM `'.$table.'`');
+            if (!$result) {
+                return [];
+            }
+            foreach ($result as $row) {
+                $cache[$cacheId] [$row->Field]= $row;
+            }
+        }
+        if ($onlyNames) {
+            return array_keys($cache[$cacheId]);
+        } else {
+            return $cache[$cacheId];
+        }
+    }
+
+    /**
+     * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа]
+     *
+     * @package sql
+     * @param string $table Имя таблицы
+     * @return array
+     */
+    public static function getTableKeys($table) {
+        if (empty($table)) {
+            return [];
+        }
+        global $msc;
+        $keys = [];
+        $result = $msc->fetchPdoObject('SHOW KEYS FROM `'.$table.'`');
+        if (!$result) {
+            return [];
+        }
+        foreach ($result as $row) {
+            if ($row->Key_name == 'PRIMARY') {
+                $keys [$row->Column_name][$row->Key_name]= 'PRI';
+            } else {
+                $keys [$row->Column_name][$row->Key_name]= $row->Non_unique == 0 ? 'UNI' : 'MUL';
+            }
+        }
+        return $keys;
+    }
+    /**
+     * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть
+     *
+     * @package sql
+     * @param string  Имя таблицы
+     * @return boolean Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
+     */
+    public static function dropPrimaryKey($tbl) {
+        global $msc;
+        $fields = self::getFields($tbl);
+        foreach ($fields as $f) {
+            if ($f->Key == 'PRI') {
+                $definition = DatabaseTable::getFieldDefinition($f);
+                $field      = $f->Field;
+            }
+        }
+        if (isset($definition)) {
+            if (stristr($definition, 'auto_increment')) {
+                $definition = str_ireplace('auto_increment', '', $definition);
+                $sql = 'ALTER TABLE `'.$tbl.'` CHANGE '.$field.' '.$field.' '.$definition;
+                $msc->execPdo($sql);
+            }
+            $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
+            if ($msc->execPdo($sql)) {
+                return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
+            } else {
+                return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, $msc->error);
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Создаёт определение поля из объекта или на основе параметров, со свойствами поля (field, type...)
+     *
+     * @package sql
+     * @param mixed  Либо field-объект, либо тип поля (в случае указания параметров по отдельности)
+     * @param string Значение Null field-объекта (YES|NO - строка, определяющая, является ли поле NULL)
+     * @param string Значение по умолчанию
+     * @param string Значение Extra field-объекта
+     * @param string Длина поля, если необходимо
+     * @return string Определение поля (field definition)
+     */
+    public static function getFieldDefinition($type=null, $null=null, $default=null, $extra=null, $length=null) {
+        //echo "<br />$type, $null, $default, $extra, $length";
+        if (is_object($type)) {
+            foreach ($type as $param => $value) {
+                $param = strtolower($param);
+                $$param = $value;
+            }
+            if (stristr($type, 'UNSIGNED')) {
+                $extra .= ' UNSIGNED';
+                $type   = str_ireplace('UNSIGNED', '', $type);
+            }
+            if (stristr($type, 'ZEROFILL')) {
+                $extra .= ' ZEROFILL';
+                $type = str_ireplace('ZEROFILL', '', $type);
+            }
+            if (preg_match('~\((.*)\)~U', $type, $length)) {
+                $length = $length[1];
+                $type = trim(str_replace('('.$length.')', '', $type));
+            }
+        }
+        $type = strtoupper($type);
+        // особый тип, без доп. параметров
+        if ($type == 'SERIAL') {
+            return 'SERIAL';
+        }
+        if ($type == 'VARCHAR') {
+            if (!is_numeric($length) || $length > 255 || $length < 1) {
+                $length = 255;
+            }
+            $type .= "($length)";
+        } else if ($type == 'SET' || $type == 'ENUM') {
+            if (empty($length)) {
+                return false;
+            }
+            $type .= "($length)";
+        } else if ($type == 'FLOAT' || $type == 'DOUBLE') {
+            if (empty($length)) {
+                return false;
+            } else {
+                $length = str_replace('.', ',', $length);
+            }
+            $type .= "($length)";
+        } else if (is_numeric($length) && !stristr($type, 'text')) {
+            $type .= "($length)";
+        }
+        $field_info  = $type;
+        if (stristr($extra, 'UNSIGNED')) {
+            // это алиас
+            if ($type != 'BOOLEAN') {
+                $field_info .= ' UNSIGNED';
+            }
+            $extra = str_replace('UNSIGNED', '', $extra); // UNSIGNED - после типа поля
+        }
+        if (stristr($extra, 'ZEROFILL')) {
+            $field_info .= ' ZEROFILL';
+            $extra = str_replace('ZEROFILL', '', $extra);
+        }
+        if ($null != 'YES') {
+            $field_info .=  ' NOT NULL';
+        }
+        if (trim($extra) != null) {
+            $field_info .= ' '.$extra;
+        }
+        if ($default != null) {
+            if (is_numeric($default)) {
+                $field_info .=  ' DEFAULT '.intval($default);
+            } else {
+                $field_info .=  ' DEFAULT "'.$default.'"';
+            }
+        }
+        $field_info = str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
+        //pre($field_info);
+        return $field_info;
+    }
+
+    /**
      * @return array
      */
     public static function getCashedTablesArray(): array

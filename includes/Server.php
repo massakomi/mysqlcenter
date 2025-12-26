@@ -30,7 +30,6 @@ class Server
         $dbs = self::getDatabases();
         $hidden = [];
         if (in_array('mysqlcenter', $dbs)) {
-            include_once 'includes/MSTable.php';
             $hidden = MSTable::getHiddensArray();
         }
         foreach ($dbs as $key => $db) {
@@ -39,6 +38,43 @@ class Server
             }
         }
         return array_values($dbs);
+    }
+
+    /**
+     * Определение версии сервера в виде числа и строки
+     *
+     * @package sql
+     * @return array Числовое и строковое значение версии
+     */
+    public static function getServerVersion() {
+        global $msc;
+        $result = $msc->fetchPdo('SELECT VERSION() AS version');
+        if (!$result) {
+            return ['-', '-'];
+        }
+        $row   = $result->fetch();
+        $match = explode('.', $row['version']);
+        $vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
+        $vs = $row['version'];
+        return [$vi, $vs];
+    }
+
+    /**
+     * Возвращает массив кодировок сервера.
+     *
+     * @package sql
+     * @param boolean Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
+     * @return array
+     */
+    public static function getCharsetArray($extended=false) {
+        global $msc;
+        $charsetList = array();
+        $res = $msc->fetchPdo('SHOW CHARACTER SET');
+        foreach ($res as $row) {
+            $charsetList [$row['Charset']]= $extended ? $row : $row['Charset'];
+        }
+        ksort($charsetList);
+        return $charsetList;
     }
 
     /**

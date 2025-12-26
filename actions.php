@@ -13,7 +13,7 @@
  */
 function getCharsetSelector($selected = null)
 {
-    $charsetList = getCharsetArray(true);
+    $charsetList = Server::getCharsetArray(true);
     $charsetSelector = '';
     foreach ($charsetList as $row) {
         $sel = null;
@@ -167,7 +167,7 @@ if (GET('users')) {
     $dbInfo = $dbInfo[0];
     $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
     $charsetSelector = getCharsetSelector(substr($dbInfo['collation'], 0, strpos($dbInfo['collation'], '_')));
-    $charsetList = getCharsetArray();
+    $charsetList = Server::getCharsetArray();
     $processes = $msc->getData('SHOW FULL PROCESSLIST');
 
     $pageProps = [
@@ -197,7 +197,7 @@ if (GET('users')) {
     }
 
     //$charsetSelector = getCharsetSelector($charset);
-    $charsetList = getCharsetArray();
+    $charsetList = Server::getCharsetArray();
     $dbs = Server::getDatabases();
 
     $pageProps = [
@@ -210,7 +210,7 @@ if (GET('users')) {
         'charset' => $row->Collation ? explode('_', $row->Collation)[0] : '',
         'charsets' => $charsetList,
         'dbs' => $dbs,
-        'fields' => getFields($msc->table, true),
+        'fields' => DatabaseTable::getFields($msc->table, true),
     ];
     if (isajax()) {
         return $pageProps;

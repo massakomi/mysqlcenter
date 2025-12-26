@@ -32,7 +32,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 
         } elseif (POST('compress') == 'csv') {
 
-            $fields = getFields('');
+            $fields = DatabaseTable::getFields('');
 
             $data = file_get_contents($_FILES['sqlFile']['tmp_name']);
             $data = iconv('windows-1251', 'utf-8', $data);
@@ -129,7 +129,7 @@ if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
 $pageProps = [
     'maxUploadSize' => MAX_UPLOAD_SIZE,
     'maxSize' => round(MAX_UPLOAD_SIZE / (1024 * 1024), 2),
-    'charsets' => getCharsetArray(),
+    'charsets' => Server::getCharsetArray(),
     //'sql' => POST('sql')
 ];
 if (isajax()) {

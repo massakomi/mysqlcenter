@@ -47,7 +47,7 @@ if (!defined('DIR_MYSQL')) {
 
 if (GET('action') == 'add_key') {
     $fieldRows = ['' => ''];
-    $fields = getFields($msc->table);
+    $fields = DatabaseTable::getFields($msc->table);
     foreach ($fields as $field) {
         $fieldRows [$field->Field] = "$field->Field [$field->Type]";
     }
@@ -72,7 +72,7 @@ if ($msc->table == '') {
     $msc->addMessage('Не указана таблица в запросе', null, MS_MSG_FAULT);
     return null;
 }
-$fields = getFields($msc->table);
+$fields = DatabaseTable::getFields($msc->table);
 if (!$fields) {
     $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT);
     return null;

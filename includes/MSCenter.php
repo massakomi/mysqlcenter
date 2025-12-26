@@ -16,17 +16,14 @@ const MS_MSG_NOTICE = 5; // непонятная ситуация, замеча�
  */
 class MSCenter extends DatabaseQuery
 {
-    public $db;
-    public $table;
-    public $page;
+    public string $db = '';
+    public string $table = '';
+    public string $page = '';
+    public string $host = '';
+    public string $user = '';
+    public string $pageTitle = ''; // для заголовка раздела h1
 
-    // private
     public array $messages = [];
-
-    /**
-     * Общедоступная переменная для создания заголовка раздела h1
-     */
-    public string $pageTitle = '';
 
     /**
      * Время timestamp начала работы программы. Используется для подсчёта времени выполнения.
@@ -34,8 +31,6 @@ class MSCenter extends DatabaseQuery
     public float $timer;
 
     public bool $allowRepeatMessages = false;
-    public string $host;
-    public string $user;
 
     /**
      * Конструктор, для начала анализа скорости
@@ -52,9 +47,11 @@ class MSCenter extends DatabaseQuery
      */
     public function init()
     {
-        $this->db = $this->getCurrentDatabase();
-        $this->table = $this->getCurrentTable();
-        $this->page = $this->getCurrentPage();
+        $this->initCurrentDatabase();
+        if ($this->table == null && $this->db != null) {
+            $this->table = GET('table');
+        }
+        $this->initCurrentPage();
     }
 
     /**
@@ -85,10 +82,10 @@ class MSCenter extends DatabaseQuery
      * Возвращает текущую отображаемую базу данных (которую мы видим), вызывается при инициализации
      * @access private
      */
-    public function getCurrentDatabase()
+    private function initCurrentDatabase()
     {
         if (!$this->connected()) {
-            return null;
+            return '';
         }
         $db = GET('db') ?: POST('db');
         if ($db != '') {
@@ -101,10 +98,6 @@ class MSCenter extends DatabaseQuery
         } elseif (!empty($_COOKIE['mc_db'])) {
             $this->db = $_COOKIE['mc_db'];
         }
-        if (!$this->db) {
-            return $this->db = null;
-        }
-        return $this->db;
     }
 
     public function clearCurrentDatabase(): void
@@ -119,6 +112,7 @@ class MSCenter extends DatabaseQuery
      */
     public function connected(): bool
     {
+       // return false;
         return file_exists(MS_CONNECT_CONFIG_FILE);
     }
 
@@ -135,13 +129,13 @@ class MSCenter extends DatabaseQuery
             exitError("Конфиг не найден, current='$current'");
         }
         extract($config);
-        $this->host  = $host;
-        $this->user  = $user;
         try {
             $pdo = new PDO('mysql:host='.$host.';dbname='.$database, $user, $password, [
                 PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=".MS_COLLATION.', character_set_server='.MS_CHARACTER_SET.', sql_mode=""'
             ]);
+            $this->host  = $host;
+            $this->user  = $user;
         } catch (PDOException $e) {
             $this->clearCurrentDatabase();
             exitError('Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />' . $e->getMessage());
@@ -149,25 +143,14 @@ class MSCenter extends DatabaseQuery
     }
 
     /**
-     * Возвращает текущую таблицу, вызывается при инициализации
-     * @access private
-     */
-    public function getCurrentTable()
-    {
-        if ($this->table == null && $this->db != null) {
-            $this->table = GET('table');
-        }
-        return $this->table;
-    }
-
-    /**
      * Возвращает алиас текущего раздела, вызывается при инициализации
      * @access private
      */
-    public function getCurrentPage()
+    private function initCurrentPage()
     {
         if (!$this->connected()) {
-            return $this->page = 'login';
+            $this->page = 'login';
+            return;
         }
         $defaultPage = 'tbl_list';
         if (conf('tblliststart') == '0' || !$this->db) {
@@ -190,7 +173,6 @@ class MSCenter extends DatabaseQuery
                 $this->page = $defaultPage;
             }
         }
-        return $this->page;
     }
 
     /**

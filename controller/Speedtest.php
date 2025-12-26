@@ -72,7 +72,7 @@ class Speedtest
         fwrite($f, "\n" . date('Y.m.d H:i:s') . " sql=$test1 php=$test2");
         fclose($f);
 
-        $msc->selectDb($msc->getCurrentDatabase());
+        $msc->selectDb($msc->db);
 
     }
 }

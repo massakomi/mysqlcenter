@@ -3,6 +3,7 @@
 /* @var $msc MSCenter */
 /* @var $umaker UrlMaker */
 global $umaker, $msc;
+$menu = new Menu();
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -26,9 +27,9 @@ global $umaker, $msc;
 <div class="loader" hidden></div>
 <div class="pageBlock">
   <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
-    <?php echo $this->getGlobalMenu()?> &nbsp; &nbsp;
+    <?php echo $menu->getGlobalMenu()?> &nbsp; &nbsp;
   <span class="hiddenText" onclick="msDisplaySql()" title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
-  <span class="menuChain"><?php echo $this->getChainMenu()?></span>
+  <span class="menuChain"><?php echo $menu->getChainMenu()?></span>
 </div>
 
 <div id="msAjaxQueryDiv"></div>
@@ -36,7 +37,7 @@ global $umaker, $msc;
 
 <div class="outerTable">
     <div class="leftCol">
-        <?php echo $this->getTableMenu(); ?>
+        <?php echo $menu->getTableMenu(); ?>
     </div>
     <div class="rightCol">
         <div class="headTop">
@@ -45,7 +46,7 @@ global $umaker, $msc;
                 <?php
                 if ($msc->table) {
                     $url = '?db='.$msc->db.'&table='.$msc->table.'&s=tbl_data';
-                    $fields = getFields($msc->table, true);
+                    $fields = DatabaseTable::getFields($msc->table, true);
                     ?>
                     <form action="<?php echo $url?>" method="post" class="search-top">
                         <input type="hidden" name="order" value="<?=POST('order')?>" />
@@ -93,20 +94,16 @@ foreach ($dbs as $db) {
 </div>
 
 <div class="pageBlock">
-	<?php echo $this->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
+	<?php echo $menu->getFooterMenu()?> &nbsp;&nbsp;&nbsp;
   &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
   <strong>Хост:</strong> <?php echo $msc->host ?> &nbsp;&nbsp;
   <strong>Пользователь:</strong> <?php echo $msc->user ?> &nbsp;&nbsp;
-<?php
-if (function_exists('memory_get_peak_usage')) {
-?>
+<?php if (function_exists('memory_get_peak_usage')) { ?>
   пиковая память <?php echo formatSize(memory_get_peak_usage()) ?> &nbsp;
   сейчас <?php echo formatSize(memory_get_usage()) ?> &nbsp;
   inc <?php echo formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files())))  ?>
   limit <?php echo ini_get('memory_limit') ?> &nbsp; &nbsp;&nbsp;
-<?php
-}
-?>$
+<?php } ?>
   <strong><a href="?s=login">Логин</a></strong>
 </div>
 
