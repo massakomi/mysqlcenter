@@ -1,71 +1,50 @@
-class Login extends React.Component {
+function Login(props) {
 
-    constructor(props) {
-        super(props);
-        if (props.current) {
-          this.state = {...props}
-        } else {
-          this.state = {
-            "current": "0",
-            "config": {
-              "0": this.defaults("Default")
-            },
-          }
-        }
-        this.checkCurrentSetting(true)
-    }
-
-    componentDidMount() {
-
-    }
-
-    changeCurrentSetting = (e) => {
+    const changeCurrentSetting = (e) => {
         let newSetting = e.target.options[e.target.selectedIndex].value
-        if (newSetting === this.state.current) {
+        if (newSetting === current) {
             return
         }
-        this.setState({'current': newSetting})
+        setCurrent(newSetting)
     }
 
-    update = (e) => {
-        let config = this.state.config
-        config[this.state.current][e.target.name] = e.target.value
-        this.setState({'config': config})
+    const update = (e) => {
+        let c = Object.assign({}, config)
+        c[current][e.target.name] = e.target.value
+        setConfig(c)
     }
 
-    add = () => {
+    const add = () => {
         let name = prompt('Введите название')
         if (!name) {
             return
         }
 
         let maxValue = 0
-        for (let key in this.state.config) {
+        for (let key in config) {
             if (!maxValue || key > maxValue) {
                 maxValue = key
             }
         }
         maxValue ++
 
-        let config = this.state.config
-        config[maxValue] = this.defaults(name)
-        this.setState({'config': config})
-        this.checkCurrentSetting()
+        let c = Object.assign({}, config)
+        c[maxValue] = defaults(name)
+        setConfig(c)
+        checkCurrentSetting()
     }
 
-    defaults(name) {
-        return {
-            name: name,
-            driver: "mysql",
-            host: "",
-            user: "",
-            password: "",
-            port: "3306",
-            database: "",
-        }
-    }
+    const defaults = name => ({
+        name: name,
+        driver: "mysql",
+        host: "",
+        user: "",
+        password: "",
+        port: "3306",
+        database: "",
+    });
 
-    rename() {
+    const rename = () => {
         let selector =  document.querySelector('.login select')
         if (selector.selectedIndex === -1) {
             alert('Не выбрано ничего')
@@ -77,70 +56,80 @@ class Login extends React.Component {
             return
         }
         selected.text = name
-        let config = this.state.config
-        config[this.state.current].name = name
-        this.setState({'config': config})
-    }
+        let c = config
+        c[current].name = name
+        setConfig(c)
+    };
 
-    async save(mode, e) {
+    const save = async (mode, e) => {
         e.preventDefault()
-        const config = JSON.stringify(this.state.config);
-        await msQuery(mode, { config: config, current: this.state.current }, function(data) {
+        const c = JSON.stringify(config);
+        await msQuery(mode, { config: c, current: current }, function(data) {
             console.log(data)
         })
-    }
+    };
 
-    checkCurrentSetting(direct=false) {
-        if (typeof(this.state.config[this.state.current]) == 'undefined') {
-            let config = this.state.config
-            config [this.state.current] = this.defaults("!error!")
+    const checkCurrentSetting = (direct=false) => {
+        if (typeof(config[current]) == 'undefined') {
+            let c = config
+            c [current] = defaults("!error!")
             if (direct) {
-                this.state.config = config
+                config = c
             } else {
-                this.setState({'config': config})
+                setConfig(c)
             }
         }
+    };
+
+    let current, config, setCurrent, setConfig;
+    if (props.current) {
+        [current, setCurrent] = React.useState(props.current);
+        [config, setConfig] = React.useState(props.config);
+    } else {
+        [current, setCurrent] = React.useState("0");
+        [config, setConfig] = React.useState({
+            "0": defaults("Default")
+        });
     }
 
-    render() {
+    checkCurrentSetting(true)
 
-        let options = []
-        for (let key in this.state.config) {
-            options.push(<option key={"opt-"+key} value={key}>{this.state.config[key].name}</option>)
-        }
+    let options = []
+    for (let key in config) {
+        options.push(<option key={"opt-"+key} value={key}>{config[key].name}</option>)
+    }
 
-        return (
-          <div className="login">
-              <form>
-                  <div>
-                      <label>Хост</label><input name="host" type="text" onChange={this.update} value={this.state.config[this.state.current].host}/>
-                  </div>
-                  <div>
-                      <label>Пользователь</label><input name="user" type="text" onChange={this.update} value={this.state.config[this.state.current].user}/>
-                  </div>
-                  <div>
-                      <label>Пароль</label><input name="password" type="password" onChange={this.update} value={this.state.config[this.state.current].password}/>
-                  </div>
-                  <div>
-                      <label>Порт</label><input name="port" type="number" onChange={this.update} value={this.state.config[this.state.current].port}/>
-                  </div>
-                  <div>
-                      <label>База данных</label><input name="database" type="text" onChange={this.update} value={this.state.config[this.state.current].database}/>
-                  </div>
-                  <div>
-                      <label></label>
-                      <input type="button" onClick={this.save.bind(this, 'connectCheck')} defaultValue="Проверить"/>
-                      <input type="button" onClick={this.save.bind(this, 'connectSave')} defaultValue="Сохранить"/>
-                  </div>
-              </form>
-              <div className="list">
-                  <select multiple defaultValue={[this.state.current]} onChange={this.changeCurrentSetting}>
-                      {options}
-                  </select>
-                  <input type="button" onClick={this.add} defaultValue="Добавить"/>
-                  <input type="button" onClick={this.rename.bind(this)} defaultValue="Переименовать"/>
+    return (
+      <div className="login">
+          <form>
+              <div>
+                  <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host} />
               </div>
+              <div>
+                  <label>Пользователь</label><input name="user" type="text" onChange={update} value={config[current].user}/>
+              </div>
+              <div>
+                  <label>Пароль</label><input name="password" type="password" onChange={update} value={config[current].password}/>
+              </div>
+              <div>
+                  <label>Порт</label><input name="port" type="number" onChange={update} value={config[current].port}/>
+              </div>
+              <div>
+                  <label>База данных</label><input name="database" type="text" onChange={update} value={config[current].database}/>
+              </div>
+              <div>
+                  <label></label>
+                  <input type="button" onClick={save.bind(this, 'connectCheck')} defaultValue="Проверить"/>
+                  <input type="button" onClick={save.bind(this, 'connectSave')} defaultValue="Сохранить"/>
+              </div>
+          </form>
+          <div className="list">
+              <select multiple defaultValue={[current]} onChange={changeCurrentSetting}>
+                  {options}
+              </select>
+              <input type="button" onClick={add} defaultValue="Добавить"/>
+              <input type="button" onClick={rename.bind(this)} defaultValue="Переименовать"/>
           </div>
-        );
-    }
+      </div>
+    );
 }

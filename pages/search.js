@@ -1,31 +1,23 @@
-class Search extends React.Component {
+function Search(props) {
 
-    constructor(props) {
-        super(props);
-        this.state = {disabled: true};
-        //this.updateState = this.updateState.bind(this); // можно забиндить и в форме, но тут только 1 раз
-    }
+    const [query, setQuery] = React.useState('');
+    const [queryField, setQueryField] = React.useState('');
+    const [disabled, setDisabled] = React.useState(true);
 
-    updateState = (event) => {
+    const updateState = (event) => {
         const name = event.target.name;
-        this.setState({[name]: event.target.value});
-        // тут уже получается есть результаты предыдущего setState, моментально
-        this.setState((prevState, prevProps) => {
-            let ok = prevState.query || prevState.queryField;
-            return { disabled: !ok };
-        });
+        const value = event.target.value;
+        if (name === 'query') {
+            setQuery(event.target.value)
+            setDisabled(!value && !queryField)
+        }
+        if (name === 'queryField') {
+            setQueryField(event.target.value)
+            setDisabled(!value && !query)
+        }
     }
 
-    componentDidMount() {
-        //console.log('mount')
-        document.querySelector('#queryAll').focus()
-        // можно стейты назначить и тут, а не в конструкторе, если они все равно приходят
-        this.setState({'query': this.props.query})
-        this.setState({'queryField': this.props.queryField})
-        //console.log('will mount')
-    }
-
-    msMultiSelect(event) {
+    const msMultiSelect = event => {
         forElements('[name="table[]"] option', function(e) {
             if (event.target.classList.contains('invert')) {
                 this.selected = !this.selected
@@ -33,33 +25,36 @@ class Search extends React.Component {
                 this.selected = event.target.classList.contains('select')
             }
         })
-    }
+    };
 
-    render() {
-        return (
-          <form action="/?s=search" method="post" name="formSearch">
-              <table className="tableExport">
-                  <tbody><tr>
-                      <td valign="top">
-                          <select name="table[]" multiple className="sel" defaultValue={this.props.tables}>
-                              {Object.values(this.props.tables).map((table) =>
-                                <option key={table.toString()}>{table}</option>
-                              )}
-                          </select>   <br />
-                          <a href="#" onClick={this.msMultiSelect} className="hs select">все</a> &nbsp;
-                          <a href="#" onClick={this.msMultiSelect} className="hs unselect">очистить</a> &nbsp;
-                          <a href="#" onClick={this.msMultiSelect} className="hs invert">инверт</a>
-                      </td>
-                      <td valign="top">
-                          искать по всем полям    <br />
-                          <input name="query" id="queryAll" type="text" size="50" onChange={this.updateState} defaultValue={this.state.query} /><br />
-                          искать имя поля    <br />
-                          <input name="queryField" type="text" size="50" onChange={this.updateState} defaultValue={this.state.queryField} /><br /> <br />
-                          <input type="submit" defaultValue="Искать!" className="submit" disabled={this.state.disabled} />
-                      </td>
-                  </tr></tbody>
-              </table>
-          </form>
-        );
-    }
+    let queryAll = React.useRef(null);
+    React.useEffect(() => {
+        queryAll.current.focus()
+    }, []);
+ 
+    return (
+      <form action="/?s=search" method="post" name="formSearch">
+          <table className="tableExport">
+              <tbody><tr>
+                  <td valign="top">
+                      <select name="table[]" multiple className="sel" defaultValue={props.tables}>
+                          {Object.values(props.tables).map((table) =>
+                            <option key={table.toString()}>{table}</option>
+                          )}
+                      </select>   <br />
+                      <a href="#" onClick={msMultiSelect} className="hs select">все</a> &nbsp;
+                      <a href="#" onClick={msMultiSelect} className="hs unselect">очистить</a> &nbsp;
+                      <a href="#" onClick={msMultiSelect} className="hs invert">инверт</a>
+                  </td>
+                  <td valign="top">
+                      искать по всем полям    <br />
+                      <input name="query" ref={queryAll} type="text" size="50" onChange={updateState} defaultValue={query} /><br />
+                      искать имя поля    <br />
+                      <input name="queryField" type="text" size="50" onChange={updateState} defaultValue={queryField} /><br /> <br />
+                      <input type="submit" defaultValue="Искать!" className="submit" disabled={disabled} />
+                  </td>
+              </tr></tbody>
+          </table>
+      </form>
+    ); 
 }

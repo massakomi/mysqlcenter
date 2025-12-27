@@ -1,38 +1,74 @@
-class Sql extends React.Component {
+function Sql (props) {
 
-    constructor(props) {
-        super(props);
-        this.state = {value: 'wait'};
-    }
+    const opts = Object.values(props.charsets).map((charset) =>
+      <option key={charset.toString()}>
+          {charset}
+      </option>
+    );
 
-    render() {
-
-        const opts = Object.values(this.props.charsets).map((charset) =>
-          <option key={charset.toString()}>
-              {charset}
-          </option>
-        );
-
-        return (
-          <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm" className="tableFormEdit">
-              <textarea name="sql" rows="20" id="sqlContent" wrap="off">{this.props.sql}</textarea>
-              <input type="submit" value="Отправить запрос!" className="submit" />
+    return (
+      <React.Fragment>
+          <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm"
+                className="tableFormEdit">
+              <textarea name="sql" rows="20" id="sqlContent" wrap="off">{props.sql}</textarea>
+              <input type="submit" value="Отправить запрос!" className="submit"/>
               <fieldset className="msGeneralForm">
                   <legend>Запрос из файл</legend>
-                  <input type="hidden" name="MAX_FILE_SIZE" value={this.props.maxUploadSize} />
-                  <input type="file" name="sqlFile" /> <br />
+                  <input type="hidden" name="MAX_FILE_SIZE" value={props.maxUploadSize}/>
+                  <input type="file" name="sqlFile"/> <br/>
                   Сжатие:
-                  <input name="compress" type="radio" value="auto" defaultChecked="checked" />  Автодетект
-                  <input name="compress" type="radio" value="" />     Нет
-                  <input name="compress" type="radio" value="gzip" />     gzip
-                  <input name="compress" type="radio" value="zip" />     zip
-                  <input name="compress" type="radio" value="excel" />  excel
-                  <input name="compress" type="radio" value="csv" />  csv
-                  <br />
-                  Кодировка файла: <select name="sqlFileCharset" defaultValue="utf8">{opts}</select><br />
-                  (Максимальный размер: {this.props.maxSize} Mb)
+                  <input name="compress" type="radio" value="auto" defaultChecked="checked"/> Автодетект
+                  <input name="compress" type="radio" value=""/> Нет
+                  <input name="compress" type="radio" value="gzip"/> gzip
+                  <input name="compress" type="radio" value="zip"/> zip
+                  <input name="compress" type="radio" value="excel"/> excel
+                  <input name="compress" type="radio" value="csv"/> csv
+                  <br/>
+                  Кодировка файла: <select name="sqlFileCharset" defaultValue="utf8">{opts}</select><br/>
+                  (Максимальный размер: {props.maxSize} Mb)
               </fieldset>
           </form>
-        );
+          <TestState />
+          <TestEffect />
+      </React.Fragment>
+    );
+}
+
+function TestState() {
+    const [index, setIndex] = React.useState(0);
+
+    function handleClick() {
+        setIndex(index + 1);
     }
+
+    return (
+      <div>
+          <button onClick={handleClick}>
+              Next {index}
+          </button>
+      </div>
+    )
+}
+
+function TestEffect() {
+
+    React.useEffect(() => {
+        console.log('useEffect')
+    }, []);
+
+    console.log('render')
+
+    const [index, setIndex] = React.useState(0);
+
+    function handleClick() {
+        setIndex(index + 1);
+    }
+
+    return (
+      <div>
+          <button onClick={handleClick}>
+              Effect test {index}
+          </button>
+      </div>
+    )
 }

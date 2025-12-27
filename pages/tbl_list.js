@@ -1,89 +1,73 @@
+function Selector(props) {
 
+    let options = []
 
-class Selector extends React.Component {
-
-    render() {
-        let options = []
-
-        if (this.props.data) {
-            options = this.props.data.map((value, i) =>
-              <option key={i} value={i}>{value}</option>
-            );
-        } else {
-            for (let i = this.props.from; i <= this.props.to; i ++) {
-                options.push(
-                  <option key={i}>{i}</option>
-                )
-            }
+    if (props.data) {
+        options = props.data.map((value, i) =>
+          <option key={i} value={i}>{value}</option>
+        );
+    } else {
+        for (let i = props.from; i <= props.to; i ++) {
+            options.push(
+              <option key={i}>{i}</option>
+            )
         }
-
-        return (
-          <select name={this.props.name} defaultValue={this.props.value}>
-              {options}
-          </select>
-        );
     }
+
+    return (
+      <select name={props.name} defaultValue={props.value}>
+          {options}
+      </select>
+    );
 }
 
-class DateSelector extends React.Component {
+function DateSelector(props) {
 
-    constructor(props) {
-        super();
-        let date = new Date()
-        this.state = {day: date.getDate(), month: date.getMonth(), year: date.getFullYear()}
-    }
+    Date.prototype.daysInMonth = function() {
+        return 32 - new Date(this.getFullYear(), this.getMonth(), 32).getDate();
+    };
 
-    render() {
+    let date = new Date()
+    let months = ['января', 'февраля', 'марта', 'апреля', 'май', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
-        Date.prototype.daysInMonth = function() {
-            return 32 - new Date(this.getFullYear(), this.getMonth(), 32).getDate();
-        };
-
-        let date = new Date(this.state.year, this.state.month, this.state.day)
-
-        let months = ['января', 'февраля', 'марта', 'апреля', 'май', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
-
-        return (
-          <React.Fragment>
-              <Selector name="ds_day" from="1" to={date.daysInMonth()} value={this.state.day} />
-              <Selector name="ds_month" data={months} value={this.state.month} />
-              <Selector name="ds_year" from="2000" to={date.getFullYear()} value={this.state.year} />
-              <Selector name="ds_hour" from="0" to="23" /> :
-              <Selector name="ds_minut" from="0" to="59" /> :
-              <Selector name="ds_second" from="0" to="59" />
-          </React.Fragment>
-        );
-    }
+    return (
+      <React.Fragment>
+          <Selector name="ds_day" from="1" to={date.daysInMonth()} value={date.getDate()} />
+          <Selector name="ds_month" data={months} value={date.getMonth()} />
+          <Selector name="ds_year" from="2000" to={date.getFullYear()} value={date.getFullYear()} />
+          <Selector name="ds_hour" from="0" to="23" /> :
+          <Selector name="ds_minut" from="0" to="59" /> :
+          <Selector name="ds_second" from="0" to="59" />
+      </React.Fragment>
+    );
 }
 
 
-class TableList extends React.Component {
+function TableList(props) {
+    
+    const image = src => <img src={props.dirImage + src} alt=""/>;
 
-    image(src) {
-        return <img src={this.props.dirImage + src} alt="" />
-    }
-
-    async tableDelete(table, e) {
+    const tableDelete = async (table, e) => {
         e.preventDefault()
         let tr = e.target.closest('tr')
-        let query = `db=${this.props.db}&table=${table}`;
+        let query = `db=${props.db}&table=${table}`;
         await msQuery('tableDelete', query, () => {
             tr.remove()
         })
-    }
+    };
 
-    renameTable(tableOld, e) {
+    const renameTable = (tableOld, e) => {
         let label = e.target
         let newName = prompt('Новое имя', tableOld)
         if (newName) {
-            let q = `db=${this.props.db}&s=tbl_list&table=${tableOld}&newName=${newName}`;
+            let q = `db=${props.db}&s=tbl_list&table=${tableOld}&newName=${newName}`;
             msQuery('tableRename', q, () => {
                 label.innerHTML = newName
             });
         }
-    }
+    };
 
-    printSize(size) {
+    const printSize = size => {
         // меньше 1мб не нужно выводить
         if (size < 1024*1024) {
             return ''
@@ -97,9 +81,9 @@ class TableList extends React.Component {
         }
         let formattedSize = formatSize(size)
         return <span title={size} style={{'color': color}}>{formattedSize}</span>
-    }
+    };
 
-    renderRow(table, key) {
+    const renderRow = (table, key) => {
         // Увеличение счётчика видимых таблиц
         let sumTable = key + 1
         // Форматирование даты
@@ -119,10 +103,10 @@ class TableList extends React.Component {
         }
         // Определение размера таблицы
         const size = parseInt(table.Data_length) + parseInt(table.Index_length);
-        this.sumSize += parseInt(size);
-        this.sumRows += parseInt(table.Rows);
+        sumSize += parseInt(size);
+        sumRows += parseInt(table.Rows);
         // Сборка значения рядов
-        const msquery = `db=${this.props.db}&table=${table.Name}`;
+        const msquery = `db=${props.db}&table=${table.Name}`;
         const idRow = "row" + sumTable;
         const idChbx = 'table_' + table.Name
         const engine = table.Engine === 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
@@ -130,170 +114,157 @@ class TableList extends React.Component {
         return (
           <tr key={table.Name} id={idRow}>
               <td><input name="table[]" type="checkbox" value={table.Name} id={idChbx} className="cb" /></td>
-              <td className="tbl"><label htmlFor={idChbx} onDoubleClick={this.renameTable.bind(this, table.Name)}>{valueName}</label></td>
-              <td><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{this.image("actions.gif")}</a></td>
-              <td><a href={`/?db=${this.props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{this.image("generate.png")}</a></td>
+              <td className="tbl"><label htmlFor={idChbx} onDoubleClick={renameTable.bind(this, table.Name)}>{valueName}</label></td>
+              <td><a href={`/?db=${props.db}&table=${table.Name}&s=tbl_data`} title="Обзор таблицы">{image("actions.gif")}</a></td>
+              <td><a href={`/?db=${props.db}&table=${table.Name}&s=tbl_struct`} title="Структура таблицы">{image("generate.png")}</a></td>
               <td>
-                  <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery)} title="Очистить таблицу">{this.image("delete.gif")}</a>
+                  <a href="#" onClick={msQuery.bind(this, 'tableTruncate', msquery)} title="Очистить таблицу">{image("delete.gif")}</a>
               </td>
               <td>
-                  <a href="#" onClick={this.tableDelete.bind(this, table.Name)} title="Удалить таблицу">{this.image("close.png")}</a>
+                  <a href="#" onClick={tableDelete.bind(this, table.Name)} title="Удалить таблицу">{image("close.png")}</a>
               </td>
               <td className="rig">{table.Rows}</td>
-              <td className="rig">{this.printSize(size)}</td>
+              <td className="rig">{printSize(size)}</td>
               <td>{updateTime}</td>
               <td className="num">{table.Auto_increment}</td>
               <td><span>{engine}</span></td>
               <td className="rig"><span title={table.Collation} style={{color: '#aaa'}}>{table.Collation.substr(0, table.Collation.indexOf("_"))}</span></td>
           </tr>
         )
-    }
+    };
+   
 
-    render() {
+    const tables = Object.values(props.tables)
+    let sumSize = 0;
+    let sumRows = 0;
+    const trs = tables.map((table, key) => renderRow(table, key))
 
-        const tables = Object.values(this.props.tables)
-        this.sumSize = 0;
-        this.sumRows = 0;
-        const trs = tables.map((table, key) => this.renderRow(table, key))
-
-        return (
-          <table className="contentTable interlaced">
-              <thead>
-              <tr>
-                  <th></th>
-                  <th>Таблица</th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th>Рядов</th>
-                  <th>Размер</th>
-                  <th>Дата обновления</th>
-                  <th>Ai</th>
-                  <th>Engine</th>
-                  <th>Cp</th>
-              </tr></thead>
-              <tbody>
-              {trs}
-              <tr>
-                  <td></td>
-                  <td className="tbl">{tables.length} таблиц</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td className="rig">{Number(this.sumRows).toFixed(0)}</td>
-                  <td className="rig">{this.printSize(this.sumSize)}</td>
-                  <td></td>
-                  <td className="num"></td>
-                  <td></td>
-                  <td className="rig"></td>
-              </tr></tbody>
-          </table>
-        );
-    }
+    return (
+      <table className="contentTable interlaced">
+          <thead>
+          <tr>
+              <th></th>
+              <th>Таблица</th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Рядов</th>
+              <th>Размер</th>
+              <th>Дата обновления</th>
+              <th>Ai</th>
+              <th>Engine</th>
+              <th>Cp</th>
+          </tr></thead>
+          <tbody>
+          {trs}
+          <tr>
+              <td></td>
+              <td className="tbl">{tables.length} таблиц</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td className="rig">{Number(sumRows).toFixed(0)}</td>
+              <td className="rig">{printSize(sumSize)}</td>
+              <td></td>
+              <td className="num"></td>
+              <td></td>
+              <td className="rig"></td>
+          </tr></tbody>
+      </table>
+    );
 }
 
 
 
-class Tbl_list extends React.Component {
+function Tbl_list(props) {
 
-    constructor(props) {
-        super(props);
-        this.state = {value: 'wait', tables: props.tables};
-    }
+    const [tables, setTables] = React.useState(props.tables);
 
-    msImageAction = (opt, url, e) => {
+    const msImageAction = (opt, url, e) => {
         if (opt === 'auto') {
             opt = this.target.options[this.target.selectedIndex].value
         }
         msImageAction('formTableList', opt, url)
     }
 
-    chbx_action = (opt, e) => {
+    const chbx_action = (opt, e) => {
         e.preventDefault()
         chbx_action('formTableList', opt, 'table[]')
     }
 
-    componentDidMount() {
-        //this.filterByDate()
-    }
+    const image = src => props.dirImage + src;
 
-    image(src) {
-        return this.props.dirImage + src;
-    }
-
-    reload = () => {
-        fetch(`?s=tbl_list&db=${this.props.db}&ajax=1`)
+    const reload = () => {
+        fetch(`?s=tbl_list&db=${props.db}&ajax=1`)
           .then(response => response.json())
-          .then(json => this.setState({tables: json.page.tables}))
+          .then(json => setTables(json.page.tables))
     }
 
-    filterByDate() {
+    const filterByDate = () => {
         let year = document.querySelector('[name="ds_year"]').value
         let month = document.querySelector('[name="ds_month"]').value
         let day = document.querySelector('[name="ds_day"]').value
         let date = new Date(year, month, day)
 
-        let tables = Object.values(this.props.tables).filter((table, key) => {
+        let tables = Object.values(props.tables).filter((table, key) => {
             let now = new Date(table.Update_time);
             return now > date;
         })
-        this.setState({tables})
+        setTables(tables)
+    };
+
+  
+    if (props.full) {
+        return <Table data={props.tables} />
     }
 
-    render() {
+    return (
+      <div>
+          <form action={"?db="+props.db} method="post" name="formTableList" id="formTableList">
 
-        if (this.props.full) {
-            return <Table data={this.props.tables} />
-        }
+              <input type="hidden" name="tableMulty" value="1" />
+              <input type="hidden" name="action" value="" />
 
-        return (
-          <div>
-              <form action={"?db="+this.props.db} method="post" name="formTableList" id="formTableList">
+              <TableList tables={tables} dirImage={props.dirImage} db={props.db} />
 
-                  <input type="hidden" name="tableMulty" value="1" />
-                  <input type="hidden" name="action" value="" />
-
-                  <TableList tables={this.state.tables} dirImage={this.props.dirImage} db={this.props.db} />
-
-                  <div className="chbxAction">
-                      <img src={this.image("arrow_ltr.png")} alt=""  />
-                      <a href="#" onClick={this.chbx_action.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
-                      <a href="#" onClick={this.chbx_action.bind(this, 'uncheck')}>очистить</a>
-                  </div>
-
-                  <div className="imageAction">
-                      <u>Выбранные</u>
-                      <img src={this.image("close.png")} alt="" onClick={this.msImageAction.bind(this, 'delete_all', '')} />
-                      <img src={this.image("delete.gif")} alt="" onClick={this.msImageAction.bind(this, 'truncate_all', '')} />
-                      <img src={this.image("copy.gif")} alt="" onClick={this.msImageAction.bind(this, 'copy_all', '')} />
-                      <img src={this.image("b_tblexport.png")} alt="" onClick={this.msImageAction.bind(this, 'export_all', `?db=${this.props.db}&s=export`)} />
-
-                      <select name="act" onChange={this.msImageAction.bind(this, 'auto', '')} >
-                          <option></option>
-                          <option value="check">проверить</option>
-                          <option value="analyze">анализ</option>
-                          <option value="optimize">оптимизировать</option>
-                          <option value="repair">починить</option>
-                          <option value="flush">сбросить кэш</option>
-                      </select>
-
-                      <input type="hidden" name="copy_struct" value="1" />
-                      <input type="hidden" name="copy_data" value="1" />
-                  </div>
-              </form>
-              <div className="links-block">
-                  <a href="?s=tbl_list&action=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
-                  <a href="?s=tbl_list&action=structure">Исследование структуры таблиц</a>
+              <div className="chbxAction">
+                  <img src={image("arrow_ltr.png")} alt=""  />
+                  <a href="#" onClick={chbx_action.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
+                  <a href="#" onClick={chbx_action.bind(this, 'uncheck')}>очистить</a>
               </div>
-              {this.props.showtableupdated > 0 &&
-                <form className="showtableupdated">
-                    Показать таблицы обновлённые с <DateSelector />
-                    <input type="button" value="Показать!" onClick={this.filterByDate.bind(this)} />
-                </form>
-              }
+
+              <div className="imageAction">
+                  <u>Выбранные</u>
+                  <img src={image("close.png")} alt="" onClick={msImageAction.bind(this, 'delete_all', '')} />
+                  <img src={image("delete.gif")} alt="" onClick={msImageAction.bind(this, 'truncate_all', '')} />
+                  <img src={image("copy.gif")} alt="" onClick={msImageAction.bind(this, 'copy_all', '')} />
+                  <img src={image("b_tblexport.png")} alt="" onClick={msImageAction.bind(this, 'export_all', `?db=${props.db}&s=export`)} />
+
+                  <select name="act" onChange={msImageAction.bind(this, 'auto', '')} >
+                      <option></option>
+                      <option value="check">проверить</option>
+                      <option value="analyze">анализ</option>
+                      <option value="optimize">оптимизировать</option>
+                      <option value="repair">починить</option>
+                      <option value="flush">сбросить кэш</option>
+                  </select>
+
+                  <input type="hidden" name="copy_struct" value="1" />
+                  <input type="hidden" name="copy_data" value="1" />
+              </div>
+          </form>
+          <div className="links-block">
+              <a href="?s=tbl_list&action=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
+              <a href="?s=tbl_list&action=structure">Исследование структуры таблиц</a>
           </div>
-        );
-    }
+          {props.showtableupdated > 0 &&
+            <form className="showtableupdated">
+                Показать таблицы обновлённые с <DateSelector />
+                <input type="button" value="Показать!" onClick={filterByDate.bind(this)} />
+            </form>
+          }
+      </div>
+    );
 }

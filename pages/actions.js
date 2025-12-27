@@ -1,23 +1,19 @@
-class Actions extends React.Component {
+function Actions(props) {
+    
+    const [comment, setComment] = React.useState(props.comment);
+    const [renameName, setRenameName] = React.useState(props.table);
+    const [messages, setMessages] = React.useState([]);
+ 
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            comment: props.comment,
-            renamename: props.table,
-            messages: []
-        };
+    let onChangeComment = (e) => {
+        setComment(e.target.value)
     }
 
-    onChangeComment = (e) => {
-        this.setState({'comment': e.target.value})
+    let onChangeRenameName = (e) => {
+        setRenameName(e.target.value)
     }
 
-    onChangeRenameName = (e) => {
-        this.setState({'renamename': e.target.value})
-    }
-
-    tableAction = (action, e) => {
+    let tableAction = (action, e) => {
         let opts = {}, btn = null
         const form = e.target.closest('FORM')
         if (form !== null) {
@@ -30,104 +26,102 @@ class Actions extends React.Component {
         }
         e.preventDefault()
         loader()
-        fetch(this.props.url+'&ajax=1&action='+action, opts)
-          .then(response => response.json())
-          .then(json => {
-              btn.disabled = false
-              loader()
-              if (action === 'tableRename') {
-                  window.location = '?s=tbl_data&table=' + form.querySelector('[name="newName"]').value
-              } else {
-                  this.setState({messages: json.messages})
-              }
-          });
+        fetch(props.url + '&ajax=1&action=' + action, opts)
+            .then(response => response.json())
+            .then(json => {
+                btn.disabled = false
+                loader()
+                if (action === 'tableRename') {
+                    window.location = '?s=tbl_data&table=' + form.querySelector('[name="newName"]').value
+                } else {
+                    setMessages(json.messages)
+                }
+            })
     }
 
-    render() {
 
-        return (
-          <React.Fragment>
-              <Messages messages={this.state.messages} />
-              <table width="100%"  border="0" cellSpacing="0" cellPadding="3">
-                  <tbody><tr>
-                      <td>
-                          <fieldset className="msGeneralForm">
-                              <legend>Переименовать таблицу в:</legend>
-                              <form>
-                                  <input name="newName" type="text" onChange={this.onChangeRenameName} required value={this.state.renamename} />
-                                  <input type="button" value="Выполнить!" onClick={this.tableAction.bind(this, "tableRename")} disabled={!this.state.renamename} className="submit" />
-                              </form>
-                          </fieldset>
+    return (
+      <React.Fragment>
+          <Messages messages={messages} />
+          <table width="100%"  border="0" cellSpacing="0" cellPadding="3">
+              <tbody><tr>
+                  <td>
+                      <fieldset className="msGeneralForm">
+                          <legend>Переименовать таблицу в:</legend>
+                          <form>
+                              <input name="newName" type="text" onChange={onChangeRenameName} required value={renameName} />
+                              <input type="button" value="Выполнить!" onClick={tableAction.bind(this, "tableRename")} disabled={!renameName} className="submit" />
+                          </form>
+                      </fieldset>
 
-                          <fieldset className="msGeneralForm">
-                              <legend>Переместить таблицы в (база данных.таблица):</legend>
-                              <form>
-                                  <HtmlSelector data={this.props.dbs} name="newDB" auto="false" value={this.props.db} />
-                                  .
-                                  <input name="newName" required type="text" defaultValue={this.props.table} />
-                                  <input type="submit" onClick={this.tableAction.bind(this, "tableMove")} value="Выполнить!" className="submit" />
-                              </form>
-                          </fieldset>
+                      <fieldset className="msGeneralForm">
+                          <legend>Переместить таблицы в (база данных.таблица):</legend>
+                          <form>
+                              <HtmlSelector data={props.dbs} name="newDB" auto="false" value={props.db} />
+                              .
+                              <input name="newName" required type="text" defaultValue={props.table} />
+                              <input type="submit" onClick={tableAction.bind(this, "tableMove")} value="Выполнить!" className="submit" />
+                          </form>
+                      </fieldset>
 
-                          <fieldset className="msGeneralForm">
-                              <legend>Скопировать таблицу в (база данных.таблица):</legend>
-                              <form>
-                                  <HtmlSelector data={this.props.dbs} value={this.props.db} name="newDB" />
-                                  .
-                                  <input name="newName" type="text" required defaultValue={this.props.table} />
-                                  <div className="mt-10">
-                                      <input type="submit" onClick={this.tableAction.bind(this, "tableCopyTo")} value="Выполнить!" />
-                                      <input type="checkbox" name="tableCopyNoData" value="1" /> только структуру
-                                  </div>
-                              </form>
-                          </fieldset>
+                      <fieldset className="msGeneralForm">
+                          <legend>Скопировать таблицу в (база данных.таблица):</legend>
+                          <form>
+                              <HtmlSelector data={props.dbs} value={props.db} name="newDB" />
+                              .
+                              <input name="newName" type="text" required defaultValue={props.table} />
+                              <div className="mt-10">
+                                  <input type="submit" onClick={tableAction.bind(this, "tableCopyTo")} value="Выполнить!" />
+                                  <input type="checkbox" name="tableCopyNoData" value="1" /> только структуру
+                              </div>
+                          </form>
+                      </fieldset>
 
-                          <fieldset className="msGeneralForm">
-                              <legend>Изменить кодировку таблицы</legend>
-                              <form>
-                                  <CharsetSelector charsets={this.props.charsets} value={this.props.charset} />
-                                  <input type="button" onClick={this.tableAction.bind(this, "tableCharset")} value="Выполнить!" className="ml-10" />
-                              </form>
-                          </fieldset>
+                      <fieldset className="msGeneralForm">
+                          <legend>Изменить кодировку таблицы</legend>
+                          <form>
+                              <CharsetSelector charsets={props.charsets} value={props.charset} />
+                              <input type="button" onClick={tableAction.bind(this, "tableCharset")} value="Выполнить!" className="ml-10" />
+                          </form>
+                      </fieldset>
 
-                          <fieldset className="msGeneralForm">
-                              <legend>Комментарий к таблице</legend>
-                              <form>
-                                  <input name="comment" type="text" size="60" onChange={this.onChangeComment} defaultValue={this.state.comment} />
-                                  <input type="submit" onClick={this.tableAction.bind(this, "tableComment")} value="Выполнить!" disabled={!this.state.comment} className="submit" />
-                              </form>
-                          </fieldset>
-                          <fieldset className="msGeneralForm">
-                              <legend>Изменить порядок</legend>
-                              <form>
-                                  <HtmlSelector data={this.props.fields} name="field" />
-                                  <select name="order" className="ml-10"><option value="">По возрастанию</option><option value="DESC">По убыванию</option></select>
-                                  <input type="submit" onClick={this.tableAction.bind(this, "tableOrder")} value="Выполнить!" className="ml-10" />
-                              </form>
-                          </fieldset>
-                          <fieldset className="msGeneralForm">
-                              <legend>Опции таблицы</legend>
-                              <form>
-                                  <input type="checkbox" name="checksum" defaultValue={this.props.checksum} /> checksum &nbsp; &nbsp;
-                                  <input type="checkbox" name="pack_keys" value="1" /> pack_keys
-                                  <input type="checkbox" name="delay_key_write" value="1" /> delay_key_write &nbsp;
-                                  <input name="auto_increment" type="text" size="3" defaultValue={this.props.ai} /> auto_increment
-                                  <input type="submit" onClick={this.tableAction.bind(this, "tableOptions")} value="Выполнить!" className="submit" />
-                              </form>
-                          </fieldset>
-                      </td>
-                      <td valign="top">
-                          <div className="globalMenu">
-                              <a onClick={this.tableAction.bind(this, "tableCheck")} href="#">Проверить таблицу</a> <br />
-                              <a onClick={this.tableAction.bind(this, "tableAnalize")} href="#">Анализ таблицы</a> <br />
-                              <a onClick={this.tableAction.bind(this, "tableRepair")} href="#">Починить таблицу</a> <br />
-                              <a onClick={this.tableAction.bind(this, "tableOptimize")} href="#">Оптимизировать таблицу</a>  <br />
-                              <a onClick={this.tableAction.bind(this, "tableFlush")} href="#">Сбросить кэш таблицы ("FLUSH")</a> <br />
-                          </div>
-                      </td>
-                  </tr></tbody>
-              </table>
-          </React.Fragment>
-        );
-    }
+                      <fieldset className="msGeneralForm">
+                          <legend>Комментарий к таблице</legend>
+                          <form>
+                              <input name="comment" type="text" size="60" onChange={onChangeComment} defaultValue={comment} />
+                              <input type="submit" onClick={tableAction.bind(this, "tableComment")} value="Выполнить!" disabled={!comment} className="submit" />
+                          </form>
+                      </fieldset>
+                      <fieldset className="msGeneralForm">
+                          <legend>Изменить порядок</legend>
+                          <form>
+                              <HtmlSelector data={props.fields} name="field" />
+                              <select name="order" className="ml-10"><option value="">По возрастанию</option><option value="DESC">По убыванию</option></select>
+                              <input type="submit" onClick={tableAction.bind(this, "tableOrder")} value="Выполнить!" className="ml-10" />
+                          </form>
+                      </fieldset>
+                      <fieldset className="msGeneralForm">
+                          <legend>Опции таблицы</legend>
+                          <form>
+                              <input type="checkbox" name="checksum" defaultValue={props.checksum} /> checksum &nbsp; &nbsp;
+                              <input type="checkbox" name="pack_keys" value="1" /> pack_keys
+                              <input type="checkbox" name="delay_key_write" value="1" /> delay_key_write &nbsp;
+                              <input name="auto_increment" type="text" size="3" defaultValue={props.ai} /> auto_increment
+                              <input type="submit" onClick={tableAction.bind(this, "tableOptions")} value="Выполнить!" className="submit" />
+                          </form>
+                      </fieldset>
+                  </td>
+                  <td valign="top">
+                      <div className="globalMenu">
+                          <a onClick={tableAction.bind(this, "tableCheck")} href="#">Проверить таблицу</a> <br />
+                          <a onClick={tableAction.bind(this, "tableAnalize")} href="#">Анализ таблицы</a> <br />
+                          <a onClick={tableAction.bind(this, "tableRepair")} href="#">Починить таблицу</a> <br />
+                          <a onClick={tableAction.bind(this, "tableOptimize")} href="#">Оптимизировать таблицу</a>  <br />
+                          <a onClick={tableAction.bind(this, "tableFlush")} href="#">Сбросить кэш таблицы ("FLUSH")</a> <br />
+                      </div>
+                  </td>
+              </tr></tbody>
+          </table>
+      </React.Fragment>
+    );
 }

@@ -1,19 +1,16 @@
-class Db_compare extends React.Component {
+function Db_compare(props) {
 
-    constructor(props) {
-        super(props);
-        this.state = {data: false}
-    }
+    const [data, setData] = React.useState(false);
 
-    header(params) {
+    const header = (params) => {
         let cellsWithTitles = []
-        let dbc = this.props.databases.length;
+        let dbc = props.databases.length;
         for (let param of params) {
             cellsWithTitles.push(<td key={param} colSpan={dbc}>{param}</td>)
         }
         let cellsWithDatabases = []
         for (let param of params) {
-            for (let v of this.props.databases) {
+            for (let v of props.databases) {
                 cellsWithDatabases.push(<td key={param + v}>{v}</td>)
             }
         }
@@ -26,7 +23,7 @@ class Db_compare extends React.Component {
         </React.Fragment>
     }
 
-    getTablesArray(dbArray) {
+    const getTablesArray = (dbArray) => {
         let tablesArray = {}
         for (const db in dbArray) {
             for (const table in dbArray[db]) {
@@ -38,10 +35,10 @@ class Db_compare extends React.Component {
         return tablesArray
     }
 
-    body(params) {
-        let dbArray = this.props.dbArray;
-        let exportArray = this.props.exportArray;
-        const tablesArray = this.getTablesArray(dbArray)
+    const body = (params) => {
+        let dbArray = props.dbArray;
+        let exportArray = props.exportArray;
+        const tablesArray = getTablesArray(dbArray)
         const exportDifference = {}
         let rows = []
         for (let tableNum = 0; tableNum < tablesArray.length; tableNum++) {
@@ -111,13 +108,13 @@ class Db_compare extends React.Component {
                 }
             }
 
-            rows.push(this.buildRow(row, rowClass, rows.length))
+            rows.push(buildRow(row, rowClass, rows.length))
         }
 
         return {rows, exportDifference}
     }
 
-    printDifference(exportDifference) {
+    const printDifference = (exportDifference) => {
         let values = []
         for (const db in exportDifference) {
             for (const table in exportDifference[db]) {
@@ -128,7 +125,7 @@ class Db_compare extends React.Component {
         return <ul>{values}</ul>
     }
 
-    buildRow(values, rowClass, rowIndex) {
+    const buildRow = (values, rowClass, rowIndex) => {
         let cells = []
         values.forEach(function (value, key) {
             let style = {}
@@ -141,25 +138,24 @@ class Db_compare extends React.Component {
         return <tr key={`row-${rowIndex}`} className={rowClass}>{cells}</tr>
     }
 
-    render() {
-        let params = ['Есть?', 'Рядов', 'Размер', 'Стр-ра']
-        const customHeader = this.header(params)
-        const {rows, exportDifference} = this.body(params)
-        return (
-          <form method="post" action="/?s=tbl_compare">
-              <input type="hidden" name="tableComparsion" value="1"/>
-              <input type="hidden" name="databases" value={this.props.databases.join(',')}/>
-              <input type="submit" value="Сравнить выбранные" className="submit"/>
-              <table className="contentTable anone">
-                  <thead>
-                  {customHeader}
-                  </thead>
-                  <tbody>
-                  {rows}
-                  </tbody>
-              </table>
-              {this.printDifference(exportDifference)}
-          </form>
-        );
-    }
+    let params = ['Есть?', 'Рядов', 'Размер', 'Стр-ра']
+    const customHeader = header(params)
+    const {rows, exportDifference} = body(params)
+    return (
+      <form method="post" action="/?s=tbl_compare">
+          <input type="hidden" name="tableComparsion" value="1"/>
+          <input type="hidden" name="databases" value={props.databases.join(',')}/>
+          <input type="submit" value="Сравнить выбранные" className="submit"/>
+          <table className="contentTable anone">
+              <thead>
+              {customHeader}
+              </thead>
+              <tbody>
+              {rows}
+              </tbody>
+          </table>
+          {printDifference(exportDifference)}
+      </form>
+    );
+    
 }
