@@ -84,7 +84,7 @@ class MSCenter extends DatabaseQuery
      */
     private function initCurrentDatabase()
     {
-        if (!$this->connected()) {
+        if (!$this->connectConfigExists()) {
             return '';
         }
         $db = GET('db') ?: POST('db');
@@ -113,6 +113,14 @@ class MSCenter extends DatabaseQuery
      */
     public function connected(): bool
     {
+        return $this->host !== '';
+    }
+
+    /**
+     * @return bool
+     */
+    public function connectConfigExists(): bool
+    {
         return file_exists(MS_CONNECT_CONFIG_FILE);
     }
 
@@ -139,7 +147,9 @@ class MSCenter extends DatabaseQuery
             $this->user  = $user;
         } catch (PDOException $e) {
             $this->clearCurrentDatabase();
-            exitError('Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />' . $e->getMessage());
+            $msg = 'Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />';
+            $this->addMessage($msg . $e->getMessage(), '', $this->error, MS_MSG_FAULT);
+            $this->page = 'login';
         }
     }
 
@@ -149,9 +159,8 @@ class MSCenter extends DatabaseQuery
      */
     private function initCurrentPage()
     {
-        if (!$this->connected()) {
-            $this->page = 'login';
-            return;
+        if (!$this->connectConfigExists()) {
+            return $this->page = 'login';
         }
         $defaultPage = 'tbl_list';
         if (conf('tblliststart') == '0' || !$this->db) {
@@ -367,6 +376,9 @@ showhide("' . $messageId . '");
     public function addPopularTable($table)
     {
         $tables = $this->getPopularTables();
+        if (!array_key_exists($this->db, $tables)) {
+            $tables[$this->db] = [];
+        }
         if (array_key_exists($table, $tables[$this->db])) {
             $tables[$this->db] [$table]['count']++;
         } else {

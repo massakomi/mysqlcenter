@@ -5,7 +5,7 @@
  */
 class DatabaseQuery
 {
-    public int $affectedRows;
+    public int $affectedRows = 0;
     public string $lastSql = '';
     public string $error = '';
 
@@ -46,6 +46,9 @@ class DatabaseQuery
     private function queryPdo($mode, string $sql)
     {
         global $pdo;
+        if (!$pdo) {
+            throw new Exception($sql);
+        }
         try {
             $this->lastSql = $sql;
             $this->affectedRows = 0;

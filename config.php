@@ -61,11 +61,9 @@ define('MS_FIELDS_COUNT', conf('fieldsmax'));
 define('MS_NULL_DESIGN', conf('nulldesign'));
 define('MAX_UPLOAD_SIZE', Utils::getMaxUploadSize());
 
-if (!$msc->connected()) {
-    return;
+if ($msc->connectConfigExists()) {
+    $msc->connect();
 }
-
-$msc->connect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
 ;if (!$msc->selectDb($msc->db)) {
