@@ -2,7 +2,11 @@ class Actions extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {comment: props.comment, renamename: props.table, messages: []};
+        this.state = {
+            comment: props.comment,
+            renamename: props.table,
+            messages: []
+        };
     }
 
     onChangeComment = (e) => {

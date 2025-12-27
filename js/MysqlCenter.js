@@ -1,4 +1,3 @@
-
 /**
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
  *
@@ -8,15 +7,15 @@
  * @return boolean false
  */
 async function msQuery(mode, query = '', callback = '') {
-    if (mode.match(/delete/i) && confirm('Подтвердите...') === false || arguments.length === 0) {
-        return false;
+    if ((mode.match(/delete/i) && confirm('Подтвердите...') === false) || arguments.length === 0) {
+        return false
     }
 
     loader()
     let response = await fetch('', getFetchOptions(mode, query))
     loader()
 
-    return await queryResponse(response, callback);
+    return await queryResponse(response, callback)
 }
 
 /**
@@ -26,58 +25,58 @@ async function msQuery(mode, query = '', callback = '') {
  * @returns {Promise<{error: boolean, message: string}|*>}
  */
 async function queryResponse(response, callback, type = 'json') {
-    let ajaxdebug = (typeof (debug) != 'undefined' && debug);
+    let ajaxdebug = typeof debug != 'undefined' && debug
     if (response.ok) {
-        let content;
+        let content
         if (type === 'text') {
-            content = await response.text();
+            content = await response.text()
             if (content.indexOf('Parse error') !== -1) {
                 console.error(content)
             } else {
                 try {
-                    eval(content);
+                    eval(content)
                 } catch (e) {
                     if (ajaxdebug) {
-                        console.error('JS код не выполнен: ' + content);
+                        console.error('JS код не выполнен: ' + content)
                     }
                 }
             }
         } else {
             try {
-                content = await response.json();
+                content = await response.json()
                 showMessages(content)
             } catch (e) {
-                let message = 'Ошибка ' + e.name + ":" + e.message + "\n" + e.stack;
-                showError(message);
-                return {error: true, message};
+                let message = 'Ошибка ' + e.name + ':' + e.message + '\n' + e.stack
+                showError(message)
+                return { error: true, message }
             }
         }
-        if (callback && typeof (callback) == 'function') {
+        if (callback && typeof callback == 'function') {
             callback(content)
         }
-        return content;
+        return content
     } else {
         console.error(response.status + ' ' + response.statusText)
-        let error;
+        let error
         try {
-            error = await response.json();
-            showError(`${error.message} <span class="text-black-50">${error.file}</span>`);
+            error = await response.json()
+            showError(`${error.message} <span class="text-black-50">${error.file}</span>`)
         } catch (e) {
-            let message = `${response.status} ${response.statusText}`;
-            showError(message);
-            error = {error: true, message}
+            let message = `${response.status} ${response.statusText}`
+            showError(message)
+            error = { error: true, message }
         }
         // вопрос - что тут возвращать, false, response или error???
         // В есть 2 момента. 1. На каких то страницах лучше не открывать Модал если пришла ошибка. Как это определить. Удобно либо false либо response.ok
         // 2. В Admin когда приходит false я не могу вывести ошибку в модалке, не знаю ее, но и закрывать модалку не хочу, не нужно
         // В теории возвращать response. если очень нужно прочитать ошибку - можно еще раз сделать json  ХЗ пока
-        return error;
+        return error
     }
 }
 
 function showMessages(json) {
     if (!json.messages) {
-        return;
+        return
     }
 
     let div = document.getElementById('msAjaxQueryDiv')
@@ -87,7 +86,7 @@ function showMessages(json) {
         div.querySelector('table:last-child').remove()
     }
 
-    let messages = [];
+    let messages = []
     for (let message of json.messages) {
         let textError = message.text
         if (message.sql !== '' && message.sql !== null) {
@@ -102,18 +101,21 @@ function showMessages(json) {
     messages = messages.join('<br />')
 
     let messageId = 'msg-' + Math.random()
-    div.insertAdjacentHTML('afterbegin', `
+    div.insertAdjacentHTML(
+        'afterbegin',
+        `
         <table class="globalMessage">
         <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide('${messageId}')">close</a></th></tr>
         <tr id="${messageId}"><td>${messages}</td></tr>
-        </table>`);
+        </table>`,
+    )
 
-    if (typeof (msAjaxQueryDivTm) != 'undefined') {
-        clearTimeout(msAjaxQueryDivTm);
+    if (typeof msAjaxQueryDivTm != 'undefined') {
+        clearTimeout(msAjaxQueryDivTm)
     }
     msAjaxQueryDivTm = setTimeout(function () {
         div.classList.remove('visible')
-    }, 5000);
+    }, 5000)
 }
 
 /**
@@ -124,12 +126,12 @@ function showMessages(json) {
  */
 function getFetchOptions(mode, query) {
     let body = null
-    if (typeof (query) === 'string') {
+    if (typeof query === 'string') {
         query = query.replace(/^\?/, '')
         body = new URLSearchParams(query)
     } else if (query instanceof Element) {
         body = new FormData(query)
-    } else if (typeof (query) === 'object') {
+    } else if (typeof query === 'object') {
         body = new URLSearchParams(query)
     } else {
         alert('Unknown fetch options!')
@@ -139,12 +141,12 @@ function getFetchOptions(mode, query) {
     return {
         method: 'POST',
         body: body,
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
     }
 }
 
 function showError(message) {
-    const el = document.querySelector('#errorMessage');
+    const el = document.querySelector('#errorMessage')
     if (el !== null) {
         el.lastTime = (Date.now() / 1000).toFixed(0)
         el.classList.remove('d-none')
@@ -160,23 +162,22 @@ function umaker(query = {}, doSwitch = false) {
     for (let key in query) {
         if (query[key] === false) {
             u.searchParams.delete(key)
-            continue;
+            continue
         }
         if (doSwitch) {
             if (new URL(location.href).searchParams.get(key) === query[key]) {
                 if (doSwitch === true) {
                     u.searchParams.delete(key)
-                    continue;
-                } else if (typeof doSwitch == "object" && doSwitch[key]) {
+                    continue
+                } else if (typeof doSwitch == 'object' && doSwitch[key]) {
                     query[key] = doSwitch[key]
                 }
             }
         }
         u.searchParams.set(key, query[key])
     }
-    return u.href;
+    return u.href
 }
-
 
 /**
  * Присваивает полю 'image_action' значение param и отправляет форму (для image кнопок)
@@ -185,16 +186,16 @@ function umaker(query = {}, doSwitch = false) {
 function msImageAction(formName, param, actionReplace) {
     if (param.match(/delete/i) || param.match(/truncate/i)) {
         if (!confirm('Подтвердите...')) {
-            return false;
+            return false
         }
     }
-    let f = document.getElementsByName(formName);
-    let forma = f[0];
-    forma['action'].value = param;
+    let f = document.getElementsByName(formName)
+    let forma = f[0]
+    forma['action'].value = param
     if (!is_null(actionReplace)) {
-        forma.setAttribute('action', actionReplace);
+        forma.setAttribute('action', actionReplace)
     }
-    forma.submit();
+    forma.submit()
 }
 
 /**
@@ -216,56 +217,56 @@ function msDisplaySql() {
  * @return object Вставленная строка
  */
 function addRow(tableId, from = 'last', after = true) {
-    var table = document.getElementById(tableId);
+    var table = document.getElementById(tableId)
     // сколько всего рядов
-    var i = table.rows.length;
+    var i = table.rows.length
     // берём последний/первый ряд
-    var tr = table.rows[from == 'last' ? i - 1 : (from > i ? i - 1 : from)];
+    var tr = table.rows[from == 'last' ? i - 1 : from > i ? i - 1 : from]
     // назначаем ему ид
-    tr.id = 'trAfterId' + i;
+    tr.id = 'trAfterId' + i
     // вставляем после/до него еще 1 строку
     if (!after) {
-        insertBefore('trAfterId' + i, 'TR', 'trNewId' + i);
+        insertBefore('trAfterId' + i, 'TR', 'trNewId' + i)
     } else {
-        insertAfter('trAfterId' + i, 'TR', 'trNewId' + i);
+        insertAfter('trAfterId' + i, 'TR', 'trNewId' + i)
     }
     // вот она!
-    var tr2 = document.getElementById('trNewId' + i);
+    var tr2 = document.getElementById('trNewId' + i)
     // копируем ячейки из одной строки в другую
     for (var j = 0; j < tr.cells.length; j++) {
         td = document.createElement('TD')
         tr2.appendChild(td)
         td.innerHTML = tr.cells[j].innerHTML
     }
-    return tr2;
+    return tr2
 }
 
 /**
  * Вставляет элемент после другого элемента
  */
 function insertAfter(sAfterId, sTag, sId) {
-    let objSibling = document.getElementById(sAfterId);
-    objElement = document.createElement(sTag);
-    objElement.setAttribute('id', sId);
-    objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling);
+    let objSibling = document.getElementById(sAfterId)
+    objElement = document.createElement(sTag)
+    objElement.setAttribute('id', sId)
+    objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling)
 }
 
 function insertBefore(sAfterId, sTag, sId) {
-    let objSibling = document.getElementById(sAfterId);
-    objElement = document.createElement(sTag);
-    objElement.setAttribute('id', sId);
-    objSibling.parentNode.insertBefore(objElement, objSibling);
+    let objSibling = document.getElementById(sAfterId)
+    objElement = document.createElement(sTag)
+    objElement.setAttribute('id', sId)
+    objSibling.parentNode.insertBefore(objElement, objSibling)
 }
 
 /**
  * Удаляет ряд таблицы с конца
  */
 function removeRow(tableId) {
-    let r = document.getElementById(tableId).rows;
+    let r = document.getElementById(tableId).rows
     if (r.length === 1) {
-        return false;
+        return false
     }
-    remove(r[r.length - 1]);
+    remove(r[r.length - 1])
 }
 
 /**
@@ -273,7 +274,7 @@ function removeRow(tableId) {
  */
 function remove(objElement) {
     if (objElement && objElement.parentNode && objElement.parentNode.removeChild) {
-        objElement.parentNode.removeChild(objElement);
+        objElement.parentNode.removeChild(objElement)
     }
 }
 
@@ -285,21 +286,21 @@ function remove(objElement) {
  * @return  boolean  сабмитит форму
  */
 function checkEmpty(forma, fieldName) {
-    var val = forma[fieldName].value;
+    var val = forma[fieldName].value
     if (trim(val) === '') {
-        forma[fieldName].select();
-        alert('Поле пустое');
-        forma[fieldName].focus();
-        return false;
+        forma[fieldName].select()
+        alert('Поле пустое')
+        forma[fieldName].focus()
+        return false
     } else {
-        forma.submit();
-        return true;
+        forma.submit()
+        return true
     }
 }
 
 // Полейзнейший набор функций
 function is_null(v) {
-    return (typeof (v) == 'undefined');
+    return typeof v == 'undefined'
 }
 
 function trim(s) {
@@ -312,19 +313,18 @@ function trim(s) {
  * Внимание! первоначальный style.display должен быть назначен скриптом, иначе он будет не виден
  */
 function showhide(id) {
-    if (typeof (id) != 'object') {
-        id = document.getElementById(id);
+    if (typeof id != 'object') {
+        id = document.getElementById(id)
     }
     if (id.style.display === '') {
-        id.style.display = 'block';
+        id.style.display = 'block'
     }
     if (id.style.display === 'none') {
-        id.style.display = 'block';
+        id.style.display = 'block'
     } else {
-        id.style.display = 'none';
+        id.style.display = 'none'
     }
 }
-
 
 /**
  * Подтверждение перехода по ссылке
@@ -332,7 +332,7 @@ function showhide(id) {
  */
 function check(obj, message) {
     if (is_null(message)) {
-        message = 'текущее действие';
+        message = 'текущее действие'
     }
     if (confirm('Подтвердите: ' + message)) {
         window.location.href = obj.href
@@ -341,24 +341,22 @@ function check(obj, message) {
     }
 }
 
-
 /**
  * Групповые действия с чекбоксами
  */
 function chbx_action(form_name, action, mask = false) {
-
-    var add = '';
+    var add = ''
     if (mask) {
         add = '[name="' + mask + '"]'
     }
-    var chbxs = document.querySelectorAll('form[name="' + form_name + '"] input[type="checkbox"]' + add);
+    var chbxs = document.querySelectorAll('form[name="' + form_name + '"] input[type="checkbox"]' + add)
     for (var chx of chbxs) {
         if (action == 'invert') {
-            chx.checked = !chx.checked;
+            chx.checked = !chx.checked
         } else if (action == 'check') {
-            chx.checked = true;
+            chx.checked = true
         } else if (action == 'uncheck') {
-            chx.checked = false;
+            chx.checked = false
         }
     }
 }
@@ -368,88 +366,86 @@ function chbx_action(form_name, action, mask = false) {
  */
 cook = {
     set: function (name, value, expires, path, domain, secure) {
-        expl = new Date();
-        expires = expl.getTime() + (expires * 24 * 60 * 60 * 1000);
-        expl.setTime(expires);
-        expires = expl.toGMTString();
-        var curCookie = name + "=" + escape(value) +
-          ((expires) ? "; expires=" + expires : "") +
-          ((path) ? "; path=" + path : "") +
-          ((domain) ? "; domain=" + domain : "") +
-          ((secure) ? "; secure" : "")
-        if ((name + "=" + escape(value)).length <= 4000)
-            document.cookie = curCookie
-        else if (confirm("Cookie превышает 4KB и будет вырезан !"))
-            document.cookie = curCookie;
-        return curCookie;
+        expl = new Date()
+        expires = expl.getTime() + expires * 24 * 60 * 60 * 1000
+        expl.setTime(expires)
+        expires = expl.toGMTString()
+        var curCookie =
+            name +
+            '=' +
+            escape(value) +
+            (expires ? '; expires=' + expires : '') +
+            (path ? '; path=' + path : '') +
+            (domain ? '; domain=' + domain : '') +
+            (secure ? '; secure' : '')
+        if ((name + '=' + escape(value)).length <= 4000) document.cookie = curCookie
+        else if (confirm('Cookie превышает 4KB и будет вырезан !')) document.cookie = curCookie
+        return curCookie
     },
     get: function (name) {
-        var prefix = name + "=";
-        var cookieStartIndex = document.cookie.indexOf(prefix);
-        if (cookieStartIndex == -1)
-            return false
-        var cookieEndIndex = document.cookie.indexOf(";", cookieStartIndex + prefix.length);
-        if (cookieEndIndex == -1)
-            cookieEndIndex = document.cookie.length;
+        var prefix = name + '='
+        var cookieStartIndex = document.cookie.indexOf(prefix)
+        if (cookieStartIndex == -1) return false
+        var cookieEndIndex = document.cookie.indexOf(';', cookieStartIndex + prefix.length)
+        if (cookieEndIndex == -1) cookieEndIndex = document.cookie.length
         return unescape(document.cookie.substring(cookieStartIndex + prefix.length, cookieEndIndex))
-    }
+    },
 }
-
 
 formatSize = (bytes, digits = 0) => {
     if (bytes < Math.pow(1024, 1)) {
-        return bytes + " b";
+        return bytes + ' b'
     } else if (bytes < Math.pow(1024, 2)) {
-        return (bytes / Math.pow(1024, 1)).toFixed(digits) + ' Kb';
+        return (bytes / Math.pow(1024, 1)).toFixed(digits) + ' Kb'
     } else if (bytes < Math.pow(1024, 3)) {
-        return (bytes / Math.pow(1024, 2)).toFixed(digits) + ' Mb';
+        return (bytes / Math.pow(1024, 2)).toFixed(digits) + ' Mb'
     } else if (bytes < Math.pow(1024, 4)) {
-        return (bytes / Math.pow(1024, 3)).toFixed(digits) + ' Gb';
+        return (bytes / Math.pow(1024, 3)).toFixed(digits) + ' Gb'
     }
 }
 
 function dbHiddenMenu() {
-    let hideTimeout = null;
+    let hideTimeout = null
     let div = document.querySelector('.menuDb')
-    forElementsEvent('mouseover', '#appNameId', function(e) {
+    forElementsEvent('mouseover', '#appNameId', function (e) {
         div.style.display = 'block'
     })
 
-    forElementsEvent('mouseout', '.menuDb', function(e) {
-        let w = parseInt(window.getComputedStyle(div).width);
+    forElementsEvent('mouseout', '.menuDb', function (e) {
+        let w = parseInt(window.getComputedStyle(div).width)
         if (e.pageX > w) {
             hideTimeout = setTimeout(function () {
                 div.style.display = 'none'
-            }, 300);
+            }, 300)
         }
     })
 
-    forElementsEvent('mouseover', '.menuDb', function(e) {
+    forElementsEvent('mouseover', '.menuDb', function (e) {
         if (hideTimeout != null) {
-            clearInterval(hideTimeout);
+            clearInterval(hideTimeout)
         }
     })
-    forElementsEvent('click', '.menuDb', function(e) {
+    forElementsEvent('click', '.menuDb', function (e) {
         div.style.display = 'none'
     })
 }
 
 function ctrlKeyMode() {
     // Определяет активность клавиши CTRL
-    window.globalCtrlKeyMode = false;
+    window.globalCtrlKeyMode = false
     window.key = {
         needkey: function (e) {
             if (globalCtrlKeyMode === true) {
-                globalCtrlKeyMode = false;
+                globalCtrlKeyMode = false
             }
             if (e.ctrlKey === true && e.type === 'keydown') {
-                globalCtrlKeyMode = true;
+                globalCtrlKeyMode = true
             }
-        }
+        },
     }
     if (document.getElementById) {
-        document.onkeydown = key.needkey;
-        document.onkeyup = key.needkey;
+        document.onkeydown = key.needkey
+        document.onkeyup = key.needkey
     }
 }
 
@@ -458,7 +454,7 @@ function searchEvents() {
         this.classList.add('wide')
         if (this.value.indexOf('Поиск') === 0) {
             this.dataset['default'] = this.value
-            this.value = '';
+            this.value = ''
         }
     })
     forElementsEvent('blur', '.search-top [name="query"]', function () {
@@ -476,14 +472,14 @@ function searchEvents() {
     })
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    dbHiddenMenu();
-    ctrlKeyMode();
-    searchEvents();
-});
+document.addEventListener('DOMContentLoaded', function () {
+    dbHiddenMenu()
+    ctrlKeyMode()
+    searchEvents()
+})
 
 function htmlspecialchars(text) {
-    if (typeof (text) != 'string') {
+    if (typeof text != 'string') {
         return text
     }
     const map = {
@@ -491,12 +487,12 @@ function htmlspecialchars(text) {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&#039;'
-    };
+        "'": '&#039;',
+    }
 
     return text.replace(/[&<>"']/g, function (m) {
-        return map[m];
-    });
+        return map[m]
+    })
 }
 
 function loader() {
@@ -523,7 +519,7 @@ function processRowValue(v, type, textCut) {
             v = htmlspecialchars(v)
         }
         if (v.length > textCut) {
-            let fullText = new URL(location.href).searchParams.get('fullText');
+            let fullText = new URL(location.href).searchParams.get('fullText')
             if (fullText === null) {
                 v = v.substring(0, textCut)
             }
@@ -532,36 +528,36 @@ function processRowValue(v, type, textCut) {
     return v
 }
 
-Date.prototype.getDayReal = function() {
-    let weekDay = this.getDay() - 1;
+Date.prototype.getDayReal = function () {
+    let weekDay = this.getDay() - 1
     if (weekDay < 0) {
-        weekDay = 6;
+        weekDay = 6
     }
-    return weekDay;
-};
+    return weekDay
+}
 
 /**
  * Время форматирует в русское "Вчера-сегодня-позавчера и последние дни недели"
  * @param date
  * @returns {string}
  */
-function date2rusString (date) {
+function date2rusString(date) {
     if (!date) {
         return 'invalid date'
     }
-    const now = new Date();
+    const now = new Date()
     let tmsTodayBegin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    tmsTodayBegin = (tmsTodayBegin / 1000)
+    tmsTodayBegin = tmsTodayBegin / 1000
     let tmsBegin = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
-    tmsBegin = (tmsBegin / 1000)
+    tmsBegin = tmsBegin / 1000
     const params = ['Сегодня', 'Вчера', 'Позавчера']
     const weekDays = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
-    for (let i = 0; i < 6; i ++) {
-        let tms = tmsTodayBegin - 3600 * 24 * i;
+    for (let i = 0; i < 6; i++) {
+        let tms = tmsTodayBegin - 3600 * 24 * i
         if (tms === tmsBegin) {
             const time = ', ' + date.toLocaleTimeString().substring(0, 5)
             if (params[i]) {
-                return params[i] + time;
+                return params[i] + time
             } else {
                 return weekDays[date.getDayReal()] + time
             }
@@ -580,8 +576,8 @@ function forElements(selector, callback) {
 }
 
 function forElementsEvent(event, selector, callback) {
-    forElements(selector, function() {
-        this.addEventListener(event, function(e){
+    forElements(selector, function () {
+        this.addEventListener(event, function (e) {
             callback.call(this, e)
         })
     })
@@ -590,11 +586,11 @@ function forElementsEvent(event, selector, callback) {
 // Назначает выполнение функции 'a' при наступлении события 'e' с объектом 'o'
 function list(object, event, action) {
     if (object.addEventListener) {
-        object.addEventListener(event, action, false);
+        object.addEventListener(event, action, false)
     } else if (object.attachEvent) {
-        object.attachEvent("on" + event, action);
+        object.attachEvent('on' + event, action)
     } else {
-        return null;
+        return null
     }
 }
 
@@ -604,9 +600,9 @@ function getElementIndex(el) {
 }
 
 function isNumeric(value) {
-    if (typeof(value) == 'number') {
+    if (typeof value == 'number') {
         return true
-    } else if (typeof(value) == 'string') {
+    } else if (typeof value == 'string') {
         if (value.match(/^\d+$/) !== null) {
             return true
         }

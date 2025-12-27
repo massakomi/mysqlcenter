@@ -8,12 +8,12 @@ function TableHead(props) {
               <th>Длина/значения</th>
               <th>Ноль</th>
               <th>По умолчанию</th>
-              <th><span title="Автоинкремент">Au</span></th>
-              <th><span title="Primary key">PR</span></th>
-              <th><span title="Unique">UN</span></th>
-              <th><span title="Index">IND</span></th>
+              <th>Au</th>
+              <th>PR</th>
+              <th>UN</th>
+              <th>IND</th>
               <th>-</th>
-              <th><span title="Fulltext">FU</span></th>
+              <th>FU</th>
               <th>Атрибуты</th>
               <th>После...</th>
           </tr></thead>
@@ -25,7 +25,6 @@ function TableHead(props) {
 }
 
 class MSC_DrawFields extends React.Component {
-
 
     constructor(props) {
         super(props);

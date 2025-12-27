@@ -47,10 +47,6 @@ class TableFull extends React.Component {
             countTotalRows += countRows
 
             if (updateTime) {
-                /*$updateTime = date2rusString(MS_DATE_FORMAT, $updateTime);
-                if (strpos($updateTime, 'дня') !== false || strpos($updateTime, 'ера') !== false) {
-                  $updateTime = "<b>$updateTime</b>";
-                }*/
                 updateTime = new Date(updateTime * 1000)
                 updateTime = updateTime.toLocaleString()
             }

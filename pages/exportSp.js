@@ -3,11 +3,11 @@ class ExportSp extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {value: 'wait'};
+        this.state = {value: "wait"};
     }
 
     createSet = () => {
-        var m = prompt('Введите имя для установки', 'Новая')
+        const m = prompt("Введите имя для установки", "Новая");
         if (m) {
             this.target.value = m;
         } else {
@@ -16,7 +16,7 @@ class ExportSp extends React.Component {
     }
 
     selectSet = () => {
-        window.location = '?db=<?=$msc->db?>&s=<?=$msc->page?>&set=' + this.target.options[this.target.selectedIndex].value
+        window.location = "?db=<?=$msc->db?>&s=<?=$msc->page?>&set=" + this.target.options[this.target.selectedIndex].value
     }
 
     render() {
@@ -26,14 +26,13 @@ class ExportSp extends React.Component {
             let valueTable, where, valueMax, pKey
             let checkedStruct = false;
             let checkedData = true;
-            // let tprefix = item.Name.substr(0, iten.Name.indexOf('_'))
 
             // Определение видимости таблицы
             let configInfo = this.props.configSet[item.Name];
             if (!configInfo) {
                 checkedData = false
             } else {
-                // Определение необхдоимости экспорта данных и стр-ры
+                // Определение необходимости экспорта данных и стр-ры
                 if (configInfo.struct == 1) {
                     checkedStruct = true
                 }
@@ -49,14 +48,14 @@ class ExportSp extends React.Component {
             let fnames = []
             for (let field in item.Fields) {
                 fnames.push(field)
-                if (item.Fields[field].Key.indexOf('PRI') > -1) {
+                if (item.Fields[field].Key.indexOf("PRI") > -1) {
                     pKey = field;
                 }
             }
             // Создание ряда
             valueTable = item.Name
             if (!checkedData && !checkedStruct) {
-                valueTable = <span style={{color: '#aaa'}}>{valueTable}</span>
+                valueTable = <span style={{color: "#aaa"}}>{valueTable}</span>
             } else {
                 valueTable = <b>{valueTable}</b>
             }
