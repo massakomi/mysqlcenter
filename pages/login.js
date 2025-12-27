@@ -2,7 +2,16 @@ class Login extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {...props}
+        if (props.current) {
+          this.state = {...props}
+        } else {
+          this.state = {
+            "current": "0",
+            "config": {
+              "0": this.defaults("Default")
+            },
+          }
+        }
         this.checkCurrentSetting(true)
     }
 
