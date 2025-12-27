@@ -103,7 +103,7 @@ class Server
 
         // Проверяем, может уже есть такой пользователь
         $sql = 'SELECT * FROM mysql.user WHERE User="' . $username . '"';
-        $result = $msc->fetchPdo($sql);
+        $result = $msc->getData($sql);
         if ($result) {
             $msc->addMessage('Пользователь с именем "' . $username . '" уже существует', '', MS_MSG_NOTICE);
             return false;

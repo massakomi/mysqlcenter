@@ -9,7 +9,7 @@
 
 /* Основные стили для шаблона, используются глобально во всех страницах*/
 
-body {font-size:12px; font-family: Arial, serif; color: var(--text-color); background-color: var(--bg-color)}
+body, table {font-size:12px; font-family: Arial, serif; color: var(--text-color); background-color: var(--bg-color)}
 
 /* Верх и низ */
 div.pageBlock { padding:5px; margin: 5px 0; }
