@@ -7,7 +7,6 @@ namespace controller;
  */
 class DbList extends Base
 {
-
     /**
      * @return array|void
      */

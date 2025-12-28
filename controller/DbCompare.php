@@ -7,7 +7,8 @@ namespace controller;
  */
 class DbCompare extends Base
 {
-    public function defaultAction(): array {
+    public function defaultAction(): array
+    {
         global $msc;
         $msc->pageTitle = 'Сравнение баз данных';
 

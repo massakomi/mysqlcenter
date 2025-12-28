@@ -7,7 +7,6 @@ namespace controller;
  */
 class TblStruct extends Base
 {
-
     public function defaultAction(): array
     {
         global $msc, $umaker;
@@ -113,8 +112,9 @@ class TblStruct extends Base
             'Row_format' => ' title="Формат хранения строки (Fixed, Dynamic, Compressed, Redundant, Compact). 
             Начиная с MySQL/InnoDB 5.0.3, InnoDB таблицы хранятся в форматах Redundant или Compact. 
             До 5.0.3, InnoDB таблицы всегда были в формате Redundant"',
-            'Rows' => ' title="Количество рядов. Некоторые типы хранилищ, такие как MyISAM, отображают точное количество. 
-            Но в некоторых других, таких как InnoDB, это значение является приблизительным и может отличаться 
+            'Rows' => ' title="Количество рядов. Некоторые типы хранилищ, такие как MyISAM, 
+            отображают точное количество. Но в некоторых других, таких как InnoDB, 
+            это значение является приблизительным и может отличаться 
             от действительного количество на 40-50%. В таких случаях лучше всего использовать запрос SELECT COUNT(*). 
             Также это значение равно NULL для таблиц INFORMATION_SCHEMA базы данных"',
             'Avg_row_length' => ' title="Средняя длина строки"',
@@ -131,8 +131,8 @@ class TblStruct extends Base
             'Collation' => ' title="Кодировка и сравнение таблиц"',
             'Checksum' => ' title="The live checksum value (if any)."',
             'Create_options' => ' title="Дополнительные опции, заданные при создании таблицы через CREATE TABLE."',
-            'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL не может 
-            получить доступ к информации о таблице"'
+            'Comment' => ' title="Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL 
+            не может получить доступ к информации о таблице"'
         ];
         $sql = 'SHOW TABLE STATUS LIKE "' . $table . '"' ;
 
@@ -147,4 +147,3 @@ class TblStruct extends Base
         return [$comments, $result];
     }
 }
-

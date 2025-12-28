@@ -7,7 +7,6 @@ namespace controller;
  */
 class Export extends Base
 {
-
     public function defaultAction(): array
     {
         global $msc;
@@ -50,8 +49,9 @@ class Export extends Base
                 // Экспорт БД
                 if ($exportDb && count($exportDb) > 0) {
                     foreach ($exportDb as $db) {
-                        $exp->data .= "\r\n" . 'CREATE DATABASE `' . $db . '` DEFAULT CHARACTER SET ' . MS_CHARACTER_SET .
-                            ' COLLATE ' . MS_COLLATION . ';' . "\r\n" . ' USE `' . $db . '`;' . "\r\n" . "\r\n";
+                        $exp->data .= "\r\n" . 'CREATE DATABASE `' . $db . '` DEFAULT CHARACTER SET ' .
+                            MS_CHARACTER_SET . ' COLLATE ' . MS_COLLATION . ';' . "\r\n" . ' USE `' . $db . '`;' .
+                            "\r\n" . "\r\n";
                         $exp->setDatabase($db);
                         $array = \DatabaseTable::getTables($db);
                         foreach ($array as $t) {

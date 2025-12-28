@@ -215,8 +215,11 @@ class Sql extends Base
                     }
                     $zip->close(); // Close the archive
                 } else {
-                    $msc->addMessage('Failed to open zip file, error code: ' . $zip->status,
-                        null, MS_MSG_FAULT);
+                    $msc->addMessage(
+                        'Failed to open zip file, error code: ' . $zip->status,
+                        null,
+                        MS_MSG_FAULT
+                    );
                 }
 
                 break;

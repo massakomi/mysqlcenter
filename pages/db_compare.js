@@ -59,7 +59,7 @@ function Db_compare(props) {
                     // Существует или нет - просто
                     if (num === 0) {
                         if (array.includes(table)) {
-                            row.push(<a href={`/tbl_data/${db}/${table}`}>есть</a>)
+                            row.push(<a href={`/?s=tbl_data&db=${db}&table=${table}`}>есть</a>)
                         } else {
                             row.push('-')
                             rowClass = 'diff';

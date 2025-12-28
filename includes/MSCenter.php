@@ -32,8 +32,6 @@ class MSCenter extends DatabaseQuery
 
     public bool $allowRepeatMessages = false;
 
-    private string $popularTablesFile = 'docs/popular.json';
-
     /**
      * Конструктор, для начала анализа скорости
      * @access private
@@ -165,7 +163,7 @@ class MSCenter extends DatabaseQuery
             return $this->page = 'login';
         }
         $defaultPage = 'tbl_list';
-        if (conf('tblliststart') == '0' || !$this->db) {
+        if (config('tblliststart') == '0' || !$this->db) {
             $defaultPage = 'db_list';
         }
         if ($this->page == null) {
@@ -221,7 +219,7 @@ class MSCenter extends DatabaseQuery
                 $messageId . '\')">close</a></th></tr>' .
             '  <tr id="' . $messageId . '"><td>' . implode('<br />', $this->messages) . '  </td></tr>' .
             '</table>';
-        if (conf('hidemessages') == '1') {
+        if (config('hidemessages') == '1') {
             $s .= '
 <script language="javascript">
 showhide("' . $messageId . '");
@@ -297,17 +295,17 @@ showhide("' . $messageId . '");
      */
     public function logInFile($string)
     {
-        if (conf('sqllog') != '1') {
+        if (config('sqllog') != '1') {
             return;
         }
         $string .= ";\r\n";
-        if (!file_exists(DIR_MYSQL . 'data')) {
-            if (!@mkdir(DIR_MYSQL . 'data', 0777)) {
+        if (!file_exists(MS_DIR_LOGS)) {
+            if (!mkdir(MS_DIR_LOGS)) {
                 return $this->addMessage('Не смог создать папку data', null, MS_MSG_FAULT);
             }
         }
-        $file = DIR_MYSQL . 'data/' . $this->db . '.sql';
-        if (!$fo = @fopen($file, file_exists($file) ? 'a+' : 'w+')) {
+        $file = MS_DIR_LOGS . '/' . $this->db . '.sql';
+        if (!$fo = fopen($file, file_exists($file) ? 'a+' : 'w+')) {
             return false;
         }
         $result = fwrite($fo, $string);
@@ -319,17 +317,17 @@ showhide("' . $messageId . '");
 
     public function getPopularTables(): array
     {
-        if (!file_exists($this->popularTablesFile) || !$this->db) {
+        if (!file_exists(MS_POPULAR_TABLES_FILE) || !$this->db) {
             return [];
         }
-        $json = file_get_contents($this->popularTablesFile);
+        $json = file_get_contents(MS_POPULAR_TABLES_FILE);
         $json = json_decode($json, true);
         if (!array_key_exists($this->db, $json)) {
             $json[$this->db] = [];
         }
         if (GET('resetPopular')) {
             $json[$this->db] = [];
-            file_put_contents($this->popularTablesFile, json_encode($json));
+            file_put_contents(MS_POPULAR_TABLES_FILE, json_encode($json));
         }
         ksort($json[$this->db]);
         foreach ($json[$this->db] as $table => $values) {
@@ -379,7 +377,7 @@ showhide("' . $messageId . '");
                 }
             }
         }
-        file_put_contents($this->popularTablesFile, json_encode($tables));
+        file_put_contents(MS_POPULAR_TABLES_FILE, json_encode($tables));
     }
 
 

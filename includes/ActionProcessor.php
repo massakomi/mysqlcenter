@@ -74,7 +74,7 @@ class ActionProcessor
                 break;
 
             case 'configRestore':
-                if (copy('docs/config_default.txt', MS_CONFIG_FILE)) {
+                if (copy(MS_CONFIG_DEFAULT_FILE, MS_CONFIG_FILE)) {
                     $msc->addMessage('Значения по умолчанию восстановлены');
                 }
                 break;

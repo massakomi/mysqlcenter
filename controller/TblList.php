@@ -54,7 +54,7 @@ class TblList extends Base
             }
 
             $pageProps = [
-                'showtableupdated' => conf('showtableupdated') == '1',
+                'showtableupdated' => config('showtableupdated') == '1',
                 'full' => GET('action') == 'full',
                 'tables' => $tables,
                 'dirImage' => MS_DIR_IMG,

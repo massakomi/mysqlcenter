@@ -67,7 +67,6 @@ class Search extends Base
             }
             $msc->pageTitle = "Результаты поиска по полям (найдено таблиц $founded, полей $foundedTotal)";
             $pageProps = $pageProps + compact('results', 'founded', 'foundedTotal');
-
         } elseif ($query && strlen($query) > 0) {
             $msc->pageTitle = "Поиск: '$query'";
             if ($array == null || count($array) == 0) {
@@ -84,7 +83,8 @@ class Search extends Base
             $founded = 0;
             foreach ($array as $table) {
                 $fields = \DatabaseTable::getFields($table, true);
-                $whereCondition = " WHERE " . implode(' LIKE "%' . $query . '%" OR ', $fields) . ' LIKE "%' . $query . '%"';
+                $whereCondition = " WHERE " . implode(' LIKE "%' . $query . '%" OR ', $fields) . ' LIKE "%'
+                    . $query . '%"';
                 $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
                 $result = $msc->fetchPdoObject($sql);
                 if (!$result) {
@@ -111,6 +111,4 @@ class Search extends Base
 
         return $pageProps;
     }
-
-
 }

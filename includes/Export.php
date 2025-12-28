@@ -441,6 +441,11 @@ class Export
         return $isFullDump;
     }
 
+    /**
+     * @param $type
+     * @param $file
+     * @return mixed|string|void|null
+     */
     public function sendSQLDamp($type = 'textarea', $file = null)
     {
         if (is_null($file)) {
@@ -451,7 +456,7 @@ class Export
                 return $this->get();
             }
             if ($type == 'zip') {
-                $dir = $_SERVER['DOCUMENT_ROOT'] . '/data';
+                $dir = $_SERVER['DOCUMENT_ROOT'] . '/' . MS_DIR_UPLOAD;
                 if (!file_exists($dir)) {
                     mkdir($dir, 0777);
                 }
@@ -460,7 +465,7 @@ class Export
                 gzwrite($fp, $this->get());
                 gzclose($fp);
 
-                return 'https://' . $_SERVER['HTTP_HOST'] . '/data/download.sql.gz';
+                return 'https://' . $_SERVER['HTTP_HOST'] . '/'.MS_DIR_UPLOAD.'/download.sql.gz';
             }
         }
         // текстовое поле

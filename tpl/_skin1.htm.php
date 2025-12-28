@@ -73,7 +73,7 @@ $menu = new Menu();
             </div>
         </div>
         <?php
-        if (conf('showmessages') == '1') {
+        if (config('showmessages') == '1') {
             echo $msc->getMessages();
         }
         ?>

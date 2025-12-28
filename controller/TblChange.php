@@ -22,7 +22,7 @@ class TblChange extends Base
         $tableData = [];
         $fields = \DatabaseTable::getFields($msc->table);
 
-         if (GET('row') == '' && POST('row') == '') {
+        if (GET('row') == '' && POST('row') == '') {
             $msc->pageTitle = 'Добавить строки в таблицу';
             $isAdd = true;
         } else {

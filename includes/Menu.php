@@ -187,7 +187,7 @@ class Menu
         } else {
             $selectorTables .= '<select name="' . $auto . '">' . "\r\n";
         }
-        $greyEmpty = conf('greyempty');
+        $greyEmpty = config('greyempty');
         foreach ($rows as $t) {
             if (strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0) {
                 $end = strpos($t->Name, '_', 3);

@@ -7,7 +7,6 @@ namespace controller;
  */
 class Actions extends Base
 {
-
     public function defaultAction(): array
     {
         global $msc;
@@ -60,11 +59,9 @@ class Actions extends Base
         $msc->pageTitle = "Действия - БД";
         $DQuery = $umaker->make('db', $msc->db, 's', 'actions');
 
-        $charsetSelector = '';
         $dbInfo = $this->getDatabasesFull($msc->db, GET('act') == 'fullinfo', $sort_by, $sort_order, 0);
         $dbInfo = $dbInfo[0];
         $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
-        $charsetSelector = $this->getCharsetSelector(substr($dbInfo['collation'], 0, strpos($dbInfo['collation'], '_')));
         $charsetList = \Server::getCharsetArray();
         $processes = $msc->getData('SHOW FULL PROCESSLIST');
 

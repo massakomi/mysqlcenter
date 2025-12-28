@@ -143,7 +143,7 @@ class TblData extends Base
             'order' => POST('order'),
             'part' => $part,
             'url' => $umaker->make('s', '#s#'),
-            'showtablecompare' => conf('showtablecompare'),
+            'showtablecompare' => config('showtablecompare'),
             'dbs' => \Server::getDatabases(),
             'directSQL' => isset($directSQL),
             'fields' => $fields,
