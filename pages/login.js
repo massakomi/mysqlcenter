@@ -100,7 +100,7 @@ function Login(props) {
     }
 
     return (
-      <div className="login">
+      <div className="login flex">
           <form>
               <div>
                   <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host} />

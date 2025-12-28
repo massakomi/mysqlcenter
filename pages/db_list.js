@@ -236,7 +236,7 @@ function ColumnRight(props) {
           <div>Версия PHP: {props.phpversion}</div>
           <div>БД: {props.dbname}<br /></div>
 
-          <fieldset className="mt-10">
+          <fieldset className="msGeneralForm">
               <legend>Добавить пользователя</legend>
               <form onSubmit={userAdd} method="post">
                   <div className="mb-5"><input name="rootpass" type="text" /> Пароль админа</div>
@@ -265,17 +265,11 @@ function DbCreateForm(props) {
 
 function Db_list(props) {
     return  (
-      <table width="100%" border="0" cellSpacing="0" cellPadding="3">
-          <tbody>
-          <tr>
-              <td valign="top">
-                  <ColumnLeft folder={props.folder} url={props.url} showFullInfo={props.showFullInfo} databases={props.databases} hiddens={props.hiddens} />
-              </td>
-              <td valign="top">
-                  <ColumnRight appName={props.appName} appVersion={props.appVersion} dbHost={props.dbHost} showFullInfo={props.showFullInfo} dbname={props.dbname}
-                               phpversion={props.phpversion} mysqlVersion={props.mysqlVersion} />
-              </td>
-          </tr></tbody>
-      </table>
+      <div className="flex">
+          <ColumnLeft folder={props.folder} url={props.url} showFullInfo={props.showFullInfo} databases={props.databases} hiddens={props.hiddens} />
+
+          <ColumnRight appName={props.appName} appVersion={props.appVersion} dbHost={props.dbHost} showFullInfo={props.showFullInfo} dbname={props.dbname}
+                       phpversion={props.phpversion} mysqlVersion={props.mysqlVersion} />
+      </div>
     )
 }

@@ -30,8 +30,8 @@ function Config(props) {
     });
 
     return (
-      <form>
-          <table>
+      <form className="tableFormEdit">
+          <table id="tableFormEdit">
               <thead>
               <tr>
                   <th>Параметр</th>

@@ -35,26 +35,26 @@ function SearchTable(props) {
 
           <fieldset className="msGeneralForm">
               <legend>Найти и заменить</legend>
-              <form action="" method="post">
-                  <table width="100%"  border="0" cellSpacing="0" cellPadding="3">
+              <form className="tableFormEdit">
+                  <table id="tableFormEdit" style={{'width': '100%'}}>
                       <tbody>
                       <tr>
                           <td width="100">Найти</td>
-                          <td><input name="search_for" className="w95" type="text" defaultValue={props.search_for} /></td>
+                          <td><input name="search_for" className="w95" type="text" defaultValue={props.search_for}/></td>
                       </tr>
                       <tr>
                           <td width="100">Заменить</td>
-                          <td><input name="replace_in" className="w95" type="text" defaultValue={props.replace_in} /></td>
+                          <td><input name="replace_in" className="w95" type="text" defaultValue={props.replace_in}/></td>
                       </tr>
                       <tr>
                           <td width="100">Поле</td>
-                          <td><HtmlSelector data={props.fields} name="field" /></td>
+                          <td><HtmlSelector data={props.fields} name="field"/></td>
                       </tr>
                       </tbody>
                   </table>
-                  <input type="submit" value="Выполнить" className="submit" />
+                  <input type="submit" value="Выполнить" className="submit"/>
               </form>
           </fieldset>
       </div>
-    ); 
+    );
 }

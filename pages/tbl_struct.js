@@ -166,62 +166,59 @@ function Tbl_struct(props) {
     }
 
     return (
-      <div>
-          <table>
-              <tbody>
-              <tr>
-                  <td valign="top">
-                      <form action={props.addTableUrl} method="post" name="formTableStructure"
-                            id="formTableStructure">
-                          <input type="hidden" name="action" value=""/>
+      <React.Fragment>
+          <div className="flex">
+              <div>
+                  <form action={props.addTableUrl} method="post" name="formTableStructure"
+                        id="formTableStructure">
+                      <input type="hidden" name="action" value=""/>
 
-                          <TableStruct {...props} />
+                      <TableStruct {...props} />
 
-                          <div className="chbxAction">
-                              <img src={props.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle"/>
-                              <a href="#" onClick={chbx_action.bind(this, "check")}>выбрать все</a>  &nbsp;
-                              <a href="#" onClick={chbx_action.bind(this, "uncheck")}>очистить</a>
-                          </div>
+                      <div className="chbxAction">
+                          <img src={props.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle"/>
+                          <a href="#" onClick={chbx_action.bind(this, "check")}>выбрать все</a>  &nbsp;
+                          <a href="#" onClick={chbx_action.bind(this, "uncheck")}>очистить</a>
+                      </div>
 
-                          <div className="imageAction">
-                              <u>Выбранные</u>
-                              <input type="image" src={props.dirImage + "edit.gif"}
-                                     onClick={imageAction.bind(this, 'fieldsEdit')} alt=""/>
-                              <input type="image" src={props.dirImage + "close.png"}
-                                     onClick={imageAction.bind(this, 'fieldsDelete')} alt=""/>
-                          </div>
+                      <div className="imageAction">
+                          <u>Выбранные</u>
+                          <input type="image" src={props.dirImage + "edit.gif"}
+                                 onClick={imageAction.bind(this, 'fieldsEdit')} alt=""/>
+                          <input type="image" src={props.dirImage + "close.png"}
+                                 onClick={imageAction.bind(this, 'fieldsDelete')} alt=""/>
+                      </div>
+                  </form>
+
+                  <fieldset className="msGeneralForm">
+                      <legend>Изменить структуру</legend>
+                      <form action={props.addTableUrl} method="post" onSubmit={onSubmit}>
+                          <input type="hidden" name="action" value="fieldsAdd"/>
+                          Добавить полей &nbsp; <input name="fieldsNum" type="text" defaultValue="1"
+                                                       size="5"/> &nbsp;
+                          <input name="afterOption" type="radio" value="end" defaultChecked id="f1"/> <label
+                        htmlFor="f1">в конец </label>
+                          <input name="afterOption" type="radio" value="start" id="f2"/> <label htmlFor="f2">в
+                          начало</label>
+                          <input name="afterOption" type="radio" value="field" id="f3"/> <label
+                        htmlFor="f3">после </label>
+                          <select name="afterField" onFocus={selectOnFocus}>
+                          {Object.values(props.data).map((table) =>
+                                <option key={table.Field}>{table.Field}</option>
+                              )}
+                          </select>&nbsp;
+                          <input type="submit" value="Добавить!" />
                       </form>
-
-                      <fieldset className="msGeneralForm">
-                          <legend>Изменить структуру</legend>
-                          <form action={props.addTableUrl} method="post" onSubmit={onSubmit}>
-                              <input type="hidden" name="action" value="fieldsAdd"/>
-                              Добавить полей &nbsp; <input name="fieldsNum" type="text" defaultValue="1"
-                                                           size="5"/> &nbsp;
-                              <input name="afterOption" type="radio" value="end" defaultChecked id="f1"/> <label
-                            htmlFor="f1">в конец </label>
-                              <input name="afterOption" type="radio" value="start" id="f2"/> <label htmlFor="f2">в
-                              начало</label>
-                              <input name="afterOption" type="radio" value="field" id="f3"/> <label
-                            htmlFor="f3">после </label>
-                              <select name="afterField" onFocus={selectOnFocus}>
-                              {Object.values(props.data).map((table) =>
-                                    <option key={table.Field}>{table.Field}</option>
-                                  )}
-                              </select>&nbsp;
-                              <input type="submit" value="Добавить!" />
-                          </form>
-                      </fieldset>
+                  </fieldset>
 
 
-                  </td>
-                  <td valign="top" style={{padding: '20px 0 0 10px'}}>
-                      <strong> Подробности таблицы </strong>
-                      <br />
-                      <TableObject data={props.dataDetails[1]} columns={props.dataDetails[0]} />
-                  </td>
-              </tr></tbody>
-          </table>
+              </div>
+              <div style={{padding: '20px 0 0 10px'}}>
+                  <strong> Подробности таблицы </strong>
+                  <br />
+                  <TableObject data={props.dataDetails[1]} columns={props.dataDetails[0]} />
+              </div>
+          </div>
 
           <strong style={{marginRight: '10px'}}>Информация о ключах</strong>
           <img src={props.dirImage + "i-help2.gif"} title="Индексы - это сбалансированные деревья значений указанных в индексе полей и ссылки на физические записи в таблице. Индексы позволяют ускорить работу выполнения запросов в сотни раз и сразу находить нужные данные, вместо того, чтобы последовательно читать всю таблицу." alt="" border="0" align="absmiddle" className="helpimg" /><br />
@@ -231,6 +228,6 @@ function Tbl_struct(props) {
           <p><a href={props.addKeyUrl}>Добавить ключ</a></p>
 
           <textarea className="wide" defaultValue={props.sqlCreateTable}></textarea>
-      </div>
+      </React.Fragment>
     );
 }

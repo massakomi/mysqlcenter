@@ -34,7 +34,7 @@ class Search extends Base
         ];
 
         // 1. Режим поиска по таблице
-        if ($msc->table == null) {
+        if ($msc->table != null) {
             $msc->pageTitle = 'Поиск по таблице';
             $pageProps ['fields'] = \DatabaseTable::getFields(GET('table'), true);
             return $pageProps;
@@ -67,6 +67,7 @@ class Search extends Base
             }
             $msc->pageTitle = "Результаты поиска по полям (найдено таблиц $founded, полей $foundedTotal)";
             $pageProps = $pageProps + compact('results', 'founded', 'foundedTotal');
+
         } elseif ($query && strlen($query) > 0) {
             $msc->pageTitle = "Поиск: '$query'";
             if ($array == null || count($array) == 0) {

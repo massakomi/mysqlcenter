@@ -47,7 +47,7 @@ function HtmlSelector(props) {
 
 }
 
-
+// Оставляю, жалко удалять, вдруг пригодится
 function Messages(props) {
 
     const MessageText = (item) => {
@@ -70,17 +70,11 @@ function Messages(props) {
 
     return <div className="messages">{props.messages.map((item, key) =>
       (
-        <table className="globalMessage" key={key}>
-            <tbody>
-            <tr>
-                <th>Сообщение <a href="#" className="hiddenSmallLink" style={{ color: 'white' }}
-                                 onClick={CloseMessage.bind(this)}>close</a></th>
-            </tr>
-            <tr>
-                <td>{MessageText(item)}</td>
-            </tr>
-            </tbody>
-        </table>
+        <div className="globalMessage" key={key}>
+            <div>Сообщение <a href="#" className="hiddenSmallLink" style={{ color: 'white' }}
+                             onClick={CloseMessage.bind(this)}>close</a></div>
+            <div>{MessageText(item)}</div>
+        </div>
       )
     )}</div>
 }

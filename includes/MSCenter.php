@@ -212,21 +212,11 @@ class MSCenter extends DatabaseQuery
         if (count($messages) == 0) {
             return null;
         }
-        $messageId = "mid" . time();    // если много сообщений
-        $s =
-            '<table class="globalMessage">' .
-            '  <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide(\'' .
-                $messageId . '\')">close</a></th></tr>' .
-            '  <tr id="' . $messageId . '"><td>' . implode('<br />', $this->messages) . '  </td></tr>' .
-            '</table>';
-        if (config('hidemessages') == '1') {
-            $s .= '
-<script language="javascript">
-showhide("' . $messageId . '");
-</script>
-            ';
-        }
-        return $s;
+        $style = config('hidemessages') == '1' ? ' style="display:none"' : '';
+        return '<div class="globalMessage">' .
+        '  <div>Сообщение <a href="#" class="hiddenSmallLink" onClick="toggleMessages(this)">close</a></div>' .
+        '  <div '.$style.'>' . implode('<br />', $this->messages) . '  </div>' .
+        '</div>';
     }
 
     /**

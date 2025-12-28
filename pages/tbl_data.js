@@ -324,20 +324,11 @@ function Tbl_data(props) {
               </div>
 
               <div className="imageAction">
-                  <table width="100%" border="0" cellSpacing="0" cellPadding="0">
-                      <tbody>
-                      <tr>
-                          <td>
-                              <u>Выбранные</u>
-                              <img src={image("edit.gif")} alt="" border="0" onClick={imageAction.bind(this, 'editRows', 'tbl_change')} />
-                              <img src={image("close.png")} alt="" border="0" onClick={imageAction.bind(this, 'deleteRows', '')} />
-                              <img src={image("copy.gif")} alt="" border="0" onClick={imageAction.bind(this, 'copyRows', '')} />
-                              <img src={image("b_tblexport.png")} alt="" border="0" onClick={imageAction.bind(this, 'exportRows', 'export')} />
-                          </td>
-                          <td align="right" id="tblDataInfoId">&nbsp;</td>
-                      </tr>
-                      </tbody>
-                  </table>
+                  <u>Выбранные</u>
+                  <img src={image("edit.gif")} alt="" border="0" onClick={imageAction.bind(this, 'editRows', 'tbl_change')} />
+                  <img src={image("close.png")} alt="" border="0" onClick={imageAction.bind(this, 'deleteRows', '')} />
+                  <img src={image("copy.gif")} alt="" border="0" onClick={imageAction.bind(this, 'copyRows', '')} />
+                  <img src={image("b_tblexport.png")} alt="" border="0" onClick={imageAction.bind(this, 'exportRows', 'export')} />
               </div>
           </form>
           <form name="form1" method="post" action={props.url.replace('#s#', 'tbl_compare')}>

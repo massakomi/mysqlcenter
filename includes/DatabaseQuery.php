@@ -66,7 +66,7 @@ class DatabaseQuery
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
             msclog($this->error, $sql);
-            if ($this->exceptionOnError) {
+            if ($this->exceptionOnError && !isajax()) {
                 // При USE ошибка перехватывается и выводится другой html
                 if (!str_starts_with($sql, 'USE')) {
                     echo '<pre>';

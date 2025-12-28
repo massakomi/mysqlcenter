@@ -27,11 +27,29 @@ async function msQuery(mode, query = '', callback = '') {
 async function queryResponse(response, callback, type = 'json') {
     let ajaxdebug = typeof debug != 'undefined' && debug
     if (response.ok) {
-        let content
-        if (type === 'text') {
-            content = await response.text()
-            if (content.indexOf('Parse error') !== -1) {
+        let content = await response.text()
+        if (type === 'json') {
+            if (content.indexOf('{') === 0) {
+                try {
+                    content = JSON.parse(content)
+                    showMessages(content)
+                } catch (e) {
+                    let message = 'Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack
+                    showError(message)
+                    return { error: true, message }
+                }
+            } else {
+                // тут явно ошибка, предполагается json
                 console.error(content)
+                showError('Ошибка, вернулся не Json, см. консоль.')
+            }
+        }
+
+        // Оставляю на всякий случай, хотя возвращается всегда Json
+        if (type === 'text') {
+            if (content.match(/(Parse|Fatal) error/i)) {
+                console.error(content)
+                showError('Ошибка, см. консоль.')
             } else {
                 try {
                     eval(content)
@@ -40,15 +58,6 @@ async function queryResponse(response, callback, type = 'json') {
                         console.error('JS код не выполнен: ' + content)
                     }
                 }
-            }
-        } else {
-            try {
-                content = await response.json()
-                showMessages(content)
-            } catch (e) {
-                let message = 'Ошибка ' + e.name + ':' + e.message + '\n' + e.stack
-                showError(message)
-                return { error: true, message }
             }
         }
         if (callback && typeof callback == 'function') {
@@ -86,36 +95,49 @@ function showMessages(json) {
         div.querySelector('table:last-child').remove()
     }
 
-    let messages = []
-    for (let message of json.messages) {
-        let textError = message.text
-        if (message.sql !== '' && message.sql !== null) {
-            let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
-            textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
+    let messages
+    if (typeof(json.messages) == 'string') {
+        messages = json.messages
+    } else {
+        messages = []
+        for (let message of json.messages) {
+            let textError = message.text
+            if (message.sql !== '' && message.sql !== null) {
+                let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
+                textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
+            }
+            if (message.error !== '' && message.error !== null) {
+                textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
+            }
+            messages.push(textError)
         }
-        if (message.error !== '' && message.error !== null) {
-            textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
-        }
-        messages.push(textError)
+        messages = messages.join('<br />')
     }
-    messages = messages.join('<br />')
 
-    let messageId = 'msg-' + Math.random()
     div.insertAdjacentHTML(
         'afterbegin',
         `
-        <table class="globalMessage">
-        <tr><th>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="showhide('${messageId}')">close</a></th></tr>
-        <tr id="${messageId}"><td>${messages}</td></tr>
-        </table>`,
+        <div class="globalMessage">
+            <div>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="toggleMessages(this)">close</a></div>
+            <div><td>${messages}</div>
+        </div>`,
     )
 
-    if (typeof msAjaxQueryDivTm != 'undefined') {
-        clearTimeout(msAjaxQueryDivTm)
+    let clearMsgTimeout = () => {
+        if (typeof msAjaxQueryDivTm != 'undefined') {
+            clearTimeout(msAjaxQueryDivTm)
+            delete msAjaxQueryDivTm
+        }
     }
-    msAjaxQueryDivTm = setTimeout(function () {
-        div.classList.remove('visible')
-    }, 5000)
+    let restartMsgTimeout = () => {
+        clearMsgTimeout()
+        window.msAjaxQueryDivTm = setTimeout(function () {
+            div.classList.remove('visible')
+        }, 5000)
+    }
+    div.addEventListener('mousemove', clearMsgTimeout)
+    restartMsgTimeout()
+    div.addEventListener('mouseout', restartMsgTimeout)
 }
 
 /**
@@ -145,15 +167,25 @@ function getFetchOptions(mode, query) {
     }
 }
 
-function showError(message) {
-    const el = document.querySelector('#errorMessage')
-    if (el !== null) {
-        el.lastTime = (Date.now() / 1000).toFixed(0)
-        el.classList.remove('d-none')
-        el.innerHTML = message
-    } else {
-        console.error(message)
+
+/**
+ * Показать / скрыть элемент
+ * Внимание! первоначальный style.display должен быть назначен скриптом, иначе он будет не виден
+ */
+function toggleMessages(obj) {
+    const id = obj.parentNode.nextElementSibling
+    if (id.style.display === '') {
+        id.style.display = 'block'
     }
+    if (id.style.display === 'none') {
+        id.style.display = 'block'
+    } else {
+        id.style.display = 'none'
+    }
+}
+
+function showError(message) {
+    showMessages({'messages': message})
 }
 
 // umaker({db: 'xxx'})
@@ -319,24 +351,6 @@ function is_null(v) {
 function trim(s) {
     s = s.replace(/[\s\t\r\n]+$/, '')
     return s.replace(/^[\s\t\r\n]+/, '')
-}
-
-/**
- * Показать / скрыть элемент
- * Внимание! первоначальный style.display должен быть назначен скриптом, иначе он будет не виден
- */
-function showhide(id) {
-    if (typeof id != 'object') {
-        id = document.getElementById(id)
-    }
-    if (id.style.display === '') {
-        id.style.display = 'block'
-    }
-    if (id.style.display === 'none') {
-        id.style.display = 'block'
-    } else {
-        id.style.display = 'none'
-    }
 }
 
 /**

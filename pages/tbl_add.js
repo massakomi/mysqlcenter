@@ -1,6 +1,6 @@
 function TableHead(props) {
     return (
-      <table cellPadding="4" id="tableFormEdit">
+      <table id="tableFormEdit">
           <thead>
           <tr>
               <th>Поле</th>
