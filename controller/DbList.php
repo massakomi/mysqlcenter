@@ -5,19 +5,20 @@ namespace controller;
 /**
  *
  */
-class DbList
+class DbList extends Base
 {
+
     /**
-     *
+     * @return array|void
      */
-    public function __construct()
+    public function defaultAction(): array
     {
-        global $msc, $pagel;
+        global $msc;
         // Получаем массив баз данных
         $dbs = \Server::getDatabases();
 
         $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
-        $table = new \Table('contentTable', null, null, null, null, 'structureTableId');
+        //$table = new \Table('contentTable', null, null, null, null, 'structureTableId');
 
         // Определяем, показывать ли полную информацию или нет
         $showFullInfo = GET('mode') == 'full';
@@ -39,14 +40,14 @@ class DbList
         // Отображаем список баз данных с краткой информацией
         } else {
             $hidden = [];
-            if ($mscExists = in_array('mysqlcenter', $dbs)) {
+            if (in_array('mysqlcenter', $dbs)) {
                 $hidden = \MSTable::getHiddensArray();
             }
         }
 
-        list($vi, $vs) = \Server::getServerVersion();
+        list(, $vs) = \Server::getServerVersion();
 
-        $pageProps = [
+        return [
             'databases' => $dbs,
             'hiddens' => $hidden,
             'dbHost' => $msc->host,
@@ -57,10 +58,5 @@ class DbList
             'phpversion' => phpversion(),
             'mysqlVersion' => $vs,
         ];
-        if (isajax()) {
-            return $pageProps;
-        }
-
-        $pagel->template($pageProps);
     }
 }

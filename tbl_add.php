@@ -4,6 +4,8 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+global $msc;
+
 // Получаем начальную инфо о полях таблицы
 if ($msc->table) {
     $fields = DatabaseTable::getFields($msc->table);

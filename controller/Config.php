@@ -5,20 +5,13 @@ namespace controller;
 /**
  *
  */
-class Config
+class Config extends Base
 {
-    public function __construct()
+    public function defaultAction(): array
     {
-        global $msc, $pagel;
+        global $msc;
         $data = file(MS_CONFIG_FILE);
-        if (isajax()) {
-            return compact('data');
-        }
-
         $msc->pageTitle = 'Настройка MySQL Center';
-
-        $pagel->template([
-            'data' => $data
-        ]);
+        return compact('data');
     }
 }

@@ -3,16 +3,16 @@
 namespace controller;
 
 /**
- *
+ * Вставка/изменение рядов
  */
-class TblChange
+class TblChange extends Base
 {
-    public function __construct()
+    public function defaultAction(): array
     {
         global $msc, $pagel, $umaker;
         if ($msc->table == '') {
             $msc->notice('Не указана таблица в запросе');
-            return false;
+            return [];
         }
 
         if ($_POST) {
@@ -20,40 +20,19 @@ class TblChange
         }
 
         $tableData = [];
+        $fields = \DatabaseTable::getFields($msc->table);
 
-        /**
-         * Вставка/изменение рядов
-         */
-        if (GET('row') == '' && POST('row') == '') {
+         if (GET('row') == '' && POST('row') == '') {
             $msc->pageTitle = 'Добавить строки в таблицу';
-            $fields = \DatabaseTable::getFields($msc->table);
             $isAdd = true;
         } else {
             $msc->pageTitle = 'Редактировать данные';
-
-            // если в запросе есть ряд (и таблица), то редактируем этот ряд
-            $whereCondition = null;
-            $array = POST('row');
-            if (GET('row') != '') {
-                $whereCondition = urldecode(stripslashes(GET('row')));
-            // массовый едит
-            } elseif (!is_null($array)) {
-                if (!is_array($array)) {
-                    $array = explode(',', $array);
-                }
-                if (count($array) > 0) {
-                    $array = array_map('urldecode', array_map('stripslashes', $array));
-                    $whereCondition = implode(' OR ', $array);
-                }
-            }
-
-            // создания таблицы для данных
-            $fields = \DatabaseTable::getFields($msc->table);
+            $whereCondition = $this->whereCondition();
             if ($whereCondition != null) {
                 $tableData = $msc->getData('SELECT * FROM ' . $msc->table . ' WHERE ' . $whereCondition);
                 if (!$tableData) {
                     $msc->notice('Ничего не выбрано');
-                    return;
+                    return [];
                 }
             }
         }
@@ -70,13 +49,30 @@ class TblChange
         if (POST('redirect')) {
             $pageProps['redirect'] = $umaker->make('s', POST('redirect'));
         }
-        if (isajax()) {
-            return $pageProps;
-        }
-
-        $pagel->template($pageProps);
+        return $pageProps;
     }
 
+    /**
+     * Если в запросе есть ряд (и таблица), то редактируем этот ряд
+     */
+    private function whereCondition(): ?string
+    {
+        $whereCondition = null;
+        $array = POST('row');
+        if (GET('row') != '') {
+            $whereCondition = urldecode(stripslashes(GET('row')));
+            // массовый едит
+        } elseif (!is_null($array)) {
+            if (!is_array($array)) {
+                $array = explode(',', $array);
+            }
+            if (count($array) > 0) {
+                $array = array_map('urldecode', array_map('stripslashes', $array));
+                $whereCondition = implode(' OR ', $array);
+            }
+        }
+        return $whereCondition;
+    }
 
     /**
      * Общая обработка для редактирования/добавления ряда

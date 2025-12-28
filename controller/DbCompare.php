@@ -5,11 +5,10 @@ namespace controller;
 /**
  *
  */
-class DbCompare
+class DbCompare extends Base
 {
-    public function __construct()
-    {
-        global $msc, $pagel;
+    public function defaultAction(): array {
+        global $msc;
         $msc->pageTitle = 'Сравнение баз данных';
 
         $databases = [];
@@ -21,21 +20,17 @@ class DbCompare
         }
         if ($databases && count($databases) < 2) {
             $msc->addMessage('Вы не выбрали базы данных для сравнения');
-            return null;
+            return [];
         }
 
-        $pageProps = $this->pageProps($databases);
-        if (isajax()) {
-            return $pageProps;
-        }
-        $pagel->template($pageProps);
+        return $this->pageProps($databases);
     }
 
     /**
      * @param $databases
      * @return array
      */
-    public function pageProps($databases)
+    public function pageProps($databases): array
     {
         global $msc;
 

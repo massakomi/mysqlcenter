@@ -1,20 +1,45 @@
 <?php
 
+use controller\Base;
+
 /**
  * Класс для создания страницы
  */
 class PageLayout
 {
-    private ?string $controller = null;
+    private ?Base $controller = null;
+    private ?string $handler = null;
 
     public function __construct()
     {
     }
 
     /**
+     * Отображение страницы
+     * @throws Exception
+     */
+    public function display(): void
+    {
+        global $msc;
+        $this->returnInitIfAjax();
+        $msc->dbViewStat();
+        $this->initController();
+
+        if ($this->handler == null && $this->controller == null) {
+            $msc->page = 'db_list';
+            $msc->notice('Страница не найдена');
+            $this->initController();
+        }
+
+        $contentMain = $this->getContentByHandler();
+
+        include(MS_DIR_TPL . '_skin1.htm.php');
+    }
+
+    /**
      * {}
      */
-    public function template($pageProps = []): void
+    private function template($pageProps = []): void
     {
         $action = $this->getPageForTemplate();
         $component = ucfirst($action);
@@ -34,7 +59,7 @@ class PageLayout
     /**
      * @return string
      */
-    public function getPageForTemplate(): string
+    private function getPageForTemplate(): string
     {
         global $msc;
         $page = $msc->page;
@@ -54,85 +79,53 @@ class PageLayout
     }
 
     /**
-     * Отображение страницы
-     */
-    public function display(): void
-    {
-        global $msc;
-        $currentPage = $msc->page;
-        $currentHandler = $this->getHandler();
-        $this->initController();
-
-        if ($currentHandler == null && $this->controller == null) {
-            $msc->page = 'db_list';
-            $msc->addMessage('Страница не найдена');
-            $currentHandler = $this->getHandler();
-        }
-
-        if ($msc->connected()) {
-            $msc->dbViewStat();
-        }
-
-        if (isajax()) {
-            $this->ajaxResult($currentHandler);
-        }
-
-        $contentMain = $this->getContentByHandler($currentHandler);
-
-        include(MS_DIR_TPL . '_skin1.htm.php');
-    }
-
-    /**
-     * @param $handler
      * @return string
      */
-    public function getContentByHandler($handler): string
+    private function getContentByHandler(): string
     {
-        global $msc, $umaker; // нужны в подключаемом хендлере, не везде там прописаны глобалы
+        global $msc;
         $contentMain = null;
         ob_start();
         if ($this->controller) {
-            new $this->controller();
+            $pageProps = $this->controller->defaultAction();
+            $this->template($pageProps);
         } else {
-            include $handler;
+            $pageProps = include $this->handler;
         }
         $contentMain = ob_get_contents();
         ob_clean();
+        if (isajax()) {
+            $data = [
+                'page' => $pageProps,
+                'messages' => $msc->getMessagesData(),
+            ];
+            ajaxResult($data);
+        }
         return $contentMain;
     }
 
     /**
-     * @param $currentHandler
-     * @return void
+     * Для обратной совместимости с mysqlcenter-next, где этот массив нужен
      */
-    public function ajaxResult($currentHandler): void
+    private function returnInitIfAjax(): void
     {
         global $msc;
-        if (array_key_exists('init', $_GET)) {
+        if (isajax() && array_key_exists('init', $_GET)) {
             $data = [
                 'messages' => $msc->getMessagesData(),
                 'databases' => Server::getDatabasesWithoutHidden(),
                 'DB_HOST' => $msc->host,
                 'DB_USERNAME' => $msc->user,
             ];
-        } else {
-            $pageProps = include $currentHandler;
-            if (!is_array($pageProps)) {
-                $pageProps = [];
-            }
-            $data = [
-                'page' => $pageProps,
-                'messages' => $msc->getMessagesData(),
-            ];
+            ajaxResult($data);
         }
-        ajaxResult($data);
     }
 
     /**
      * Определяем обработчик
      * @static
      */
-    public function getHandler(): ?string
+    private function initHandler(): void
     {
         global $msc;
         $handlers = [
@@ -144,9 +137,7 @@ class PageLayout
             $currentHandler = DIR_MYSQL . $msc->page . '.php';
         }
         if (file_exists($currentHandler)) {
-            return $currentHandler;
-        } else {
-            return null;
+            $this->handler = $currentHandler;
         }
     }
 
@@ -157,6 +148,7 @@ class PageLayout
     private function initController(): void
     {
         global $msc;
+        $this->initHandler();
         $classNames = [
             ucfirst($msc->page),
             ucfirst(preg_replace_callback('~_([a-z])~i', function ($match) {
@@ -166,7 +158,8 @@ class PageLayout
         foreach ($classNames as $className) {
             $path = 'controller/' . $className . '.php';
             if (file_exists($path)) {
-                $this->controller = '\controller\\' . $className;
+                $class = '\controller\\' . $className;
+                $this->controller = new $class();
                 break;
             }
         }

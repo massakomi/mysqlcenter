@@ -10,6 +10,8 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+global $msc;
+
 $array = POST('table');
 $query = POST('query');
 $queryField = POST('queryField');

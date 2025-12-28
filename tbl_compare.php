@@ -3,6 +3,7 @@
 if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
+global $msc;
 $msc->pageTitle = 'Сравнение таблиц';
 
 // Проверка

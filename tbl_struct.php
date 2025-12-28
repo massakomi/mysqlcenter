@@ -53,6 +53,8 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+global $msc, $umaker;
+
 
 if (GET('action') == 'add_key') {
     $fieldRows = ['' => ''];

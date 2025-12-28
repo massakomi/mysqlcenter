@@ -32,6 +32,8 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+global $msc, $umaker;
+
 // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
 if (isset($directSQL) && $msc->table == '') {
     if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL . ' ', $t)) {

@@ -4,6 +4,8 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+global $msc;
+
 $tables = DatabaseTable::getCashedTablesArray();
 if (count($tables) == 0) {
     $msc->addMessage('В базе данных нет таблиц');

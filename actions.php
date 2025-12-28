@@ -1,6 +1,6 @@
 <?php
 
-global $umaker;
+global $umaker, $msc;
 
 /**
  * Возвращает оптионсы для селектора кодировок

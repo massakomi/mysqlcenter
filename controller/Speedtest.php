@@ -5,9 +5,10 @@ namespace controller;
 /**
  *
  */
-class Speedtest
+
+class Speedtest extends Base
 {
-    public function __construct()
+    public function defaultAction(): array
     {
         global $msc;
         $msc->pageTitle = 'Тест скорости';

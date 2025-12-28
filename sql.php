@@ -1,5 +1,7 @@
 <?php
 
+global $msc;
+
 $msc->pageTitle = 'SQL запрос в БД';
 $db = GET('db') ?: POST('db');
 

@@ -5,19 +5,12 @@ namespace controller;
 /**
  *
  */
-class Login
+class Login extends Base
 {
-    public function __construct()
+    public function defaultAction(): array
     {
-        global $msc, $pagel;
+        global $msc;
         $msc->pageTitle = 'Login';
-
-        $pageProps = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
-
-        if (isajax()) {
-            return $pageProps;
-        }
-
-        $pagel->template($pageProps);
+        return json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
     }
 }

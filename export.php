@@ -4,6 +4,8 @@ if (!defined('DIR_MYSQL')) {
     exit('Hacking attempt');
 }
 
+global $msc;
+
 // 1. ИНИЦИАЛИЗАЦИЯ
 
 $msct = new MSTable();

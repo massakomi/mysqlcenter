@@ -9,12 +9,12 @@ class UrlMaker
      * База данных в функции make() может автоматически браться либо из $_GET, либо из $msc
      * Эта переменная указывает на то, чтобы брать базу данных из $_GET
      */
-    public $useGet = false;
+    public bool $useGet = false;
 
     /**
      * Строка URL, которая используется как базовая (для switcher)
      */
-    public $url;
+    public string $url;
 
     /**
      * Конструктор. Определяет $this->url
@@ -42,22 +42,13 @@ class UrlMaker
      *
      * @return string
      */
-    public function make()
+    public function make(): string
     {
         global $msc;
-        /**
-         * Надо проверить, что функция не вызывается как статическая.
-         * isset($this) возвращает true всегда, т.к. ещё выше есть ещё один класс PageLayout
-         * поэтому делается допонительная проверка на класс
-         */
-        if (!isset($this) || strtolower(get_class($this)) != 'urlmaker') {
-            $msc->error('UrlMaker->make cannot be used as static');
-            return;
-        }
         $values = func_get_args();
         $count = count($values);
-        $array = array();
-        $names = array();
+        $array = [];
+        $names = [];
         for ($i = 0; $i < $count; $i += 2) {
             if ($values[$i + 1] == '') {
                 continue;
@@ -75,8 +66,7 @@ class UrlMaker
         if ($msc->page != '' && !in_array('s', $names)) {
             array_unshift($array, 's=' . $msc->page);
         }
-        $url = MS_URL . '?' . (count($array) > 0 ? implode('&', $array) : '');
-        return $url;
+        return MS_URL . '?' . (count($array) > 0 ? implode('&', $array) : '');
     }
 
     /**

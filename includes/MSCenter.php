@@ -32,6 +32,8 @@ class MSCenter extends DatabaseQuery
 
     public bool $allowRepeatMessages = false;
 
+    private string $popularTablesFile = 'docs/popular.json';
+
     /**
      * Конструктор, для начала анализа скорости
      * @access private
@@ -230,22 +232,6 @@ showhide("' . $messageId . '");
     }
 
     /**
-     * Ошибка очень серьёзная - exit
-     *
-     * @param string
-     * @param string
-     * @param integer
-     */
-    public function error($message, $file = null, $line = null)
-    {
-        echo $message;
-        if ($file != null && $line != null) {
-            echo "<br /><b>file:</b> $file<br /><b>line:</b> $line";
-        }
-        exit;
-    }
-
-    /**
      * Замечание
      *
      * @param string
@@ -331,8 +317,6 @@ showhide("' . $messageId . '");
         }
     }
 
-    private $popularTablesFile = 'docs/popular.json';
-
     public function getPopularTables(): array
     {
         if (!file_exists($this->popularTablesFile) || !$this->db) {
@@ -402,9 +386,14 @@ showhide("' . $messageId . '");
     /**
      * Статистика просмотров баз данных
      * @return void
+     * @throws Exception
      */
-    public function dbViewStat()
+    public function dbViewStat(): void
     {
+        global $msc;
+        if (!$msc->connected()) {
+            return;
+        }
         $dbs = Server::getDatabases();
         if (!in_array('mysqlcenter', $dbs) || empty($this->db)) {
             return;
