@@ -27,7 +27,7 @@ $menu = new Menu();
 <div class="pageBlock">
     <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
     <?php echo $menu->getGlobalMenu() ?> &nbsp; &nbsp;
-    <span class="hiddenText" onclick="msDisplaySql()"
+    <span class="hiddenText" onclick="sqlFormToggle()"
           title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
     <span class="menuChain"><?php echo $menu->getChainMenu() ?></span>
 </div>
@@ -81,10 +81,10 @@ $menu = new Menu();
     </div>
 </div>
 
-<form action="<?php echo $umaker->make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post">
+<form action="<?php echo $umaker->make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
     <input type="submit" value="Отправить запрос!"/>
-    <textarea name="sql" rows="15" wrap="off"><?= POST('sql') ?></textarea>
-    <a href="#" onclick="msDisplaySql(); return false">закрыть</a>
+    <textarea name="sql" rows="15" wrap="soft"><?= POST('sql') ?></textarea>
+    <a href="#" onclick="sqlFormToggle(); return false">закрыть</a>
 </form>
 
 <div class="menuDb">

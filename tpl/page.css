@@ -78,6 +78,7 @@ table.contentTable .tbl { width:200px; font-size:14px}
 table.contentTable .num { width:80px; text-align:right;}
 table.contentTable .rig { text-align:right;}
 table.contentTable a { text-decoration:none}
+table.contentTable + form {margin-top: 10px}
 /* db_compare tbl_compare */
 .contentTable .r {text-align:right}
 .contentTable .b { font-size:14px;}
@@ -112,6 +113,7 @@ form.tableFormEdit td.inner { padding: 0; }
 [name="formExport"] label .l2 { margin-left:24px}
 [name="formExport"] .tableExport .l2 {margin-right: 5px}
 [name="formExport"] [name="fields[]"] {height:120px; width:150px;}
+textarea[name="export"] { width:100%; font-size:11px; overflow:scroll}
 #search_table select {margin-right: 10px}
 
 /* Общая форма внтури fieldset actionsdb actions */
@@ -164,7 +166,7 @@ textarea.wide {width: 100%; height: 100px}
 /* Отображения времени выполнения */
 span.hiddenText {color: var(--hidden-text-color)}
 /* Для ссылок */
-A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
+a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
 
 /* Loader */
 .loader {
@@ -199,37 +201,37 @@ A.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
 /* Цвета */
 
 A,
-TABLE.contentTable A,
-DIV.menuDb A,
-DIV.globalMenu A       { color:#0000FF }
-DIV.formSet H2         { color:#FFFFFF }
+table.contentTable A,
+div.menuDb A,
+div.globalMenu A       { color:#0000FF }
+div.formSet H2         { color:#FFFFFF }
 
-TABLE.globalMessage .mysqlError { color:#FF0000 }
+table.globalMessage .mysqlError { color:#FF0000 }
 
 /* Фон */
 
-DIV.menuDb { background-color:#eee }
+div.menuDb { background-color:#eee }
 
-TABLE.globalMessage th,
-TABLE.contentTable TH,
-FORM.tableFormEdit .editHeader TD,
-FORM.tableFormEdit TH  { background-color:#CCCCCC }
+table.globalMessage th,
+table.contentTable TH,
+form.tableFormEdit .editHeader TD,
+form.tableFormEdit TH  { background-color:#CCCCCC }
 
 .interlace   { background-color:#eee}
 .selectedRow { background-color:#eea!important;}
 
 /* Рамка */
 
-FORM.popupGeneralForm,
-TABLE.globalMessage td,
+form.popupGeneralForm,
+table.globalMessage td,
 .globalMessage th,
-TABLE.contentTable TH,
-FORM.tableFormEdit TH  { border: 1px solid #000  }
+table.contentTable TH,
+form.tableFormEdit TH  { border: 1px solid #000  }
 
-FORM.formSearch INPUT,
-TABLE.contentTable TD  { border: 1px solid #ccc  }
+form.formSearch INPUT,
+table.contentTable TD  { border: 1px solid #ccc  }
 
-DIV.pageBlock,
-FORM.tableFormEdit TD  { border: 1px solid #eee  }
+div.pageBlock,
+form.tableFormEdit TD  { border: 1px solid #eee  }
 
-FORM.tableFormEdit .si { border: 1px solid #666  }
+form.tableFormEdit .si { border: 1px solid #666  }

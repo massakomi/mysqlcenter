@@ -1,5 +1,5 @@
 
-function ExportSp(props) {
+function Form(props) {
 
     const createSet = () => {
         const m = prompt("Введите имя для установки", "Новая");
@@ -101,4 +101,17 @@ function ExportSp(props) {
 
       </form>
     );
+}
+
+
+function Results(props) {
+    return <textarea name="export" rows="40" wrap="off" defaultValue={props.content}></textarea>
+}
+
+function ExportSp(props) {
+    return (
+      <React.Fragment>
+          {props.content ? <Results content={props.content} /> : <Form {...props} />}
+      </React.Fragment>
+    )
 }

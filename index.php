@@ -2,7 +2,7 @@
 
 const DIR_MYSQL = './';
 
-require_once DIR_MYSQL . 'config.php';
+require_once DIR_MYSQL . 'init.php';
 
 $actPro = new ActionProcessor();
 

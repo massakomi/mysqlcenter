@@ -1,4 +1,4 @@
-function Search(props) {
+function SearchForm(props) {
 
     const [query, setQuery] = React.useState('');
     const [queryField, setQueryField] = React.useState('');
@@ -57,4 +57,13 @@ function Search(props) {
           </table>
       </form>
     ); 
+}
+
+function Search(props) {
+    return (
+      <React.Fragment>
+          {props.results ? <Table data={props.results} /> : null}
+          <SearchForm {...props} />
+      </React.Fragment>
+    )
 }

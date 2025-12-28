@@ -9,7 +9,7 @@ function Sql (props) {
     return (
       <React.Fragment>
           <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm"
-                className="tableFormEdit">
+                className="tableFormEdit" onSubmit={sqlFormSubmit}>
               <textarea name="sql" rows="20" id="sqlContent" wrap="off">{props.sql}</textarea>
               <input type="submit" value="Отправить запрос!" className="submit"/>
               <fieldset className="msGeneralForm">
@@ -28,47 +28,6 @@ function Sql (props) {
                   (Максимальный размер: {props.maxSize} Mb)
               </fieldset>
           </form>
-          <TestState />
-          <TestEffect />
       </React.Fragment>
     );
-}
-
-function TestState() {
-    const [index, setIndex] = React.useState(0);
-
-    function handleClick() {
-        setIndex(index + 1);
-    }
-
-    return (
-      <div>
-          <button onClick={handleClick}>
-              Next {index}
-          </button>
-      </div>
-    )
-}
-
-function TestEffect() {
-
-    React.useEffect(() => {
-        console.log('useEffect')
-    }, []);
-
-    console.log('render')
-
-    const [index, setIndex] = React.useState(0);
-
-    function handleClick() {
-        setIndex(index + 1);
-    }
-
-    return (
-      <div>
-          <button onClick={handleClick}>
-              Effect test {index}
-          </button>
-      </div>
-    )
 }

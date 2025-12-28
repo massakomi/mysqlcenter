@@ -8,6 +8,7 @@ class DatabaseQuery
     public int $affectedRows = 0;
     public string $lastSql = '';
     public string $error = '';
+    public bool $exceptionOnError = true;
 
     /**
      * Единый для всех запрос в БД
@@ -64,12 +65,14 @@ class DatabaseQuery
         } catch (\PDOException $e) {
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
-            // При USE ошибка перехватывается и выводится другой html
-            if (!str_starts_with($sql, 'USE')) {
-                echo '<pre>';
-            }
             msclog($this->error, $sql);
-            throw new Exception($this->error);
+            if ($this->exceptionOnError) {
+                // При USE ошибка перехватывается и выводится другой html
+                if (!str_starts_with($sql, 'USE')) {
+                    echo '<pre>';
+                }
+                throw new Exception($this->error);
+            }
         }
         if ($this->logEnabled) {
             $this->loqQuery($sql, $result);

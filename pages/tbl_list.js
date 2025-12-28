@@ -182,7 +182,7 @@ function Tbl_list(props) {
 
     const [tables, setTables] = React.useState(props.tables);
 
-    const msImageAction = (opt, url, e) => {
+    const imageAction = (opt, url, e) => {
         if (opt === 'auto') {
             opt = this.target.options[this.target.selectedIndex].value
         }
@@ -237,12 +237,12 @@ function Tbl_list(props) {
 
               <div className="imageAction">
                   <u>Выбранные</u>
-                  <img src={image("close.png")} alt="" onClick={msImageAction.bind(this, 'delete_all', '')} />
-                  <img src={image("delete.gif")} alt="" onClick={msImageAction.bind(this, 'truncate_all', '')} />
-                  <img src={image("copy.gif")} alt="" onClick={msImageAction.bind(this, 'copy_all', '')} />
-                  <img src={image("b_tblexport.png")} alt="" onClick={msImageAction.bind(this, 'export_all', `?db=${props.db}&s=export`)} />
+                  <img src={image("close.png")} alt="" onClick={imageAction.bind(this, 'delete_all', '')} />
+                  <img src={image("delete.gif")} alt="" onClick={imageAction.bind(this, 'truncate_all', '')} />
+                  <img src={image("copy.gif")} alt="" onClick={imageAction.bind(this, 'copy_all', '')} />
+                  <img src={image("b_tblexport.png")} alt="" onClick={imageAction.bind(this, 'export_all', `?db=${props.db}&s=export`)} />
 
-                  <select name="act" onChange={msImageAction.bind(this, 'auto', '')} >
+                  <select name="act" onChange={imageAction.bind(this, 'auto', '')} >
                       <option></option>
                       <option value="check">проверить</option>
                       <option value="analyze">анализ</option>

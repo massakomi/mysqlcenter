@@ -257,14 +257,15 @@ function Tbl_add(props) {
     const save = (e) => {
         e.preventDefault()
         msQuery('', e.target, (data) => {
-            if (props.showTableName) {
-                location.href = umaker({s: 'tbl_struct', table: document.querySelector('[name="table_name"]').value})
-            } else {
-                location.href = umaker({s: 'tbl_struct', field: false})
-            }
+            setTimeout(function() {
+                if (props.showTableName) {
+                    location.href = umaker({s: 'tbl_struct', table: document.querySelector('[name="table_name"]').value})
+                } else {
+                    location.href = umaker({s: 'tbl_struct', field: false})
+                }
+            }, 1000);
         })
     }
-
 
     return (
       <form method="post" action="" className="tableFormEdit" name="addForm" onSubmit={save.bind(this)}>

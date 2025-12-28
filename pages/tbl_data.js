@@ -246,7 +246,7 @@ function Tbl_data(props) {
         chbx_action('formTableRows', opt, 'row[]')
     }
 
-    const msImageAction = (opt, url, e) => {
+    const imageAction = (opt, url, e) => {
         if (url) {
             url = props.url.replace('#s#', url)
         }
@@ -299,6 +299,9 @@ function Tbl_data(props) {
         })
     }, []);
 
+    if (Object.keys(props).length === 0) {
+        return ''
+    }
 
     const image = src => props.dirImage + src;
 
@@ -326,10 +329,10 @@ function Tbl_data(props) {
                       <tr>
                           <td>
                               <u>Выбранные</u>
-                              <img src={image("edit.gif")} alt="" border="0" onClick={msImageAction.bind(this, 'editRows', 'tbl_change')} />
-                              <img src={image("close.png")} alt="" border="0" onClick={msImageAction.bind(this, 'deleteRows', '')} />
-                              <img src={image("copy.gif")} alt="" border="0" onClick={msImageAction.bind(this, 'copyRows', '')} />
-                              <img src={image("b_tblexport.png")} alt="" border="0" onClick={msImageAction.bind(this, 'exportRows', 'export')} />
+                              <img src={image("edit.gif")} alt="" border="0" onClick={imageAction.bind(this, 'editRows', 'tbl_change')} />
+                              <img src={image("close.png")} alt="" border="0" onClick={imageAction.bind(this, 'deleteRows', '')} />
+                              <img src={image("copy.gif")} alt="" border="0" onClick={imageAction.bind(this, 'copyRows', '')} />
+                              <img src={image("b_tblexport.png")} alt="" border="0" onClick={imageAction.bind(this, 'exportRows', 'export')} />
                           </td>
                           <td align="right" id="tblDataInfoId">&nbsp;</td>
                       </tr>

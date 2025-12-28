@@ -199,9 +199,22 @@ function msImageAction(formName, param, actionReplace) {
 }
 
 /**
+ * Редирект с сабмита sql форм (в шапке и на странице sql)
+ */
+function sqlFormSubmit() {
+    this.event.preventDefault()
+    let form = this.event.target.closest('form');
+    let sql = form.querySelector('textarea').value
+    if (sql.match(/^\s*(select|show)/i)) {
+        form.action = umaker({'s': 'tbl_data'})
+    }
+    form.submit()
+}
+
+/**
  * Функция, которая отвечает за механизм отображения/скрытия блока быстрого SQL запроса на всех страницах MSC
  */
-function msDisplaySql() {
+function sqlFormToggle() {
     let form = document.querySelector('.popupGeneralForm')
     if (form.checkVisibility()) {
         form.style.display = 'none'

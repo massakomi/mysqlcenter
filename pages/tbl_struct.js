@@ -85,6 +85,12 @@ function TableStruct(props) {
 
 function KeysInfo(props) {
 
+    const checkDelete = (e) => {
+        e.preventDefault();
+        check(e.currentTarget, 'удаление ключа');
+        return false
+    }
+
     return (
       <table className="contentTable">
           <thead>
@@ -146,23 +152,17 @@ function Tbl_struct(props) {
         })
      };
 
-    const msImageAction = (opt, e) => {
+    const imageAction = (opt, e) => {
         msImageAction('formTableStructure', opt)
     }
 
-    const checkEmpty = (e) => {
+    const onSubmit = (e, xx) => {
         e.preventDefault()
         checkEmpty(e.target, 'fieldsNum')
     }
 
     const selectOnFocus = (e) => {
         document.getElementById('f3').checked = true
-    }
-
-    const checkDelete = (e) => {
-        e.preventDefault();
-        check(e.currentTarget, 'удаление ключа');
-        return false
     }
 
     return (
@@ -186,15 +186,15 @@ function Tbl_struct(props) {
                           <div className="imageAction">
                               <u>Выбранные</u>
                               <input type="image" src={props.dirImage + "edit.gif"}
-                                     onClick={msImageAction.bind(this, 'fieldsEdit')} alt=""/>
+                                     onClick={imageAction.bind(this, 'fieldsEdit')} alt=""/>
                               <input type="image" src={props.dirImage + "close.png"}
-                                     onClick={msImageAction.bind(this, 'fieldsDelete')} alt=""/>
+                                     onClick={imageAction.bind(this, 'fieldsDelete')} alt=""/>
                           </div>
                       </form>
 
                       <fieldset className="msGeneralForm">
                           <legend>Изменить структуру</legend>
-                          <form action={props.addTableUrl} method="post" onSubmit={checkEmpty}>
+                          <form action={props.addTableUrl} method="post" onSubmit={onSubmit}>
                               <input type="hidden" name="action" value="fieldsAdd"/>
                               Добавить полей &nbsp; <input name="fieldsNum" type="text" defaultValue="1"
                                                            size="5"/> &nbsp;
@@ -226,7 +226,7 @@ function Tbl_struct(props) {
           <strong style={{marginRight: '10px'}}>Информация о ключах</strong>
           <img src={props.dirImage + "i-help2.gif"} title="Индексы - это сбалансированные деревья значений указанных в индексе полей и ссылки на физические записи в таблице. Индексы позволяют ускорить работу выполнения запросов в сотни раз и сразу находить нужные данные, вместо того, чтобы последовательно читать всю таблицу." alt="" border="0" align="absmiddle" className="helpimg" /><br />
 
-          {props.dataKeys.length ? <KeysInfo {...props} /> : <a href={props.showKeysUrl}>Показать информацию о ключах</a>}
+          {props.showKeys ? <KeysInfo {...props} /> : <a href={props.showKeysUrl}>Показать информацию о ключах</a>}
 
           <p><a href={props.addKeyUrl}>Добавить ключ</a></p>
 

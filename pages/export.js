@@ -1,4 +1,4 @@
-function Export(props) {
+function Form(props) {
 
     const msMultiSelect = (event) => {
         forElements('[name="'+props.selectMultName+'"] option', function(e) {
@@ -32,7 +32,19 @@ function Export(props) {
                   <input type="submit" value="Экспортировать!" />
               </div>
           </div>
-          <a href={umaker({s: 'exportSp'})}>Специальный экспорт</a>
+          <a href={umaker({s: 'export', 'action': 'special'})}>Специальный экспорт</a>
       </form>
     );
+}
+
+function Results(props) {
+    return <textarea name="export" rows="40" wrap="off" defaultValue={props.content}></textarea>
+}
+
+function Export(props) {
+    return (
+      <React.Fragment>
+          {props.content ? <Results content={props.content} /> : <Form {...props} />}
+      </React.Fragment>
+    )
 }

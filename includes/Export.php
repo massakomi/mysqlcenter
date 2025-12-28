@@ -465,10 +465,7 @@ class Export
         }
         // текстовое поле
         if ($type == 'textarea') {
-            return
-                '<textarea name="sql" rows="40" style="width:100%; font-size:11px; overflow:scroll" wrap="OFF">' .
-                htmlspecialchars($this->get()) .
-                '</textarea>';
+            return $this->get();
         // архив
         } elseif ($type == 'zip') {
             if (headers_sent()) {

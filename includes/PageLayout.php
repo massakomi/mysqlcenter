@@ -8,7 +8,6 @@ use controller\Base;
 class PageLayout
 {
     private ?Base $controller = null;
-    private ?string $handler = null;
 
     public function __construct()
     {
@@ -25,13 +24,13 @@ class PageLayout
         $msc->dbViewStat();
         $this->initController();
 
-        if ($this->handler == null && $this->controller == null) {
+        if ($this->controller == null) {
             $msc->page = 'db_list';
             $msc->notice('Страница не найдена');
             $this->initController();
         }
 
-        $contentMain = $this->getContentByHandler();
+        $contentMain = $this->getContent();
 
         include(MS_DIR_TPL . '_skin1.htm.php');
     }
@@ -75,23 +74,21 @@ class PageLayout
         if ($msc->page == 'tbl_struct' && GET('action') == 'add_key') {
             $page = 'tbl_key_add';
         }
+        if ($msc->page == 'export' && GET('action') == 'special') {
+            $page = 'exportSp';
+        }
         return $page;
     }
 
     /**
      * @return string
      */
-    private function getContentByHandler(): string
+    private function getContent(): string
     {
         global $msc;
-        $contentMain = null;
         ob_start();
-        if ($this->controller) {
-            $pageProps = $this->controller->defaultAction();
-            $this->template($pageProps);
-        } else {
-            $pageProps = include $this->handler;
-        }
+        $pageProps = $this->controller->defaultAction();
+        $this->template($pageProps);
         $contentMain = ob_get_contents();
         ob_clean();
         if (isajax()) {
@@ -125,30 +122,9 @@ class PageLayout
      * Определяем обработчик
      * @static
      */
-    private function initHandler(): void
-    {
-        global $msc;
-        $handlers = [
-            'exportSp' => 'export'
-        ];
-        if (isset($handlers[$msc->page])) {
-            $currentHandler = DIR_MYSQL . $handlers[$msc->page] . '.php';
-        } else {
-            $currentHandler = DIR_MYSQL . $msc->page . '.php';
-        }
-        if (file_exists($currentHandler)) {
-            $this->handler = $currentHandler;
-        }
-    }
-
-    /**
-     * Определяем обработчик
-     * @static
-     */
     private function initController(): void
     {
         global $msc;
-        $this->initHandler();
         $classNames = [
             ucfirst($msc->page),
             ucfirst(preg_replace_callback('~_([a-z])~i', function ($match) {

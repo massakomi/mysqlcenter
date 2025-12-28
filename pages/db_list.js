@@ -141,7 +141,7 @@ function Table(props) {
 
 function ColumnLeft(props) {
 
-    const msImageAction = (param, actionReplace) => {
+    const imageAction = (param, actionReplace) => {
         if (typeof actionReplace == 'string') {
             actionReplace = props.url + '?s=' + actionReplace
         } else {
@@ -173,10 +173,10 @@ function ColumnLeft(props) {
 
           <div className="imageAction">
               <u>Выбранные</u>
-              <input type="image" src={"/" + props.folder + "close.png"} onClick={msImageAction.bind(this, 'dbDelete')} title="Удалить базы данных" />
-              <input type="image" src={"/" + props.folder + "copy.gif"} onClick={msImageAction.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" />
-              <input type="image" src={"/" + props.folder + "b_tblexport.png"} onClick={msImageAction.bind(this, 'exportDatabases', 'export')} title="Перейти к экспорту баз данных" />
-              <input type="image" src={"/" + props.folder + "fixed.gif"} onClick={msImageAction.bind(this, 'db_compare', 'db_compare')} title="Сравнить выбранные базы данных" />
+              <input type="image" src={"/" + props.folder + "close.png"} onClick={imageAction.bind(this, 'dbDelete')} title="Удалить базы данных" />
+              <input type="image" src={"/" + props.folder + "copy.gif"} onClick={imageAction.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" />
+              <input type="image" src={"/" + props.folder + "b_tblexport.png"} onClick={imageAction.bind(this, 'exportDatabases', 'export')} title="Перейти к экспорту баз данных" />
+              <input type="image" src={"/" + props.folder + "fixed.gif"} onClick={imageAction.bind(this, 'db_compare', 'db_compare')} title="Сравнить выбранные базы данных" />
           </div>
       </div>
     );

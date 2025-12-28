@@ -194,7 +194,20 @@ function Table(props) {
         let tds = []
         for (let key in props.data[index]) {
             const item = props.data[index][key]
-            tds.push(<td key={`td-${key}`}>{item}</td>)
+            let value = ''
+            if (item !== null && typeof(item) == 'object') {
+                if (item.hasOwnProperty('text')) {
+                    value = item.text
+                    if (item.href) {
+                        value = <a href={item.href}>{value}</a>
+                    }
+                } else {
+                    value = item.toString()
+                }
+            } else {
+                value = item
+            }
+            tds.push(<td key={`td-${key}`}>{value}</td>)
         }
         trs.push(<tr key={`tr-${index}`}>{tds}</tr>)
     }
