@@ -16,7 +16,7 @@ class TblList extends Base
 
         $tables = \DatabaseTable::getCashedTablesArray();
         if (count($tables) == 0) {
-            $msc->addMessage('В базе данных нет таблиц');
+            $msc->error('В базе данных нет таблиц');
         }
 
 
@@ -46,9 +46,9 @@ class TblList extends Base
                 ) {
                     $sql = strtoupper($action) . ' TABLE `' . $o->Name . '`';
                     if ($msc->execPdo($sql)) {
-                        $msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
+                        $msc->success('Запрос выполнен', $sql);
                     } else {
-                        $msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
+                        $msc->error('Ошибка запроса', $sql);
                     }
                 }
             }

@@ -21,12 +21,12 @@ class PageLayout
     {
         global $msc;
         $this->returnInitIfAjax();
-        $msc->dbViewStat();
+        MSTable::dbViewStat();
         $this->initController();
 
         if ($this->controller == null) {
             $msc->page = 'db_list';
-            $msc->notice('Страница не найдена');
+            $msc->error('Страница не найдена');
             $this->initController();
         }
 
@@ -91,7 +91,7 @@ class PageLayout
         $this->template($pageProps);
         $contentMain = ob_get_contents();
         ob_clean();
-        if (isajax()) {
+        if (isAjax()) {
             $data = [
                 'page' => $pageProps,
                 'messages' => $msc->getMessagesData(),
@@ -107,7 +107,7 @@ class PageLayout
     private function returnInitIfAjax(): void
     {
         global $msc;
-        if (isajax() && array_key_exists('init', $_GET)) {
+        if (isAjax() && array_key_exists('init', $_GET)) {
             $data = [
                 'messages' => $msc->getMessagesData(),
                 'databases' => Server::getDatabasesWithoutHidden(),

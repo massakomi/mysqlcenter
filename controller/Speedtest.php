@@ -22,7 +22,7 @@ class Speedtest extends Base
             global $msc;
             $result = $msc->execPdo($sql);
             if (!$result) {
-                $msc->addMessage('Ошибка', $sql, MS_MSG_FAULT, $msc->error);
+                $msc->error('Ошибка', $sql);
             }
         }
 

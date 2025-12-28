@@ -36,21 +36,32 @@ function POST($name, $default = null)
 }
 
 /**
- * Пишет сообщение в лог, добавляя дату/время
+ * Логи всех sql запросов в базы
+ *
+ * @access private
+ * @param $string
+ * @param $db
+ * @return bool|void
+ */
+function logInFile($string, $db)
+{
+    if (config('sqllog') != '1' || !$db) {
+        return;
+    }
+    $string .= ";\r\n";
+    writeLogFile($string, $db . '.sql');
+}
+
+/**
+ * Логи ошибок + дата/время
  *
  * @param string  Сообщение
  * @param string  SQL запрос (добавляется к сообщению)
  * @package debug
  */
-function msclog($message, $sql = null)
+function logError($message, $sql = null): void
 {
     global $pdo;
-    $logFile = MS_DIR_LOGS . '/error.log';
-    if (!file_exists($logFile)) {
-        $file = fopen($logFile, 'w+');
-    } else {
-        $file = fopen($logFile, 'a+');
-    }
     $message = str_replace("\n", ' ', $message);
     if ($sql) {
         $sql = str_replace("\n", ' ', $sql);
@@ -59,6 +70,26 @@ function msclog($message, $sql = null)
     $string = "\n" . $time . $message;
     if ($sql != null) {
         $string .= '(' . $sql . ' ' . $pdo->errorInfo()[2] . ')';
+    }
+    writeLogFile($string, 'error.log');
+}
+
+/**
+ * Общий метод записи в файл
+ * @param $string
+ * @param $filename
+ * @return false|void
+ */
+function writeLogFile($string, $filename) {
+    if (!file_exists(MS_DIR_LOGS)) {
+        if (!mkdir(MS_DIR_LOGS)) {
+            return;
+        }
+    }
+    $logFile = MS_DIR_LOGS . '/' . $filename;
+    $file = fopen($logFile, file_exists($logFile) ? 'a+' : 'w+');
+    if (!$file) {
+        return false;
     }
     fwrite($file, $string);
     fclose($file);
@@ -75,7 +106,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline)
     global $mscGlobalErrorsCash, $pdo;
     $logstr = $errstr . '[' . $errfile . ':' . $errline . ']';
     if (!isset($mscGlobalErrorsCash)) {
-        $mscGlobalErrorsCash = array();
+        $mscGlobalErrorsCash = [];
     }
     if (!in_array($logstr, $mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash [] = $logstr;
@@ -89,9 +120,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline)
         $logstr .= '(' . $pdo->errorInfo()[2] . ')';
     }
     $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
-    if (function_exists('msclog')) {
-        msclog($errno . ' ' . $logstr);
-    }
+    logError($errno . ' ' . $logstr);
 }
 
 /**
@@ -106,7 +135,7 @@ function config($param, $default = ''): string
 {
     global $mscConfigCash;
     if (!isset($mscConfigCash)) {
-        $mscConfigCash = array();
+        $mscConfigCash = [];
         $data = file(MS_CONFIG_FILE);
         foreach ($data as $k => $line) {
             if (empty($line) || substr_count($line, '|') < 3) {
@@ -122,7 +151,7 @@ function config($param, $default = ''): string
 /**
  * @return bool
  */
-function isajax(): bool
+function isAjax(): bool
 {
     return POST('ajax') || GET('ajax');
 }
@@ -149,18 +178,6 @@ function ajaxError($message): void
     ]);
 }
 
-/**
- * @param $message
- * @return void
- */
-function ajaxSuccess($message): void
-{
-    ajaxResult([
-        'status' => true,
-        'messages' => $message
-    ]);
-}
-
 function ajaxResultWithMessages(): void
 {
     global $msc;
@@ -170,20 +187,8 @@ function ajaxResultWithMessages(): void
             ajaxError($data);
         }
     }
-    ajaxSuccess($data);
-}
-
-/**
- * @param $message
- * @return void
- */
-function exitError($message): void
-{
-    if (isajax()) {
-        global $msc;
-        $msc->addMessage($message, null, MS_MSG_FAULT);
-        ajaxResultWithMessages();
-    } else {
-        exit($message);
-    }
+    ajaxResult([
+        'status' => true,
+        'messages' => $data
+    ]);
 }

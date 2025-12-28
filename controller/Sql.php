@@ -42,7 +42,7 @@ class Sql extends Base
                     $msc->execPdo("SET NAMES 'utf8'");
                 }
             } else {
-                $msc->addMessage('Размер файла превышает максимально допустимый', null, MS_MSG_FAULT);
+                $msc->error('Размер файла превышает максимально допустимый');
             }
         // Запрос из ПОСТа
         } elseif (isset($_POST['sql']) && $_POST['sql'] != '') {
@@ -98,7 +98,7 @@ class Sql extends Base
 
         echo '<br /><br />';
         //echo '<pre>'; print_r($data->sheets[$_GET['sheet']]); echo '</pre>';
-        //$sheet = array();
+        //$sheet = [];
 
         echo '
             <table class="contentTable">';
@@ -137,10 +137,10 @@ class Sql extends Base
         global $msc;
         $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
         if (!$msc->selectDb($db)) {
-            return $msc->addMessage('Не смог выбрать базу данных', null, MS_MSG_FAULT);
+            return $msc->error('Не смог выбрать базу данных');
         }
         if ($log) {
-            $msc->logInFile($sql);
+            logInFile($sql, $msc->db);
         }
         $sql = str_replace("\r\n", "\n", $sql);
         $array = explode(";\n", $sql);
@@ -165,14 +165,14 @@ class Sql extends Base
         $succ = $c - $fault;
         $info = " $succ запросов выполнено, $fault неудач. ";
         if (count($errors) == 0) {
-            $msc->addMessage('Запрос выполнен без ошибок - ' . $info, null, MS_MSG_SUCCESS);
+            $msc->success('Запрос выполнен без ошибок - ' . $info);
         } else {
-            $msc->addMessage('Запрос выполнен с ошибками' . $info, null, MS_MSG_FAULT);
-            $msc->addMessage(implode('<br />', $errors), null, MS_MSG_FAULT);
+            $msc->error('Запрос выполнен с ошибками' . $info);
+            $msc->error(implode('<br />', $errors));
         }
         $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
-        $msc->addMessage("Выполнено за $mysqlGenerationTime с.");
-        $msc->addMessage("Затронуто рядов: $affected");
+        $msc->success("Выполнено за $mysqlGenerationTime с.");
+        $msc->success("Затронуто рядов: $affected");
         return true;
     }
 
@@ -215,11 +215,7 @@ class Sql extends Base
                     }
                     $zip->close(); // Close the archive
                 } else {
-                    $msc->addMessage(
-                        'Failed to open zip file, error code: ' . $zip->status,
-                        null,
-                        MS_MSG_FAULT
-                    );
+                    $msc->error('Failed to open zip file, error code: ' . $zip->status);
                 }
 
                 break;

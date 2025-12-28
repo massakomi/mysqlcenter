@@ -151,7 +151,7 @@ function ColumnLeft(props) {
     }
 
     const chbxAction = opt => {
-        chbx_action('formDatabases', opt, 'databases[]')
+        checkboxAction('formDatabases', opt, 'databases[]')
     };
 
 

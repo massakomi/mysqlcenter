@@ -23,8 +23,8 @@ function Actions(props) {
                 btn.disabled = false
             }, 5000);
         }
-        msQuery(mode, form, () => {
-            if (mode === 'tableRename') {
+        msQuery(mode, form, (data) => {
+            if (data.status === true && mode === 'tableRename') {
                 window.location = '?s=tbl_data&table=' + form.querySelector('[name="newName"]').value
             }
         })

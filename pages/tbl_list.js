@@ -189,18 +189,12 @@ function Tbl_list(props) {
         msImageAction('formTableList', opt, url)
     }
 
-    const chbx_action = (opt, e) => {
+    const checkboxAction = (opt, e) => {
         e.preventDefault()
-        chbx_action('formTableList', opt, 'table[]')
+        checkboxAction('formTableList', opt, 'table[]')
     }
 
     const image = src => props.dirImage + src;
-
-    const reload = () => {
-        fetch(`?s=tbl_list&db=${props.db}&ajax=1`)
-          .then(response => response.json())
-          .then(json => setTables(json.page.tables))
-    }
 
     const filterByDate = () => {
         let year = document.querySelector('[name="ds_year"]').value
@@ -231,8 +225,8 @@ function Tbl_list(props) {
 
               <div className="chbxAction">
                   <img src={image("arrow_ltr.png")} alt=""  />
-                  <a href="#" onClick={chbx_action.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
-                  <a href="#" onClick={chbx_action.bind(this, 'uncheck')}>очистить</a>
+                  <a href="#" onClick={checkboxAction.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
+                  <a href="#" onClick={checkboxAction.bind(this, 'uncheck')}>очистить</a>
               </div>
 
               <div className="imageAction">

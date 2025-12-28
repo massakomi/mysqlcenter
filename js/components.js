@@ -52,6 +52,9 @@ function Messages(props) {
 
     const MessageText = (item) => {
         let extra = []
+        if (typeof(item) === 'string') {
+            return (<div>{item}</div>)
+        }
         if (item.sql) {
             extra.push(<div key="v1" className="sqlQuery">{item.sql}</div>)
             if (item.rows) {

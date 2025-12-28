@@ -16,7 +16,7 @@ class Search extends Base
         $queryField = POST('queryField');
         $listTables = \DatabaseTable::getTables();
 
-        if (isajax()) {
+        if (isAjax()) {
             if (GET('db') && !in_array(GET('db'), \Server::getDatabases())) {
                 ajaxError('База данных не найдена');
             }

@@ -18,11 +18,11 @@ class TblData extends Base
                 $msc->table = str_replace('`', '', $t[1]);
             } else {
                 $text = 'SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе';
-                $msc->addMessage($text, null, MS_MSG_FAULT);
+                $msc->error($text);
                 return [];
             }
         } elseif ($msc->table == '') {
-            $msc->addMessage('Не указана таблица в запросе', null, MS_MSG_FAULT);
+            $msc->error('Не указана таблица в запросе');
             return [];
         }
 
@@ -30,7 +30,7 @@ class TblData extends Base
         $fields = \DatabaseTable::getFields($msc->table);
         // Если полей нет, значит и таблицы нет
         if (!$fields || count($fields) == 0) {
-            $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT, $msc->error);
+            $msc->error("Таблицы $msc->table не существует");
             return [];
         }
 
@@ -86,7 +86,7 @@ class TblData extends Base
             // Сразу выход, если ничего не найдено
             if ($count == 0) {
                 $msc->pageTitle = "Таблица: $msc->table (пустая)";
-                $msc->addMessage("В таблице $msc->table нет данных", $sql, MS_MSG_SIMPLE);
+                $msc->error("В таблице $msc->table нет данных");
                 return [];
             }
 
@@ -96,21 +96,21 @@ class TblData extends Base
             // Внимание - тут возможно несколько вложенных таблиц или запросов
             $result = $msc->fetchPdo('EXPLAIN ' . $directSQL);
             if (!$result) {
-                $msc->notice('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
+                $msc->error('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
                 return [];
             }
             $count = 0;
             $part  = 0;
 
             // Для директ sql сообщение выводим тут
-            $msc->addMessage($directSQL);
+            $msc->notice($directSQL);
             $sql = $directSQL;
         }
 
 
         // Запрос и если ничего не найдено тут - выходим
         if (!$result = $msc->fetchPdo($sql)) {
-            $msc->addMessage('Ничего не найдено в таблице по запросу', $sql, MS_MSG_SIMPLE);
+            $msc->error('Ничего не найдено в таблице по запросу');
             return [];
         }
 
@@ -149,7 +149,7 @@ class TblData extends Base
             'fields' => $fields,
             'data' => $data,
         ];
-        $msc->addPopularTable($msc->table);
+        \PopularTables::save($msc->db, $msc->table);
         return $pageProps;
     }
 

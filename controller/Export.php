@@ -168,7 +168,7 @@ class Export extends Base
             // Save
             if (POST('new') != null) {
                 if (!$id_set = $msct->insertSet(POST('new'))) {
-                    $msc->addMessage('Не смог добавить сет', null, MS_MSG_FAULT, $msc->error);
+                    $msc->error('Не смог добавить сет');
                     return [];
                 }
                 foreach ($_POST['table'] as $key => $t) {
@@ -194,7 +194,7 @@ class Export extends Base
                     }
                     $msct->insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
                 }
-                $msc->addMessage('Сет добавлен', null, MS_MSG_SUCCESS);
+                $msc->success('Сет добавлен');
                 return [];
 
                 // Send

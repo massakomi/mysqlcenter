@@ -180,9 +180,9 @@ function UserInfo(props) {
 function Actionsdb(props) {
 
     const fullinfo = () => {
-        fetch(props.url + '&ajax=1&act=fullinfo')
-          .then(response => response.json())
-          .then(json => setDbInfo(json.page.dbInfo))
+        msQuery('', 'act=fullinfo', (json) => {
+            setDbInfo(json.page.dbInfo)
+        })
     }
 
     const [dbInfo, setDbInfo] = React.useState(props.dbInfo)

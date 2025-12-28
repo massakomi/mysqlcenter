@@ -138,6 +138,10 @@ function Db_compare(props) {
         return <tr key={`row-${rowIndex}`} className={rowClass}>{cells}</tr>
     }
 
+    if (!props.databases) {
+        return <Messages messages={["Не выбрано баз данных"]} />
+    }
+
     let params = ['Есть?', 'Рядов', 'Размер', 'Стр-ра']
     const customHeader = header(params)
     const {rows, exportDifference} = body(params)

@@ -11,7 +11,7 @@ class TblChange extends Base
     {
         global $msc, $pagel, $umaker;
         if ($msc->table == '') {
-            $msc->notice('Не указана таблица в запросе');
+            $msc->error('Не указана таблица в запросе');
             return [];
         }
 
@@ -31,7 +31,7 @@ class TblChange extends Base
             if ($whereCondition != null) {
                 $tableData = $msc->getData('SELECT * FROM ' . $msc->table . ' WHERE ' . $whereCondition);
                 if (!$tableData) {
-                    $msc->notice('Ничего не выбрано');
+                    $msc->error('Ничего не выбрано');
                     return [];
                 }
             }
@@ -110,7 +110,7 @@ class TblChange extends Base
                 $where = urldecode($_POST['cond'][$numRow]);
                 $cValue = $msc->fetchPdo('SELECT * FROM `' . $msc->table . '` WHERE ' . $where)->fetchObject();
             }
-            $arrayValues = array();
+            $arrayValues = [];
             $countEmpty = 0;
             foreach ($data as $key => $value) {
                 $default = $fields[$key]->Default;
@@ -148,14 +148,14 @@ class TblChange extends Base
                     . implode(', ', $arrayValues) . ')';
             }
             if ($msc->execPdo($sql)) {
-                $msc->addMessage($lang[0][$editType], $sql, MS_MSG_SUCCESS);
+                $msc->success($lang[0][$editType], $sql);
                 $countInsert++;
             } else {
-                $msc->addMessage($lang[1][$editType], $sql, MS_MSG_FAULT, $msc->error);
+                $msc->error($lang[1][$editType], $sql);
             }
         }
         if ($countInsert == 0) {
-            $msc->addMessage($lang[2][$editType]);
+            $msc->notice($lang[2][$editType]);
         }
     }
 

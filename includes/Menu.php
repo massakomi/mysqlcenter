@@ -1,7 +1,7 @@
 <?php
 
 /**
- *
+ * Класс генерирующий разные html блоки
  */
 class Menu
 {
@@ -166,8 +166,8 @@ class Menu
             return 'Нет таблиц в БД';
         }
         // статистика префиксов
-        $prefixes = array();
-        $rows = array();
+        $prefixes = [];
+        $rows = [];
         foreach ($tables as $row) {
             $t = $row->Name;
             $end = strlen($t) > 2 && strpos($t, '_', 3) > 0 ? strpos($t, '_', 3) : 50;
@@ -248,7 +248,7 @@ class Menu
     private function addPopularTables(): string
     {
         global $msc, $umaker;
-        $tables = $msc->getPopularTablesDb();
+        $tables = PopularTables::forDb($msc->db);
         if (count($tables) == 0) {
             return '';
         }
@@ -277,6 +277,27 @@ class Menu
         $url = $umaker->make('resetPopular', 1);
         $menu .= '<a href="' . $url . '" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
         return $menu;
+    }
+
+    /**
+     * Возвращает блок накопленных за время выполнения скрипта сообщений
+     * @return string|null
+     */
+    public function getMessages(): ?string
+    {
+        global $msc;
+        if (config('showmessages') != '1') {
+            return null;
+        }
+        $messages = $msc->getMessagesData();
+        if (count($messages) == 0) {
+            return null;
+        }
+        $style = config('hidemessages') == '1' ? ' style="display:none"' : '';
+        return '<div class="globalMessage">' .
+            '  <div>Сообщение <a href="#" class="hiddenSmallLink" onClick="toggleMessages(this)">close</a></div>' .
+            '  <div '.$style.'>' . implode('<br />', $messages) . '  </div>' .
+            '</div>';
     }
 
     /**

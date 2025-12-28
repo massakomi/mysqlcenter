@@ -241,9 +241,9 @@ function TableLinks(props) {
 
 function Tbl_data(props) {
 
-    const chbx_action = (opt, e) => {
+    const checkboxAction = (opt, e) => {
         e.preventDefault()
-        chbx_action('formTableRows', opt, 'row[]')
+        checkboxAction('formTableRows', opt, 'row[]')
     }
 
     const imageAction = (opt, url, e) => {
@@ -319,8 +319,8 @@ function Tbl_data(props) {
 
               <div className="chbxAction">
                   <img src={image("arrow_ltr.png")} alt="" border="0" align="absmiddle" />
-                  <a href="#" onClick={chbx_action.bind(this, 'check')}>выбрать все</a>  &nbsp;
-                  <a href="#" onClick={chbx_action.bind(this, 'uncheck')}>очистить</a>
+                  <a href="#" onClick={checkboxAction.bind(this, 'check')}>выбрать все</a>  &nbsp;
+                  <a href="#" onClick={checkboxAction.bind(this, 'uncheck')}>очистить</a>
               </div>
 
               <div className="imageAction">

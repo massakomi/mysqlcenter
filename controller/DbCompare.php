@@ -19,8 +19,8 @@ class DbCompare extends Base
         if (!$databases) {
             $databases = POST('databases');
         }
-        if ($databases && count($databases) < 2) {
-            $msc->addMessage('Вы не выбрали базы данных для сравнения');
+        if (!$databases || count($databases) < 2) {
+            $msc->error('Вы не выбрали базы данных для сравнения');
             return [];
         }
 

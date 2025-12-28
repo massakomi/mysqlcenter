@@ -24,7 +24,7 @@ class ActionProcessor
         $this->generalActions($queryMode);
         $this->databaseActions($queryMode);
 
-        if (isajax()) {
+        if (isAjax()) {
             ajaxResultWithMessages();
         } elseif ($this->redirect) {
             header('Location: ' . $this->redirect);
@@ -63,19 +63,19 @@ class ActionProcessor
                 if ($changed) {
                     $f = fopen(MS_CONFIG_FILE, 'w+');
                     if (fwrite($f, implode("\n", $newFileContent))) {
-                        $msc->addMessage('Конфиг обновлён');
+                        $msc->success('Конфиг обновлён');
                     } else {
-                        $msc->addMessage('Не удалось записать конфиг в файл');
+                        $msc->error('Не удалось записать конфиг в файл');
                     }
                     fclose($f);
                 } else {
-                    $msc->addMessage('Нечего обновлять');
+                    $msc->error('Нечего обновлять');
                 }
                 break;
 
             case 'configRestore':
                 if (copy(MS_CONFIG_DEFAULT_FILE, MS_CONFIG_FILE)) {
-                    $msc->addMessage('Значения по умолчанию восстановлены');
+                    $msc->success('Значения по умолчанию восстановлены');
                 }
                 break;
 
@@ -89,14 +89,14 @@ class ActionProcessor
                 $res = file_put_contents(MS_CONNECT_CONFIG_FILE, json_encode($config));
                 if ($queryMode == 'connectSave') {
                     if ($res) {
-                        $msc->addMessage('Конфиг сохранен');
+                        $msc->success('Конфиг сохранен');
                     } else {
-                        $msc->addMessage('Ошибка сохранения конфига', '', MS_MSG_ERROR);
+                        $msc->error('Ошибка сохранения конфига');
                     }
                     break;
                 }
                 $msc->connect();
-                $msc->addMessage('Connect success!');
+                $msc->success('Connect success!');
                 break;
         }
     }
@@ -189,9 +189,9 @@ class ActionProcessor
                 $dkv = intval($this->param('delay_key_write'));
                 $sql = "ALTER TABLE `$table` PACK_KEYS=$pk CHECKSUM=$cs DELAY_KEY_WRITE=$dkv AUTO_INCREMENT=$ai";
                 if ($msc->execPdo($sql)) {
-                    return $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+                    return $msc->success('Таблица изменена', $sql);
                 } else {
-                    return $msc->addMessage('Ошибка изменения таблицы', $sql, MS_MSG_FAULT);
+                    return $msc->error('Ошибка изменения таблицы', $sql);
                 }
                 break;
 
@@ -216,12 +216,12 @@ class ActionProcessor
                     if ($msc->execPdo($sql)) {
                         $c = $msc->affectedRows;
                         if ($c > 0) {
-                            $msc->addMessage('Таблица изменена, затронуто рядов: ' . $c, $sql, MS_MSG_SUCCESS);
+                            $msc->success('Таблица изменена, затронуто рядов: ' . $c, $sql);
                         } else {
-                            $msc->addMessage('Ничего не найдено и не заменено', $sql, MS_MSG_NOTICE);
+                            $msc->error('Ничего не найдено и не заменено', $sql);
                         }
                     } else {
-                        $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT);
+                        $msc->error('Ошибка при изменении таблицы', $sql);
                     }
                 }
                 break;
@@ -256,7 +256,7 @@ class ActionProcessor
             case 'copy_all':
                 $a = $tbl;
                 if (!is_array($a)) {
-                    $msc->addMessage('table не массив', '', MS_MSG_ERROR);
+                    $msc->error('table не массив');
                     break;
                 }
                 if ($a == false) {
@@ -302,10 +302,10 @@ class ActionProcessor
             case 'dbHide':
                 if ($this->param('act') == 'show') {
                     $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 1)');
-                    $msc->addMessage("База $db открыта");
+                    $msc->success("База $db открыта");
                 } else {
                     $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 0)');
-                    $msc->addMessage("База $db скрыта");
+                    $msc->success("База $db скрыта");
                 }
                 break;
 
@@ -323,9 +323,9 @@ class ActionProcessor
             case 'dbCollate':
             case 'dbCharset':
                 if ($server->databaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset')) {
-                    $msc->addMessage("Успешно выполнено", $msc->lastSql, MS_MSG_SUCCESS);
+                    $msc->success("Успешно выполнено", $msc->lastSql);
                 } else {
-                    $msc->addMessage("Ошибка при выполнении операции с $db", $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                    $msc->error("Ошибка при выполнении операции с $db", $msc->lastSqlr);
                 }
                 break;
 
@@ -335,15 +335,15 @@ class ActionProcessor
                 foreach ($tables as $table) {
                     if ($action === 'drop-query') {
                         $sql = 'DROP TABLE `' . $table . '`;';
-                        $msc->addMessage($sql, '', MS_MSG_SUCCESS);
+                        $msc->success($sql);
                     }
 
                     if (in_array($action, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
                         $sql = strtoupper($action) . ' TABLE `' . $table . '`';
                         if ($msc->execPdo($sql)) {
-                            $msc->addMessage('Запрос выполнен', $sql, MS_MSG_SUCCESS);
+                            $msc->success('Запрос выполнен', $sql);
                         } else {
-                            $msc->addMessage('Ошибка запроса', $sql, MS_MSG_FAULT);
+                            $msc->error('Ошибка запроса', $sql);
                         }
                     }
                 }
@@ -395,9 +395,9 @@ class ActionProcessor
                     $row = [$row];
                 }
                 if ($dbt->rowDelete($db, $tbl, implode(' OR ', $row), count($row))) {
-                    return $msc->addMessage("Ряд $row удалён", $msc->lastSql, MS_MSG_SUCCESS);
+                    return $msc->success("Ряд $row удалён", $msc->lastSql);
                 } else {
-                    return $msc->addMessage("Ошибка удаления ряда $row", $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                    return $msc->error("Ошибка удаления ряда $row", $msc->lastSql);
                 }
                 break;
 
@@ -411,13 +411,13 @@ class ActionProcessor
                 if ($dbt->rowCopy($tbl, $row)) {
                     $n = $msc->affectedRows;
                     if ($n > 0) {
-                        return $msc->addMessage('Добавлено ' . $n . ' рядов', $msc->lastSql, MS_MSG_SUCCESS);
+                        return $msc->success('Добавлено ' . $n . ' рядов', $msc->lastSql);
                     } else {
-                        return $msc->addMessage('Всё в порядке', $msc->lastSql, MS_MSG_SUCCESS);
+                        return $msc->success('Всё в порядке', $msc->lastSql);
                     }
                 } else {
                     $text = 'Ошибка копирования ряда ' . $row;
-                    return $msc->addMessage($text, $msc->lastSql, MS_MSG_FAULT, $msc->error);
+                    return $msc->error($text, $msc->lastSql);
                 }
                 break;
 
@@ -427,9 +427,9 @@ class ActionProcessor
                 $validate->queryCheck($db, $tbl, $this->param('field'));
                 $sql = "ALTER TABLE `$tbl` DROP " . $this->param('field');
                 if ($msc->execPdo($sql, $db)) {
-                    $msc->addMessage('Поле удалено', $sql, MS_MSG_SUCCESS);
+                    $msc->success('Поле удалено', $sql);
                 } else {
-                    $msc->addMessage('Ошибка удаления поля', $sql, MS_MSG_FAULT, $msc->error);
+                    $msc->success('Ошибка удаления поля', $sql);
                 }
                 break;
 
@@ -444,9 +444,9 @@ class ActionProcessor
                     $sql = 'ALTER table `' . $tbl . '` DROP `' . implode('`, DROP `', $deleteFields) . '`';
                 }
                 if ($msc->execPdo($sql)) {
-                    $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+                    $msc->success('Таблица изменена', $sql);
                 } else {
-                    $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
+                    $msc->success('Ошибка при изменении таблицы', $sql);
                 }
                 break;
 
@@ -459,9 +459,9 @@ class ActionProcessor
                 } else {
                     $sql = "ALTER TABLE `$tbl` DROP KEY " . $this->param('key');
                     if ($msc->execPdo($sql)) {
-                        $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
+                        $msc->success('Ключ удален', $sql);
                     } else {
-                        $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, $msc->error);
+                        $msc->error('Ошибка удаления ключа', $sql);
                     }
                 }
                 break;
@@ -483,9 +483,9 @@ class ActionProcessor
                 }
                 $sql = 'ALTER TABLE ' . $tbl . ' ADD ' . $keyDefinition . ' (' . implode(',', $keyFields) . ')';
                 if ($msc->execPdo($sql)) {
-                    $msc->addMessage('Ключ добавлен', $sql, MS_MSG_SUCCESS);
+                    $msc->success('Ключ добавлен', $sql);
                 } else {
-                    $msc->addMessage('Ошибка создания ключа', $sql, MS_MSG_FAULT);
+                    $msc->error('Ошибка создания ключа', $sql);
                 }
                 break;
 
@@ -501,9 +501,9 @@ class ActionProcessor
                 $kill = POST('id');
                 if (!empty($kill)) {
                     if ($msc->execPdo($sql = 'KILL ' . $kill)) {
-                        $msc->addMessage('Успешно удалено');
+                        $msc->success('Успешно удалено');
                     } else {
-                        $msc->addMessage('Ошибка остановки', $sql, MS_MSG_ERROR, $msc->error);
+                        $msc->error('Ошибка остановки', $sql);
                     }
                 }
                 break;

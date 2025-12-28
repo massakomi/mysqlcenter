@@ -130,11 +130,15 @@ class MSCenter extends DatabaseQuery
     public function connect(): void
     {
         global $pdo;
+        if (!$this->connectConfigExists()) {
+            return;
+        }
         $settings = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
         $current = $settings['current'];
         $config = $settings['config'][$current];
         if (!$config) {
-            exitError("Конфиг не найден, current='$current'");
+            $this->connectError("Конфиг существует, но настройка current($current) в нем не найдена");
+            return;
         }
         extract($config);
         try {
@@ -148,9 +152,19 @@ class MSCenter extends DatabaseQuery
         } catch (PDOException $e) {
             $this->clearCurrentDatabase();
             $msg = 'Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />';
-            $this->addMessage($msg . $e->getMessage(), '', $this->error, MS_MSG_FAULT);
-            $this->page = 'login';
+            $this->connectError($msg . $e->getMessage());
         }
+    }
+
+    /**
+     * Приходится тут все сбрасывать, т.к. к этому времени в init можно все заполнится
+     */
+    public function connectError($msg): void
+    {
+        $this->error($msg, '');
+        $this->page = 'login';
+        $this->db = '';
+        $this->table = '';
     }
 
     /**
@@ -190,7 +204,7 @@ class MSCenter extends DatabaseQuery
      */
     public function getMessagesData()
     {
-        if ($this->allowRepeatMessages == '' && !isajax()) {
+        if ($this->allowRepeatMessages == '' && !isAjax()) {
             $messages = array_count_values($this->messages);
             $this->messages = array_unique($this->messages);
             foreach ($this->messages as $k => $message) {
@@ -202,31 +216,38 @@ class MSCenter extends DatabaseQuery
         return $this->messages;
     }
 
+
     /**
-     * Возвращает блок накопленных за время выполнения скрипта сообщений
-     * @return string
+     * Ошибка
+     *
+     * @param string $text
+     * @param null $sql
      */
-    public function getMessages()
+    public function error(string $text, $sql = null): bool
     {
-        $messages = $this->getMessagesData();
-        if (count($messages) == 0) {
-            return null;
-        }
-        $style = config('hidemessages') == '1' ? ' style="display:none"' : '';
-        return '<div class="globalMessage">' .
-        '  <div>Сообщение <a href="#" class="hiddenSmallLink" onClick="toggleMessages(this)">close</a></div>' .
-        '  <div '.$style.'>' . implode('<br />', $this->messages) . '  </div>' .
-        '</div>';
+        return $this->addMessage($text, $sql, MS_MSG_FAULT, $this->error);
     }
 
     /**
-     * Замечание
+     * Успешная операция
      *
-     * @param string
+     * @param string $text
+     * @param null $sql
      */
-    public function notice($text, $sql = null)
+    public function success(string $text, $sql = null): bool
     {
-        $this->addMessage($text, $sql, MS_MSG_NOTICE, $this->error);
+        return $this->addMessage($text, $sql, MS_MSG_SUCCESS);
+    }
+
+    /**
+     * Заметка
+     *
+     * @param string $text
+     * @param null $sql
+     */
+    public function notice(string $text, $sql = null): bool
+    {
+        return $this->addMessage($text, $sql, MS_MSG_NOTICE);
     }
 
     /**
@@ -237,7 +258,7 @@ class MSCenter extends DatabaseQuery
      * @param integer тип сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @return boolean
      */
-    public function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = ''): bool
+    private function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = ''): bool
     {
         $textError = $text;
         if ($sql != '') {
@@ -250,15 +271,15 @@ class MSCenter extends DatabaseQuery
                 $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
             }
         }
-        $colors = array(
+        $colors = [
             MS_MSG_SIMPLE => 'black',
             MS_MSG_SUCCESS => 'green',
             MS_MSG_FAULT => 'red',
             MS_MSG_ERROR => 'darkred',
             MS_MSG_NOTICE => 'blue'
-        );
-        $color = isset($colors[$type]) ? $colors[$type] : 'black';
-        if (isajax()) {
+        ];
+        $color = $colors[$type] ?? 'black';
+        if (isAjax()) {
             $this->messages [] = [
                 'text' => $textError,
                 'type' => $type,
@@ -276,141 +297,4 @@ class MSCenter extends DatabaseQuery
         return true;
     }
 
-    /**
-     * Прямая запись строки в лог (для множества запросов в sql разделе)
-     *
-     * @access private
-     * @param $string
-     * @return bool|void
-     */
-    public function logInFile($string)
-    {
-        if (config('sqllog') != '1') {
-            return;
-        }
-        $string .= ";\r\n";
-        if (!file_exists(MS_DIR_LOGS)) {
-            if (!mkdir(MS_DIR_LOGS)) {
-                return $this->addMessage('Не смог создать папку data', null, MS_MSG_FAULT);
-            }
-        }
-        $file = MS_DIR_LOGS . '/' . $this->db . '.sql';
-        if (!$fo = fopen($file, file_exists($file) ? 'a+' : 'w+')) {
-            return false;
-        }
-        $result = fwrite($fo, $string);
-        fclose($fo);
-        if (!$result) {
-            return $this->addMessage('Не смог создать/записать файл ' . $file, null, MS_MSG_FAULT);
-        }
-    }
-
-    public function getPopularTables(): array
-    {
-        if (!file_exists(MS_POPULAR_TABLES_FILE) || !$this->db) {
-            return [];
-        }
-        $json = file_get_contents(MS_POPULAR_TABLES_FILE);
-        $json = json_decode($json, true);
-        if (!array_key_exists($this->db, $json)) {
-            $json[$this->db] = [];
-        }
-        if (GET('resetPopular')) {
-            $json[$this->db] = [];
-            file_put_contents(MS_POPULAR_TABLES_FILE, json_encode($json));
-        }
-        ksort($json[$this->db]);
-        foreach ($json[$this->db] as $table => $values) {
-            if (!is_array($values)) {
-                $json[$this->db][$table] = ['count' => $values];
-            }
-        }
-        return $json;
-    }
-
-    /**
-     * @return array
-     */
-    public function getPopularTablesDb(): array
-    {
-        $tables = $this->getPopularTables();
-        if (array_key_exists($this->db, $tables)) {
-            return $tables[$this->db];
-        } else {
-            return [];
-        }
-    }
-
-    /**
-     * @param $table
-     * @return void
-     */
-    public function addPopularTable($table)
-    {
-        $tables = $this->getPopularTables();
-        if (!array_key_exists($this->db, $tables)) {
-            $tables[$this->db] = [];
-        }
-        if (array_key_exists($table, $tables[$this->db])) {
-            $tables[$this->db] [$table]['count']++;
-        } else {
-            $tables[$this->db] [$table]['count'] = 1;
-        }
-        $tables[$this->db] [$table]['time'] = time();
-        if (date('i') % 10 == 0) {
-            $tablesAll = DatabaseTable::getTables();
-            $exists = array_intersect(array_keys($tables[$this->db]), $tablesAll);
-            $notExists = array_diff(array_keys($tables[$this->db]), $exists);
-            if (count($notExists) > 0) {
-                foreach ($notExists as $table) {
-                    unset($tables[$this->db][$table]);
-                }
-            }
-        }
-        file_put_contents(MS_POPULAR_TABLES_FILE, json_encode($tables));
-    }
-
-
-    /**
-     * Статистика просмотров баз данных
-     * @return void
-     * @throws Exception
-     */
-    public function dbViewStat(): void
-    {
-        global $msc;
-        if (!$msc->connected()) {
-            return;
-        }
-        $dbs = Server::getDatabases();
-        if (!in_array('mysqlcenter', $dbs) || empty($this->db)) {
-            return;
-        }
-        $this->disableLog();
-        $d = date('Y-m-d H:i:s');
-        $a = $this->getData(
-            'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $this->db . '"',
-            PDO::FETCH_OBJ
-        );
-        if (count($a) == 0) {
-            $this->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $this->db . '", 1, 1, "' . $d . '")');
-        } else {
-            $this->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . $d .
-                '" WHERE db_name="' . $this->db . '"');
-        }
-
-        // Статистика просмотров таблиц
-        if ($this->table != '') {
-            $a = $this->getData('SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $this->db .
-                '" AND table_name="' . $this->table . '"', PDO::FETCH_OBJ);
-            if (count($a) == 0) {
-                $values = $this->db . '", "' . $this->table . '", 1, 1, "' . $d;
-                $this->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $values . '")');
-            } else {
-                $this->execPdo('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . $d .
-                    '" WHERE db_name="' . $this->db . '" AND table_name="' . $this->table . '"');
-            }
-        }
-        $this->enableLog();
-    }
 }

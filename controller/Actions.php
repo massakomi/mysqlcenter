@@ -59,7 +59,7 @@ class Actions extends Base
         $msc->pageTitle = "Действия - БД";
         $DQuery = $umaker->make('db', $msc->db, 's', 'actions');
 
-        $dbInfo = $this->getDatabasesFull($msc->db, GET('act') == 'fullinfo', $sort_by, $sort_order, 0);
+        $dbInfo = $this->getDatabasesFull($msc->db, POST('act') == 'fullinfo', $sort_by, $sort_order, 0);
         $dbInfo = $dbInfo[0];
         $dbInfo['collation'] = $dbInfo['DEFAULT_COLLATION_NAME'];
         $charsetList = \Server::getCharsetArray();
@@ -88,7 +88,7 @@ class Actions extends Base
         if ($row = $result->fetch()) {
             $charset = substr($row->Collation, 0, strpos($row->Collation, '_'));
         } else {
-            $msc->notice('Таблица не найдена');
+            $msc->error('Таблица не найдена');
             return [];
         }
 

@@ -63,9 +63,7 @@ $umaker = new UrlMaker();
 
 $msc->init();
 
-if ($msc->connectConfigExists()) {
-    $msc->connect();
-}
+$msc->connect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
 ;if (!$msc->selectDb($msc->db)) {

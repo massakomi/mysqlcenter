@@ -145,7 +145,7 @@ function KeysInfo(props) {
 
 function Tbl_struct(props) {
 
-    const chbx_action = (opt, event) => {
+    const checkboxAction = (opt, event) => {
         event.preventDefault()
         forElements('#formTableStructure input[type="checkbox"]', function(e) {
             this.checked = opt === 'check'
@@ -158,7 +158,7 @@ function Tbl_struct(props) {
 
     const onSubmit = (e, xx) => {
         e.preventDefault()
-        checkEmpty(e.target, 'fieldsNum')
+        submitFormIfFieldNotEmpty(e.target, 'fieldsNum')
     }
 
     const selectOnFocus = (e) => {
@@ -177,8 +177,8 @@ function Tbl_struct(props) {
 
                       <div className="chbxAction">
                           <img src={props.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle"/>
-                          <a href="#" onClick={chbx_action.bind(this, "check")}>выбрать все</a>  &nbsp;
-                          <a href="#" onClick={chbx_action.bind(this, "uncheck")}>очистить</a>
+                          <a href="#" onClick={checkboxAction.bind(this, "check")}>выбрать все</a>  &nbsp;
+                          <a href="#" onClick={checkboxAction.bind(this, "uncheck")}>очистить</a>
                       </div>
 
                       <div className="imageAction">

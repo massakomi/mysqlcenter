@@ -27,9 +27,10 @@ async function msQuery(mode, query = '', callback = '') {
 async function queryResponse(response, callback, type = 'json') {
     let ajaxdebug = typeof debug != 'undefined' && debug
     if (response.ok) {
+
         let content = await response.text()
         if (type === 'json') {
-            if (content.indexOf('{') === 0) {
+            if (response.headers.get('Content-type') === 'application/json') {
                 try {
                     content = JSON.parse(content)
                     showMessages(content)
@@ -84,7 +85,7 @@ async function queryResponse(response, callback, type = 'json') {
 }
 
 function showMessages(json) {
-    if (!json.messages) {
+    if (!json.messages || !json.messages.length) {
         return
     }
 
@@ -259,14 +260,16 @@ function sqlFormToggle() {
 /**
  * Копирует последний ряд таблицы вниз
  * @param  tableId string   id таблицы
+ * @param from
+ * @param after
  * @return object Вставленная строка
  */
 function addRow(tableId, from = 'last', after = true) {
-    var table = document.getElementById(tableId)
+    const table = document.getElementById(tableId)
     // сколько всего рядов
-    var i = table.rows.length
+    const i = table.rows.length
     // берём последний/первый ряд
-    var tr = table.rows[from == 'last' ? i - 1 : from > i ? i - 1 : from]
+    const tr = table.rows[from === 'last' ? i - 1 : from > i ? i - 1 : from]
     // назначаем ему ид
     tr.id = 'trAfterId' + i
     // вставляем после/до него еще 1 строку
@@ -276,9 +279,9 @@ function addRow(tableId, from = 'last', after = true) {
         insertAfter('trAfterId' + i, 'TR', 'trNewId' + i)
     }
     // вот она!
-    var tr2 = document.getElementById('trNewId' + i)
+    const tr2 = document.getElementById('trNewId' + i)
     // копируем ячейки из одной строки в другую
-    for (var j = 0; j < tr.cells.length; j++) {
+    for (let j = 0; j < tr.cells.length; j++) {
         td = document.createElement('TD')
         tr2.appendChild(td)
         td.innerHTML = tr.cells[j].innerHTML
@@ -291,14 +294,14 @@ function addRow(tableId, from = 'last', after = true) {
  */
 function insertAfter(sAfterId, sTag, sId) {
     let objSibling = document.getElementById(sAfterId)
-    objElement = document.createElement(sTag)
+    let objElement = document.createElement(sTag)
     objElement.setAttribute('id', sId)
     objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling)
 }
 
 function insertBefore(sAfterId, sTag, sId) {
     let objSibling = document.getElementById(sAfterId)
-    objElement = document.createElement(sTag)
+    let objElement = document.createElement(sTag)
     objElement.setAttribute('id', sId)
     objSibling.parentNode.insertBefore(objElement, objSibling)
 }
@@ -324,14 +327,14 @@ function remove(objElement) {
 }
 
 /**
- * Покаывает сообщение об ошибке, если элемент формы не заполнен
+ * Показывает сообщение об ошибке, если элемент формы не заполнен
  *
- * @param   object   Форма
- * @param   string   Аттрибут name проверяемого поля *
  * @return  boolean  сабмитит форму
+ * @param forma
+ * @param fieldName
  */
-function checkEmpty(forma, fieldName) {
-    var val = forma[fieldName].value
+function submitFormIfFieldNotEmpty(forma, fieldName) {
+    const val = forma[fieldName].value
     if (trim(val) === '') {
         forma[fieldName].select()
         alert('Поле пустое')
@@ -343,7 +346,7 @@ function checkEmpty(forma, fieldName) {
     }
 }
 
-// Полейзнейший набор функций
+// Полезнейший набор функций
 function is_null(v) {
     return typeof v == 'undefined'
 }
@@ -371,18 +374,18 @@ function check(obj, message) {
 /**
  * Групповые действия с чекбоксами
  */
-function chbx_action(form_name, action, mask = false) {
-    var add = ''
+function checkboxAction(form_name, action, mask = false) {
+    let add = ''
     if (mask) {
         add = '[name="' + mask + '"]'
     }
-    var chbxs = document.querySelectorAll('form[name="' + form_name + '"] input[type="checkbox"]' + add)
-    for (var chx of chbxs) {
-        if (action == 'invert') {
+    let chbxs = document.querySelectorAll('form[name="' + form_name + '"] input[type="checkbox"]' + add)
+    for (let chx of chbxs) {
+        if (action === 'invert') {
             chx.checked = !chx.checked
-        } else if (action == 'check') {
+        } else if (action === 'check') {
             chx.checked = true
-        } else if (action == 'uncheck') {
+        } else if (action === 'uncheck') {
             chx.checked = false
         }
     }
@@ -397,7 +400,7 @@ cook = {
         expires = expl.getTime() + expires * 24 * 60 * 60 * 1000
         expl.setTime(expires)
         expires = expl.toGMTString()
-        var curCookie =
+        let curCookie =
             name +
             '=' +
             escape(value) +
@@ -410,11 +413,11 @@ cook = {
         return curCookie
     },
     get: function (name) {
-        var prefix = name + '='
-        var cookieStartIndex = document.cookie.indexOf(prefix)
-        if (cookieStartIndex == -1) return false
-        var cookieEndIndex = document.cookie.indexOf(';', cookieStartIndex + prefix.length)
-        if (cookieEndIndex == -1) cookieEndIndex = document.cookie.length
+        let prefix = name + '='
+        let cookieStartIndex = document.cookie.indexOf(prefix)
+        if (cookieStartIndex === -1) return false
+        let cookieEndIndex = document.cookie.indexOf(';', cookieStartIndex + prefix.length)
+        if (cookieEndIndex === -1) cookieEndIndex = document.cookie.length
         return unescape(document.cookie.substring(cookieStartIndex + prefix.length, cookieEndIndex))
     },
 }

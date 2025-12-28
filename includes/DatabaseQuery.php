@@ -65,8 +65,8 @@ class DatabaseQuery
         } catch (\PDOException $e) {
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
-            msclog($this->error, $sql);
-            if ($this->exceptionOnError && !isajax()) {
+            logError($this->error, $sql);
+            if ($this->exceptionOnError && !isAjax()) {
                 // При USE ошибка перехватывается и выводится другой html
                 if (!str_starts_with($sql, 'USE')) {
                     echo '<pre>';
@@ -109,7 +109,7 @@ class DatabaseQuery
         try {
             $this->execPdo("USE `$db`");
         } catch (\Exception $e) {
-            $this->addMessage('Ошибка при выборе базы данных "' . $db . '"', '', MS_MSG_FAULT, $this->error);
+            $this->error('Ошибка при выборе базы данных "' . $db . '"');
             return false;
         }
         return true;
@@ -123,7 +123,7 @@ class DatabaseQuery
      * @param null $result
      * @return bool
      */
-    public function loqQuery($sql, $result = null)
+    protected function loqQuery($sql, $result = null)
     {
         if (!$result || preg_match('~^(SHOW|SELECT|SET)~i', trim($sql))) {
             return false;
@@ -131,7 +131,7 @@ class DatabaseQuery
         $string = trim($sql);
         $string = preg_replace('/[\r\n\t]+/', ' ', $string);
         $string = str_replace('  ', ' ', $string);
-        $this->logInFile($string);
+        logInFile($string, $this->db);
     }
 
     private $logEnabled = true;

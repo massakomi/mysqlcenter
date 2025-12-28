@@ -72,6 +72,9 @@ function groupData({databases, data1, data2, fields, pk}) {
     }
     for (const item of data2) {
         const value = item[primaryKey]
+        if (typeof data [value] == 'undefined') {
+            data [value] = {}
+        }
         if (typeof data [value][db1] !== 'undefined') {
             if (data [value][db1] === value) {
                 data [value] = item

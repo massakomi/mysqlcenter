@@ -17,7 +17,7 @@ function _inspectFunction($functionName) {
             $function->$p = $v;
         }
     }
-    $function->parameters  = array();
+    $function->parameters  = [];
     // 3. Параметры
     foreach ($prop->getParameters() as $index => $param) {
         if ($param->isOptional()) {
@@ -65,7 +65,7 @@ function _inspectClass($className) {
             }
         }
         // 3. Параметры
-        @$methods[$key]->parameters = array();
+        @$methods[$key]->parameters = [];
         foreach ($prop->getParameters() as $index => $param) {
             if ($param->isOptional()) {
                 @$param->default = $param->getDefaultValue();
@@ -88,9 +88,9 @@ function _inspectClass($className) {
  */
 function _parseComment($comment) {
     $co = new stdClass();
-    $co->return      = array();
-    $co->description = array();
-    $co->parameters  = array();
+    $co->return      = [];
+    $co->description = [];
+    $co->parameters  = [];
     $co->access      = '';
     $co->package     = '';
     $co->parentClass     = '';
@@ -181,7 +181,7 @@ function _printInspectReference($inspectedData) {
     }
     if (is_array($inspectedData)) {
         $className = 'function';
-        $methods = array();
+        $methods = [];
         foreach ($inspectedData as $function) {
             $method         = _inspectFunction($function);
             $method->name   = $function;
@@ -212,7 +212,7 @@ function _printInspectReference($inspectedData) {
             $title = ' title="'.$mo->filename.'"';
         }
         $content .= "<td class='name $mo->static'$title>$mo->name</td>";
-        $pc = array();
+        $pc = [];
         foreach ($mo->parameters as $po) {
             if (!isset($po->type)) {
                 @$po->type = 'no';

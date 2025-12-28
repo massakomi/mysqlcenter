@@ -76,7 +76,7 @@ class Server
     public static function getCharsetArray($extended = false)
     {
         global $msc;
-        $charsetList = array();
+        $charsetList = [];
         $res = $msc->fetchPdo('SHOW CHARACTER SET');
         foreach ($res as $row) {
             $charsetList [$row['Charset']] = $extended ? $row : $row['Charset'];
@@ -105,7 +105,7 @@ class Server
         $sql = 'SELECT * FROM mysql.user WHERE User="' . $username . '"';
         $result = $msc->getData($sql);
         if ($result) {
-            $msc->addMessage('Пользователь с именем "' . $username . '" уже существует', '', MS_MSG_NOTICE);
+            $msc->error('Пользователь с именем "' . $username . '" уже существует');
             return false;
         }
 
@@ -114,9 +114,9 @@ class Server
         $sql = 'CREATE USER `' . $username . '` IDENTIFIED BY "' . $userpass . '"';
         $result = $msc->execPdo($sql);
         if ($result) {
-            $msc->addMessage('Пользователь "' . $username . '" добавлен', $sql, MS_MSG_SUCCESS);
+            $msc->success('Пользователь "' . $username . '" добавлен', $sql);
         } else {
-            $msc->addMessage('Ошибка добавления пользователя "' . $username . '"', $sql, MS_MSG_FAULT);
+            $msc->error('Ошибка добавления пользователя "' . $username . '"', $sql);
             return false;
         }
 
@@ -124,9 +124,9 @@ class Server
         $sql = 'CREATE DATABASE `' . $database . '`';
         $result = $msc->execPdo($sql);
         if ($result) {
-            $msc->addMessage('База данных "' . $database . '" создана', $sql, MS_MSG_SUCCESS);
+            $msc->success('База данных "' . $database . '" создана', $sql);
         } else {
-            $msc->addMessage('Ошибка создания базы данных "' . $database . '"', $sql, MS_MSG_FAULT);
+            $msc->error('Ошибка создания базы данных "' . $database . '"', $sql);
             return false;
         }
 
@@ -135,9 +135,9 @@ class Server
         $result = $msc->execPdo($sql);
         if ($result) {
             $str = 'Права на базу "' . $database . '" отданы пользоватлю "' . $username . '"';
-            $msc->addMessage($str, $sql, MS_MSG_SUCCESS);
+            $msc->success($str, $sql);
         } else {
-            $msc->addMessage('Ошибка наделения прав на базу "' . $database . '"', $sql, MS_MSG_FAULT);
+            $msc->error('Ошибка наделения прав на базу "' . $database . '"', $sql);
             return false;
         }
         return true;
@@ -166,12 +166,12 @@ class Server
                 $text = 'создана';
                 break;
             default:
-                return $msc->addMessage('Неверный тип обработки', null, MS_MSG_ERROR);
+                return $msc->error('Неверный тип обработки');
         }
         if ($msc->execPdo($sql)) {
-            return $msc->addMessage("База данных $db $text", $sql, MS_MSG_SUCCESS);
+            return $msc->success("База данных $db $text", $sql);
         } else {
-            return $msc->addMessage("Ошибка работы с $db", $sql, MS_MSG_FAULT, $msc->error);
+            return $msc->error("Ошибка работы с $db", $sql);
         }
     }
 
@@ -189,7 +189,7 @@ class Server
         $this->validate->queryCheck($db);
         $a = DatabaseTable::getTables($db);
         if (count($a) == 0) {
-            return $msc->addMessage('Таблиц нет', null, MS_MSG_FAULT);
+            return $msc->error('Таблиц нет');
         }
         $errors = 0;
         foreach ($a as $t) {

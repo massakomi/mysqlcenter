@@ -72,11 +72,7 @@ $menu = new Menu();
                 ?>
             </div>
         </div>
-        <?php
-        if (config('showmessages') == '1') {
-            echo $msc->getMessages();
-        }
-        ?>
+        <?php echo $menu->getMessages(); ?>
         <?php echo $contentMain ?>
     </div>
 </div>

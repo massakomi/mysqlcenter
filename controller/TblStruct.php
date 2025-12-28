@@ -16,12 +16,12 @@ class TblStruct extends Base
         }
 
         if ($msc->table == '') {
-            $msc->addMessage('Не указана таблица в запросе', null, MS_MSG_FAULT);
+            $msc->error('Не указана таблица в запросе');
             return [];
         }
         $fields = \DatabaseTable::getFields($msc->table);
         if (!$fields) {
-            $msc->addMessage("Таблицы $msc->table не существует", null, MS_MSG_FAULT);
+            $msc->error("Таблицы $msc->table не существует");
             return [];
         }
         $msc->pageTitle = 'Структура таблицы ' . $msc->table;
@@ -141,7 +141,7 @@ class TblStruct extends Base
             $v = str_replace('"', '', $v);
             $v = str_replace(' title=', '', $v);
         }
-        if (isajax()) {
+        if (isAjax()) {
             return $result[0];
         }
         return [$comments, $result];

@@ -40,7 +40,7 @@ class Validate
      */
     private function error($message, $file = null, $line = null, $db_error = false)
     {
-        if (isajax()) {
+        if (isAjax()) {
             ajaxError($message);
         }
         echo $message;

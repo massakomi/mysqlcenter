@@ -8,6 +8,49 @@ class MSTable
     public $data;
 
     /**
+     * Статистика просмотров баз данных
+     * @return void
+     * @throws Exception
+     */
+    public static function dbViewStat(): void
+    {
+        global $msc;
+        if (!$msc->connected()) {
+            return;
+        }
+        $dbs = Server::getDatabases();
+        if (!in_array('mysqlcenter', $dbs) || empty($msc->db)) {
+            return;
+        }
+        $msc->disableLog();
+        $d = date('Y-m-d H:i:s');
+        $a = $msc->getData(
+            'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $msc->db . '"',
+            PDO::FETCH_OBJ
+        );
+        if (count($a) == 0) {
+            $msc->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $msc->db . '", 1, 1, "' . $d . '")');
+        } else {
+            $msc->execPdo('UPDATE mysqlcenter.db_info SET views=views+1, last_view="' . $d .
+                '" WHERE db_name="' . $msc->db . '"');
+        }
+
+        // Статистика просмотров таблиц
+        if ($msc->table != '') {
+            $a = $msc->getData('SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $msc->db .
+                '" AND table_name="' . $msc->table . '"', PDO::FETCH_OBJ);
+            if (count($a) == 0) {
+                $values = $msc->db . '", "' . $msc->table . '", 1, 1, "' . $d;
+                $msc->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $values . '")');
+            } else {
+                $msc->execPdo('UPDATE mysqlcenter.table_info SET views=views+1, last_view="' . $d .
+                    '" WHERE db_name="' . $msc->db . '" AND table_name="' . $msc->table . '"');
+            }
+        }
+        $msc->enableLog();
+    }
+
+    /**
      * Возвращает все переменные сета
      */
     public static function getSetInfo($idSet)

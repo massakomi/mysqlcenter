@@ -173,8 +173,8 @@ class Export
         if (!$result) {
             return null;
         }
-        $fields = array();
-        $this->fields = array();
+        $fields = [];
+        $this->fields = [];
         while ($row = $result->fetchObject()) {
             $this->fields [] = $row;
             if ($this->addKav) {
@@ -207,9 +207,9 @@ class Export
             $fields [] = $field_info;
         }
         // ключи
-        $keys = array();
-        $keys['PRI'] = $keys['UNI'] = $keys['MUL'] = $keys['FULL'] = array();
-        $parts = array();
+        $keys = [];
+        $keys['PRI'] = $keys['UNI'] = $keys['MUL'] = $keys['FULL'] = [];
+        $parts = [];
         $result = $msc->fetchPdo('SHOW KEYS FROM ' . $this->tableb);
         $x = $this->addKav ? '`' : '';
         while ($row = $result->fetchObject()) {
@@ -228,7 +228,7 @@ class Export
             }
         }
         // обработка ключей
-        $a = array();
+        $a = [];
         if (count($keys['PRI']) > 0) {
             $a [] = "PRIMARY KEY  (" . implode(",", $keys['PRI']) . ")";
         }
@@ -261,7 +261,7 @@ class Export
         $pack = null;
         if (!isset($this->tableStructure[$this->db])) {
             $result = $msc->fetchPdo("SHOW TABLE STATUS FROM $this->db");
-            $this->tableStructure[$this->db] = array();
+            $this->tableStructure[$this->db] = [];
             if ($result) {
                 while ($row = $result->fetchObject()) {
                     $this->tableStructure [$this->db][] = $row;
@@ -328,7 +328,7 @@ class Export
         }
         $dump = null;
         // поля
-        $exportedFields = array();
+        $exportedFields = [];
         if ($_POST['fields']) {
             $exportedFields = $_POST['fields'];
         }
@@ -338,7 +338,7 @@ class Export
                 unset($f[$k]);
             }
         }
-        $fnames = array();
+        $fnames = [];
         foreach ($f as $i => $v) {
             if ($skipAi && $v->Extra != '') {
                 continue;
@@ -371,8 +371,8 @@ class Export
             $row = array_values($row);
             // UPDATE
             if ($typeName == 'UPDATE') {
-                $a = array();
-                $primary = array();
+                $a = [];
+                $primary = [];
                 foreach ($f as $i => $v) {
                     if (isset($row[$i])) {
                         if (stristr($v->Type, 'int')) {
@@ -398,7 +398,7 @@ class Export
                     ' WHERE ' . implode(' AND ', $primary) . $delim;
             } elseif ($typeName == 'INSERT' || $typeName == 'REPLAC') {
                 // INSERT - REPLACE
-                $values = array();
+                $values = [];
                 foreach ($f as $i => $v) {
                     if ($skipAi && $v->Extra != '') {
                         continue;
@@ -451,7 +451,7 @@ class Export
         if (is_null($file)) {
             $this->table != null ? $file = $this->table : $file = $this->db;
         }
-        if (isajax()) {
+        if (isAjax()) {
             if ($type == 'textarea') {
                 return $this->get();
             }

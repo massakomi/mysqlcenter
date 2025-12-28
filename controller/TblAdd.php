@@ -15,7 +15,7 @@ class TblAdd extends Base
         if ($msc->table) {
             $fields = \DatabaseTable::getFields($msc->table);
             if (!$fields) {
-                $msc->addMessage('Таблица не найдена', '', MS_MSG_FAULT);
+                $msc->error('Таблица не найдена');
                 return [];
             }
         }
@@ -147,11 +147,7 @@ class TblAdd extends Base
             $length  = $_POST['length'][$k];
             $define  = \DatabaseTable::getFieldDefinition($type, $null, $default, $extra, $length);
             if (empty($define)) {
-                $msc->addMessage(
-                    'Не удалось создать поле "' . $name . '". Не указаны дополнительные параметры поля',
-                    '',
-                    MS_MSG_FAULT
-                );
+                $msc->error('Не удалось создать поле "' . $name . '". Не указаны дополнительные параметры поля');
                 unset($names[$k]);
                 continue;
             }
@@ -194,10 +190,10 @@ class TblAdd extends Base
             }
             $sql .= "\r\n)";
             if ($msc->execPdo($sql)) {
-                $msc->addMessage('Таблица ' . POST('table_name') . ' создана', $sql, MS_MSG_SUCCESS);
+                $msc->success('Таблица ' . POST('table_name') . ' создана', $sql, MS_MSG_SUCCESS);
             } else {
                 $text = 'При создании таблицы возникли ошибки ' . POST('table_name');
-                $msc->addMessage($text, $sql, MS_MSG_NOTICE, $msc->error);
+                $msc->error($text, $sql);
             }
         }
         // создание запроса на изменение полей
@@ -270,20 +266,20 @@ class TblAdd extends Base
 
             foreach ($sql2 as $s) {
                 if ($msc->execPdo($s)) {
-                    $msc->addMessage('Ключи изменены', $s, MS_MSG_SUCCESS);
+                    $msc->success('Ключи изменены', $s);
                 } else {
-                    $msc->addMessage('Ошибка при изменении ключей', $s, MS_MSG_FAULT, $msc->error);
+                    $msc->error('Ошибка при изменении ключей', $s);
                 }
             }
             // выполнение
             if ($sql != '') {
                 if ($msc->execPdo($sql)) {
-                    $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+                    $msc->success('Таблица изменена', $sql);
                 } else {
-                    $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
+                    $msc->error('Ошибка при изменении таблицы', $sql);
                 }
             } else {
-                $msc->addMessage('В definition ничего не изменилось', '', MS_MSG_NOTICE);
+                $msc->notice('В definition ничего не изменилось', '', MS_MSG_NOTICE);
             }
         }
         // создание запроса на добавление
@@ -303,9 +299,9 @@ class TblAdd extends Base
             $oldFields = \DatabaseTable::getFields(GET('table'));
             // выполнение
             if ($msc->execPdo($sql)) {
-                $msc->addMessage('Таблица изменена', $sql, MS_MSG_SUCCESS);
+                $msc->success('Таблица изменена', $sql);
             } else {
-                $msc->addMessage('Ошибка при изменении таблицы', $sql, MS_MSG_FAULT, $msc->error);
+                $msc->error('Ошибка при изменении таблицы');
             }
         }
         return [];

@@ -34,7 +34,7 @@ class DatabaseTable
         global $msc;
         $this->validate->queryCheck($db, $table);
         if (($type == 'RENAME' || $type == 'CHARSET' || $type == 'ORDER') && $param == null) {
-            return $msc->addMessage('Не указан требуемый параметр', null, MS_MSG_ERROR);
+            return $msc->error('Не указан требуемый параметр');
         }
         switch ($type) {
             case 'DROP':
@@ -82,15 +82,15 @@ class DatabaseTable
                 $text = 'изменена';
                 break;
             default:
-                return $msc->addMessage('Неверный тип обработки', null, MS_MSG_ERROR);
+                return $msc->error('Неверный тип обработки');
         }
         $msc->selectDb($db);
         if ($msc->execPdo($sql)) {
             $msc->fetchPdo("ANALYZE TABLE `$table`;");
-            return $msc->addMessage("Таблица $table $text", $sql, MS_MSG_SUCCESS);
+            return $msc->success("Таблица $table $text", $sql);
         } else {
             $text = "Ошибка при выполнении операции с таблицей $table";
-            return $msc->addMessage($text, $sql, MS_MSG_FAULT, $msc->error);
+            return $msc->error($text, $sql);
         }
     }
 
@@ -128,9 +128,9 @@ class DatabaseTable
         );
         $msc->selectDb($database);
         if ($msc->execPdo($sql)) {
-            $msc->addMessage("Таблица $table скопирована", $sql, MS_MSG_SUCCESS);
+            $msc->success("Таблица $table скопирована", $sql);
         } else {
-            $msc->addMessage("Ошибка копирования $table", $sql, MS_MSG_FAULT, $msc->error);
+            $msc->error("Ошибка копирования $table", $sql);
             return false;
         }
         // переход в старую БД после запроса
@@ -145,9 +145,9 @@ class DatabaseTable
                 $sql = "INSERT INTO $newName SELECT * FROM $table";
             }
             if ($msc->execPdo($sql)) {
-                $msc->addMessage('Данные скопированы', $sql, MS_MSG_SUCCESS);
+                $msc->success('Данные скопированы', $sql);
             } else {
-                $msc->addMessage('Ошибка копирования данных', $sql, MS_MSG_FAULT, $msc->error);
+                $msc->error('Ошибка копирования данных', $sql);
                 return false;
             }
         }
@@ -239,9 +239,9 @@ class DatabaseTable
             }
             $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
             if ($msc->execPdo($sql)) {
-                return $msc->addMessage('Ключ удален', $sql, MS_MSG_SUCCESS);
+                return $msc->success('Ключ удален', $sql);
             } else {
-                return $msc->addMessage('Ошибка удаления ключа', $sql, MS_MSG_FAULT, $msc->error);
+                return $msc->error('Ошибка удаления ключа', $sql);
             }
         }
         return '';
@@ -416,8 +416,7 @@ class DatabaseTable
             }
         }
         if (!$ai) {
-            $text = 'Невозможно скопировать ряд, т.к. в таблице нет поля auto_increment';
-            return $msc->addMessage($text, null, MS_MSG_FAULT);
+            return $msc->error('Невозможно скопировать ряд, т.к. в таблице нет поля auto_increment');
         }
         $fields = implode(',', $fieldsWithoutKey);
         $row = stripslashes(urldecode($row));

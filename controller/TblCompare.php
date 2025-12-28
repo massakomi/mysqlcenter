@@ -15,7 +15,7 @@ class TblCompare extends Base
         // Проверка
         $tables = POST('table') ?: [GET('table')];
         if (count($tables) < 1) {
-            $msc->addMessage('Вы не выбрали таблиц для сравнения');
+            $msc->error('Вы не выбрали таблиц для сравнения');
             return [];
         }
         // Получение массив баз данных
@@ -80,7 +80,8 @@ class TblCompare extends Base
         $result = $msc->fetchPdo($sql . $orderBy);
         $data1 = [];
         if (!$result) {
-            exitError("Таблица $table не найдена в базе $databases[0]");
+            $msc->error("Таблица $table не найдена в базе $databases[0]");
+            return [];
         }
         while ($row = $result->fetch(\PDO::FETCH_OBJ)) {
             $data1 [] = $row;
