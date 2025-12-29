@@ -11,7 +11,7 @@ function Sql (props) {
           <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm"
                 className="tableFormEdit" onSubmit={sqlFormSubmit}>
               <textarea name="sql" rows="20" id="sqlContent" wrap="off">{props.sql}</textarea>
-              <input type="submit" value="Отправить запрос!" className="submit"/>
+              <input type="submit" value="Отправить запрос!" className="submit mt-10"/>
               <fieldset className="msGeneralForm">
                   <legend>Запрос из файл</legend>
                   <input type="hidden" name="MAX_FILE_SIZE" value={props.maxUploadSize}/>

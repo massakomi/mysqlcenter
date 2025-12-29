@@ -257,6 +257,17 @@ function sqlFormToggle() {
     }
 }
 
+function sqlFormEvents() {
+    let table = new URL(location.href).searchParams.get('table')
+    let textarea = document.querySelector('.popupGeneralForm textarea')
+    let span = document.querySelector('.popupGeneralForm span')
+    if (!table || textarea.value) {
+        return;
+    }
+    textarea.value = `SELECT * FROM ${table} WHERE`
+    span.innerHTML = window.fields.join(', ')
+}
+
 /**
  * Копирует последний ряд таблицы вниз
  * @param  tableId string   id таблицы
@@ -506,6 +517,7 @@ document.addEventListener('DOMContentLoaded', function () {
     dbHiddenMenu()
     ctrlKeyMode()
     searchEvents()
+    sqlFormEvents()
 })
 
 function htmlspecialchars(text) {

@@ -41,7 +41,7 @@ function HtmlSelector(props) {
               name={props.name}
               multiple={props.multiple}
               defaultValue={props.value}
-              className={props.class}>{opts}
+              className={props.className}>{opts}
       </select>
     )
 

@@ -3,6 +3,8 @@
 /* @var $umaker UrlMaker */
 global $umaker, $msc;
 $menu = new Menu();
+$fields = $msc->table ? DatabaseTable::getFields($msc->table, true) : [];
+$dbs = Server::getDatabasesWithoutHidden();
 ?>
 <!DOCTYPE>
 <html lang="ru">
@@ -12,6 +14,7 @@ $menu = new Menu();
     <script language="JavaScript" src="/js/MysqlCenter.js?<?= filemtime(MS_DIR_JS . 'MysqlCenter.js') ?>"></script>
     <script language="javascript">
         let debug = '1';
+        window.fields = <?=json_encode($fields) ?>;
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
@@ -28,7 +31,7 @@ $menu = new Menu();
     <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
     <?php echo $menu->getGlobalMenu() ?> &nbsp; &nbsp;
     <span class="hiddenText" onclick="sqlFormToggle()"
-          title="Кликните, чтобы открыть форму быстрого запроса"><?php echo round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5) ?> с. &nbsp;&nbsp;  </span>
+          title="Кликните, чтобы открыть форму быстрого запроса"><?php echo $time ?> с. &nbsp;&nbsp;  </span>
     <span class="menuChain"><?php echo $menu->getChainMenu() ?></span>
 </div>
 
@@ -46,7 +49,6 @@ $menu = new Menu();
                 <?php
                 if ($msc->table) {
                     $url = '?db=' . $msc->db . '&table=' . $msc->table . '&s=tbl_data';
-                    $fields = DatabaseTable::getFields($msc->table, true);
                     ?>
                     <form action="<?php echo $url ?>" method="post" class="search-top">
                         <input type="hidden" name="order" value="<?= POST('order') ?>"/>
@@ -72,7 +74,6 @@ $menu = new Menu();
                 ?>
             </div>
         </div>
-        <?php echo $menu->getMessages(); ?>
         <?php echo $contentMain ?>
     </div>
 </div>
@@ -80,12 +81,12 @@ $menu = new Menu();
 <form action="<?php echo $umaker->make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
     <input type="submit" value="Отправить запрос!"/>
     <textarea name="sql" rows="15" wrap="soft"><?= POST('sql') ?></textarea>
+    <span></span>
     <a href="#" onclick="sqlFormToggle(); return false">закрыть</a>
 </form>
 
 <div class="menuDb">
     <?php
-    $dbs = Server::getDatabasesWithoutHidden();
     foreach ($dbs as $db) {
         echo '<a href="?db=' . $db . '">' . $db . '</a>';
     }
@@ -93,8 +94,11 @@ $menu = new Menu();
 </div>
 
 <div class="pageBlock">
-    <?php echo $menu->getFooterMenu() ?> &nbsp;&nbsp;&nbsp;
-    &nbsp; &nbsp; &nbsp;<a href="?s=test">test</a>
+    <div class="globalMenu">
+        <a href="?s=config">Настройки</a>
+        <a href="?s=test">test</a>
+        <a href="?s=login">Логин</a>
+    </div>
     <strong>Хост:</strong> <?php echo $msc->host ?> &nbsp;&nbsp;
     <strong>Пользователь:</strong> <?php echo $msc->user ?> &nbsp;&nbsp;
     <?php if (function_exists('memory_get_peak_usage')) { ?>
@@ -103,7 +107,6 @@ $menu = new Menu();
         inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?>
         limit <?php echo ini_get('memory_limit') ?> &nbsp; &nbsp;&nbsp;
     <?php } ?>
-    <strong><a href="?s=login">Логин</a></strong>
 </div>
 
 </html>

@@ -28,37 +28,6 @@ class Menu
     }
 
     /**
-     * Меню в футере, дополнительное
-     */
-    public function getFooterMenu()
-    {
-        global $msc;
-        $base = str_replace('index.php', '', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
-        $url = UrlMaker::edit($base, 'db', $msc->db);
-        if ($msc->table != null && $msc->page != 'tbl_list') {
-            $url = UrlMaker::edit($url, 'table', $msc->table);
-        }
-        $dbMenu = [
-            'Настройки' => ['config', '']
-        ];
-        $menu = '<div class="globalMenu">' . "\r\n";
-        foreach ($dbMenu as $title => $array) {
-            list($page, $action) = $array;
-            $url = UrlMaker::edit($url, 's', $page);
-            if ($action != '') {
-                $url = UrlMaker::edit($url, 'action', $action);
-            }
-            if ($msc->page == $page && $action == GET('action')) {
-                $menu .= '  <a href="' . $url . '" class="globalMenuCurrent">' . $title . '</a>' . "\r\n";
-            } else {
-                $menu .= '  <a href="' . $url . '">' . $title . '</a>' . "\r\n";
-            }
-        }
-        $menu .= '</div>' . "\r\n";
-        return $menu;
-    }
-
-    /**
      * Общее меню менеджера
      * массивы в формате (s, action)
      */
@@ -254,25 +223,33 @@ class Menu
         }
         ksort($tables);
         $menu = '';
+        $counts = array_column($tables, 'count');
+        $avg = array_sum($counts) / count($counts);
         foreach ($tables as $table => $info) {
-            $class = 't2';
-            if ($info['count'] == 1) {
+            if ($info['count'] > $avg) {
+                $class = 't2';
+            } elseif ($info['count'] < $avg / 2) {
                 $class = 'freq0';
-            } elseif ($info['count'] < 3) {
+            } else {
                 $class = 'freq1';
-            } elseif ($info['count'] < 5) {
-                $class = 'freq2';
             }
-            if (!array_key_exists('info', $info)) {
+            if (!array_key_exists('time', $info)) {
                 $info ['time'] = '';
             }
+            $lastTime = $lastTimeDays = '';
             if ($info['time']) {
                 $lastTime = time() - $info['time'];
-                if ($lastTime < 86400) {
+                $lastTimeDays = round($lastTime / 86400, 1);
+                if ($lastTimeDays < 1) {
                     $class = 't2';
                 }
+                if ($lastTimeDays > 7) {
+                    continue;
+                }
+            } else {
+                continue;
             }
-            $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $info['time']);
+            $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $lastTimeDays);
         }
         $url = $umaker->make('resetPopular', 1);
         $menu .= '<a href="' . $url . '" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
@@ -283,7 +260,7 @@ class Menu
      * Возвращает блок накопленных за время выполнения скрипта сообщений
      * @return string|null
      */
-    public function getMessages(): ?string
+    public static function getMessages(): ?string
     {
         global $msc;
         if (config('showmessages') != '1') {

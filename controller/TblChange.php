@@ -9,7 +9,7 @@ class TblChange extends Base
 {
     public function defaultAction(): array
     {
-        global $msc, $pagel, $umaker;
+        global $msc, $umaker;
         if ($msc->table == '') {
             $msc->error('Не указана таблица в запросе');
             return [];

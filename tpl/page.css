@@ -5,6 +5,7 @@
   --head-text-color: #CC0000;
   --bg-color: white;
   --cur-color: green;
+  --link-color: #0000FF;
 }
 
 /* Основные стили для шаблона, используются глобально во всех страницах*/
@@ -54,9 +55,10 @@ div.menuDb a { line-height:120%; font-size:12px; text-decoration: none; display:
 div.menuDb a:hover {color:black; text-decoration:underline}
 
 /* Форма SQL запроса всплывающая */
-form.popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px; background-color: var(--bg-color); text-align:right}
-form.popupGeneralForm textarea { font-size:12px; width:800px; padding:5px; display:block;}
-form.popupGeneralForm input { margin:5px 0 }
+.popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px; background-color: var(--bg-color); text-align:right}
+.popupGeneralForm textarea { font-size:12px; width:800px; padding:5px; display:block;}
+.popupGeneralForm input { margin:5px 0 }
+.popupGeneralForm span {float: left; max-width: 700px; text-align: left}
 
 /* Сообщения */
 .globalMessage { margin:5px 0; display: inline-block}
@@ -104,7 +106,6 @@ form.tableFormEdit .si,
     form.tableFormEdit select { padding:5px}
 form.tableFormEdit [type="checkbox"] { margin:8px}
 form.tableFormEdit .field { font-size:14px}
-form.tableFormEdit .submit { display:block; margin:5px 0}
 form.tableFormEdit textarea#sqlContent { font-size:12px; width:99%; padding:5px }
 form.tableFormEdit td.inner { padding: 0; }
 
@@ -141,10 +142,7 @@ img.helpimg {cursor:pointer}
 /* Страницы-ссылки для tbl_data */
 div.contentPageLinks { margin:5px 0 0;}
 div.contentPageLinks a { text-decoration:none; font-size:10px; margin: 0; padding: 2px 5px; border:1px solid #eee; margin-right: 2px}
-div.contentPageLinks a.cur { background-color: #0000FF; color:#FFFFFF}
-/* Селектор для tbl_data */
-select.miniSelector { font-size:12px;}
-select.miniSelector option { font-size:12px;}
+div.contentPageLinks a.cur { background-color: var(--link-color); color:#FFFFFF}
 
 /* tbl_list */
 form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left:3px}
@@ -165,9 +163,12 @@ h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; wid
 .dateString {color: var(--head-text-color)}
 a.truncate { color: var(--text-color)!important}
 a.delete { color: var(--head-text-color)!important}
+span.hiddenText { color: var(--hidden-text-color)}
 textarea.wide {width: 100%; height: 100px}
+/* Кнопки */
+input[type="submit"], input[type="button"] {border-radius: 3px; border: 1px solid var(--light-text-color); cursor: pointer;/* padding: 5px 10px*/}
+input[type="submit"]:hover, input[type="button"]:hover {border-color: var(--head-text-color); background-color: var(--hidden-text-color)}
 /* Отображения времени выполнения */
-span.hiddenText {color: var(--hidden-text-color)}
 /* Для ссылок */
 a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
 
@@ -208,8 +209,8 @@ a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
 A,
 table.contentTable A,
 div.menuDb A,
-div.globalMenu A       { color:#0000FF }
-div.formSet H2         { color:#FFFFFF }
+div.globalMenu A       { color: var(--link-color) }
+div.formSet H2         { color: var(--bg-color) }
 
 .globalMessage .mysqlError { color:#FF0000 }
 

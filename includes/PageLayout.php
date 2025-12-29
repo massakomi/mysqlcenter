@@ -31,6 +31,8 @@ class PageLayout
         }
 
         $contentMain = $this->getContent();
+        $contentMain = Menu::getMessages() . $contentMain;
+        $time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
 
         include(MS_DIR_TPL . '_skin1.htm.php');
     }
@@ -42,9 +44,10 @@ class PageLayout
     {
         $action = $this->getPageForTemplate();
         $component = ucfirst($action);
+        $file = 'pages/' . $action . '.js';
         ?>
         <div id="root"></div>
-        <script type="text/babel" src="/pages/<?= $action ?>.js"></script>
+        <script type="text/babel" src="/<?= $file ?>?<?=filemtime($file)?>"></script>
         <script type="text/babel">
             let options = <?=json_encode($pageProps)?>;
             ReactDOM.render(

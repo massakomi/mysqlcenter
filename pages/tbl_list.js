@@ -256,7 +256,7 @@ function Tbl_list(props) {
           {props.showtableupdated > 0 &&
             <form className="showtableupdated">
                 Показать таблицы обновлённые с <DateSelector />
-                <input type="button" value="Показать!" onClick={filterByDate.bind(this)} />
+                <input type="button" value="Показать!" className="ml-10" onClick={filterByDate.bind(this)} />
             </form>
           }
       </div>

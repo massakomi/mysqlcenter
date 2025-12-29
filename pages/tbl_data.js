@@ -234,7 +234,7 @@ function TableLinks(props) {
     return (
       <div className="contentPageLinks">
           {links}
-          <HtmlSelector data={data} auto="true" className="miniSelector" value={selected} keyValues="true" />
+          <HtmlSelector data={data} auto="true" value={selected} keyValues="true" />
       </div>
     );
 }
