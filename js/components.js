@@ -181,9 +181,13 @@ function ExportOptions(props) {
 
 function Table(props) {
 
+    React.useEffect(() => {
+        contentTableEvents()
+    })
+
     let ths = []
     for (let key in props.data[0]) {
-        ths.push(<th key={`th-${key}`}>{key}</th>)
+        ths.push(<th key={`th-${key}`}><span className="br">{key}</span></th>)
     }
 
     let trs = []
@@ -210,13 +214,15 @@ function Table(props) {
     }
 
     return (
-      <table className="contentTable">
-          <thead>
-          <tr>{ths}</tr>
-          </thead>
-          <tbody>
-          {trs}
-          </tbody>
-      </table>
+      <div className="responsive">
+          <table className="contentTable">
+              <thead>
+              <tr>{ths}</tr>
+              </thead>
+              <tbody>
+              {trs}
+              </tbody>
+          </table>
+      </div>
     )
 }

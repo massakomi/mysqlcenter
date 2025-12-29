@@ -86,6 +86,10 @@ class ActionProcessor
                     'current' => $_POST['current'],
                     'config' => $config,
                 ];
+                $backupFile = MS_DIR_UPLOAD . '/backup_'.date('YmdHis').'_' . basename(MS_CONNECT_CONFIG_FILE);
+                if (file_exists(MS_CONNECT_CONFIG_FILE)) {
+                    copy(MS_CONNECT_CONFIG_FILE, $backupFile);
+                }
                 $res = file_put_contents(MS_CONNECT_CONFIG_FILE, json_encode($config));
                 if ($queryMode == 'connectSave') {
                     if ($res) {
@@ -184,10 +188,7 @@ class ActionProcessor
                 }
                 $table = $tbl;
                 $ai = intval($this->param('auto_increment'));
-                $pk = intval($this->param('pack_keys'));
-                $cs = intval($this->param('checksum'));
-                $dkv = intval($this->param('delay_key_write'));
-                $sql = "ALTER TABLE `$table` PACK_KEYS=$pk CHECKSUM=$cs DELAY_KEY_WRITE=$dkv AUTO_INCREMENT=$ai";
+                $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
                 if ($msc->execPdo($sql)) {
                     return $msc->success('Таблица изменена', $sql);
                 } else {

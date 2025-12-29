@@ -14,6 +14,7 @@ $dbs = Server::getDatabasesWithoutHidden();
     <script language="JavaScript" src="/js/MysqlCenter.js?<?= filemtime(MS_DIR_JS . 'MysqlCenter.js') ?>"></script>
     <script language="javascript">
         let debug = '1';
+        window.driver = '<?=$msc->driverName?>';
         window.fields = <?=json_encode($fields) ?>;
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
@@ -28,7 +29,7 @@ $dbs = Server::getDatabasesWithoutHidden();
 <body>
 <div class="loader" hidden></div>
 <div class="pageBlock">
-    <b id="appNameId"><a href="?db_list">MySQL React</a></b> &nbsp; &nbsp;
+    <b id="appNameId"><a href="?db_list"><?=$msc->driverName == 'pgsql' ? 'PgSQL' : 'MySQL'?> React</a></b> &nbsp; &nbsp;
     <?php echo $menu->getGlobalMenu() ?> &nbsp; &nbsp;
     <span class="hiddenText" onclick="sqlFormToggle()"
           title="Кликните, чтобы открыть форму быстрого запроса"><?php echo $time ?> с. &nbsp;&nbsp;  </span>

@@ -38,7 +38,7 @@ function FieldSet(props) {
     )
 }
 
-function ProcessList(props) {
+function MysqlProcessList(props) {
 
     function kill(id) {
         msQuery('killProcess', `id=${id}`)
@@ -179,17 +179,6 @@ function UserInfo(props) {
 
 function Actionsdb(props) {
 
-    const fullinfo = () => {
-        msQuery('', 'act=fullinfo', (json) => {
-            setDbInfo(json.page.dbInfo)
-        })
-    }
-
-    const [dbInfo, setDbInfo] = React.useState(props.dbInfo)
-
-    //<input name="auto" type="checkbox" value="1" checked> Добавить значение AUTO_INCREMENT<br>
-    //<input name="limit" type="checkbox" value="1"> Добавить ограничения<br>
-
     const operations = (
       <React.Fragment>
           <FieldSet title="Переименовать базу данных в:" action="dbRename" {...props}>
@@ -202,20 +191,12 @@ function Actionsdb(props) {
               <input name="option" type="radio" value="data"/> Только данные <br/>
               <input name="switch" type="checkbox" value="1"/> Перейти к скопированной БД <br/><br/>
           </FieldSet>
-          <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...props}>
+          {props.charsets.length ? <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...props}>
               <CharsetSelector charsets={props.charsets}/>
-          </FieldSet>
-          <fieldset className="msGeneralForm">
-              <legend>Информация о базе данных</legend>
-              <TableObject data={dbInfo} className="contentTable"/>
-              <br/>
-              <a href="#" onClick={fullinfo}>Показать полную информацию</a>
-              <br/>
-              <a href={`${props.url}&users=1`}>Информация о пользователях и правах</a>
-          </fieldset>
+          </FieldSet> : null}
           <fieldset className="msGeneralForm">
               <legend>Список процессов</legend>
-              <ProcessList processes={props.processes} url={props.url}/>
+              {window.driver === 'pgsql' ? <Table data={props.processes} /> : <MysqlProcessList processes={props.processes} url={props.url}/>}
           </fieldset>
       </React.Fragment>
     )

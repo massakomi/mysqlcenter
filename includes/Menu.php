@@ -217,6 +217,10 @@ class Menu
     private function addPopularTables(): string
     {
         global $msc, $umaker;
+        $tables = DatabaseTable::getCashedTablesArray();
+        if (count($tables) < 30) {
+            return '';
+        }
         $tables = PopularTables::forDb($msc->db);
         if (count($tables) == 0) {
             return '';

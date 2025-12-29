@@ -103,19 +103,29 @@ function Login(props) {
       <div className="login flex">
           <form>
               <div>
-                  <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host} />
+                  <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host}/>
               </div>
               <div>
-                  <label>Пользователь</label><input name="user" type="text" onChange={update} value={config[current].user}/>
+                  <label>Пользователь</label><input name="user" type="text" onChange={update}
+                                                    value={config[current].user}/>
               </div>
               <div>
-                  <label>Пароль</label><input name="password" type="password" onChange={update} value={config[current].password}/>
+                  <label>Пароль</label><input name="password" type="password" onChange={update}
+                                              value={config[current].password}/>
               </div>
               <div>
                   <label>Порт</label><input name="port" type="number" onChange={update} value={config[current].port}/>
               </div>
               <div>
-                  <label>База данных</label><input name="database" type="text" onChange={update} value={config[current].database}/>
+                  <label>База данных</label><input name="database" type="text" onChange={update}
+                                                   value={config[current].database}/>
+              </div>
+              <div>
+                  <label>Драйвер</label>
+                  <select name="driver"  onChange={update} value={config[current].driver}>
+                      <option>mysql</option>
+                      <option>pgsql</option>
+                  </select>
               </div>
               <div>
                   <label></label>

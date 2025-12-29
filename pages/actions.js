@@ -67,14 +67,14 @@ function Actions(props) {
               </form>
           </fieldset>
 
-          <fieldset className="msGeneralForm">
+          {props.charsets.length ? <fieldset className="msGeneralForm">
               <legend>Изменить кодировку таблицы</legend>
               <form>
                   <CharsetSelector charsets={props.charsets} value={props.charset}/>
                   <input type="button" onClick={tableAction.bind(this, "tableCharset")} value="Выполнить!"
                          className="ml-10"/>
               </form>
-          </fieldset>
+          </fieldset> : null}
 
           <fieldset className="msGeneralForm">
               <legend>Комментарий к таблице</legend>
@@ -99,9 +99,6 @@ function Actions(props) {
           <fieldset className="msGeneralForm">
               <legend>Опции таблицы</legend>
               <form>
-                  <input type="checkbox" name="checksum" defaultValue={props.checksum}/> checksum &nbsp; &nbsp;
-                  <input type="checkbox" name="pack_keys" value="1"/> pack_keys
-                  <input type="checkbox" name="delay_key_write" value="1"/> delay_key_write &nbsp;
                   <input name="auto_increment" type="text" size="3" defaultValue={props.ai}/> auto_increment
                   <input type="submit" onClick={tableAction.bind(this, "tableOptions")} value="Выполнить!"
                          className="submit"/>

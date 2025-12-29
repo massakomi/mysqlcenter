@@ -8,9 +8,10 @@ spl_autoload_register(function ($class) {
     foreach ($path as $value) {
         if (file_exists($value)) {
             include_once $value;
-            break;
+            return true;
         }
     }
+    throw new Exception("Autoload error $class");
 });
 
 // CORE

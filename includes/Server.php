@@ -23,7 +23,7 @@ class Server
         static $array;
         if (!isset($array)) {
             global $msc;
-            $array = $msc->getData('SHOW DATABASES', PDO::FETCH_COLUMN);
+            $array = $msc->driver->getDatabases();
         }
         return $array;
     }
@@ -31,8 +31,12 @@ class Server
     /**
      * @return array
      */
-    public static function getDatabasesWithoutHidden()
+    public static function getDatabasesWithoutHidden(): array
     {
+        global $msc;
+        if (!$msc->connected()) {
+            return [];
+        }
         $dbs = self::getDatabases();
         $hidden = [];
         if (in_array('mysqlcenter', $dbs)) {
@@ -77,8 +81,8 @@ class Server
     {
         global $msc;
         $charsetList = [];
-        $res = $msc->fetchPdo('SHOW CHARACTER SET');
-        foreach ($res as $row) {
+        $data = $msc->driver->getCharsets();
+        foreach ($data as $row) {
             $charsetList [$row['Charset']] = $extended ? $row : $row['Charset'];
         }
         ksort($charsetList);

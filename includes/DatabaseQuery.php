@@ -100,6 +100,7 @@ class DatabaseQuery
     /**
      * Выполняет выбор БД (select_db) на сервера
      * @param string
+     * @throws Exception
      */
     public function selectDb($db): bool
     {
@@ -107,9 +108,9 @@ class DatabaseQuery
             return false;
         }
         try {
-            $this->execPdo("USE `$db`");
+            $this->driver->selectDb($db);
         } catch (\Exception $e) {
-            $this->error('Ошибка при выборе базы данных "' . $db . '"');
+            $this->error('Ошибка при выборе базы данных "' . $db . '": '. $e->getMessage());
             return false;
         }
         return true;

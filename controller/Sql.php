@@ -32,9 +32,10 @@ class Sql extends Base
                     }
                     $sql = $this->readZipFile($_FILES['sqlFile']['tmp_name'], $mime);
                 }
+
                 // Применяем кодировку если надо
                 if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
-                    $msc->execPdo("SET NAMES '" . POST('sqlFileCharset') . "'");
+                    $sql = mb_convert_encoding($sql, 'UTF-8', POST('sqlFileCharset'));
                 }
                 $log = strlen($sql) < 10000;
                 $this->execSql($db, $sql, $log);
@@ -54,10 +55,11 @@ class Sql extends Base
             $this->execSql($db, $_POST['sql'], $log);
         }
 
+
         return [
             'maxUploadSize' => MAX_UPLOAD_SIZE,
             'maxSize' => round(MAX_UPLOAD_SIZE / (1024 * 1024), 2),
-            'charsets' => \Server::getCharsetArray(),
+            'charsets' => mb_list_encodings(),
             //'sql' => POST('sql')
         ];
     }

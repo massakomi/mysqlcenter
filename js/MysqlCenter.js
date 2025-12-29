@@ -513,6 +513,24 @@ function searchEvents() {
     })
 }
 
+function contentTableEvents() {
+    forElements('.contentTable th', function() {
+        let span = this.querySelector('.br')
+        if (span === null) {
+            return
+        }
+        span.style.width = window.getComputedStyle(this).width
+    })
+
+    forElementsEvent('mouseover', '.contentTable th', function(e) {
+        this.classList.add('wide')
+    })
+
+    forElements('.responsive', function() {
+        this.style.maxWidth = window.innerWidth - 200
+    })
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     dbHiddenMenu()
     ctrlKeyMode()

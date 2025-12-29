@@ -25,9 +25,9 @@ function TableHeader(props) {
             let v = fields[k]
             let link = v.Field;
             if (sortEnabled) {
-                let cls = ''
+                let cls = 'br'
                 if (props.order && props.order.indexOf(v.Field) === 0) {
-                    cls = 'current'
+                    cls += ' current'
                 }
                 link = <a href="#" onClick={order.bind(this, v.Field)} key={k} className={cls}>{v.Field}</a>
             }
@@ -255,13 +255,7 @@ function Tbl_data(props) {
 
     React.useEffect(() => {
 
-        forElements('.contentTable th', function() {
-            let span = this.querySelector('a')
-            if (span === null) {
-                return
-            }
-            span.style.width = window.getComputedStyle(this).width
-        })
+        contentTableEvents()
 
         forElementsEvent('click', '.contentTable td', function(e) {
             let tr = this.parentNode;
@@ -276,10 +270,6 @@ function Tbl_data(props) {
 
         forElementsEvent('dblclick', '.contentTable tr', function(e) {
             location.href = this.querySelector('a').getAttribute('href');
-        })
-
-        forElementsEvent('mouseover', '.contentTable th', function(e) {
-            this.classList.add('wide')
         })
 
         // todo реализовать inline редактирование значений (пока сделано только вот это)

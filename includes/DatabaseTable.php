@@ -171,8 +171,7 @@ class DatabaseTable
         $cacheId = $table;
         if (!isset($cache[$cacheId])) {
             $cache[$cacheId] = [];
-            $table = str_replace('`', '``', $table);
-            $result = $msc->fetchPdoObject('SHOW FIELDS FROM `' . $table . '`');
+            $result = self::fetchFields($table);
             if (!$result) {
                 return [];
             }
@@ -188,32 +187,28 @@ class DatabaseTable
     }
 
     /**
+     * МАссив полей
+     */
+    private static function fetchFields(string $table)
+    {
+        global $msc;
+        $table = str_replace('`', '``', $table);
+        return $msc->driver->getFields($table);
+    }
+
+    /**
      * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа]
      *
-     * @package sql
      * @param string $table Имя таблицы
-     * @return array
+          * @return array
+     *@package sql
      */
-    public static function getTableKeys($table)
+    public static function getTableKeys(string $table): array
     {
-        if (empty($table)) {
-            return [];
-        }
         global $msc;
-        $keys = [];
-        $result = $msc->fetchPdoObject('SHOW KEYS FROM `' . $table . '`');
-        if (!$result) {
-            return [];
-        }
-        foreach ($result as $row) {
-            if ($row->Key_name == 'PRIMARY') {
-                $keys [$row->Column_name][$row->Key_name] = 'PRI';
-            } else {
-                $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
-            }
-        }
-        return $keys;
+        return $msc->driver->getKeys($table);
     }
+
     /**
      * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть
      *
@@ -333,9 +328,7 @@ class DatabaseTable
                 $field_info .=  ' DEFAULT "' . $default . '"';
             }
         }
-        $field_info = str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
-        //pre($field_info);
-        return $field_info;
+        return str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
     }
 
     /**
@@ -346,7 +339,7 @@ class DatabaseTable
         static $array;
         if (!isset($array)) {
             global $msc;
-            $array = $msc->getData('SHOW TABLE STATUS', PDO::FETCH_OBJ);
+            $array = $msc->driver->getTables();
         }
         return $array;
     }

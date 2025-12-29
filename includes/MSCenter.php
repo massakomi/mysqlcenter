@@ -1,5 +1,9 @@
 <?php
 
+use database\Driver;
+use database\MySQL;
+use database\PostgreSQL;
+
 // типы сообщений
 const MS_MSG_SIMPLE = 1; // инфо
 const MS_MSG_SUCCESS = 2; // успешная операция
@@ -21,6 +25,8 @@ class MSCenter extends DatabaseQuery
     public string $page = '';
     public string $host = '';
     public string $user = '';
+    public ?Driver $driver = null;
+    public string $driverName = '';
     public string $pageTitle = ''; // для заголовка раздела h1
 
     public array $messages = [];
@@ -142,13 +148,18 @@ class MSCenter extends DatabaseQuery
         }
         extract($config);
         try {
-            $pdo = new PDO('mysql:host=' . $host . ';dbname=' . $database, $user, $password, [
+            $options = [
                 PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
                     ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
-            ]);
+            ];
+            $pdo = new PDO($driver.':host=' . $host . ';port='.$port.';dbname=' . $database, $user, $password, $options);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->host  = $host;
             $this->user  = $user;
+            $this->driverName  = $driver;
+            $this->driver  = $driver == 'pgsql' ? new PostgreSQL() : new MySQL();
+            $this->db  = $database;
         } catch (PDOException $e) {
             $this->clearCurrentDatabase();
             $msg = 'Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />';

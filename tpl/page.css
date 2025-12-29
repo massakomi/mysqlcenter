@@ -75,9 +75,9 @@ div.menuDb a:hover {color:black; text-decoration:underline}
 
 /* Таблица основная */
 table.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
-table.contentTable TD { padding: 3px; font-size:12px}
-table.contentTable th { padding: 3px; font-size:12px; text-align:left; color: var(--head-text-color)}
-table.contentTable th:not(.wide) a {overflow-wrap: anywhere; width: 20px; display: block; word-break: break-all;}
+table.contentTable td { padding: 3px; font-size:12px}
+table.contentTable th { padding: 3px; font-size:12px; text-align:left; color: var(--head-text-color); vertical-align: top;}
+table.contentTable th:not(.wide) .br {overflow-wrap: anywhere; width: 20px; display: block; word-break: break-all;}
 table.contentTable .cb { margin:0; width:18px; height:18px}
 table.contentTable th a { text-decoration:none; font-size:10px}
 table.contentTable th a:hover { text-decoration:underline}
@@ -165,10 +165,10 @@ a.truncate { color: var(--text-color)!important}
 a.delete { color: var(--head-text-color)!important}
 span.hiddenText { color: var(--hidden-text-color)}
 textarea.wide {width: 100%; height: 100px}
+.responsive {overflow-x: scroll; overflow-y: hidden}
 /* Кнопки */
 input[type="submit"], input[type="button"] {border-radius: 3px; border: 1px solid var(--light-text-color); cursor: pointer;/* padding: 5px 10px*/}
 input[type="submit"]:hover, input[type="button"]:hover {border-color: var(--head-text-color); background-color: var(--hidden-text-color)}
-/* Отображения времени выполнения */
 /* Для ссылок */
 a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-text-color)}
 

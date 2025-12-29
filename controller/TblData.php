@@ -81,7 +81,12 @@ class TblData extends Base
                 $part = $count;
             }
             // Создаём запрос и выводим инфо о нём
-            $sql = "SELECT * FROM $msc->table $whereCondition $order LIMIT $start, $part";
+            $sql = "SELECT * FROM $msc->table $whereCondition $order";
+            if ($msc->driverName == 'pgsql') {
+                $sql .= " LIMIT $part OFFSET $start";
+            } else {
+                $sql .= " LIMIT $start, $part";
+            }
 
             // Сразу выход, если ничего не найдено
             if ($count == 0) {
