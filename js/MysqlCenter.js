@@ -446,7 +446,7 @@ formatSize = (bytes, digits = 0) => {
 function dbHiddenMenu() {
     let hideTimeout = null
     let div = document.querySelector('.menuDb')
-    forElementsEvent('mouseover', '#appNameId', function (e) {
+    forElementsEvent('mouseover', '.appName', function (e) {
         div.style.display = 'block'
     })
 

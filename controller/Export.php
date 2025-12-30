@@ -1,6 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
+
+use database\MSTable;
+use database\Server;
 
 /**
  *
@@ -119,7 +123,7 @@ class Export extends Base
         } else {
             // 3.2.2.2. Если бд не указана, то список БД
             $selectMultName  = 'export_db[]';
-            $dbAll = \Server::getDatabases();
+            $dbAll = Server::getDatabases();
             $optionsSelected = POST('databases');
             if ($optionsSelected == '' || count($optionsSelected) == 0) {
                 $optionsSelected = [];
@@ -159,7 +163,7 @@ class Export extends Base
             $insIgnor  = (POST('insIgnor') != '');
         }
 
-        $msct = new \MSTable();
+        $msct = new MSTable();
 
         $msc->pageTitle = 'Специальный экспорт данных';
         $drawForm = true;
@@ -271,7 +275,7 @@ class Export extends Base
     private function dumpHeader(): string
     {
         global $msc;
-        list(, $vs) = \Server::getServerVersion();
+        list(, $vs) = Server::getServerVersion();
         return '-- SQL Экспорт
 --
 -- Хост: ' . $msc->host . '

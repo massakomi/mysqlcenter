@@ -68,39 +68,20 @@ function Table(props) {
         })
     };
 
-     // Собираем массив имён полей, и также массив имён только ключевых полей
-    let pk = [], mul = [], fieldNames = []
-    Object.values(props.fields).map(function(v) {
-        fieldNames.push(v.Field)
-        if (v.Key.indexOf('PRI') > -1) {
-            pk.push(v.Field)
-        }
-        if (v.Key.indexOf('MUL') > -1) {
-            mul.push(v.Field)
-        }
-    })
+    // определение уникального ид ряда
+    const getRowId = (row) => {
 
-    // fields for header
-    let fields = props.fields;
-    if (props.directSQL) {
-        fields = []
-        for (let field in props.data[0]) {
-            let a = {}
-            a.Field = field;
-            a.Type = 'varchar'
-            if (isNumeric(props.data[0][field])) {
-                a.Type = 'int'
+        // Собираем массив имён полей, и также массив имён только ключевых полей
+        let pk = [], mul = []
+        Object.values(props.fields).map(function(v) {
+            if (v.Key.indexOf('PRI') > -1) {
+                pk.push(v.Field)
             }
-            fields.push(a)
-        }
-    }
+            if (v.Key.indexOf('MUL') > -1) {
+                mul.push(v.Field)
+            }
+        })
 
-    // Собираем ряды
-    let trs = []
-    let j = 0
-    for (let row of props.data) {
-
-        // определение уникального ид ряда
         let pkValues = []
         if (pk.length > 0) {
             for (let pkCurrent of pk) {
@@ -133,7 +114,30 @@ function Table(props) {
                 pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
             }
         }
-        let idRow = encodeURIComponent(pkValues.join(' AND '));
+        return encodeURIComponent(pkValues.join(' AND '));
+    }
+
+    // fields for header
+    let fields = props.fields;
+    if (props.directSQL) {
+        fields = []
+        for (let field in props.data[0]) {
+            let a = {}
+            a.Field = field;
+            a.Type = 'varchar'
+            if (isNumeric(props.data[0][field])) {
+                a.Type = 'int'
+            }
+            fields.push(a)
+        }
+    }
+
+    // Собираем ряды
+    let trs = []
+    let j = 0
+    for (let row of props.data) {
+
+        let idRow = getRowId(row)
 
         // создание ссылок на действия
         let u1 = umaker({s: 'tbl_change', row: idRow});
@@ -179,26 +183,53 @@ function Table(props) {
 
 function TableLinks(props) {
 
-    const pagesObj = () => {
-        let pagesNums = [30, 50, 100, 200, 300, 500, 1000, 'all']
-        let pages = {}
-        let u = new URL(location.href)
-        for (let num of pagesNums) {
-            u.searchParams.set('part', num)
-            pages[u.href] = num
-        }
-        return pages;
-    };
+    const parts = () => {
+        return [30, 50, 100, 200, 300, 500, 1000, 'all'];
+    }
 
-    const page = (page, e) => {
+    function currentPart() {
+        let getPart = new URL(location.href).searchParams.get('part');
+        if (getPart === null) {
+            const form = document.querySelector('.search-top')
+            return form.querySelector('[name="part"]').value
+        }
+        return getPart
+    }
+
+    const onChangePart = (e) => {
+        let part = e.target.options[e.target.selectedIndex].value
+        const form = document.querySelector('.search-top')
+        form.querySelector('[name="part"]').value = part
+        form.submit()
+    }
+
+    const onChangePage = (page, e) => {
         e.preventDefault()
         const form = document.querySelector('.search-top')
         form.querySelector('[name="go"]').value = page
         form.submit()
-    };
+    }
 
+    const collectPages = () => {
+        const countPages = Math.ceil(count / part)
+        const currentPage = Math.ceil(getGo / part)
+        const beginPage = Math.max(0, currentPage - Math.round(linksRange / 2))
+        const endPage = Math.min(countPages, currentPage + Math.round(linksRange / 2))
 
-    let getPart = new URL(location.href).searchParams.get('part');
+        let pages = []
+        for (let i = beginPage; i < endPage; i ++) {
+            pages.push(i)
+        }
+        if (beginPage > 1) {
+            pages.unshift(0)
+        }
+        if (countPages + 10 > endPage && countPages !== endPage) {
+            pages.push(countPages - 1)
+        }
+        return pages
+    }
+
+    let getPart = currentPart()
     let getGo = props.go;
     let linksRange = props.linksRange;
 
@@ -208,35 +239,21 @@ function TableLinks(props) {
         return false;
     }
 
+    const pages = collectPages()
+
     let links = []
-    let countPages = Math.ceil(count / part)
-    let currentPage = Math.ceil(getGo / part)
-    let beginPage = Math.max(0, currentPage - linksRange)
-    let endPage = Math.min(countPages, currentPage + linksRange)
-
-    for (let i = beginPage; i < endPage; i ++) {
-        if (getGo == i * part) {
-            links.push(<a key={i} href="#" onClick={page.bind(this, i * part)} className="cur">{i + 1}</a>)
-        } else {
-            links.push(<a key={i} href="#" onClick={page.bind(this, i * part)}>{i + 1}</a>)
+    for (let i of pages) {
+        let cls = null
+        if (getGo === i * part) {
+            cls = 'cur'
         }
-    }
-
-    let data = pagesObj();
-
-    let selected = false;
-    if (getPart) {
-        for (let key in data) {
-            if (data[key] == getPart) {
-                selected = key
-            }
-        }
+        links.push(<a key={i} href="#" onClick={onChangePage.bind(this, i * part)} className={cls}>{i + 1}</a>)
     }
 
     return (
       <div className="contentPageLinks">
           {links}
-          <HtmlSelector data={data} auto="true" value={selected} keyValues="true" />
+          <HtmlSelector data={parts()} auto="true" onChange={onChangePart} value={getPart} name="part" />
       </div>
     );
 }
@@ -248,7 +265,7 @@ function Tbl_data(props) {
         checkboxAction('formTableRows', opt, 'row[]')
     }
 
-    const imageAction = (opt, url, e) => {
+    const imageAction = (opt, url) => {
         if (url) {
             url = props.url.replace('#s#', url)
         }
@@ -270,12 +287,12 @@ function Tbl_data(props) {
             tr.querySelector('input').checked = !ch
         })
 
-        forElementsEvent('dblclick', '.contentTable tr', function(e) {
+        forElementsEvent('dblclick', '.contentTable tr', function() {
             location.href = this.querySelector('a').getAttribute('href');
         })
 
         // todo реализовать inline редактирование значений (пока сделано только вот это)
-        forElementsEvent('click', '.contentTable td', function(e) {
+        forElementsEvent('click', '.contentTable td', function() {
             if (getElementIndex(this) <= 2) {
                 return true;
             }

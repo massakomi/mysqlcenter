@@ -1,6 +1,14 @@
 <?php
 
 /**
+ * Тип выполняемого запроса
+ */
+enum FetchType {
+    case Exec;
+    case Fetch;
+}
+
+/**
  *
  */
 class DatabaseQuery
@@ -19,7 +27,7 @@ class DatabaseQuery
      */
     public function execPdo(string $sql)
     {
-        return $this->queryPdo('exec', $sql);
+        return $this->queryPdo(FetchType::Exec, $sql);
     }
 
     /**
@@ -28,7 +36,7 @@ class DatabaseQuery
      */
     public function fetchPdo(string $sql)
     {
-        return $this->queryPdo('fetch', $sql);
+        return $this->queryPdo(FetchType::Fetch, $sql);
     }
 
     /**
@@ -36,7 +44,7 @@ class DatabaseQuery
      * @param string $sql
      * @return false|int|PDOStatement
      */
-    private function queryPdo($mode, string $sql)
+    private function queryPdo(FetchType $mode, string $sql)
     {
         global $pdo;
         if (!$pdo) {
@@ -48,7 +56,7 @@ class DatabaseQuery
             }
             $this->lastSql = $sql;
             $this->affectedRows = 0;
-            if ($mode == 'exec') {
+            if ($mode == FetchType::Exec) {
                 $this->affectedRows = $pdo->exec($sql);
                 $result = true;
             } else {
@@ -130,11 +138,11 @@ class DatabaseQuery
     }
 
     private $logEnabled = true;
-    public function disableLog()
+    public function disableLog(): void
     {
         $this->logEnabled = false;
     }
-    public function enableLog()
+    public function enableLog(): void
     {
         $this->logEnabled = true;
     }

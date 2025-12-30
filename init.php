@@ -57,10 +57,9 @@ if (config('errorlog') == '1') {
     set_error_handler('mscErrorHandler');
 }
 
-global $msc, $umaker, $pdo;
+global $msc, $pdo;
 
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше
-$umaker = new UrlMaker();
 
 $msc->init();
 

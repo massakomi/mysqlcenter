@@ -1,5 +1,7 @@
 <?php
 
+use database\Server;
+
 /**
  * Управление запросами. Здесь должны быть централизованы все запросы на изменение данных
  * Это позволит все запросы совершать как через URL, так и через AJAX
@@ -32,10 +34,10 @@ class ActionProcessor
     }
 
     /**
-     * @param $queryMode
+     * @param string $queryMode
      * @return void
      */
-    public function generalActions($queryMode): void
+    public function generalActions(string $queryMode): void
     {
         global $msc;
 
@@ -108,12 +110,13 @@ class ActionProcessor
 
     /**
      * Действия с базой данных
-     * @param $queryMode
+     * @param string $queryMode
      * @return bool|void
+     * @throws Exception
      */
-    public function databaseActions($queryMode)
+    public function databaseActions(string $queryMode)
     {
-        global $msc, $umaker;
+        global $msc;
 
         if (!$msc->connected()) {
             return false;
@@ -153,13 +156,13 @@ class ActionProcessor
 
             case 'tableTruncate':
                 $dbt->tableAction($db, $tbl, 'TRUNCATE');
-                $this->redirect = $umaker->make('s', 'tbl_data', 'action', '');
+                $this->redirect = \UrlMaker::make('s', 'tbl_data', 'action', '');
                 break;
 
             case 'tableRename':
                 if ($dbt->tableAction($db, $tbl, 'RENAME', $this->param('newName'))) {
                     $msc->table = $this->param('newName');
-                    $this->redirect = $umaker->make('table', $msc->table, 'action', '');
+                    $this->redirect = \UrlMaker::make('table', $msc->table, 'action', '');
                 }
                 break;
 

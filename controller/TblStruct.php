@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
 
@@ -9,7 +10,7 @@ class TblStruct extends Base
 {
     public function defaultAction(): array
     {
-        global $msc, $umaker;
+        global $msc;
 
         if (GET('action') == 'add_key') {
             return $this->addKeyAction();
@@ -34,9 +35,9 @@ class TblStruct extends Base
         return [
             'db' => $msc->db,
             'table' => $msc->table,
-            'addKeyUrl' => $umaker->make('s', 'tbl_struct', 'action', 'add_key'),
-            'showKeysUrl' => $umaker->make('s', 'tbl_struct', 'keys', 1),
-            'addTableUrl' => $umaker->make('s', 'tbl_add'),
+            'addKeyUrl' => \UrlMaker::make('s', 'tbl_struct', 'action', 'add_key'),
+            'showKeysUrl' => \UrlMaker::make('s', 'tbl_struct', 'keys', 1),
+            'addTableUrl' => \UrlMaker::make('s', 'tbl_add'),
             'data' => $fields,
             'showKeys' => GET('keys'),
             'dataKeys' => $dataKeys,

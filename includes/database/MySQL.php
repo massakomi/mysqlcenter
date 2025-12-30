@@ -108,7 +108,7 @@ class MySQL implements Driver {
             'Comment' => 'Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL 
                 не может получить доступ к информации о таблице'
         ];
-        $sql = 'SHOW TABLE STATUS LIKE ' . $table;
+        $sql = 'SHOW TABLE STATUS LIKE "' . $table.'"';
         $result = $msc->getData($sql);
         foreach ($comments as $k => &$v) {
             $v = str_replace('', '', $v);

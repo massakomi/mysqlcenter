@@ -1,6 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
+
+use database\Server;
 
 /**
  * Операции с БД и таблицами
@@ -45,15 +48,15 @@ class Actions extends Base
      */
     public function databaseActions()
     {
-        global $umaker, $msc;
+        global $msc;
 
         $msc->pageTitle = "Действия - БД";
-        $DQuery = $umaker->make('db', $msc->db, 's', 'actions');
+        $DQuery = \UrlMaker::make('db', $msc->db, 's', 'actions');
 
         return [
             'db' => $_GET['db'],
             'url' => $DQuery,
-            'charsets' => \Server::getCharsetArray(),
+            'charsets' => Server::getCharsetArray(),
             'processes' => $msc->driver->getProcessList(),
         ];
     }
@@ -79,8 +82,8 @@ class Actions extends Base
             'ai' => $row['Auto_increment'] ?: '',
             'comment' => $row['Comment'] ?: '',
             'charset' => $row['Charset'] ?: '',
-            'charsets' => \Server::getCharsetArray(),
-            'dbs' => \Server::getDatabases(),
+            'charsets' => Server::getCharsetArray(),
+            'dbs' => Server::getDatabases(),
             'fields' => \DatabaseTable::getFields($msc->table, true),
         ];
     }

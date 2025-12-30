@@ -5,10 +5,8 @@ use database\MySQL;
 use database\PostgreSQL;
 
 // типы сообщений
-const MS_MSG_SIMPLE = 1; // инфо
 const MS_MSG_SUCCESS = 2; // успешная операция
 const MS_MSG_FAULT = 3; // операция не удалась
-const MS_MSG_ERROR = 4; // серъёзная ошибка
 const MS_MSG_NOTICE = 5; // непонятная ситуация, замечание
 
 /**
@@ -249,7 +247,7 @@ class MSCenter extends DatabaseQuery
      */
     public function error(string $text, $sql = null): bool
     {
-        return $this->addMessage($text, $sql, MS_MSG_FAULT, $this->error);
+        return $this->addMessage($text, $sql, MS_MSG_FAULT);
     }
 
     /**
@@ -260,7 +258,7 @@ class MSCenter extends DatabaseQuery
      */
     public function success(string $text, $sql = null): bool
     {
-        return $this->addMessage($text, $sql, MS_MSG_SUCCESS);
+        return $this->addMessage($text, $sql);
     }
 
     /**
@@ -282,7 +280,7 @@ class MSCenter extends DatabaseQuery
      * @param integer тип сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @return boolean
      */
-    private function addMessage($text, $sql = null, $type = MS_MSG_SIMPLE, $error = ''): bool
+    private function addMessage($text, $sql = null, $type = MS_MSG_SUCCESS): bool
     {
         $textError = $text;
         if ($sql != '') {
@@ -291,15 +289,13 @@ class MSCenter extends DatabaseQuery
                 $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>';
             }
             $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200) . ';' . $aff . '</div>';
-            if ($error != null) {
-                $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $error . '</div>';
+            if ($this->error != null) {
+                $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $this->error . '</div>';
             }
         }
         $colors = [
-            MS_MSG_SIMPLE => 'black',
             MS_MSG_SUCCESS => 'green',
             MS_MSG_FAULT => 'red',
-            MS_MSG_ERROR => 'darkred',
             MS_MSG_NOTICE => 'blue'
         ];
         $color = $colors[$type] ?? 'black';
@@ -308,14 +304,14 @@ class MSCenter extends DatabaseQuery
                 'text' => $textError,
                 'type' => $type,
                 'color' => $color,
-                'error' => $error,
+                'error' => $this->error,
                 'sql' => $sql,
                 'rows' => $this->affectedRows,
             ];
         } else {
             $this->messages [] = '<span style="color:' . $color . '">' . $text . '</span>';
         }
-        if ($type == MS_MSG_ERROR || $type == MS_MSG_FAULT) {
+        if ($type == MS_MSG_FAULT) {
             return false;
         }
         return true;

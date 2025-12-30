@@ -1,6 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
+
+use database\MSTable;
+use database\Server;
 
 /**
  *
@@ -14,7 +18,7 @@ class DbList extends Base
     {
         global $msc;
         // Получаем массив баз данных
-        $dbs = \Server::getDatabases();
+        $dbs = Server::getDatabases();
 
         $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
         //$table = new \Table('contentTable', null, null, null, null, 'structureTableId');
@@ -40,11 +44,11 @@ class DbList extends Base
         } else {
             $hidden = [];
             if (in_array('mysqlcenter', $dbs)) {
-                $hidden = \MSTable::getHiddensArray();
+                $hidden = MSTable::getHiddensArray();
             }
         }
 
-        list(, $vs) = \Server::getServerVersion();
+        list(, $vs) = Server::getServerVersion();
 
         return [
             'databases' => $dbs,

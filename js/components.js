@@ -29,9 +29,11 @@ function HtmlSelector(props) {
     let opts = [], i = 0
     for (let key in props.data) {
         let title = props.data[key]
-        let value = title
+        let value
         if (props.keyValues) {
             value = key
+        } else {
+            value = null
         }
         opts.push(<option value={value} key={i++}>{title}</option>)
     }

@@ -1,6 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
+
+use database\Server;
 
 /**
  *
@@ -9,7 +12,7 @@ class TblData extends Base
 {
     public function defaultAction(): array
     {
-        global $msc, $umaker;
+        global $msc;
 
         $directSQL = POST('sql');
         // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
@@ -45,9 +48,10 @@ class TblData extends Base
         }
 
         // Определяем параметры сортировки, старт и части
-        $order = $this->mscGetOrder(isset($pk[0]) ? $pk[0] : '');
+        $order = $this->mscGetOrder(default: $pk[0] ?? '');
         $start = intval(GET('go', POST('go')));
-        $part  = intval(GET('part', MS_DEFAULT_PART));
+        $part  = intval(GET('part', POST('part') > 0 ? POST('part') : MS_DEFAULT_PART));
+
 
         // Составляем запрос, если не определён запрос из вне
         if (!isset($directSQL)) {
@@ -112,16 +116,12 @@ class TblData extends Base
             $sql = $directSQL;
         }
 
-
         // Запрос и если ничего не найдено тут - выходим
         if (!$result = $msc->fetchPdo($sql)) {
             $msc->error('Ничего не найдено в таблице по запросу');
             return [];
         }
 
-        // Создаём таблицу из результата $result
-        $table = new \Table('contentTable');
-        $table->setInterlaceClass('', 'interlace');
         $data = [];
         while ($row = $result->fetchObject()) {
             $data [] = $row;
@@ -131,9 +131,13 @@ class TblData extends Base
             $count = $j;
         }
         if ($count != $j) {
-            $msc->pageTitle = "Таблица: $msc->table ($j строк из $count всего)";
+            $add = '';
+            if ($start > 0) {
+                $add = ", начиная с $start,";
+            }
+            $msc->pageTitle = "Таблица: $msc->table ($j строк$add из $count)";
         } else {
-            $msc->pageTitle = "Таблица: $msc->table ($count строк)";
+            $msc->pageTitle = "Таблица: $msc->table ($count)";
         }
 
         $pageProps = [
@@ -147,14 +151,14 @@ class TblData extends Base
             'go' => $start,
             'order' => POST('order'),
             'part' => $part,
-            'url' => $umaker->make('s', '#s#'),
+            'url' => \UrlMaker::make('s', '#s#'),
             'showtablecompare' => config('showtablecompare'),
-            'dbs' => \Server::getDatabases(),
+            'dbs' => Server::getDatabases(),
             'directSQL' => isset($directSQL),
             'fields' => $fields,
             'data' => $data,
         ];
-        \PopularTables::save($msc->db, $msc->table);
+        \PopularTables::save(db: $msc->db, table: $msc->table);
         return $pageProps;
     }
 
@@ -163,6 +167,9 @@ class TblData extends Base
      */
     private function mscGetOrder($default = null): string
     {
+        if (!config('sortDescDefault')) {
+            $default .= '-';
+        }
         $order = (POST('order') != null ? POST('order') : $default);
         if ($order != null) {
             if (!strchr($order, '-')) {

@@ -1,6 +1,6 @@
 rpage|Сколько рядов таблицы показывать на 1 страницу максимум|100|integer
 insertrows|Сколько рядов вставлять за 1 раз|2|integer
-linksrange|Сколько ссылок на постраничный вывод показывать максимум|25|integer
+linksrange|Сколько ссылок на постраничный вывод показывать максимум|20|integer
 headwrap|Длина wrap у переносимых заголовков полей|5|integer
 textcut|Text поля обрезка|100|integer
 datetimeformat|Формат даты и времени|d.m.Y H:i|string
@@ -15,3 +15,4 @@ sqllog|Лог всех не-SELECT sql запросов в папку data по 
 greyempty|Выделять пустые таблицы цветом в меню таблиц|1|boolean
 tblfullstart|Полный вид таблиц по умолчанию|1|boolean
 tblliststart|При входе в программу показывать список таблиц последней базы данных|1|boolean
+sortDescDefault|Сортировка в обратном порядке по умолчанию|0|boolean

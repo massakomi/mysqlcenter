@@ -1,5 +1,7 @@
 <?php
 
+namespace database;
+
 /**
  * Класс для работы с собственной БД приложения
  */
@@ -26,7 +28,7 @@ class MSTable
         $d = date('Y-m-d H:i:s');
         $a = $msc->getData(
             'SELECT * FROM mysqlcenter.db_info WHERE db_name="' . $msc->db . '"',
-            PDO::FETCH_OBJ
+            \PDO::FETCH_OBJ
         );
         if (count($a) == 0) {
             $msc->execPdo('REPLACE INTO mysqlcenter.db_info VALUES("' . $msc->db . '", 1, 1, "' . $d . '")');
@@ -38,7 +40,7 @@ class MSTable
         // Статистика просмотров таблиц
         if ($msc->table != '') {
             $a = $msc->getData('SELECT * FROM mysqlcenter.table_info WHERE db_name="' . $msc->db .
-                '" AND table_name="' . $msc->table . '"', PDO::FETCH_OBJ);
+                '" AND table_name="' . $msc->table . '"', \PDO::FETCH_OBJ);
             if (count($a) == 0) {
                 $values = $msc->db . '", "' . $msc->table . '", 1, 1, "' . $d;
                 $msc->execPdo('REPLACE INTO mysqlcenter.table_info VALUES("' . $values . '")');
@@ -76,7 +78,7 @@ class MSTable
     public static function getSetsArray()
     {
         global $msc;
-        return $msc->getData('SELECT id, name FROM mysqlcenter.export_set', PDO::FETCH_KEY_PAIR);
+        return $msc->getData('SELECT id, name FROM mysqlcenter.export_set', \PDO::FETCH_KEY_PAIR);
     }
 
     /**
@@ -85,7 +87,7 @@ class MSTable
     public static function getHiddensArray()
     {
         global $msc;
-        return $msc->getData('SELECT db_name FROM mysqlcenter.db_info WHERE visible=0', PDO::FETCH_COLUMN);
+        return $msc->getData('SELECT db_name FROM mysqlcenter.db_info WHERE visible=0', \PDO::FETCH_COLUMN);
     }
 
     /**

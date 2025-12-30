@@ -1,6 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
+
+use database\Server;
 
 /**
  *
@@ -17,7 +20,7 @@ class Search extends Base
         $listTables = \DatabaseTable::getTables();
 
         if (isAjax()) {
-            if (GET('db') && !in_array(GET('db'), \Server::getDatabases())) {
+            if (GET('db') && !in_array(GET('db'), Server::getDatabases())) {
                 ajaxError('База данных не найдена');
             }
             if (GET('table') && !in_array(GET('table'), $listTables)) {

@@ -12,7 +12,7 @@ class Utils
      * @return string Строковое представление
      * @package number
      */
-    public static function formatSize($bytes)
+    public static function formatSize($bytes): string
     {
         if ($bytes < pow(1024, 1)) {
             return "$bytes b";

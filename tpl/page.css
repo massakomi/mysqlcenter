@@ -13,9 +13,10 @@
 body, table {font-size:12px; font-family: Arial, serif; color: var(--text-color); background-color: var(--bg-color)}
 
 /* Верх и низ */
-div.pageBlock { padding:5px; margin: 5px 0; }
+div.pageBlock { padding:5px; margin: 5px 0; display: flex}
 div.pageBlock b a { text-decoration:none; color: var(--text-color)}
 .pageBlock > div.globalMenu { display:inline; }
+.pageBlock.bottom {gap: 10px}
 
 /* Каркасная таблица */
 .outerTable {display: flex; gap: 10px}
@@ -33,10 +34,13 @@ div.pageBlock b a { text-decoration:none; color: var(--text-color)}
 div.globalMenu a { margin:0 10px 0 0; text-decoration:none}
 div.globalMenu a.cur, div.globalMenu a:hover { text-decoration:underline; color: var(--cur-color)}
 div.globalMenu .delim {  margin:0 10px 0 0; color: var(--hidden-text-color)}
+.appName {font-weight: bold; margin-right: 15px; text-decoration: none; color: var(--text-color)}
 
 /* Меню цепочка */
+span.menuChain { margin-left: 10px}
 span.menuChain a { text-decoration:none; color: var(--light-text-color)}
 span.menuChain a:hover {color: var(--text-color)}
+div.menuTopRight {margin-left: auto}
 
 /* Меню таблиц */
 div.menuTables { position: relative}

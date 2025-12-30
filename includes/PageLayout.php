@@ -1,6 +1,8 @@
 <?php
 
 use controller\Base;
+use database\MSTable;
+use database\Server;
 
 /**
  * Класс для создания страницы

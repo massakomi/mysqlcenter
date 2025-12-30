@@ -131,7 +131,7 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline)
  * @return string Значение
  * @package msc
  */
-function config($param, $default = ''): string
+function config(string $param, string $default = ''): string
 {
     global $mscConfigCash;
     if (!isset($mscConfigCash)) {
@@ -183,7 +183,7 @@ function ajaxResultWithMessages(): void
     global $msc;
     $data = $msc->getMessagesData();
     foreach ($data as $item) {
-        if ($item['type'] == MS_MSG_ERROR || $item['type'] == MS_MSG_FAULT) {
+        if ($item['type'] == MS_MSG_FAULT) {
             ajaxError($data);
         }
     }

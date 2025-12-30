@@ -33,9 +33,9 @@ class Menu
      */
     public function getGlobalMenu()
     {
-        global $msc, $umaker;
+        global $msc;
         $dbMenu = $this->globalMenuItems();
-        $url = $umaker->make();
+        $url = \UrlMaker::make();
         $menu = '<div class="globalMenu" id="globalMenu">' . "\r\n";
         foreach ($dbMenu as $title => $array) {
             if (stristr($title, '[delim]')) {
@@ -55,9 +55,9 @@ class Menu
                 $extra = ' class="truncate" onClick="check(this, \'очистка\'); return false"';
             }
             // создание урл
-            $curl = UrlMaker::edit($curl, 's', $page);
+            $curl = UrlMaker::edit(url: $curl, name: 's', value: $page);
             if ($action != '') {
-                $curl = UrlMaker::edit($curl, 'action', $action);
+                $curl = UrlMaker::edit(url: $curl, name: 'action', value: $action);
             }
             if ($msc->page == $page && $action == GET('action')) {
                 $menu .= '  <a href="' . $curl . '" class="cur"' . $extra . '>' . $title . '</a>' . "\r\n";
@@ -72,7 +72,7 @@ class Menu
     /**
      *
      */
-    private function globalMenuItems()
+    private function globalMenuItems(): array
     {
         global $msc;
         $dbMenuGlobal = [
@@ -91,7 +91,6 @@ class Menu
         } elseif (in_array($msc->page, ['db_list', 'users', 'login'])) {
             $dbMenu = array_merge([
                 'базы данных' => ['db_list', ''],
-                'логин' => ['login', ''],
             ], $dbMenuGlobal);
         } elseif (($msc->db != '' && $msc->table == '') || $msc->page == 'tbl_list') {
             $dbMenu = array_merge([
@@ -121,7 +120,7 @@ class Menu
     /**
      * Меню таблиц или селектор таблиц
      */
-    public function getTableMenu($selector = false, $auto = true)
+    public function getTableMenu($selector = false, $auto = true): string
     {
         global $msc;
         if ($msc->db == null) {
@@ -172,11 +171,11 @@ class Menu
             if ($greyEmpty && $t->Rows == 0) {
                 $class .= ' empty';
             }
-            $menuTables .= $this->makeTableMenuItem($t->Name, $class);
+            $menuTables .= $this->makeTableMenuItem(table: $t->Name, class: $class);
             if ($msc->table == $t->Name) {
                 $selectorTables .= '  <option value="" selected><b>' . $t->Name . '</b></option>' . "\r\n";
             } else {
-                $value = $this->getMenuTableLink($t->Name);
+                $value = $this->getMenuTableLink(table: $t->Name);
                 $selectorTables .= '  <option value="' . $value . '">' . $t->Name . '</option>' . "\r\n";
             }
         }
@@ -216,7 +215,7 @@ class Menu
      */
     private function addPopularTables(): string
     {
-        global $msc, $umaker;
+        global $msc;
         $tables = DatabaseTable::getCashedTablesArray();
         if (count($tables) < 30) {
             return '';
@@ -255,7 +254,7 @@ class Menu
             }
             $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $lastTimeDays);
         }
-        $url = $umaker->make('resetPopular', 1);
+        $url = \UrlMaker::make('resetPopular', 1);
         $menu .= '<a href="' . $url . '" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
         return $menu;
     }

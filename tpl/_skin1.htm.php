@@ -1,10 +1,13 @@
 <?php
-/* @var $msc MSCenter */
-/* @var $umaker UrlMaker */
-global $umaker, $msc;
+
+use database\Server;
+
+global $msc;
+
 $menu = new Menu();
 $fields = $msc->table ? DatabaseTable::getFields($msc->table, true) : [];
 $dbs = Server::getDatabasesWithoutHidden();
+
 ?>
 <!DOCTYPE>
 <html lang="ru">
@@ -28,11 +31,15 @@ $dbs = Server::getDatabasesWithoutHidden();
 <body>
 <div class="loader" hidden></div>
 <div class="pageBlock">
-    <b id="appNameId"><a href="?db_list"><?=$msc->driverName == 'pgsql' ? 'PgSQL' : 'MySQL'?> React</a></b> &nbsp; &nbsp;
-    <?php echo $menu->getGlobalMenu() ?> &nbsp; &nbsp;
+    <a class="appName" href="?db_list"><?=$msc->driverName == 'pgsql' ? 'PgSQL' : 'MySQL'?> React</a>
+    <?php echo $menu->getGlobalMenu() ?>
     <span class="hiddenText" onclick="sqlFormToggle()"
-          title="Кликните, чтобы открыть форму быстрого запроса"><?php echo $time ?> с. &nbsp;&nbsp;  </span>
+          title="Кликните, чтобы открыть форму быстрого запроса"><?php echo $time ?> с.</span>
     <span class="menuChain"><?php echo $menu->getChainMenu() ?></span>
+    <div class="globalMenu menuTopRight">
+        <a href="?s=config">Настройки</a>
+        <a href="?s=login">Логин</a>
+    </div>
 </div>
 
 <div id="msAjaxQueryDiv"></div>
@@ -51,8 +58,10 @@ $dbs = Server::getDatabasesWithoutHidden();
                     $url = '?db=' . $msc->db . '&table=' . $msc->table . '&s=tbl_data';
                     ?>
                     <form action="<?php echo $url ?>" method="post" class="search-top">
+                        <input type="hidden" name="post" value="<?= count($_POST) > 0 ?>"/>
                         <input type="hidden" name="order" value="<?= POST('order') ?>"/>
                         <input type="hidden" name="go" value="<?= POST('go') ?>"/>
+                        <input type="hidden" name="part" value="<?= POST('part') ?>"/>
                         <input type="text" name="query"
                                value="<?= htmlspecialchars(POST('query', 'Поиск или where')) ?>"/>
                         <?= $menu->selector($fields, ' name="field"', POST('field'), '', false) ?>
@@ -78,7 +87,7 @@ $dbs = Server::getDatabasesWithoutHidden();
     </div>
 </div>
 
-<form action="<?php echo $umaker->make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
+<form action="<?php echo \UrlMaker::make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
     <input type="submit" value="Отправить запрос!"/>
     <textarea name="sql" rows="15" wrap="soft"><?= POST('sql') ?></textarea>
     <span></span>
@@ -93,19 +102,14 @@ $dbs = Server::getDatabasesWithoutHidden();
     ?>
 </div>
 
-<div class="pageBlock">
-    <div class="globalMenu">
-        <a href="?s=config">Настройки</a>
-        <a href="?s=test">test</a>
-        <a href="?s=login">Логин</a>
-    </div>
-    <strong>Хост:</strong> <?php echo $msc->host ?> &nbsp;&nbsp;
-    <strong>Пользователь:</strong> <?php echo $msc->user ?> &nbsp;&nbsp;
+<div class="pageBlock bottom">
+    <span><strong>Хост:</strong> <?php echo $msc->host ?></span>
+    <span><strong>Пользователь:</strong> <?php echo $msc->user ?></span>
     <?php if (function_exists('memory_get_peak_usage')) { ?>
-        пиковая память <?php echo Utils::formatSize(memory_get_peak_usage()) ?> &nbsp;
-        сейчас <?php echo Utils::formatSize(memory_get_usage()) ?> &nbsp;
-        inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?>
-        limit <?php echo ini_get('memory_limit') ?> &nbsp; &nbsp;&nbsp;
+        <span>пиковая память <?php echo Utils::formatSize(memory_get_peak_usage()) ?></span>
+        <span>сейчас <?php echo Utils::formatSize(memory_get_usage()) ?></span>
+        <span>inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?></span>
+        <span>limit <?php echo ini_get('memory_limit') ?></span>
     <?php } ?>
 </div>
 

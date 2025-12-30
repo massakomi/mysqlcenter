@@ -1,18 +1,20 @@
 <?php
 
+namespace database;
+
 /**
  * Класс Server - сервер, где расположены базы данных
  */
 class Server
 {
-    private Validate $validate;
+    private \Validate $validate;
 
     /**
      * @access private
      */
     public function __construct()
     {
-        $this->validate = new Validate();
+        $this->validate = new \Validate();
     }
 
     /**
@@ -189,9 +191,9 @@ class Server
     public function databaseTruncate($db, $delete = false)
     {
         global $msc;
-        $dbt = new DatabaseTable();
+        $dbt = new \DatabaseTable();
         $this->validate->queryCheck($db);
-        $a = DatabaseTable::getTables($db);
+        $a = \DatabaseTable::getTables($db);
         if (count($a) == 0) {
             return $msc->error('Таблиц нет');
         }
@@ -222,9 +224,9 @@ class Server
     public function databaseCopy($dbFrom, $dbTo, $isMove = false, $struct = true, $data = true): bool
     {
         if ($this->databaseAction($dbTo, 'CREATE')) {
-            $dbt = new DatabaseTable();
+            $dbt = new \DatabaseTable();
             // скопировать все таблицы туда и удалить из старой БД
-            $a = DatabaseTable::getTables($dbFrom);
+            $a = \DatabaseTable::getTables($dbFrom);
             foreach ($a as $table) {
                 $dbt->copyTable($dbFrom, $table, $struct, $data, $table, $dbTo);
                 if ($isMove) {

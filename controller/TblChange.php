@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace controller;
 
@@ -9,7 +10,7 @@ class TblChange extends Base
 {
     public function defaultAction(): array
     {
-        global $msc, $umaker;
+        global $msc;
         if ($msc->table == '') {
             $msc->error('Не указана таблица в запросе');
             return [];
@@ -47,7 +48,7 @@ class TblChange extends Base
             'isAdd' => $isAdd,
         ];
         if (POST('redirect')) {
-            $pageProps['redirect'] = $umaker->make('s', POST('redirect'));
+            $pageProps['redirect'] = \UrlMaker::make('s', POST('redirect'));
         }
         return $pageProps;
     }
