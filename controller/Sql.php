@@ -13,21 +13,22 @@ class Sql extends Base
 
         $msc->pageTitle = 'SQL запрос в БД';
         $db = GET('db') ?: POST('db');
+        $type = POST('compress');
 
         // Запрос из файла
         if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['size'] > 0) {
             if ($_FILES['sqlFile']['size'] <= MAX_UPLOAD_SIZE) {
-                if (POST('compress') == 'zip' || substr($_FILES['sqlFile']['name'], -3) == 'zip') {
+                if ($type == 'zip' || substr($_FILES['sqlFile']['name'], -3) == 'zip') {
                     $sql = $this->readZipFile($_FILES['sqlFile']['tmp_name'], 'zip');
-                } elseif (POST('compress') == 'csv') {
+                } elseif ($type == 'csv') {
                     $this->csvTest();
-                } elseif (POST('compress') == 'excel') {
+                } elseif ($type == 'excel') {
                     $this->excelTest();
                 } else {
                     $mime = '';
-                    if (POST('compress') == '') {
+                    if ($type == '') {
                         $mime = 'text/plain';
-                    } elseif (POST('compress') == 'gzip') {
+                    } elseif ($type == 'gzip') {
                         $mime = 'application/x-gzip';
                     }
                     $sql = $this->readZipFile($_FILES['sqlFile']['tmp_name'], $mime);

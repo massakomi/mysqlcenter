@@ -33,10 +33,8 @@ class TblAdd extends Base
             $numFields = POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
             $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : $numFields;
             if (is_array(POST('name'))) {
-                //$cont = MSC_DrawFields();
             } else {
                 $array = range(0, $fieldsCount - 1);
-                //$cont = MSC_DrawFields($array);
             }
             $msc->pageTitle = "Добавить таблицу в базу данных $msc->db";
             // Добавление полей

@@ -71,13 +71,8 @@ class Search extends Base
         } elseif ($query && strlen($query) > 0) {
             $msc->pageTitle = "Поиск: '$query'";
             if ($array == null || count($array) == 0) {
-                if ($msc->table != null) {
-                    $array = [$msc->table];
-                    $msc->pageTitle = "Поиск - таблица $msc->table";
-                } else {
-                    $array = \DatabaseTable::getTables();
-                    $msc->pageTitle = "Поиск - база данных $msc->db";
-                }
+                $array = [$msc->table];
+                $msc->pageTitle = "Поиск - таблица $msc->table";
             }
 
             $results = [];
