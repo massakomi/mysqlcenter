@@ -31,16 +31,19 @@ class MySQL implements Driver {
         return $msc->getData('SHOW FIELDS FROM `' . $table . '`', \PDO::FETCH_OBJ);
     }
 
-    public function getKeys(string $table): array
+    public function getKeys(string $table, bool $full = false): array
     {
         global $msc;
         if (empty($table)) {
             return [];
         }
         $keys = [];
-        $result = $msc->fetchPdoObject('SHOW KEYS FROM `' . $table . '`');
+        $result = $msc->getData('SHOW KEYS FROM `' . $table . '`', \PDO::FETCH_OBJ);
         if (!$result) {
             return [];
+        }
+        if ($full) {
+            return $result;
         }
         foreach ($result as $row) {
             if ($row->Key_name == 'PRIMARY') {

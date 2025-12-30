@@ -88,8 +88,10 @@ function TableFull(props) {
 
 function Table(props) {
 
-    const dbDelete = db => {
-        msQuery('dbDelete', `db=${db}&id=db${db}`)
+    const dbDelete = (db, event) => {
+        msQuery('dbDelete', `dbDelete=${db}`, () => {
+            event.target.closest('tr').remove()
+        })
     };
 
     const dbHide = (db, action) => {

@@ -189,7 +189,7 @@ function Tbl_list(props) {
         msImageAction('formTableList', opt, url)
     }
 
-    const checkboxAction = (opt, e) => {
+    const chbxAction = (opt, e) => {
         e.preventDefault()
         checkboxAction('formTableList', opt, 'table[]')
     }
@@ -225,8 +225,8 @@ function Tbl_list(props) {
 
               <div className="chbxAction">
                   <img src={image("arrow_ltr.png")} alt=""  />
-                  <a href="#" onClick={checkboxAction.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
-                  <a href="#" onClick={checkboxAction.bind(this, 'uncheck')}>очистить</a>
+                  <a href="#" onClick={chbxAction.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
+                  <a href="#" onClick={chbxAction.bind(this, 'uncheck')}>очистить</a>
               </div>
 
               <div className="imageAction">

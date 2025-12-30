@@ -183,10 +183,10 @@ function EditRows(props) {
             let value = data[field]
             let key = props.fields[field].Key;
             if (key.indexOf('PRI') > -1) {
-                pk.push(field+'="'+value+'"')
+                pk.push(`${field}='${value}'`)
             }
             if (key.indexOf('MUL') > -1) {
-                mul.push(field+'="'+value+'"')
+                mul.push(`${field}='${value}'`)
             }
             return <AddRow key={'row'+i} name={field} fields={props.fields} value={value} i={i} j={j} />
         });

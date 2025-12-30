@@ -13,7 +13,6 @@ $dbs = Server::getDatabasesWithoutHidden();
     <title><?php echo $msc->getWindowTitle() ?></title>
     <script language="JavaScript" src="/js/MysqlCenter.js?<?= filemtime(MS_DIR_JS . 'MysqlCenter.js') ?>"></script>
     <script language="javascript">
-        let debug = '1';
         window.driver = '<?=$msc->driverName?>';
         window.fields = <?=json_encode($fields) ?>;
     </script>

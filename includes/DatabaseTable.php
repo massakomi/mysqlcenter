@@ -375,13 +375,13 @@ class DatabaseTable
      * @return boolean
      * @throws Exception
      */
-    public function rowDelete($db, $table, $row, $limit = 1): bool
+    public function rowDelete($db, $table, $row): bool
     {
         global $msc;
         $validate = new Validate();
         $validate->queryCheck($db, $table, $row);
         $row = stripslashes(urldecode($row));
-        $sql = 'DELETE FROM ' . $table . ' WHERE ' . $row . ' LIMIT ' . $limit;
+        $sql = 'DELETE FROM ' . $table . ' WHERE ' . $row;
         return $msc->execPdo($sql);
     }
 

@@ -13,7 +13,7 @@ class PostgreSQL implements Driver {
     public function getDatabases(): array
     {
         global $msc;
-        return [$msc->db];
+        return $msc->getData('SELECT datname FROM pg_database WHERE datistemplate = false', \PDO::FETCH_COLUMN);
     }
 
     public function getTables(): array
@@ -63,36 +63,47 @@ class PostgreSQL implements Driver {
             if (!$fieldKeys) {
                 continue;
             }
-            foreach ($fieldKeys as $key => $type) {
+            foreach ($fieldKeys as $type) {
                 $field->Key = $type;
             }
         }
         return $fields;
     }
 
-    public function getKeys(string $table): array
+    public function getKeys(string $table, bool $full = false): array
     {
         global $msc;
         if (empty($table)) {
             return [];
         }
         $sql = "
-            SELECT *
+            SELECT 
+                tc.table_name as \"Table\",
+                CASE
+                    WHEN constraint_type = 'UNIQUE' THEN 0
+                    ELSE 1
+                END AS \"Non_unique\",
+                constraint_type as \"Key_name\",
+                column_name as \"Column_name\",
+                ordinal_position as \"Seq_in_index\"
             FROM information_schema.table_constraints AS tc
             JOIN information_schema.key_column_usage AS kcu
             ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
-            WHERE tc.table_name = '$table' AND tc.table_schema = 'public'
+            WHERE tc.table_name = '$table' AND (tc.table_schema = 'public' OR tc.table_schema = '$msc->db')
             ORDER BY kcu.ordinal_position; ";
         $keys = [];
-        $result = $msc->getData($sql);
+        $result = $msc->getData($sql, \PDO::FETCH_OBJ);
         if (!$result) {
             return [];
         }
+        if ($full) {
+            return $result;
+        }
         foreach ($result as $row) {
-            if ($row['constraint_type'] == 'PRIMARY KEY') {
-                $keys[$row['column_name']][$row['constraint_name']] = 'PRI';
+            if ($row->Key_name == 'PRIMARY KEY') {
+                $keys [$row->Column_name][$row->Key_name] = 'PRI';
             } else {
-                $keys[$row['column_name']][$row['constraint_name']] = $row['constraint_type'] == 'UNIQUE' ? 'UNI' : 'MUL';
+                $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
             }
         }
         return $keys;

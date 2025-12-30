@@ -25,39 +25,34 @@ async function msQuery(mode, query = '', callback = '') {
  * @returns {Promise<{error: boolean, message: string}|*>}
  */
 async function queryResponse(response, callback, type = 'json') {
-    let ajaxdebug = typeof debug != 'undefined' && debug
-    if (response.ok) {
 
+    if (response.ok) {
         let content = await response.text()
         if (type === 'json') {
             if (response.headers.get('Content-type') === 'application/json') {
                 try {
-                    content = JSON.parse(content)
-                    showMessages(content)
+                    let json = JSON.parse(content)
+                    showMessages(json)
+                    if (json.status === false) {
+                        return onError('')
+                    }
                 } catch (e) {
-                    let message = 'Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack
-                    showError(message)
-                    return { error: true, message }
+                    return onError('Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack)
                 }
             } else {
-                // тут явно ошибка, предполагается json
-                console.error(content)
-                showError('Ошибка, вернулся не Json, см. консоль.')
+                return onError('Ошибка, вернулся не Json, см. консоль.', content)
             }
         }
 
         // Оставляю на всякий случай, хотя возвращается всегда Json
         if (type === 'text') {
             if (content.match(/(Parse|Fatal) error/i)) {
-                console.error(content)
-                showError('Ошибка, см. консоль.')
+                return onError('Ошибка на сервере, см. консоль.', content)
             } else {
                 try {
                     eval(content)
                 } catch (e) {
-                    if (ajaxdebug) {
-                        console.error('JS код не выполнен: ' + content)
-                    }
+                    return onError('JS код не выполнен: ' + content)
                 }
             }
         }
@@ -66,22 +61,24 @@ async function queryResponse(response, callback, type = 'json') {
         }
         return content
     } else {
-        console.error(response.status + ' ' + response.statusText)
-        let error
         try {
-            error = await response.json()
+            let error = await response.json()
             showError(`${error.message} <span class="text-black-50">${error.file}</span>`)
+            return error
         } catch (e) {
-            let message = `${response.status} ${response.statusText}`
-            showError(message)
-            error = { error: true, message }
+            return onError(`${response.status} ${response.statusText}`)
         }
-        // вопрос - что тут возвращать, false, response или error???
-        // В есть 2 момента. 1. На каких то страницах лучше не открывать Модал если пришла ошибка. Как это определить. Удобно либо false либо response.ok
-        // 2. В Admin когда приходит false я не могу вывести ошибку в модалке, не знаю ее, но и закрывать модалку не хочу, не нужно
-        // В теории возвращать response. если очень нужно прочитать ошибку - можно еще раз сделать json  ХЗ пока
-        return error
     }
+}
+
+function onError(message, content) {
+    if (content || message) {
+        console.error(content ? content : message)
+    }
+    if (message) {
+        showError(message)
+    }
+    return { error: true, message }
 }
 
 function showMessages(json) {
@@ -186,6 +183,7 @@ function toggleMessages(obj) {
 }
 
 function showError(message) {
+    console.error(message)
     showMessages({'messages': message})
 }
 

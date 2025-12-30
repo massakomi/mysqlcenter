@@ -148,6 +148,10 @@ class MSCenter extends DatabaseQuery
         }
         extract($config);
         try {
+            // Подставляем базу из запроса
+            if ($this->db) {
+                $database = $this->db;
+            }
             $options = [
                 PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
@@ -159,9 +163,18 @@ class MSCenter extends DatabaseQuery
             $this->user  = $user;
             $this->driverName  = $driver;
             $this->driver  = $driver == 'pgsql' ? new PostgreSQL() : new MySQL();
-            $this->db  = $database;
+            if ($database) {
+                $this->db  = $database;
+            }
         } catch (PDOException $e) {
             $this->clearCurrentDatabase();
+            // Если подставленная база не сработала - берем базу из конфигурации
+            if ($config['database'] && $config['database'] != $database) {
+                if (preg_match('~database .*? does not exist~', $e->getMessage())) {
+                    $this->connect();
+                    return;
+                }
+            }
             $msg = 'Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />';
             $this->connectError($msg . $e->getMessage());
         }

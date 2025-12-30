@@ -285,14 +285,15 @@ class ActionProcessor
                 if ($this->param('dbMulty')) {
                     $databases = $this->param('databases');
                 } else {
-                    $databases = array($db);
+                    $databases = [$this->param('dbDelete')];
                 }
                 if ($databases) {
                     foreach ($databases as $db) {
                         $server->databaseAction($db, 'DROP');
+                        if ($db == $msc->db) {
+                            $msc->clearCurrentDatabase();
+                        }
                     }
-                    $msc->clearCurrentDatabase();
-                    $msc->page = 'db_list';
                 }
                 break;
 
@@ -366,8 +367,8 @@ class ActionProcessor
                         $newName[] = $new;
                     }
                 } else {
-                    $databases = array($db);
-                    $newName = array($this->param('newName'));
+                    $databases = [$db];
+                    $newName = [$this->param('newName')];
                 }
                 $data = true;
                 $struct = true;
@@ -395,7 +396,7 @@ class ActionProcessor
                 if (!is_array($row)) {
                     $row = [$row];
                 }
-                if ($dbt->rowDelete($db, $tbl, implode(' OR ', $row), count($row))) {
+                if ($dbt->rowDelete($db, $tbl, implode(' OR ', $row))) {
                     return $msc->success("Ряд $row удалён", $msc->lastSql);
                 } else {
                     return $msc->error("Ошибка удаления ряда $row", $msc->lastSql);
@@ -447,7 +448,7 @@ class ActionProcessor
                 if ($msc->execPdo($sql)) {
                     $msc->success('Таблица изменена', $sql);
                 } else {
-                    $msc->success('Ошибка при изменении таблицы', $sql);
+                    $msc->error('Ошибка при изменении таблицы', $sql);
                 }
                 break;
 

@@ -1,37 +1,5 @@
 ```php
 
-function getFields($table, $onlyNames=true)
-{
-    $data = getData('select * from INFORMATION_SCHEMA.COLUMNS where table_name = \''.$table.'\'');
-    if ($onlyNames) {
-        $a = array();
-        foreach ($data as $k => $v) {
-        	$a []= $v['column_name'];
-        }
-        return $a;
-    }
-    return $data;
-}
-
-
-function listDatabases()
-{
-    $data = getData('SELECT * FROM pg_database WHERE datistemplate = false');
-    return $data;
-}
-
-function listTables($onlyNames=true)
-{
-    $data = getData('SELECT * FROM information_schema.tables where table_schema=\'public\' ORDER BY table_name;');
-    if ($onlyNames) {
-    	$a = array();
-        foreach ($data as $k => $v) {
-        	$a []= $v['table_name'];
-        }
-        return $a;
-    }
-    return $data;
-}
 
 function listTablesFull()
 {
@@ -39,7 +7,6 @@ function listTablesFull()
     $tables = getData('SELECT * FROM pg_class WHERE relname IN (\''.implode('\', \'', $tables).'\') ORDER BY relname');
     return $tables;
 }
-
 
 function primaryKey($table)
 {
@@ -62,3 +29,50 @@ function primaryKey($table)
 
     return $a[1];
 }
+
+
+
+
+
+Разница в выводе ключей
+Array
+(
+    [0] => stdClass Object
+        (
+            [Table] => db_info
+            [Non_unique] => 0
+            [Key_name] => PRIMARY
+            [Seq_in_index] => 1
+            [Column_name] => db_name
+            [Collation] => A
+            [Cardinality] => 9
+            [Sub_part] =>
+            [Packed] =>
+            [Null] =>
+            [Index_type] => BTREE
+            [Comment] =>
+            [Index_comment] =>
+        )
+
+)
+Array
+(
+    [0] => stdClass Object
+        (
+            [constraint_catalog] => tester
+            [constraint_schema] => tester
+            [constraint_name] => idx_16996_primary
+            [table_catalog] => tester
+            [table_schema] => tester
+            [table_name] => irc_log
+            [constraint_type] => PRIMARY KEY
+            [is_deferrable] => NO
+            [initially_deferred] => NO
+            [enforced] => YES
+            [nulls_distinct] =>
+            [column_name] => id
+            [ordinal_position] => 1
+            [position_in_unique_constraint] =>
+        )
+
+)

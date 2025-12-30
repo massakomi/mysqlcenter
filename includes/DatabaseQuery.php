@@ -32,14 +32,6 @@ class DatabaseQuery
     }
 
     /**
-     * @return false|int|PDOStatement
-     */
-    public function fetchPdoObject(string $sql)
-    {
-        return $this->queryPdo('fetchObject', $sql);
-    }
-
-    /**
      * @param $mode
      * @param string $sql
      * @return false|int|PDOStatement
@@ -51,18 +43,19 @@ class DatabaseQuery
             throw new Exception($sql);
         }
         try {
+            if ($this->driverName == 'pgsql') {
+                $sql = str_replace('`', '"', $sql);
+            }
             $this->lastSql = $sql;
             $this->affectedRows = 0;
             if ($mode == 'exec') {
-                $result = $pdo->exec($sql);
-                $this->affectedRows = $result;
+                $this->affectedRows = $pdo->exec($sql);
                 $result = true;
-            } elseif ($mode == 'fetchObject') {
-                $result = $pdo->query($sql, PDO::FETCH_OBJ);
             } else {
                 $result = $pdo->query($sql, PDO::FETCH_ASSOC);
             }
         } catch (\PDOException $e) {
+            $result = false;
             // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
             logError($this->error, $sql);
@@ -82,10 +75,11 @@ class DatabaseQuery
 
     /**
      * @param $sql
-     * @param bool $type
+     * @param bool|int $type
      * @return array
+     * @throws Exception
      */
-    public function getData($sql, $type = PDO::FETCH_ASSOC): array
+    public function getData($sql, bool|int $type = PDO::FETCH_ASSOC): array
     {
         if (!is_numeric($type)) {
             $type = PDO::FETCH_ASSOC;

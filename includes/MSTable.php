@@ -59,9 +59,12 @@ class MSTable
             return [];
         }
         global $msc;
-        $result = $msc->fetchPdoObject('SELECT * FROM mysqlcenter.export_table WHERE id_set=' . $idSet);
+        $result = $msc->fetchPdo('SELECT * FROM mysqlcenter.export_table WHERE id_set=' . $idSet);
+        if (!$result) {
+            return [];
+        }
         $a = [];
-        while ($o = $result->fetch()) {
+        while ($o = $result->fetchObject()) {
             $a [$o->table_name] = $o;
         }
         return $a;

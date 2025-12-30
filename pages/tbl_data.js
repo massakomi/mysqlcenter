@@ -60,10 +60,12 @@ function Table(props) {
 
     const deleteRow = (idRow, e) => {
         e.preventDefault()
-        e.target.closest('tr').remove()
+        const tr = e.target.closest('tr')
         const u2 = umaker({s: 'tbl_data', row: idRow})
-        let query = `${u2}&db=${props.db}&table=${props.table}`
-        msQuery('deleteRow', query)
+        const query = `${u2}&db=${props.db}&table=${props.table}`
+        msQuery('deleteRow', query, () => {
+            tr.remove()
+        })
     };
 
      // Собираем массив имён полей, и также массив имён только ключевых полей
@@ -106,7 +108,7 @@ function Table(props) {
                     console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`)
                     continue;
                 }
-                pkValues.push(`${pkCurrent}="${row[pkCurrent]}"`);
+                pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
             }
             // если нет pk ключей, берем простые ключи
         } else if (mul.length > 0) {
@@ -115,7 +117,7 @@ function Table(props) {
                     console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`)
                     continue;
                 }
-                pkValues.push(`${pkCurrent}="${row[pkCurrent]}"`);
+                pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
             }
             // если ничего нет, берем числовые поля
         } else {
@@ -128,7 +130,7 @@ function Table(props) {
                 if (!row[pkCurrent]) {
                     continue;
                 }
-                pkValues.push(`${pkCurrent}="${row[pkCurrent]}"`);
+                pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
             }
         }
         let idRow = encodeURIComponent(pkValues.join(' AND '));

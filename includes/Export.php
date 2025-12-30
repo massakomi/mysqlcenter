@@ -169,13 +169,13 @@ class Export
         $dump .= 'CREATE TABLE ' . $ife . $this->tableb . ' (' . $wr . $tab;
 
         // дамп полей
-        $result = $msc->fetchPdo('SHOW FIELDS FROM ' . $this->tableb);
+        $result = $msc->driver->getFields($this->table);
         if (!$result) {
             return null;
         }
         $fields = [];
         $this->fields = [];
-        while ($row = $result->fetchObject()) {
+        foreach ($result as $row) {
             $this->fields [] = $row;
             if ($this->addKav) {
                 $field_info = '`' . $row->Field . '` ' . $row->Type;
@@ -210,14 +210,14 @@ class Export
         $keys = [];
         $keys['PRI'] = $keys['UNI'] = $keys['MUL'] = $keys['FULL'] = [];
         $parts = [];
-        $result = $msc->fetchPdo('SHOW KEYS FROM ' . $this->tableb);
+        $result = $msc->driver->getKeys($this->table, true);
         $x = $this->addKav ? '`' : '';
-        while ($row = $result->fetchObject()) {
+        foreach ($result as $row) {
             $row->Column_name = $x . $row->Column_name . $x;
             if ($row->Sub_part > 0) {
                 $row->Column_name .= '(' . $row->Sub_part . ')';
             }
-            if ($row->Key_name == 'PRIMARY') {
+            if (str_contains($row->Key_name, 'PRIMARY')) {
                 $keys['PRI'][] = $row->Column_name;
             } elseif ($row->Index_type == 'FULLTEXT') {
                 $keys['FULL'][$row->Key_name][] = $row->Column_name;
@@ -260,12 +260,10 @@ class Export
         $engine = 'MyISAM';
         $pack = null;
         if (!isset($this->tableStructure[$this->db])) {
-            $result = $msc->fetchPdo("SHOW TABLE STATUS FROM $this->db");
+            $result = $msc->driver->getTables();
             $this->tableStructure[$this->db] = [];
-            if ($result) {
-                while ($row = $result->fetchObject()) {
-                    $this->tableStructure [$this->db][] = $row;
-                }
+            foreach ($result as $row) {
+                $this->tableStructure [$this->db][] = $row;
             }
         }
         foreach ($this->tableStructure[$this->db] as $row) {

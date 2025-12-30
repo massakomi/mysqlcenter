@@ -162,11 +162,11 @@ class Server
         $this->validate->queryCheck($db);
         switch ($type) {
             case 'DROP':
-                $sql = "DROP DATABASE `$db`";
+                $sql = "DROP DATABASE `$db`;";
                 $text = 'удалена';
                 break;
             case 'CREATE':
-                $sql = "CREATE DATABASE `$db`";
+                $sql = "CREATE DATABASE `$db`;";
                 $text = 'создана';
                 break;
             default:

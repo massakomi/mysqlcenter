@@ -274,7 +274,7 @@ class TblAdd extends Base
                 if ($msc->execPdo($sql)) {
                     $msc->success('Таблица изменена', $sql);
                 } else {
-                    $msc->error('Ошибка при изменении таблицы', $sql);
+                    $msc->error('Ошибка при изменении полей', $sql);
                 }
             } else {
                 $msc->notice('В definition ничего не изменилось', '', MS_MSG_NOTICE);
@@ -299,8 +299,11 @@ class TblAdd extends Base
             if ($msc->execPdo($sql)) {
                 $msc->success('Таблица изменена', $sql);
             } else {
-                $msc->error('Ошибка при изменении таблицы');
+                $msc->error('Ошибка при добавлении полей');
             }
+        }
+        if (isAjax()) {
+            ajaxResultWithMessages();
         }
         return [];
     }

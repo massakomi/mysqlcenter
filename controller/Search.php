@@ -82,12 +82,12 @@ class Search extends Base
                 $whereCondition = " WHERE " . implode(' LIKE "%' . $query . '%" OR ', $fields) . ' LIKE "%'
                     . $query . '%"';
                 $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
-                $result = $msc->fetchPdoObject($sql);
+                $result = $msc->fetchPdo($sql);
                 if (!$result) {
                     continue;
                 }
                 // найдено что-то
-                if ($row = $result->fetch()) {
+                if ($row = $result->fetchObject()) {
                     if ($row->c > 0) {
                         $founded++;
                         $results [] = [
