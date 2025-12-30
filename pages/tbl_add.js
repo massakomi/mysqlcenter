@@ -1,3 +1,6 @@
+import React, {Fragment, useEffect} from 'react';
+import {addRow, forElementsEvent, msQuery, qs, umaker} from "../js/MysqlCenter";
+
 function TableHead(props) {
     return (
       <table id="tableFormEdit">
@@ -124,14 +127,14 @@ function MSC_DrawFields(props) {
             ISNULL = v.Null === true || v.Null === "YES";
             AUT = v.Extra !== ""
             extra = (
-              <React.Fragment>
+              <Fragment>
                   <select name="after[]" defaultValue={previousFields[v.Field]}>
                       {fields.map((v) =>
                         <option key={v}>{v}</option>
                       )}
                   </select>
                   <input type="hidden" name="afterold[]" defaultValue={previousFields[v.Field] || 'FIRST'} />
-              </React.Fragment>
+              </Fragment>
             )
             console.log(NAME)
             if (keys[NAME]) {
@@ -157,14 +160,14 @@ function MSC_DrawFields(props) {
                 checked = POST.afterField
             }
             extra = (
-              <React.Fragment>
+              <Fragment>
                   <select name={`after[${k}]`} defaultValue={checked}>
                       {fields.map((v) =>
                         <option key={v}>{v}</option>
                       )}
                   </select>
                   <input type="hidden" name={`afterold[${k}]`} defaultValue={checked} />
-              </React.Fragment>
+              </Fragment>
             )
         }
 
@@ -214,13 +217,13 @@ function MSC_DrawFields(props) {
 }
 
 
-function Tbl_add(props) {
+export function Tbl_add(props) {
 
     const removeRow = (tableId, param) => {
         removeRow(tableId, param)
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         forElementsEvent('change', '[name="ftype[]"]', function() {
             let curType = this.value;
             if (curType === 'SERIAL') {
@@ -248,15 +251,14 @@ function Tbl_add(props) {
         for (let i = 0; i < inputs.length; i++) {
             let res = /([a-z]+)\[(\d+)\]/i.exec(inputs[i].name)
             if (res != null) {
-                let nextName = res[1] + '['+ (Number(res[2]) + 1) +']';
-                inputs[i].name = nextName;
+                inputs[i].name = res[1] + '[' + (Number(res[2]) + 1) + ']';
             }
         }
     }
 
     const save = (e) => {
         e.preventDefault()
-        msQuery('', e.target, (data) => {
+        msQuery('', e.target, () => {
             setTimeout(function() {
                 if (props.showTableName) {
                     location.href = umaker({s: 'tbl_struct', table: document.querySelector('[name="table_name"]').value})
@@ -270,9 +272,9 @@ function Tbl_add(props) {
     return (
       <form method="post" action="" className="tableFormEdit" name="addForm" onSubmit={save.bind(this)}>
           {props.showTableName &&
-            <React.Fragment>
+            <Fragment>
                 <input tabIndex="1" type="text" name="table_name" size="40" defaultValue={props.tableName} /> имя таблицы <br />
-            </React.Fragment>
+            </Fragment>
           }
           {props.afterSql &&
             <input type="hidden" name="afterSql" value={props.afterSql} /> }

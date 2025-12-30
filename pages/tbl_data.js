@@ -1,3 +1,15 @@
+import {HtmlSelector} from "../js/components";
+import React, {useEffect, Fragment} from 'react';
+import {
+    contentTableEvents,
+    forElementsEvent, getElementIndex,
+    isNumeric,
+    msImageAction,
+    msQuery,
+    processRowValue,
+    umaker
+} from "../js/MysqlCenter";
+
 function TableHeader(props) {
 
     const order = (field, e) => {
@@ -258,7 +270,7 @@ function TableLinks(props) {
     );
 }
 
-function Tbl_data(props) {
+export function Tbl_data(props) {
 
     const checkboxAction = (opt, e) => {
         e.preventDefault()
@@ -272,7 +284,7 @@ function Tbl_data(props) {
         msImageAction('formTableRows', opt, url)
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
 
         contentTableEvents()
 
@@ -317,7 +329,7 @@ function Tbl_data(props) {
     let links = <TableLinks count={props.count} go={props.go} linksRange={props.linksRange} part={props.part} />
 
     return (
-      <React.Fragment>
+      <Fragment>
           <form action={props.url.replace('#s#', 'tbl_data')} method="post" name="formTableRows" id="formTableRows">
               <input type="hidden" name="rowMulty" value="1" />
               <input type="hidden" name="action" value="" />
@@ -346,6 +358,6 @@ function Tbl_data(props) {
               <HtmlSelector data={props.dbs} name="database" /> &nbsp;
               <input type="submit" value="Сравнить" />
           </form>
-      </React.Fragment>
+      </Fragment>
     );
 }

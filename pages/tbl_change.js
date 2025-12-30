@@ -1,14 +1,17 @@
+import React, {useState, useEffect, Fragment} from 'react';
+import {HtmlSelector} from "../js/components";
+import {list} from "../js/MysqlCenter";
 
 function FormBottom() {
     return (
-      <React.Fragment>
+      <Fragment>
           <br /> <br /> после вставки
           <input name="redirect" type="radio" id="f2" value="tbl_data" defaultChecked/> <label htmlFor="f2">обзор таблицы</label>
           <input name="redirect" type="radio" id="f3" value="tbl_list"/> <label htmlFor="f3">список таблиц</label>
           <input name="redirect" type="radio" id="f4" value="tbl_change"/> <label htmlFor="f4">вставить новую запись</label>
           <br /><br />
           <input tabIndex="100" type="submit" value="Сохранить" className="submit"/>
-      </React.Fragment>
+      </Fragment>
     )
 }
 
@@ -133,7 +136,7 @@ function AddRow(props) {
 
 function AddRows(props) {
 
-    const [msRowsInsert, setMsRowsInsert] = React.useState(props.msRowsInsert);
+    const [msRowsInsert, setMsRowsInsert] = useState(props.msRowsInsert);
 
     const addDataRow = inc => {
         setMsRowsInsert(msRowsInsert + inc)
@@ -205,7 +208,7 @@ function EditRows(props) {
         let hiddenInput = (<input name="cond[]" type="hidden" value={cond} />)
 
         let tableInner = (
-          <React.Fragment key={"row-"+j}>{hiddenInput}
+          <Fragment key={"row-"+j}>{hiddenInput}
               <table style={{marginBottom: '10px'}}>
                   <tbody>
                   <tr className="editHeader">
@@ -217,7 +220,7 @@ function EditRows(props) {
                   {tableInnerRows}
                   </tbody>
               </table>
-          </React.Fragment>)
+          </Fragment>)
         outerRows.push(tableInner)
         j ++
     }
@@ -236,9 +239,9 @@ function EditRows(props) {
 }
 
 
-function Tbl_change(props) {
+export function Tbl_change() {
 
-    React.useEffect(() => {
+    useEffect(() => {
         refreshActions()
     }, []);
 
@@ -249,9 +252,9 @@ function Tbl_change(props) {
     }
 
     return (
-      <React.Fragment>
+      <Fragment>
           {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} />}
-      </React.Fragment>
+      </Fragment>
     );
 }
 

@@ -14,19 +14,12 @@ $dbs = Server::getDatabasesWithoutHidden();
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title><?php echo $msc->getWindowTitle() ?></title>
-    <script language="JavaScript" src="/js/MysqlCenter.js?<?= filemtime(MS_DIR_JS . 'MysqlCenter.js') ?>"></script>
     <script language="javascript">
         window.driver = '<?=$msc->driverName?>';
         window.fields = <?=json_encode($fields) ?>;
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
-
-    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-    <script src="/js/lib/react.development.js" crossorigin></script>
-    <script src="/js/lib/react-dom.development.js" crossorigin></script>
-    <script src="/js/lib/react-babel.min.js"></script>
-    <script src="/js/components.js" type="text/babel"></script>
 </head>
 <body>
 <div class="loader" hidden></div>
@@ -83,7 +76,12 @@ $dbs = Server::getDatabasesWithoutHidden();
                 ?>
             </div>
         </div>
-        <?php echo $contentMain ?>
+        <?php echo Menu::getMessages() ?>
+        <div id="root"></div>
+        <script>
+            window.component = '<?=$msc->page?>'
+            window.options = <?=json_encode($pageProps)?>;
+        </script>
     </div>
 </div>
 
@@ -112,5 +110,6 @@ $dbs = Server::getDatabasesWithoutHidden();
     <span class="hiddenText">inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?></span>
     <span class="hiddenText">limit <?php echo ini_get('memory_limit') ?></span>
 </div>
-
+</body>
+<script src="/js/dist.js"></script>
 </html>

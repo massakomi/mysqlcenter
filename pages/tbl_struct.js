@@ -1,3 +1,6 @@
+import React, {Fragment} from 'react';
+import {check, forElements, msImageAction, submitFormIfFieldNotEmpty} from "../js/MysqlCenter";
+
 function TableObject(props) {
     // нулевой элемент раскидвать по ключ-значение, бред редко нужно
     let tableInfo = props.data[0]
@@ -148,7 +151,7 @@ function KeysInfo(props) {
 }
 
 
-function Tbl_struct(props) {
+export function Tbl_struct(props) {
 
     const checkboxAction = (opt, event) => {
         event.preventDefault()
@@ -171,7 +174,7 @@ function Tbl_struct(props) {
     }
 
     return (
-      <React.Fragment>
+      <Fragment>
           <div className="flex">
               <div>
                   <form action={props.addTableUrl} method="post" name="formTableStructure"
@@ -233,6 +236,6 @@ function Tbl_struct(props) {
           <p><a href={props.addKeyUrl}>Добавить ключ</a></p>
 
           <textarea className="wide" defaultValue={props.sqlCreateTable}></textarea>
-      </React.Fragment>
+      </Fragment>
     );
 }

@@ -1,5 +1,38 @@
 {
+  "name": "msc",
+  "version": "1.0.0",
+  "private": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode development",
+    "start": "webpack serve --mode development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/massakomi/mysqlcenter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/massakomi/mysqlcenter/issues"
+  },
+  "homepage": "https://github.com/massakomi/mysqlcenter#readme",
+  "description": "",
   "devDependencies": {
-    "prettier": "3.7.4"
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "babel-loader": "^10.0.0",
+    "prettier": "3.7.4",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@babel/preset-react": "^7.28.5",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   }
 }

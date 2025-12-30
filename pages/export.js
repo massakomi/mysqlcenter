@@ -1,7 +1,11 @@
+import React, {Fragment} from 'react';
+import {ExportOptions} from "../js/components";
+import {forElements, umaker} from "../js/MysqlCenter";
+
 function Form(props) {
 
     const msMultiSelect = (event) => {
-        forElements('[name="'+props.selectMultName+'"] option', function(e) {
+        forElements('[name="'+props.selectMultName+'"] option', function() {
             if (event.target.classList.contains('invert')) {
                 this.selected = !this.selected
             } else {
@@ -41,10 +45,10 @@ function Results(props) {
     return <textarea name="export" rows="40" wrap="off" defaultValue={props.content}></textarea>
 }
 
-function Export(props) {
+export function Export(props) {
     return (
-      <React.Fragment>
+      <Fragment>
           {props.content ? <Results content={props.content} /> : <Form {...props} />}
-      </React.Fragment>
+      </Fragment>
     )
 }

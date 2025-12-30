@@ -1,3 +1,5 @@
+import React from 'react';
+
 function TableField(props) {
 
     let field = props.field
@@ -54,7 +56,7 @@ function TableData(props) {
     })
 }
 
-function Tbl_struct_view(props) {
+export function Tbl_struct_view(props) {
 
     let fieldVariants = {}
     for (const v of props.tables) {

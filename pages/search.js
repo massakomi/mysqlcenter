@@ -1,8 +1,12 @@
+import React, {useState, useEffect, useRef, Fragment} from 'react';
+import {Table} from "../js/components";
+import {forElements} from "../js/MysqlCenter";
+
 function SearchForm(props) {
 
-    const [query, setQuery] = React.useState('');
-    const [queryField, setQueryField] = React.useState('');
-    const [disabled, setDisabled] = React.useState(true);
+    const [query, setQuery] = useState('');
+    const [queryField, setQueryField] = useState('');
+    const [disabled, setDisabled] = useState(true);
 
     const updateState = (event) => {
         const name = event.target.name;
@@ -18,7 +22,7 @@ function SearchForm(props) {
     }
 
     const msMultiSelect = event => {
-        forElements('[name="table[]"] option', function(e) {
+        forElements('[name="table[]"] option', function() {
             if (event.target.classList.contains('invert')) {
                 this.selected = !this.selected
             } else {
@@ -27,8 +31,8 @@ function SearchForm(props) {
         })
     };
 
-    let queryAll = React.useRef(null);
-    React.useEffect(() => {
+    let queryAll = useRef(null);
+    useEffect(() => {
         queryAll.current.focus()
     }, []);
  
@@ -59,11 +63,11 @@ function SearchForm(props) {
     ); 
 }
 
-function Search(props) {
+export function Search(props) {
     return (
-      <React.Fragment>
+      <Fragment>
           {props.results ? <Table data={props.results} /> : null}
           <SearchForm {...props} />
-      </React.Fragment>
+      </Fragment>
     )
 }

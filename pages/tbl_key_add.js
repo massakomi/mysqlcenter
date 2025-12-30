@@ -1,12 +1,6 @@
-function Tbl_key_add(props) {
-
-    addRow = (tableId, param) => {
-        addRow(tableId, param)
-    };
-
-    removeRow = tableId => {
-        removeRow(tableId)
-    };
+import React from 'react';
+import {addRow, removeRow} from "../js/MysqlCenter";
+export function Tbl_key_add(props) {
 
     let types = ['PRIMARY KEY','INDEX','UNIQUE','FULLTEXT']
 

@@ -1,12 +1,15 @@
-function Config(props) {
+import React from 'react';
+import {msQuery} from "../js/MysqlCenter";
+
+export function Config(props) {
 
     const update = async (e) => {
         e.preventDefault()
-        msQuery('configUpdate', e.target.parentNode)
+        await msQuery('configUpdate', e.target.parentNode)
     }
 
-    const restore = async (e) => {
-        msQuery('configRestore', '')
+    const restore = async () => {
+        await msQuery('configRestore', '')
     }
 
     const trs = Object.values(props.data).map((item) => {
@@ -16,7 +19,7 @@ function Config(props) {
         let [name, title, value, type] = item.split('|')
         let input = ''
         if (type.includes('boolean')) {
-            input = <input type="checkbox" name={name} value="1" defaultChecked={value != 0} />
+            input = <input type="checkbox" name={name} value="1" defaultChecked={value !== '0'} />
         } else {
             input = <input type="text" name={name} defaultValue={value} />
         }

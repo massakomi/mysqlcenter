@@ -1,3 +1,6 @@
+import React, {useState} from 'react';
+import {checkboxAction, msImageAction, msQuery} from "../js/MysqlCenter";
+
 function TableFull(props) {
 
     const dbDelete = db => {
@@ -175,10 +178,10 @@ function ColumnLeft(props) {
 
           <div className="imageAction">
               <u>Выбранные</u>
-              <input type="image" src={"/" + props.folder + "close.png"} onClick={imageAction.bind(this, 'dbDelete')} title="Удалить базы данных" />
-              <input type="image" src={"/" + props.folder + "copy.gif"} onClick={imageAction.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" />
-              <input type="image" src={"/" + props.folder + "b_tblexport.png"} onClick={imageAction.bind(this, 'exportDatabases', 'export')} title="Перейти к экспорту баз данных" />
-              <input type="image" src={"/" + props.folder + "fixed.gif"} onClick={imageAction.bind(this, 'db_compare', 'db_compare')} title="Сравнить выбранные базы данных" />
+              <input type="image" src={"/" + props.folder + "close.png"} onClick={imageAction.bind(this, 'dbDelete')} title="Удалить базы данных" alt="" />
+              <input type="image" src={"/" + props.folder + "copy.gif"} onClick={imageAction.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" alt="" />
+              <input type="image" src={"/" + props.folder + "b_tblexport.png"} onClick={imageAction.bind(this, 'exportDatabases', 'export')} title="Перейти к экспорту баз данных" alt="" />
+              <input type="image" src={"/" + props.folder + "fixed.gif"} onClick={imageAction.bind(this, 'db_compare', 'db_compare')} title="Сравнить выбранные базы данных" alt="" />
           </div>
       </div>
     );
@@ -189,10 +192,10 @@ function ColumnLeft(props) {
 
 function ColumnRight(props) {
 
-    const [database, setDatabase] = React.useState('');
-    const [passwordField, setPasswordField] = React.useState('');
-    const [password2Field, setPassword2Field] = React.useState('');
-    const [formDisabled, setFormDisabled] = React.useState(true);
+    const [database, setDatabase] = useState('');
+    const [passwordField, setPasswordField] = useState('');
+    const [password2Field, setPassword2Field] = useState('');
+    const [formDisabled, setFormDisabled] = useState(true);
 
     const updateLoginName = event => {
         setDatabase(event.target.value)
@@ -253,7 +256,7 @@ function ColumnRight(props) {
     );
 }
 
-function DbCreateForm(props) {
+function DbCreateForm() {
     return  (
       <fieldset className="msGeneralForm">
           <legend>Создание базы данных</legend>
@@ -265,7 +268,7 @@ function DbCreateForm(props) {
     )
 }
 
-function Db_list(props) {
+export function Db_list(props) {
     return  (
       <div className="flex">
           <ColumnLeft folder={props.folder} url={props.url} showFullInfo={props.showFullInfo} databases={props.databases} hiddens={props.hiddens} />

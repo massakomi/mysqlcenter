@@ -1,4 +1,7 @@
-function Login(props) {
+import React, {useState} from 'react';
+import {msQuery} from "../js/MysqlCenter";
+
+export function Login(props) {
 
     const changeCurrentSetting = (e) => {
         let newSetting = e.target.options[e.target.selectedIndex].value
@@ -83,11 +86,11 @@ function Login(props) {
 
     let current, config, setCurrent, setConfig;
     if (props.current) {
-        [current, setCurrent] = React.useState(props.current);
-        [config, setConfig] = React.useState(props.config);
+        [current, setCurrent] = useState(props.current);
+        [config, setConfig] = useState(props.config);
     } else {
-        [current, setCurrent] = React.useState("0");
-        [config, setConfig] = React.useState({
+        [current, setCurrent] = useState("0");
+        [config, setConfig] = useState({
             "0": defaults("Default")
         });
     }

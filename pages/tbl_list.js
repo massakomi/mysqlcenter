@@ -1,3 +1,7 @@
+import React, {useState, Fragment} from 'react';
+import {Table} from "../js/components";
+import {checkboxAction, date2rusString, formatSize, msImageAction, msQuery} from "../js/MysqlCenter";
+
 function Selector(props) {
 
     let options = []
@@ -21,7 +25,7 @@ function Selector(props) {
     );
 }
 
-function DateSelector(props) {
+function DateSelector() {
 
     Date.prototype.daysInMonth = function() {
         return 32 - new Date(this.getFullYear(), this.getMonth(), 32).getDate();
@@ -31,14 +35,14 @@ function DateSelector(props) {
     let months = ['января', 'февраля', 'марта', 'апреля', 'май', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
     return (
-      <React.Fragment>
+      <Fragment>
           <Selector name="ds_day" from="1" to={date.daysInMonth()} value={date.getDate()} />
           <Selector name="ds_month" data={months} value={date.getMonth()} />
           <Selector name="ds_year" from="2000" to={date.getFullYear()} value={date.getFullYear()} />
           <Selector name="ds_hour" from="0" to="23" /> :
           <Selector name="ds_minut" from="0" to="59" /> :
           <Selector name="ds_second" from="0" to="59" />
-      </React.Fragment>
+      </Fragment>
     );
 }
 
@@ -193,11 +197,11 @@ function TableList(props) {
 
 
 
-function Tbl_list(props) {
+export function Tbl_list(props) {
 
-    const [tables, setTables] = React.useState(props.tables);
+    const [tables, setTables] = useState(props.tables);
 
-    const imageAction = (opt, url, e) => {
+    const imageAction = (opt, url) => {
         if (opt === 'auto') {
             opt = this.target.options[this.target.selectedIndex].value
         }
@@ -217,7 +221,7 @@ function Tbl_list(props) {
         let day = document.querySelector('[name="ds_day"]').value
         let date = new Date(year, month, day)
 
-        let tables = Object.values(props.tables).filter((table, key) => {
+        let tables = Object.values(props.tables).filter((table) => {
             let now = new Date(table.Update_time);
             return now > date;
         })

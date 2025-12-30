@@ -1,3 +1,6 @@
+import React from 'react';
+import {processRowValue} from "../js/MysqlCenter";
+
 function compareData(data, fields, databases) {
     let output = []
 
@@ -141,7 +144,7 @@ function TableCompare(props) {
     </table>
 }
 
-function Tbl_compare(props) {
+export function Tbl_compare(props) {
     //console.log(props.tables)
     let compares = []
     for (let table in props.tables) {

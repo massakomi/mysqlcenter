@@ -1,6 +1,8 @@
-function Db_compare(props) {
+import React, {Fragment} from 'react';
+import {Messages} from "../js/components";
+import {formatSize} from "../js/MysqlCenter";
 
-    const [data, setData] = React.useState(false);
+export function Db_compare(props) {
 
     const header = (params) => {
         let cellsWithTitles = []
@@ -14,13 +16,13 @@ function Db_compare(props) {
                 cellsWithDatabases.push(<td key={param + v}>{v}</td>)
             }
         }
-        return <React.Fragment>
+        return <Fragment>
             <tr>
                 <td rowSpan="2">&nbsp;</td>
                 <td rowSpan="2">Таблица</td>
                 {cellsWithTitles}</tr>
             <tr>{cellsWithDatabases}</tr>
-        </React.Fragment>
+        </Fragment>
     }
 
     const getTablesArray = (dbArray) => {
@@ -47,9 +49,7 @@ function Db_compare(props) {
             row.push(<input name="table[]" type="checkbox" value={table} className="cb" id={`t-${tableNum}`}/>)
             row.push(<label htmlFor={`t-${tableNum}`}>{table}</label>)
             let rowClass = '';
-            let skip = false
             for (let num = 0; num < params.length; num++) {
-                const param = params[num]
                 let countRowsPrev = null;
                 let valueSizePrev = null;
                 let exportDataPrev = null;

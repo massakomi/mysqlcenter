@@ -1,4 +1,8 @@
-function Sql (props) {
+import {Fragment} from "react";
+import React from 'react';
+import {sqlFormSubmit} from "../js/MysqlCenter";
+
+export function Sql (props) {
 
     const opts = Object.values(props.charsets).map((charset) =>
       <option key={charset.toString()}>
@@ -7,7 +11,7 @@ function Sql (props) {
     );
 
     return (
-      <React.Fragment>
+      <Fragment>
           <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm"
                 className="tableFormEdit" onSubmit={sqlFormSubmit}>
               <textarea name="sql" rows="20" id="sqlContent" wrap="off">{props.sql}</textarea>
@@ -28,6 +32,6 @@ function Sql (props) {
                   (Максимальный размер: {props.maxSize} Mb)
               </fieldset>
           </form>
-      </React.Fragment>
+      </Fragment>
     );
 }

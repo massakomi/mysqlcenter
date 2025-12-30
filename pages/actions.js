@@ -1,7 +1,12 @@
-function Actions(props) {
+import {Fragment, useState} from "react";
+import React from 'react';
+import {CharsetSelector, HtmlSelector} from "../js/components";
+import {msQuery} from "../js/MysqlCenter";
+
+export function Actions(props) {
     
-    const [comment, setComment] = React.useState(props.comment);
-    const [renameName, setRenameName] = React.useState(props.table);
+    const [comment, setComment] = useState(props.comment);
+    const [renameName, setRenameName] = useState(props.table);
  
 
     let onChangeComment = (e) => {
@@ -32,7 +37,7 @@ function Actions(props) {
 
 
     return (
-      <React.Fragment>
+      <Fragment>
 
           <fieldset className="msGeneralForm">
               <legend>Переименовать таблицу в:</legend>
@@ -112,6 +117,6 @@ function Actions(props) {
               <a onClick={tableAction.bind(this, "tableOptimize")} href="#">Оптимизировать таблицу</a>
               <a onClick={tableAction.bind(this, "tableFlush")} href="#">Сбросить кэш таблицы ("FLUSH")</a>
           </div>
-      </React.Fragment>
+      </Fragment>
     );
 }

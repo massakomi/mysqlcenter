@@ -1,3 +1,5 @@
+import {ExportOptions, HtmlSelector} from "../js/components";
+import React, {Fragment} from 'react';
 
 function Form(props) {
 
@@ -108,10 +110,10 @@ function Results(props) {
     return <textarea name="export" rows="40" wrap="off" defaultValue={props.content}></textarea>
 }
 
-function ExportSp(props) {
+export function ExportSp(props) {
     return (
-      <React.Fragment>
+      <Fragment>
           {props.content ? <Results content={props.content} /> : <Form {...props} />}
-      </React.Fragment>
+      </Fragment>
     )
 }

@@ -6,7 +6,7 @@
  * @param callback
  * @return boolean false
  */
-async function msQuery(mode, query = '', callback = '') {
+export async function msQuery(mode, query = '', callback = '') {
     if ((mode.match(/delete/i) && confirm('Подтвердите...') === false) || arguments.length === 0) {
         return false
     }
@@ -122,9 +122,9 @@ function showMessages(json) {
     )
 
     let clearMsgTimeout = () => {
-        if (typeof msAjaxQueryDivTm != 'undefined') {
+        if (typeof msAjaxQueryDivTm != 'undefined' && msAjaxQueryDivTm != null) {
             clearTimeout(msAjaxQueryDivTm)
-            delete msAjaxQueryDivTm
+            window.msAjaxQueryDivTm = null
         }
     }
     let restartMsgTimeout = () => {
@@ -145,7 +145,7 @@ function showMessages(json) {
  * @returns RequestInit
  */
 function getFetchOptions(mode, query) {
-    let body = null
+    let body
     if (typeof query === 'string') {
         query = query.replace(/^\?/, '')
         body = new URLSearchParams(query)
@@ -188,7 +188,7 @@ function showError(message) {
 }
 
 // umaker({db: 'xxx'})
-function umaker(query = {}, doSwitch = false) {
+export function umaker(query = {}, doSwitch = false) {
     let u = new URL(location.href)
     for (let key in query) {
         if (query[key] === false) {
@@ -214,7 +214,7 @@ function umaker(query = {}, doSwitch = false) {
  * Присваивает полю 'image_action' значение param и отправляет форму (для image кнопок)
  * @ actionReplace - новое значение action формы (опционально)
  */
-function msImageAction(formName, param, actionReplace) {
+export function msImageAction(formName, param, actionReplace) {
     if (param.match(/delete/i) || param.match(/truncate/i)) {
         if (!confirm('Подтвердите...')) {
             return false
@@ -232,7 +232,7 @@ function msImageAction(formName, param, actionReplace) {
 /**
  * Редирект с сабмита sql форм (в шапке и на странице sql)
  */
-function sqlFormSubmit() {
+export function sqlFormSubmit() {
     this.event.preventDefault()
     let form = this.event.target.closest('form');
     let sql = form.querySelector('textarea').value
@@ -245,7 +245,7 @@ function sqlFormSubmit() {
 /**
  * Функция, которая отвечает за механизм отображения/скрытия блока быстрого SQL запроса на всех страницах MSC
  */
-function sqlFormToggle() {
+export function sqlFormToggle() {
     let form = document.querySelector('.popupGeneralForm')
     if (form.checkVisibility()) {
         form.style.display = 'none'
@@ -255,7 +255,7 @@ function sqlFormToggle() {
     }
 }
 
-function sqlFormEvents() {
+export function sqlFormEvents() {
     let table = new URL(location.href).searchParams.get('table')
     let textarea = document.querySelector('.popupGeneralForm textarea')
     let span = document.querySelector('.popupGeneralForm span')
@@ -273,7 +273,7 @@ function sqlFormEvents() {
  * @param after
  * @return object Вставленная строка
  */
-function addRow(tableId, from = 'last', after = true) {
+export function addRow(tableId, from = 'last', after = true) {
     const table = document.getElementById(tableId)
     // сколько всего рядов
     const i = table.rows.length
@@ -291,7 +291,7 @@ function addRow(tableId, from = 'last', after = true) {
     const tr2 = document.getElementById('trNewId' + i)
     // копируем ячейки из одной строки в другую
     for (let j = 0; j < tr.cells.length; j++) {
-        td = document.createElement('TD')
+        let td = document.createElement('TD')
         tr2.appendChild(td)
         td.innerHTML = tr.cells[j].innerHTML
     }
@@ -318,7 +318,7 @@ function insertBefore(sAfterId, sTag, sId) {
 /**
  * Удаляет ряд таблицы с конца
  */
-function removeRow(tableId) {
+export function removeRow(tableId) {
     let r = document.getElementById(tableId).rows
     if (r.length === 1) {
         return false
@@ -342,7 +342,7 @@ function remove(objElement) {
  * @param forma
  * @param fieldName
  */
-function submitFormIfFieldNotEmpty(forma, fieldName) {
+export function submitFormIfFieldNotEmpty(forma, fieldName) {
     const val = forma[fieldName].value
     if (trim(val) === '') {
         forma[fieldName].select()
@@ -369,7 +369,7 @@ function trim(s) {
  * Подтверждение перехода по ссылке
  * ! обязательно передавать this, т.к. без него нельзя передать message
  */
-function check(obj, message) {
+export function check(obj, message) {
     if (is_null(message)) {
         message = 'текущее действие'
     }
@@ -383,7 +383,7 @@ function check(obj, message) {
 /**
  * Групповые действия с чекбоксами
  */
-function checkboxAction(form_name, action, mask = false) {
+export function checkboxAction(form_name, action, mask = false) {
     let add = ''
     if (mask) {
         add = '[name="' + mask + '"]'
@@ -400,38 +400,7 @@ function checkboxAction(form_name, action, mask = false) {
     }
 }
 
-/**
- * Устанавливает / возвращает cookie
- */
-cook = {
-    set: function (name, value, expires, path, domain, secure) {
-        expl = new Date()
-        expires = expl.getTime() + expires * 24 * 60 * 60 * 1000
-        expl.setTime(expires)
-        expires = expl.toGMTString()
-        let curCookie =
-            name +
-            '=' +
-            escape(value) +
-            (expires ? '; expires=' + expires : '') +
-            (path ? '; path=' + path : '') +
-            (domain ? '; domain=' + domain : '') +
-            (secure ? '; secure' : '')
-        if ((name + '=' + escape(value)).length <= 4000) document.cookie = curCookie
-        else if (confirm('Cookie превышает 4KB и будет вырезан !')) document.cookie = curCookie
-        return curCookie
-    },
-    get: function (name) {
-        let prefix = name + '='
-        let cookieStartIndex = document.cookie.indexOf(prefix)
-        if (cookieStartIndex === -1) return false
-        let cookieEndIndex = document.cookie.indexOf(';', cookieStartIndex + prefix.length)
-        if (cookieEndIndex === -1) cookieEndIndex = document.cookie.length
-        return unescape(document.cookie.substring(cookieStartIndex + prefix.length, cookieEndIndex))
-    },
-}
-
-formatSize = (bytes, digits = 0) => {
+export function formatSize (bytes, digits = 0) {
     if (bytes < Math.pow(1024, 1)) {
         return bytes + ' b'
     } else if (bytes < Math.pow(1024, 2)) {
@@ -446,7 +415,7 @@ formatSize = (bytes, digits = 0) => {
 function dbHiddenMenu() {
     let hideTimeout = null
     let div = document.querySelector('.menuDb')
-    forElementsEvent('mouseover', '.appName', function (e) {
+    forElementsEvent('mouseover', '.appName', function () {
         div.style.display = 'block'
     })
 
@@ -459,12 +428,12 @@ function dbHiddenMenu() {
         }
     })
 
-    forElementsEvent('mouseover', '.menuDb', function (e) {
+    forElementsEvent('mouseover', '.menuDb', function () {
         if (hideTimeout != null) {
             clearInterval(hideTimeout)
         }
     })
-    forElementsEvent('click', '.menuDb', function (e) {
+    forElementsEvent('click', '.menuDb', function () {
         div.style.display = 'none'
     })
 }
@@ -475,10 +444,10 @@ function ctrlKeyMode() {
     window.key = {
         needkey: function (e) {
             if (globalCtrlKeyMode === true) {
-                globalCtrlKeyMode = false
+                window.globalCtrlKeyMode = false
             }
             if (e.ctrlKey === true && e.type === 'keydown') {
-                globalCtrlKeyMode = true
+                window.globalCtrlKeyMode = true
             }
         },
     }
@@ -511,7 +480,7 @@ function searchEvents() {
     })
 }
 
-function contentTableEvents() {
+export function contentTableEvents() {
     forElements('.contentTable th', function() {
         let span = this.querySelector('.br')
         if (span === null) {
@@ -520,7 +489,7 @@ function contentTableEvents() {
         span.style.width = window.getComputedStyle(this).width
     })
 
-    forElementsEvent('mouseover', '.contentTable th', function(e) {
+    forElementsEvent('mouseover', '.contentTable th', function() {
         this.classList.add('wide')
     })
 
@@ -568,7 +537,7 @@ function loader() {
  * @param type
  * @param textCut
  */
-function processRowValue(v, type, textCut) {
+export function processRowValue(v, type, textCut) {
     if (v === null) {
         v = 'null'
     } else {
@@ -599,7 +568,7 @@ Date.prototype.getDayReal = function () {
  * @param date
  * @returns {string}
  */
-function date2rusString(date) {
+export function date2rusString(date) {
     if (!date) {
         return 'invalid date'
     }
@@ -626,14 +595,14 @@ function date2rusString(date) {
 
 // gQuery to js
 
-function forElements(selector, callback) {
+export function forElements(selector, callback) {
     let all = [].slice.call(document.querySelectorAll(selector))
     all.map(function (el) {
         callback.call(el)
     })
 }
 
-function forElementsEvent(event, selector, callback) {
+export function forElementsEvent(event, selector, callback) {
     forElements(selector, function () {
         this.addEventListener(event, function (e) {
             callback.call(this, e)
@@ -642,7 +611,7 @@ function forElementsEvent(event, selector, callback) {
 }
 
 // Назначает выполнение функции 'a' при наступлении события 'e' с объектом 'o'
-function list(object, event, action) {
+export function list(object, event, action) {
     if (object.addEventListener) {
         object.addEventListener(event, action, false)
     } else if (object.attachEvent) {
@@ -653,11 +622,11 @@ function list(object, event, action) {
 }
 
 // Возвращает число, под которым элемент находится на текущем уровне (аналог jQuery.index() )
-function getElementIndex(el) {
+export function getElementIndex(el) {
     return Array.prototype.indexOf.call(el.parentNode.children, el)
 }
 
-function isNumeric(value) {
+export function isNumeric(value) {
     if (typeof value == 'number') {
         return true
     } else if (typeof value == 'string') {
@@ -668,7 +637,7 @@ function isNumeric(value) {
     return false
 }
 
-function qs(selector) {
+export function qs(selector) {
     let element = document.querySelector(selector)
     if (element == null) {
         element = document.createElement('div')

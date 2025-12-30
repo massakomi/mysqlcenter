@@ -1,4 +1,7 @@
-function SearchTable(props) {
+import React from 'react';
+import {HtmlSelector} from "../js/components";
+import {umaker} from "../js/MysqlCenter";
+export function SearchTable(props) {
 
     const sendGet = (e) => {
         e.preventDefault();

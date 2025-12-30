@@ -32,70 +32,7 @@ class PageLayout
             $this->initController();
         }
 
-        $contentMain = $this->getContent();
-        $contentMain = Menu::getMessages() . $contentMain;
-        $time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
-
-        include(MS_DIR_TPL . '_skin1.htm.php');
-    }
-
-    /**
-     * {}
-     */
-    private function template($pageProps = []): void
-    {
-        $action = $this->getPageForTemplate();
-        $component = ucfirst($action);
-        $file = 'pages/' . $action . '.js';
-        ?>
-        <div id="root"></div>
-        <script type="text/babel" src="/<?= $file ?>?<?=filemtime($file)?>"></script>
-        <script type="text/babel">
-            let options = <?=json_encode($pageProps)?>;
-            ReactDOM.render(
-              <<?=$component?> {...options} />,
-              document.getElementById('root')
-            )
-        </script>
-        <?php
-    }
-
-    /**
-     * @return string
-     */
-    private function getPageForTemplate(): string
-    {
-        global $msc;
-        $page = $msc->page;
-        if ($msc->page == 'actions' && !$msc->table) {
-            $page = 'actionsdb';
-        }
-        if ($msc->page == 'search' && $msc->table) {
-            $page = 'searchTable';
-        }
-        if ($msc->page == 'tbl_list' && GET('action') == 'structure') {
-            $page = 'tbl_struct_view';
-        }
-        if ($msc->page == 'tbl_struct' && GET('action') == 'add_key') {
-            $page = 'tbl_key_add';
-        }
-        if ($msc->page == 'export' && GET('action') == 'special') {
-            $page = 'exportSp';
-        }
-        return $page;
-    }
-
-    /**
-     * @return string
-     */
-    private function getContent(): string
-    {
-        global $msc;
-        ob_start();
         $pageProps = $this->controller->defaultAction();
-        $this->template($pageProps);
-        $contentMain = ob_get_contents();
-        ob_clean();
         if (isAjax()) {
             $data = [
                 'page' => $pageProps,
@@ -103,7 +40,9 @@ class PageLayout
             ];
             ajaxResult($data);
         }
-        return $contentMain;
+        $time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
+
+        include(MS_DIR_TPL . '_skin1.htm.php');
     }
 
     /**

@@ -1,5 +1,8 @@
+import React from 'react'
+import {Fragment, useEffect} from "react";
+import {contentTableEvents} from "./MysqlCenter";
 
-function CharsetSelector(props) {
+export function CharsetSelector(props) {
     let opts = [], i = 0
     for (let charset in props.charsets) {
         let title = null
@@ -15,7 +18,7 @@ function CharsetSelector(props) {
     )
 }
 
-function HtmlSelector(props) {
+export function HtmlSelector(props) {
 
     let onChange = (e) => {
         if (props.auto) {
@@ -50,7 +53,7 @@ function HtmlSelector(props) {
 }
 
 // Оставляю, жалко удалять, вдруг пригодится
-function Messages(props) {
+export function Messages(props) {
 
     const MessageText = (item) => {
         let extra = []
@@ -85,7 +88,7 @@ function Messages(props) {
 }
 
 
-function ExportOptions(props) {
+export function ExportOptions(props) {
 
     const image = (src) => {
         return props.dirImage + src
@@ -168,11 +171,11 @@ function ExportOptions(props) {
               </select>
 
               {props.fields &&
-                <React.Fragment>
+                <Fragment>
                     <div> Выбрать поля для экспорта:</div>
                     <HtmlSelector data={props.fields} name="fields[]" multiple="multiple"
                                   value={props.fields} />
-                </React.Fragment>
+                </Fragment>
               }
           </div>
 
@@ -181,9 +184,9 @@ function ExportOptions(props) {
 }
 
 
-function Table(props) {
+export function Table(props) {
 
-    React.useEffect(() => {
+    useEffect(() => {
         contentTableEvents()
     })
 

@@ -1,30 +1,7 @@
-function TableObject(props) {
-
-    if (typeof props.data != 'object') {
-        return (
-          <div style="color:red">Это не объект!</div>
-        );
-    }
-
-    let rows = []
-    let index = 0;
-    for (let i in props.data) {
-        rows.push(
-          <tr key={index ++}>
-              <td>{i}</td>
-              <td>{props.data[i]}</td>
-          </tr>
-        )
-    }
-
-    return (
-      <table className={props.className}>
-          <tbody>
-          {rows}
-          </tbody>
-      </table>
-    );
-}
+import React from 'react';
+import {Fragment, useEffect, useState} from "react";
+import {CharsetSelector, Table} from "../js/components";
+import {msQuery} from "../js/MysqlCenter";
 
 function FieldSet(props) {
     return (
@@ -85,10 +62,10 @@ function MysqlProcessList(props) {
 
 
 
-function Server_variables(props) {
+function Server_variables() {
 
-    const [sessionVars, setSessionVars] = React.useState([])
-    const [globalVars, setGlobalVars] = React.useState([])
+    const [sessionVars, setSessionVars] = useState([])
+    const [globalVars, setGlobalVars] = useState([])
 
     const loadAll = async () => {
         let sql = 'SHOW SESSION VARIABLES';
@@ -108,12 +85,12 @@ function Server_variables(props) {
         if (s === undefined || cmp === s) {
             return null
         } else {
-            return <span title={s}>{s.substr(0, 20)}</span>
+            return <span title={s}>{s.substring(0, 20)}</span>
         }
 
     }
     
-    React.useEffect(() => {
+    useEffect(() => {
         loadAll()
     }, []);
 
@@ -149,7 +126,7 @@ function Server_variables(props) {
 
 function UserInfo(props) {
     return (
-      <React.Fragment>
+      <Fragment>
           <fieldset className="msGeneralForm">
               <legend>Пользователи</legend>
               <Table data={props.users} />
@@ -173,14 +150,14 @@ function UserInfo(props) {
               <legend>Переменные сервера</legend>
               <Server_variables />
           </fieldset>
-      </React.Fragment>
+      </Fragment>
     )
 }
 
-function Actionsdb(props) {
+export function Actionsdb(props) {
 
     const operations = (
-      <React.Fragment>
+      <Fragment>
           <FieldSet title="Переименовать базу данных в:" action="dbRename" {...props}>
               <input name="newName" type="text" required defaultValue={props.db}/>
           </FieldSet>
@@ -198,14 +175,14 @@ function Actionsdb(props) {
               <legend>Список процессов</legend>
               {window.driver === 'pgsql' ? <Table data={props.processes} /> : <MysqlProcessList processes={props.processes} url={props.url}/>}
           </fieldset>
-      </React.Fragment>
+      </Fragment>
     )
 
     return (
-      <React.Fragment>
+      <Fragment>
           {props.users ? <UserInfo {...props} />
             : operations}
-      </React.Fragment>
+      </Fragment>
     );
 
 }
