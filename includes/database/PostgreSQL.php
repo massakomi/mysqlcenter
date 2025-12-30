@@ -2,6 +2,10 @@
 
 namespace database;
 
+use dto\FieldInfo;
+use dto\TableInfo;
+use stdClass;
+
 /**
  *
  */
@@ -16,26 +20,68 @@ class PostgreSQL implements Driver {
         return $msc->getData('SELECT datname FROM pg_database WHERE datistemplate = false', \PDO::FETCH_COLUMN);
     }
 
-    public function getTables(): array
+    public function getTables(string $db = ''): array
     {
         global $msc;
+        if (!$db) {
+            $db = $msc->db;
+        }
+
+        $sql = '
+            SELECT identity_start, table_name
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE is_identity = \'YES\'';
+        $data = $msc->getData($sql);
+        $autoIncrementsByTables = [];
+        foreach ($data as $key => $value) {
+            $autoIncrementsByTables [$value['table_name']]= $value['identity_start'];
+        }
+
+        $charset = $this->getCharset();
+
+        // Выполнить analize, чтобы обновить статистику количества строк
+        if ($msc->page == 'tbl_list') {
+            $sql = '
+            SELECT *
+            FROM information_schema.tables 
+            WHERE table_schema=\'public\' OR table_schema=\''.$db.'\'';
+            $data = $msc->getData($sql, \PDO::FETCH_OBJ);
+            foreach ($data as $key => $value) {
+                $msc->execPdo("ANALYZE " . $value->table_name);
+            }
+        }
+
         $sql = '
             SELECT 
                 table_name as "Name",
-                \'\' as "Engine",
-                0 as "Rows",
-                0 as "Data_length",
+                \'PostgreSQL\' as "Engine",
+                c.reltuples::bigint as "Rows",
+                pg_total_relation_size(c.oid) as "Data_length",
                 0 as "Index_length",
                 0 as "Auto_increment",
                 0 as "Create_time",
                 0 as "Update_time",
-                \'\' as "Collation"
-            FROM information_schema.tables 
-            WHERE table_schema=\'public\' OR table_schema=\''.$msc->db.'\' 
+                \''.$charset.'\' as "Collation"
+            FROM information_schema.tables ist 
+                LEFT JOIN pg_class c ON c.relname = ist.table_name
+                LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE table_schema=\'public\' OR table_schema=\''.$db.'\' 
+                AND nspname NOT IN (\'pg_catalog\', \'information_schema\') AND relkind = \'r\'
             ORDER BY table_name';
-        return $msc->getData($sql, \PDO::FETCH_OBJ);
+        $data = $msc->getData($sql, \PDO::FETCH_OBJ);
+
+        foreach ($data as $key => $value) {
+            $value->Auto_increment = $autoIncrementsByTables[$value->Name];
+        }
+
+        return $data;
     }
 
+    /**
+     * @param string $table
+     * @return FieldInfo[]
+     * @throws \Exception
+     */
     public function getFields(string $table): array
     {
         global $msc;
@@ -58,41 +104,44 @@ class PostgreSQL implements Driver {
 
         $keys = $this->getKeys($table);
         $fields = $msc->getData($sql, \PDO::FETCH_OBJ);
-        foreach ($fields as $field) {
+        foreach ($fields as $key => $field) {
             $fieldKeys = $keys[$field->Field];
-            if (!$fieldKeys) {
-                continue;
+            if ($fieldKeys) {
+                foreach ($fieldKeys as $type) {
+                    $field->Key = $type;
+                }
             }
-            foreach ($fieldKeys as $type) {
-                $field->Key = $type;
-            }
+            $fieldInfo = new FieldInfo();
+            $fieldInfo->fill($field);
+            $fields [$key] = $fieldInfo;
         }
         return $fields;
     }
 
     public function getKeys(string $table, bool $full = false): array
     {
-        global $msc;
         if (empty($table)) {
             return [];
         }
-        $sql = "
-            SELECT 
-                tc.table_name as \"Table\",
-                CASE
-                    WHEN constraint_type = 'UNIQUE' THEN 0
-                    ELSE 1
-                END AS \"Non_unique\",
-                constraint_type as \"Key_name\",
-                column_name as \"Column_name\",
-                ordinal_position as \"Seq_in_index\"
-            FROM information_schema.table_constraints AS tc
-            JOIN information_schema.key_column_usage AS kcu
-            ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
-            WHERE tc.table_name = '$table' AND (tc.table_schema = 'public' OR tc.table_schema = '$msc->db')
-            ORDER BY kcu.ordinal_position; ";
-        $keys = [];
-        $result = $msc->getData($sql, \PDO::FETCH_OBJ);
+        $constraintsGrouped = $this->getConstraints($table, full: true);
+        $result = [];
+        foreach ($constraintsGrouped as $constraint) {
+            $key = new stdClass();
+            $key->Table = $constraint->table_name;
+            $key->Non_unique = $constraint->constraint_type == 'UNIQUE' ? 0 : 1;
+            $key->Key_name = $constraint->constraint_type;
+            $key->Seq_in_index = $constraint->ordinal_position;
+            $key->Column_name = $constraint->column_name;
+            $key->Collation = '';
+            $key->Cardinality = '';
+            $key->Sub_part = '';
+            $key->Packed = '';
+            $key->Null = '';
+            $key->Index_type = ''; // BTREE
+            $key->Comment = '';
+            $key->Index_comment = '';
+            $result []= $key;
+        }
         if (!$result) {
             return [];
         }
@@ -105,6 +154,36 @@ class PostgreSQL implements Driver {
             } else {
                 $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
             }
+        }
+        return $keys;
+    }
+
+    public function getConstraints(string $table, bool $full = false): array
+    {
+        global $msc;
+        if (empty($table)) {
+            return [];
+        }
+        $sql = "
+            SELECT 
+                *
+            FROM information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+            ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+            WHERE tc.table_name = '$table' AND (tc.table_schema = 'public' OR tc.table_schema = '$msc->db')
+            ORDER BY kcu.ordinal_position; ";
+        $keys = [];
+        $data = $msc->getData($sql, \PDO::FETCH_OBJ);
+        if ($full) {
+            return $data;
+        }
+        foreach ($data as $obj) {
+            $cloned = new stdClass();
+            foreach ($obj as $key => $value) {
+                $keyUpper = strtoupper($key);
+                $cloned->{$keyUpper} = $obj->{$key};
+            }
+            $keys[$cloned->CONSTRAINT_TYPE][] = $cloned;
         }
         return $keys;
     }
@@ -168,14 +247,16 @@ class PostgreSQL implements Driver {
         return $msc->getData('SELECT * FROM pg_stat_activity');
     }
 
-    public function getTableInfo(string $table): array
+    public function getTableInfo(string $table): TableInfo
     {
         $data = [
             'Auto_increment' => $this->getAutoIncrement($table),
             'Charset' => $this->getCharset(),
             'Comment' => $this->getComment($table),
         ];
-        return $data;
+        $tableInfo = new TableInfo();
+        $tableInfo->fill($data);
+        return $tableInfo;
     }
 
     private function getComment($table): string

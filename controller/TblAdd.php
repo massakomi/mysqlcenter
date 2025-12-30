@@ -189,7 +189,7 @@ class TblAdd extends Base
             }
             $sql .= "\r\n)";
             if ($msc->execPdo($sql)) {
-                $msc->success('Таблица ' . POST('table_name') . ' создана', $sql, MS_MSG_SUCCESS);
+                $msc->success('Таблица ' . POST('table_name') . ' создана', $sql);
             } else {
                 $text = 'При создании таблицы возникли ошибки ' . POST('table_name');
                 $msc->error($text, $sql);
@@ -278,7 +278,7 @@ class TblAdd extends Base
                     $msc->error('Ошибка при изменении полей', $sql);
                 }
             } else {
-                $msc->notice('В definition ничего не изменилось', '', MS_MSG_NOTICE);
+                $msc->notice('В definition ничего не изменилось', '');
             }
         }
         // создание запроса на добавление

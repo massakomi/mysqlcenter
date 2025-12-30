@@ -21,7 +21,6 @@ class DbList extends Base
         $dbs = Server::getDatabases();
 
         $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
-        //$table = new \Table('contentTable', null, null, null, null, 'structureTableId');
 
         // Определяем, показывать ли полную информацию или нет
         $showFullInfo = GET('mode') == 'full';
@@ -33,7 +32,7 @@ class DbList extends Base
                     'name' => $db,
                     'extra' => []
                 ];
-                $result = $msc->getData('SHOW TABLE STATUS FROM `' . $db . '`', \PDO::FETCH_OBJ);
+                $result = $msc->driver->getTables($db);
                 foreach ($result as $row) {
                     $dbItem ['extra'][] = $row;
                 }

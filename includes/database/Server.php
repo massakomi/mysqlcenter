@@ -161,7 +161,9 @@ class Server
     public function databaseAction($db, $type = 'DROP'): bool
     {
         global $msc;
-        $this->validate->queryCheck($db);
+        if (!$this->validate->queryCheck($db)) {
+            return false;
+        }
         switch ($type) {
             case 'DROP':
                 $sql = "DROP DATABASE `$db`;";
@@ -192,7 +194,9 @@ class Server
     {
         global $msc;
         $dbt = new \DatabaseTable();
-        $this->validate->queryCheck($db);
+        if (!$this->validate->queryCheck($db)) {
+            return false;
+        }
         $a = \DatabaseTable::getTables($db);
         if (count($a) == 0) {
             return $msc->error('Таблиц нет');
@@ -254,7 +258,9 @@ class Server
     public function databaseAlterCharset($db, $charset, $isCharset = true): bool
     {
         global $msc;
-        $this->validate->queryCheck($db, 'table', $charset);
+        if (!$this->validate->queryCheck($db, 'table', $charset)) {
+            return false;
+        };
         if (!$isCharset) {
             $sql = "ALTER DATABASE $db COLLATE `$charset`";
         } else {

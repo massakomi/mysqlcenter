@@ -1,21 +1,64 @@
-function MSC_InsertInput(props) {
 
-    let i = props.i;
-    let j = props.j;
-    let field = props.field
-    let attr = props.attr
-    let value = props.value
+function FormBottom() {
+    return (
+      <React.Fragment>
+          <br /> <br /> после вставки
+          <input name="redirect" type="radio" id="f2" value="tbl_data" defaultChecked/> <label htmlFor="f2">обзор таблицы</label>
+          <input name="redirect" type="radio" id="f3" value="tbl_list"/> <label htmlFor="f3">список таблиц</label>
+          <input name="redirect" type="radio" id="f4" value="tbl_change"/> <label htmlFor="f4">вставить новую запись</label>
+          <br /><br />
+          <input tabIndex="100" type="submit" value="Сохранить" className="submit"/>
+      </React.Fragment>
+    )
+}
+
+function getInputSize(props) {
     let diffLength = props.diffLength
     let type = props.type
+    let value = props.value
 
     let length = null;
     let a = type.match(/\(([0-9]+)\)/)
     if (a && a[1]) {
         length = parseInt(a[1]);
     }
-    if (length == 1) {
+    if (length === 1) {
         //return '<input name="row['.$i.'][]" type="checkbox" value="1" />';
     }
+
+    let size
+    if (diffLength) {
+        if (length <= 15) {
+            size = length
+        } else if (length < 30) {
+            size = Math.round(length / 1.2)
+        } else {
+            size = Math.round(length / 3)
+        }
+    } else {
+        if (length <= 15) {
+            size = 15
+        } else if (length < 128) {
+            size = 50
+        } else {
+            size = 80
+        }
+    }
+    if (type === 'datetime') {
+        size = 30
+    }
+    if (type === 'timestamp' && value != null) {
+        size = 50;
+    }
+    return size
+}
+
+function MSC_InsertInput(props) {
+
+    let i = props.i;
+    let j = props.j;
+    let value = props.value
+    let type = props.type
 
     if (type.match(/enum/i)) {
         /*
@@ -50,38 +93,8 @@ function MSC_InsertInput(props) {
         return <textarea name={`row[${j}][${i}]`} cols="70" rows={rows} defaultValue={value}></textarea>
     }
 
-    let size = 80
-    if (diffLength) {
-        if (length <= 15) {
-            size = length
-        } else if (length < 30) {
-            size = Math.round(length / 1.2)
-        } else {
-            size = Math.round(length / 3)
-        }
-    } else {
-        if (length <= 15) {
-            size = 15
-        } else if (length < 128) {
-            size = 50
-        } else {
-            size = 80
-        }
-    }
-    if (type === 'datetime') {
-        size = 30
-    }
-    if (type === 'timestamp' && value != null) {
-        size = 50;
-    }
-
+    let size = getInputSize(props)
     return <input name={`row[${j}][${i}]`} type="text" size={size} defaultValue={value} className="si" />
-
-    return (
-      <React.Fragment>
-          test
-      </React.Fragment>
-    );
 }
 
 
@@ -97,10 +110,9 @@ function AddRow(props) {
 
     let type = fields[name].Type.replace(',', ', ')
     let nullCheckbox = '&nbsp;';
-    let attr = '';
     if (fields[name].Null) {
         let checked = false
-        if (value == '' && fields[name].Null == 'YES') {
+        if (value === '' && fields[name].Null === 'YES') {
             checked = true;
         }
         nullCheckbox = <input name={`isNull[${j}][${i}]`} type="checkbox" value="1" defaultChecked={checked} />
@@ -159,13 +171,7 @@ function AddRows(props) {
               {outerRows}
               </tbody>
           </table>
-          <br />
-          после вставки
-          <input name="redirect" type="radio" value="tbl_data" id="f2" defaultChecked /> <label htmlFor="f2">обзор таблицы</label>
-          <input name="redirect" type="radio" value="tbl_list" id="f3" /> <label htmlFor="f3">список таблиц</label>
-          <input name="redirect" type="radio" value="tbl_change" id="f4" /> <label htmlFor="f4">вставить новую запись</label>
-          <br /><br />
-          <input tabIndex="100" type="submit" value="Вставить данные!" />
+          <FormBottom />
       </form>
     );
 }
@@ -174,7 +180,6 @@ function AddRows(props) {
 function EditRows(props) {
 
     let outerRows = []
-    let j = 0
     for (let j = 0; j < props.tableData.length; j++) {
         let data = props.tableData[j]
 
@@ -219,19 +224,13 @@ function EditRows(props) {
 
     return (
       <form method="post" name="rowsForm" className="tableFormEdit" id="rowsForm">
-          <input type="hidden" name="action" value="rowsEdit" />
+          <input type="hidden" name="action" value="rowsEdit"/>
           {outerRows}
 
-          <label htmlFor="f3"><input name="option" type="radio" value="save" id="f3" defaultChecked /> сохранить</label>	<br /> или <br />
-          <label htmlFor="f4"><input name="option" type="radio" value="insert" id="f4" /> вставить новый ряд</label>	<br />
-
-          <br />
-          после вставки
-          <input name="redirect" type="radio" id="f2" value="tbl_data" defaultChecked /> <label htmlFor="f2">обзор таблицы</label>
-          <input name="redirect" type="radio" id="f3" value="tbl_list" /> <label htmlFor="f3">список таблиц</label>
-          <input name="redirect" type="radio" id="f4" value="tbl_change" /> <label htmlFor="f4">вставить новую запись</label>
-
-          <input tabIndex="100" type="submit" value="Вставить данные!" className="submit" />
+          <label htmlFor="f3"><input name="option" type="radio" value="save" id="f3" defaultChecked/> сохранить</label>
+          <br/> или <br/>
+          <label htmlFor="f4"><input name="option" type="radio" value="insert" id="f4"/> вставить новый ряд</label>
+            <FormBottom />
       </form>
     );
 }
@@ -244,14 +243,14 @@ function Tbl_change(props) {
     }, []);
 
     if (options.redirect) {
-        setTimeout(function() {
+        setTimeout(function () {
             location.href = options.redirect
         }, 2000);
     }
 
     return (
       <React.Fragment>
-          {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} /> }
+          {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} />}
       </React.Fragment>
     );
 }

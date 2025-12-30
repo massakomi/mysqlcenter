@@ -67,7 +67,7 @@ function Actions(props) {
               </form>
           </fieldset>
 
-          {props.charsets.length ? <fieldset className="msGeneralForm">
+          {props.charsets && Object.keys(props.charsets).length > 0 ? <fieldset className="msGeneralForm">
               <legend>Изменить кодировку таблицы</legend>
               <form>
                   <CharsetSelector charsets={props.charsets} value={props.charset}/>

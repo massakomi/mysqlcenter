@@ -167,7 +167,7 @@ class TblData extends Base
      */
     private function mscGetOrder($default = null): string
     {
-        if (!config('sortDescDefault')) {
+        if (!config('sortDescDefault') && $default) {
             $default .= '-';
         }
         $order = (POST('order') != null ? POST('order') : $default);

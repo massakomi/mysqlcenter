@@ -103,14 +103,14 @@ $dbs = Server::getDatabasesWithoutHidden();
 </div>
 
 <div class="pageBlock bottom">
-    <span><strong>Хост:</strong> <?php echo $msc->host ?></span>
-    <span><strong>Пользователь:</strong> <?php echo $msc->user ?></span>
-    <?php if (function_exists('memory_get_peak_usage')) { ?>
-        <span>пиковая память <?php echo Utils::formatSize(memory_get_peak_usage()) ?></span>
-        <span>сейчас <?php echo Utils::formatSize(memory_get_usage()) ?></span>
-        <span>inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?></span>
-        <span>limit <?php echo ini_get('memory_limit') ?></span>
-    <?php } ?>
+    <span><strong>Driver:</strong> <?php echo $msc->driverName ?></span>
+    <span><strong>Db:</strong> <?php echo $msc->db ?></span>
+    <span><strong>Host:</strong> <?php echo $msc->host ?></span>
+    <span><strong>User:</strong> <?php echo $msc->user ?></span>
+    <span class="hiddenText">пиковая память <?php echo Utils::formatSize(memory_get_peak_usage()) ?></span>
+    <span class="hiddenText">сейчас <?php echo Utils::formatSize(memory_get_usage()) ?></span>
+    <span class="hiddenText">inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?></span>
+    <span class="hiddenText">limit <?php echo ini_get('memory_limit') ?></span>
 </div>
 
 </html>

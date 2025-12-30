@@ -74,14 +74,13 @@ class Actions extends Base
             $msc->error('Таблица не найдена');
             return [];
         }
-
         return [
             'url' => MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table",
             'table' => $msc->table,
             'db' => $msc->db,
-            'ai' => $row['Auto_increment'] ?: '',
-            'comment' => $row['Comment'] ?: '',
-            'charset' => $row['Charset'] ?: '',
+            'ai' => $row->Auto_increment ?: '',
+            'comment' => $row->Comment ?: '',
+            'charset' => $row->Charset ?: '',
             'charsets' => Server::getCharsetArray(),
             'dbs' => Server::getDatabases(),
             'fields' => \DatabaseTable::getFields($msc->table, true),

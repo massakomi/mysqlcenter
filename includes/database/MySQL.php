@@ -2,6 +2,10 @@
 
 namespace database;
 
+use dto\FieldInfo;
+use dto\TableInfo;
+use stdClass;
+
 /**
  *
  */
@@ -16,19 +20,44 @@ class MySQL implements Driver {
         return $msc->getData('SHOW DATABASES', \PDO::FETCH_COLUMN);
     }
 
-    public function getTables(): array
+    /**
+     * @return TableInfo[]
+     * @throws \Exception
+     */
+    public function getTables($db = ''): array
     {
         global $msc;
-        return $msc->getData('SHOW TABLE STATUS', \PDO::FETCH_OBJ);
+        $sql = 'SHOW TABLE STATUS';
+        if ($db) {
+            $sql .= " FROM $db";
+        }
+        $tables = $msc->getData($sql, \PDO::FETCH_OBJ);
+        foreach ($tables as $key => $value) {
+            $tableInfo = new TableInfo();
+            $tableInfo->fill($value);
+            $tables [$key] = $tableInfo;
+        }
+        return $tables;
     }
 
+    /**
+     * @param string $table
+     * @return FieldInfo[]
+     * @throws \Exception
+     */
     public function getFields(string $table): array
     {
         global $msc;
         if (empty($table)) {
             return [];
         }
-        return $msc->getData('SHOW FIELDS FROM `' . $table . '`', \PDO::FETCH_OBJ);
+        $fields = $msc->getData('SHOW FIELDS FROM `' . $table . '`', \PDO::FETCH_OBJ);
+        foreach ($fields as $key => $value) {
+            $fieldInfo = new FieldInfo();
+            $fieldInfo->fill($value);
+            $fields [$key] = $fieldInfo;
+        }
+        return $fields;
     }
 
     public function getKeys(string $table, bool $full = false): array
@@ -51,6 +80,26 @@ class MySQL implements Driver {
             } else {
                 $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
             }
+        }
+        return $keys;
+    }
+
+    public function getConstraints(string $table, bool $full = false): array
+    {
+        global $msc;
+        $data = $msc->getData('
+                SELECT i.*, k.*  
+                FROM information_schema.TABLE_CONSTRAINTS i
+                LEFT JOIN information_schema.KEY_COLUMN_USAGE k ON i.CONSTRAINT_NAME = k.CONSTRAINT_NAME 
+                WHERE i.TABLE_SCHEMA = \'' . $msc->db . '\' AND i.TABLE_NAME = \'' . $table . '\'
+                GROUP BY k.CONSTRAINT_NAME
+            ', \PDO::FETCH_OBJ);
+        if ($full) {
+            return $data;
+        }
+        $keys = [];
+        foreach ($data as $k => $item) {
+            $keys[$item->CONSTRAINT_TYPE][] = $item;
         }
         return $keys;
     }
@@ -129,19 +178,21 @@ class MySQL implements Driver {
         return $msc->getData('SHOW FULL PROCESSLIST');
     }
 
-    public function getTableInfo(string $table): array
+    public function getTableInfo(string $table): TableInfo
     {
         global $msc;
         $result = $msc->fetchPdo('SHOW TABLE STATUS FROM ' . $msc->db . ' LIKE "' . $table . '"');
         if (!$result) {
-            return [];
+            return new TableInfo();
         }
-        $row = $result->fetch();
-        if ($row['Collation']) {
-            $row['Charset'] = explode('_', $row['Collation'])[0];
+        $row = $result->fetchObject();
+        if ($row->Collation) {
+            $row->Charset = explode('_', $row->Collation)[0];
         } else {
-            $row['Charset'] = '';
+            $row->Charset = '';
         }
-        return $row;
+        $tableInfo = new TableInfo();
+        $tableInfo->fill($row);
+        return $tableInfo;
     }
 }

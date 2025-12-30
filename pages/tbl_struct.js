@@ -40,9 +40,14 @@ function TableStruct(props) {
         }
         for (let keyObject of props.dataKeys) {
             if (keyObject.Column_name === v.Field) {
-                let foreignKeys = props.foreignKeys[v.Field]
-                if (keyObject.Key_name.indexOf('FK') === 0 || (foreignKeys && foreignKeys.CONSTRAINT_TYPE === 'FOREIGN KEY')) {
-                    key = <span title={foreignKeys && foreignKeys.REFERENCED_TABLE_NAME ? foreignKeys.REFERENCED_TABLE_NAME : keyObject.Table}>FK</span>
+                let fkTable = '';
+                for (let key of props.foreignKeys) {
+                    if (key.COLUMN_NAME === v.Field) {
+                        fkTable = key.REFERENCED_TABLE_NAME;
+                    }
+                }
+                if (keyObject.Key_name.indexOf('FK') === 0 || fkTable) {
+                    key = <span title={'Table: ' + (fkTable ? fkTable : keyObject.Table)}>FK</span>
                 }
             }
         }

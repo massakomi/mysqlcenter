@@ -1,5 +1,7 @@
 <?php
 
+use dto\FieldInfo;
+
 /**
  * Класс, отвечающий за работу с таблицами базы данных
  */
@@ -32,7 +34,9 @@ class DatabaseTable
     public function tableAction($db, $table, $type = 'DROP', $param = null): bool
     {
         global $msc;
-        $this->validate->queryCheck($db, $table);
+        if (!$this->validate->queryCheck($db, $table)) {
+            return false;
+        };
         if (($type == 'RENAME' || $type == 'CHARSET' || $type == 'ORDER') && $param == null) {
             return $msc->error('Не указан требуемый параметр');
         }
@@ -108,7 +112,9 @@ class DatabaseTable
     public function copyTable($db, $table, $struct = true, $data = false, $newName = null, $database = null)
     {
         global $msc;
-        $this->validate->queryCheck($db, $table);
+        if (!$this->validate->queryCheck($db, $table)) {
+            return false;
+        };
         // дамп структуры
         if ($newName == null) {
             $newName = $table . '_copy';
@@ -159,7 +165,7 @@ class DatabaseTable
      *
      * @param string $table таблица
      * @param bool $onlyNames возвратить только массив имён полей
-     * @return array Массив полей
+     * @return FieldInfo[] Массив полей
      */
     public static function getFields(string $table, bool $onlyNames = false): array
     {
@@ -187,9 +193,10 @@ class DatabaseTable
     }
 
     /**
-     * МАссив полей
+     * Массив полей
+     * @return FieldInfo[]
      */
-    private static function fetchFields(string $table)
+    private static function fetchFields(string $table): array
     {
         global $msc;
         $table = str_replace('`', '``', $table);
@@ -378,8 +385,9 @@ class DatabaseTable
     public function rowDelete($db, $table, $row): bool
     {
         global $msc;
-        $validate = new Validate();
-        $validate->queryCheck($db, $table, $row);
+        if (!$this->validate->queryCheck($db, $table, $row)) {
+            return false;
+        };
         $row = stripslashes(urldecode($row));
         $sql = 'DELETE FROM ' . $table . ' WHERE ' . $row;
         return $msc->execPdo($sql);

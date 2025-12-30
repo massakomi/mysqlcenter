@@ -217,7 +217,7 @@ class Menu
     {
         global $msc;
         $tables = DatabaseTable::getCashedTablesArray();
-        if (count($tables) < 30) {
+        if (count($tables) < 50) {
             return '';
         }
         $tables = PopularTables::forDb($msc->db);

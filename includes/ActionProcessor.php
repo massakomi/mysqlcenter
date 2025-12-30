@@ -167,9 +167,10 @@ class ActionProcessor
                 break;
 
             case 'tableMove':
-                $validate->queryCheck($db, $tbl, $this->param('newName'), $this->param('newDB'));
-                if ($dbt->copyTable($db, $tbl, true, true, $this->param('newName'), $this->param('newDB'))) {
-                    $dbt->tableAction($db, $tbl, 'DROP');
+                if ($validate->queryCheck($db, $tbl, $this->param('newName'), $this->param('newDB'))) {
+                    if ($dbt->copyTable($db, $tbl, true, true, $this->param('newName'), $this->param('newDB'))) {
+                        $dbt->tableAction($db, $tbl, 'DROP');
+                    }
                 }
                 break;
 
@@ -263,10 +264,9 @@ class ActionProcessor
                     $msc->error('table не массив');
                     break;
                 }
-                if ($a == false) {
+                if (!$validate->queryCheck($db)) {
                     break;
-                }
-                $validate->queryCheck($db);
+                }                ;
                 $cs = (POST('copy_struct') != '');
                 $cd = (POST('copy_data') != '');
                 foreach ($a as $t) {
@@ -395,41 +395,47 @@ class ActionProcessor
             case 'deleteRows':
             case 'deleteRow':
                 $row = $this->param('row');
-                $validate->queryCheck($db, $tbl, $row);
+                if (!$validate->queryCheck($db, $tbl, $row)) {
+                    break;
+                }
                 if (!is_array($row)) {
                     $row = [$row];
                 }
                 if ($dbt->rowDelete($db, $tbl, implode(' OR ', $row))) {
-                    return $msc->success("Ряд $row удалён", $msc->lastSql);
+                    $msc->success("Рядов удалёно: $msc->affectedRows", $msc->lastSql);
                 } else {
-                    return $msc->error("Ошибка удаления ряда $row", $msc->lastSql);
+                    $msc->error("Ошибка удаления ряда $row", $msc->lastSql);
                 }
                 break;
 
             case 'copyRows':
             case 'copyRow':
                 $row = $this->param('row');
-                $validate->queryCheck($db, $tbl, $row);
+                if (!$validate->queryCheck($db, $tbl, $row)) {
+                    break;
+                }
                 if (is_array($row)) {
                     $row = implode(' OR ', $row);
                 }
                 if ($dbt->rowCopy($tbl, $row)) {
                     $n = $msc->affectedRows;
                     if ($n > 0) {
-                        return $msc->success('Добавлено ' . $n . ' рядов', $msc->lastSql);
+                        $msc->success('Добавлено ' . $n . ' рядов', $msc->lastSql);
                     } else {
-                        return $msc->success('Всё в порядке', $msc->lastSql);
+                        $msc->success('Всё в порядке', $msc->lastSql);
                     }
                 } else {
                     $text = 'Ошибка копирования ряда ' . $row;
-                    return $msc->error($text, $msc->lastSql);
+                    $msc->error($text, $msc->lastSql);
                 }
                 break;
 
             // операции с полями
 
             case 'deleteField':
-                $validate->queryCheck($db, $tbl, $this->param('field'));
+                if (!$validate->queryCheck($db, $tbl, $this->param('field'))) {
+                    break;
+                }
                 $sql = "ALTER TABLE `$tbl` DROP " . $this->param('field');
                 if ($msc->execPdo($sql, $db)) {
                     $msc->success('Поле удалено', $sql);
@@ -458,7 +464,9 @@ class ActionProcessor
             // операции с ключами
 
             case 'deleteKey':
-                $validate->queryCheck($db, $tbl, $this->param('key'), $this->param('field'));
+                if (!$validate->queryCheck($db, $tbl, $this->param('key'), $this->param('field'))) {
+                    break;
+                }
                 if ($this->param('key') == 'PRIMARY') {
                     DatabaseTable::dropPrimaryKey($tbl);
                 } else {
@@ -474,7 +482,9 @@ class ActionProcessor
             case 'addKey':
                 $keyName = POST('keyName');
                 $keyDefinition = POST('keyType');
-                $validate->queryCheck($db, $tbl, $keyName, $keyDefinition);
+                if (!$validate->queryCheck($db, $tbl, $keyName, $keyDefinition)) {
+                    break;
+                }
                 if ($keyName != '') {
                     $keyDefinition .= ' `' . $keyName . '`';
                 }

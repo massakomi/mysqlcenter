@@ -11,7 +11,6 @@ class DbCompare extends Base
     public function defaultAction(): array
     {
         global $msc;
-        $msc->pageTitle = 'Сравнение баз данных';
 
         $databases = [];
         if (POST('dbs')) {
@@ -24,6 +23,7 @@ class DbCompare extends Base
             $msc->error('Вы не выбрали базы данных для сравнения');
             return [];
         }
+        $msc->pageTitle = 'Сравнение баз данных ' . implode(', ', $databases);
 
         return $this->pageProps($databases);
     }
@@ -38,10 +38,14 @@ class DbCompare extends Base
 
         // Создание начальных массивов
         $dbArray = [];
-        foreach ($databases as $k => $v) {
-            $data = $msc->getData('SHOW TABLE STATUS FROM ' . $v, \PDO::FETCH_OBJ);
+        foreach ($databases as $database) {
+            $data = $msc->driver->getTables($database);
+            if (!$data) {
+                $msc->error("Не нашел таблиц в $database");
+                return [];
+            }
             foreach ($data as $row) {
-                $dbArray[$v][$row->Name] = $row;
+                $dbArray[$database][$row->Name] = $row;
             }
         }
 

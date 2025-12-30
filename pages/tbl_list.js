@@ -67,10 +67,16 @@ function TableList(props) {
         }
     };
 
-    const printSize = size => {
+    const printSize = (size, tablesCount) => {
         // меньше 1мб не нужно выводить
-        if (size < 1024*1024) {
-            return ''
+        if (tablesCount > 100) {
+            if (size < 1024*1024) {
+                return ''
+            }
+        } else {
+            if (size < 1024) {
+                return ''
+            }
         }
         let color = 'red'
         // до 10мб слабже
@@ -83,7 +89,16 @@ function TableList(props) {
         return <span title={size} style={{'color': color}}>{formattedSize}</span>
     };
 
-    const renderRow = (table, key) => {
+    const getCollation = (table) => {
+        let collation = table.Collation
+        let underline = collation.indexOf("_");
+        if (underline > 0) {
+            collation = collation.substring(0, underline)
+        }
+        return collation
+    }
+
+    const renderRow = (table, key, tablesCount) => {
         // Увеличение счётчика видимых таблиц
         let sumTable = key + 1
         // Форматирование даты
@@ -124,11 +139,11 @@ function TableList(props) {
                   <a href="#" onClick={tableDelete.bind(this, table.Name)} title="Удалить таблицу">{image("close.png")}</a>
               </td>
               <td className="rig">{table.Rows}</td>
-              <td className="rig">{printSize(size)}</td>
+              <td className="rig">{printSize(size, tablesCount)}</td>
               <td>{updateTime}</td>
               <td className="num">{table.Auto_increment}</td>
               <td><span>{engine}</span></td>
-              <td className="rig"><span title={table.Collation} style={{color: '#aaa'}}>{table.Collation.substr(0, table.Collation.indexOf("_"))}</span></td>
+              <td className="rig"><span title={table.Collation} style={{color: '#aaa'}}>{getCollation(table)}</span></td>
           </tr>
         )
     };
@@ -137,7 +152,7 @@ function TableList(props) {
     const tables = Object.values(props.tables)
     let sumSize = 0;
     let sumRows = 0;
-    const trs = tables.map((table, key) => renderRow(table, key))
+    const trs = tables.map((table, key) => renderRow(table, key, tables.length))
 
     return (
       <table className="contentTable interlaced">

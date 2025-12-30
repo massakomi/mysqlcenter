@@ -1,14 +1,15 @@
 <?php
 
+use enum\MessageType;
+
 /**
  * Возвращает ключ $name массива $_GET
  *
  * @param string Ключ
  * @param string Значение по умолчанию, если ключ не будет найден
  * @return mixed Значение параметра
- * @package url
  */
-function GET($name, $default = '')
+function GET($name, $default = ''): mixed
 {
     if (isset($_GET[$name])) {
         return $_GET[$name];
@@ -25,7 +26,7 @@ function GET($name, $default = '')
  * @return mixed Значение параметра
  * @package url
  */
-function POST($name, $default = null)
+function POST($name, $default = null): mixed
 {
     if (array_key_exists($name, $_POST)) {
         $res = $_POST[$name];
@@ -183,7 +184,7 @@ function ajaxResultWithMessages(): void
     global $msc;
     $data = $msc->getMessagesData();
     foreach ($data as $item) {
-        if ($item['type'] == MS_MSG_FAULT) {
+        if ($item['type'] == MessageType::Error) {
             ajaxError($data);
         }
     }
