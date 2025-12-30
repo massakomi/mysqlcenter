@@ -1,6 +1,6 @@
 import React, {useState, useEffect, Fragment} from 'react';
-import {HtmlSelector} from "../js/components";
-import {list} from "../js/MysqlCenter";
+import {HtmlSelector} from "../components";
+import {list} from "../MysqlCenter";
 
 function FormBottom() {
     return (

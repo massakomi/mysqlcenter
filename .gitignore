@@ -1,9 +1,8 @@
-/error.log
-/data
+/logs
 /.idea
 /.osp
-/docs/popular.json
-/docs/todo.md
-/docs/connect.txt
+/config/popular.json
+/config/todo.md
+/config/connect.txt
 /node_modules
-/js/dist.js
+/public/js/dist.js

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {msQuery} from "../js/MysqlCenter";
+import {msQuery} from "../MysqlCenter";
 
 export function Login(props) {
 

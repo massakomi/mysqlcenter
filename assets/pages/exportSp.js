@@ -1,4 +1,4 @@
-import {ExportOptions, HtmlSelector} from "../js/components";
+import {ExportOptions, HtmlSelector} from "../components";
 import React, {Fragment} from 'react';
 
 function Form(props) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import {processRowValue} from "../js/MysqlCenter";
+import {processRowValue} from "../MysqlCenter";
 
 function compareData(data, fields, databases) {
     let output = []

@@ -1,10 +1,10 @@
 const path = require('path');
 module.exports = {
-    entry: './js/index.js',
+    entry: './assets/app.js',
     mode: 'development',
     output: {
         filename: 'dist.js',
-        path: path.resolve(__dirname, 'js'),
+        path: path.resolve(__dirname, 'public/js'),
     },
     cache: false,
     module: {

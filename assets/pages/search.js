@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, Fragment} from 'react';
-import {Table} from "../js/components";
-import {forElements} from "../js/MysqlCenter";
+import {Table} from "../components";
+import {forElements} from "../MysqlCenter";
 
 function SearchForm(props) {
 

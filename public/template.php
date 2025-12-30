@@ -20,6 +20,7 @@ $dbs = Server::getDatabasesWithoutHidden();
     </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
+    <script defer src="/js/dist.js"></script>
 </head>
 <body>
 <div class="loader" hidden></div>
@@ -111,5 +112,4 @@ $dbs = Server::getDatabasesWithoutHidden();
     <span class="hiddenText">limit <?php echo ini_get('memory_limit') ?></span>
 </div>
 </body>
-<script src="/js/dist.js"></script>
 </html>

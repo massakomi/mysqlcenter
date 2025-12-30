@@ -1,6 +1,6 @@
 import React, {useState, Fragment} from 'react';
-import {Table} from "../js/components";
-import {checkboxAction, date2rusString, formatSize, msImageAction, msQuery} from "../js/MysqlCenter";
+import {Table} from "../components";
+import {checkboxAction, date2rusString, formatSize, msImageAction, msQuery} from "../MysqlCenter";
 
 function Selector(props) {
 

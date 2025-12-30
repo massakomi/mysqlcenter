@@ -19,7 +19,7 @@ class PageLayout
      * Отображение страницы
      * @throws Exception
      */
-    public function display(): void
+    public function execute(): array
     {
         global $msc;
         $this->returnInitIfAjax();
@@ -40,9 +40,7 @@ class PageLayout
             ];
             ajaxResult($data);
         }
-        $time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
-
-        include(MS_DIR_TPL . '_skin1.htm.php');
+        return $pageProps;
     }
 
     /**
@@ -76,9 +74,8 @@ class PageLayout
             }, $msc->page)),
         ];
         foreach ($classNames as $className) {
-            $path = 'controller/' . $className . '.php';
-            if (file_exists($path)) {
-                $class = '\controller\\' . $className;
+            $class = '\controller\\' . $className;
+            if (class_exists($class)) {
                 $this->controller = new $class();
                 break;
             }

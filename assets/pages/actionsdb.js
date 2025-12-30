@@ -1,7 +1,7 @@
 import React from 'react';
 import {Fragment, useEffect, useState} from "react";
-import {CharsetSelector, Table} from "../js/components";
-import {msQuery} from "../js/MysqlCenter";
+import {CharsetSelector, Table} from "../components";
+import {msQuery} from "../MysqlCenter";
 
 function FieldSet(props) {
     return (

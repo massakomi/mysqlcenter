@@ -68,7 +68,7 @@ class Speedtest extends Base
         echo $test2 = round(round(array_sum(explode(" ", microtime())), 10) - $point, 2);
 
 
-        $f = fopen('data/speedtest.txt', 'a+');
+        $f = fopen('logs/speedtest.txt', 'a+');
         fwrite($f, "\n" . date('Y.m.d H:i:s') . " sql=$test1 php=$test2");
         fclose($f);
 

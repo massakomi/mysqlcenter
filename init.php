@@ -2,8 +2,9 @@
 
 spl_autoload_register(function ($class) {
     $path = [
-        'includes/' . $class . '.php',
-        $class . '.php',
+        DIR_MYSQL . 'includes/' . $class . '.php',
+        DIR_MYSQL . 'controller/' . $class . '.php',
+        DIR_MYSQL . $class . '.php',
     ];
     foreach ($path as $value) {
         if (file_exists($value)) {
@@ -11,7 +12,7 @@ spl_autoload_register(function ($class) {
             return true;
         }
     }
-    throw new Exception("Autoload error $class");
+    //throw new Exception("Autoload error $class");
 });
 
 // CORE
@@ -28,17 +29,15 @@ require_once DIR_MYSQL . 'includes/func.php';
 
 // Все константы
 const MS_URL = '';
-const MS_DIR_TPL = 'tpl/';
-const MS_DIR_IMG = 'tpl/images/';
-const MS_DIR_JS = 'js/';
-const MS_DIR_CSS = 'tpl/';
-const MS_DIR_UPLOAD = 'data';
-const MS_DIR_LOGS = 'data';
+const MS_DIR_IMG = 'images/';
+const MS_DIR_CSS = 'css/';
+const MS_DIR_UPLOAD = DIR_MYSQL . 'logs';
+const MS_DIR_LOGS = DIR_MYSQL . 'logs';
 
-const MS_CONNECT_CONFIG_FILE = 'docs/connect.txt';
-const MS_CONFIG_FILE = 'docs/config.txt';
-const MS_CONFIG_DEFAULT_FILE = 'docs/config_default.txt';
-const MS_POPULAR_TABLES_FILE = 'docs/popular.json';
+const MS_CONNECT_CONFIG_FILE = DIR_MYSQL . 'config/connect.txt';
+const MS_CONFIG_FILE = DIR_MYSQL . 'config/config.txt';
+const MS_CONFIG_DEFAULT_FILE = DIR_MYSQL . 'config/config_default.txt';
+const MS_POPULAR_TABLES_FILE = DIR_MYSQL . 'config/popular.json';
 const MS_CHARACTER_SET = 'utf8';
 const MS_COLLATION = 'utf8_general_ci';
 

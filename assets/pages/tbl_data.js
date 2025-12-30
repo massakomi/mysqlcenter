@@ -1,4 +1,4 @@
-import {HtmlSelector} from "../js/components";
+import {HtmlSelector} from "../components";
 import React, {useEffect, Fragment} from 'react';
 import {
     contentTableEvents,
@@ -8,7 +8,7 @@ import {
     msQuery,
     processRowValue,
     umaker
-} from "../js/MysqlCenter";
+} from "../MysqlCenter";
 
 function TableHeader(props) {
 

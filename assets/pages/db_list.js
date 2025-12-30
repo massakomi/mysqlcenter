@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {checkboxAction, msImageAction, msQuery} from "../js/MysqlCenter";
+import {checkboxAction, msImageAction, msQuery} from "../MysqlCenter";
 
 function TableFull(props) {
 

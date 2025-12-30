@@ -15,6 +15,7 @@ Do
     ) -join ' '
     $operation = Read-Host $prompt
 
+    Clear-Host
     if ($operation -eq 'cbf')
     {
         phpcbf .\controller

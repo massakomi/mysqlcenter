@@ -1,6 +1,6 @@
 import React, {Fragment} from 'react';
-import {ExportOptions} from "../js/components";
-import {forElements, umaker} from "../js/MysqlCenter";
+import {ExportOptions} from "../components";
+import {forElements, umaker} from "../MysqlCenter";
 
 function Form(props) {
 

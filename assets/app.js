@@ -1,24 +1,24 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { Sql } from '../pages/Sql'
-import { Actions } from '../pages/actions'
-import { Actionsdb } from '../pages/Actionsdb'
-import { Config } from '../pages/Config'
-import {Login} from "../pages/login";
-import {Db_compare} from "../pages/db_compare";
-import {Db_list} from "../pages/db_list";
-import {Export} from "../pages/export";
-import {ExportSp} from "../pages/exportSp";
-import {Search} from "../pages/search";
-import {SearchTable} from "../pages/searchTable";
-import {Tbl_add} from "../pages/tbl_add";
-import {Tbl_change} from "../pages/tbl_change";
-import {Tbl_compare} from "../pages/tbl_compare";
-import {Tbl_data} from "../pages/tbl_data";
-import {Tbl_key_add} from "../pages/tbl_key_add";
-import {Tbl_list} from "../pages/tbl_list";
-import {Tbl_struct} from "../pages/tbl_struct";
-import {Tbl_struct_view} from "../pages/tbl_struct_view";
+import { Sql } from './pages/Sql'
+import { Actions } from './pages/actions'
+import { Actionsdb } from './pages/Actionsdb'
+import { Config } from './pages/Config'
+import {Login} from "./pages/login";
+import {Db_compare} from "./pages/db_compare";
+import {Db_list} from "./pages/db_list";
+import {Export} from "./pages/export";
+import {ExportSp} from "./pages/exportSp";
+import {Search} from "./pages/search";
+import {SearchTable} from "./pages/searchTable";
+import {Tbl_add} from "./pages/tbl_add";
+import {Tbl_change} from "./pages/tbl_change";
+import {Tbl_compare} from "./pages/tbl_compare";
+import {Tbl_data} from "./pages/tbl_data";
+import {Tbl_key_add} from "./pages/tbl_key_add";
+import {Tbl_list} from "./pages/tbl_list";
+import {Tbl_struct} from "./pages/tbl_struct";
+import {Tbl_struct_view} from "./pages/tbl_struct_view";
 
 const ComponentsMap = {
     'Actions': Actions,
