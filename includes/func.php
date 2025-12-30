@@ -81,7 +81,8 @@ function logError($message, $sql = null): void
  * @param $filename
  * @return false|void
  */
-function writeLogFile($string, $filename) {
+function writeLogFile($string, $filename)
+{
     if (!file_exists(MS_DIR_LOGS)) {
         if (!mkdir(MS_DIR_LOGS)) {
             return;

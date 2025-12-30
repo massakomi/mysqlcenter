@@ -28,7 +28,6 @@ final class TableInfo
         public ?string $Comment = null,
         public ?string $Charset = null,
     ) {
-
     }
 
     /**

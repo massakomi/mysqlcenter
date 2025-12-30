@@ -151,7 +151,8 @@ class MSCenter extends DatabaseQuery
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
                     ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
             ];
-            $pdo = new PDO($driver.':host=' . $host . ';port='.$port.';dbname=' . $database, $user, $password, $options);
+            $dsn = $driver . ':host=' . $host . ';port=' . $port . ';dbname=' . $database;
+            $pdo = new PDO($dsn, $user, $password, $options);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->host  = $host;
             $this->user  = $user;
@@ -310,5 +311,4 @@ class MSCenter extends DatabaseQuery
         }
         return true;
     }
-
 }

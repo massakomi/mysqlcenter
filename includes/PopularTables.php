@@ -3,8 +3,8 @@
 /**
  * Класс для сохранения, выборки и хранения массива популярных таблиц
  */
-class PopularTables {
-
+class PopularTables
+{
     /**
      * @param $db
      * @return array

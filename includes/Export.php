@@ -463,7 +463,7 @@ class Export
                 gzwrite($fp, $this->get());
                 gzclose($fp);
 
-                return 'https://' . $_SERVER['HTTP_HOST'] . '/'.MS_DIR_UPLOAD.'/download.sql.gz';
+                return 'https://' . $_SERVER['HTTP_HOST'] . '/' . MS_DIR_UPLOAD . '/download.sql.gz';
             }
         }
         // текстовое поле

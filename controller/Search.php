@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace controller;
@@ -70,7 +71,6 @@ class Search extends Base
             }
             $msc->pageTitle = "Результаты поиска по полям (найдено таблиц $founded, полей $foundedTotal)";
             $pageProps = $pageProps + compact('results', 'founded', 'foundedTotal');
-
         } elseif ($query && strlen($query) > 0) {
             $msc->pageTitle = "Поиск: '$query'";
             if ($array == null || count($array) == 0) {

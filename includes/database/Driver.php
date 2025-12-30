@@ -8,7 +8,8 @@ use dto\TableInfo;
 /**
  *
  */
-interface Driver {
+interface Driver
+{
     public function getDatabases(): array;
     /**
      * @return TableInfo[]

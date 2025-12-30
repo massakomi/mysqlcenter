@@ -5,8 +5,9 @@ Do
         'b - build webpack'
         'w - auto build webpack'
         'p - prettier'
-        'cbf - phpcbf controller'
-        'cs - phpcs controller'
+        'cbf - phpcbf'
+        'cs - phpcs'
+        'css - phpcs summary only'
         "`n"
         'nc - node current'
         'nl - node list'
@@ -18,11 +19,15 @@ Do
     Clear-Host
     if ($operation -eq 'cbf')
     {
-        phpcbf .\controller
+        phpcbf .\controller .\includes --standard=PSR12 -p
     }
     if ($operation -eq 'cs')
     {
-        phpcs .\controller
+        phpcs .\controller .\includes --standard=PSR12
+    }
+    if ($operation -eq 'css')
+    {
+        phpcs .\controller .\includes --standard=PSR12  -p --report=summary
     }
 
     if ($operation -eq 'b')

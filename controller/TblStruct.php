@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace controller;
@@ -80,5 +81,4 @@ class TblStruct extends Base
         $foreignKeys = $constraints['FOREIGN KEY'] ?? [];
         return [$dataKeys, $foreignKeys];
     }
-
 }

@@ -88,7 +88,7 @@ class ActionProcessor
                     'current' => $_POST['current'],
                     'config' => $config,
                 ];
-                $backupFile = MS_DIR_UPLOAD . '/backup_'.date('YmdHis').'_' . basename(MS_CONNECT_CONFIG_FILE);
+                $backupFile = MS_DIR_UPLOAD . '/backup_' . date('YmdHis') . '_' . basename(MS_CONNECT_CONFIG_FILE);
                 if (file_exists(MS_CONNECT_CONFIG_FILE)) {
                     copy(MS_CONNECT_CONFIG_FILE, $backupFile);
                 }

@@ -9,7 +9,8 @@ use stdClass;
 /**
  *
  */
-class PostgreSQL implements Driver {
+class PostgreSQL implements Driver
+{
     public function __construct()
     {
     }
@@ -34,7 +35,7 @@ class PostgreSQL implements Driver {
         $data = $msc->getData($sql);
         $autoIncrementsByTables = [];
         foreach ($data as $key => $value) {
-            $autoIncrementsByTables [$value['table_name']]= $value['identity_start'];
+            $autoIncrementsByTables [$value['table_name']] = $value['identity_start'];
         }
 
         $charset = $this->getCharset();
@@ -44,7 +45,7 @@ class PostgreSQL implements Driver {
             $sql = '
             SELECT *
             FROM information_schema.tables 
-            WHERE table_schema=\'public\' OR table_schema=\''.$db.'\'';
+            WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\'';
             $data = $msc->getData($sql, \PDO::FETCH_OBJ);
             foreach ($data as $key => $value) {
                 $msc->execPdo("ANALYZE " . $value->table_name);
@@ -61,11 +62,11 @@ class PostgreSQL implements Driver {
                 0 as "Auto_increment",
                 0 as "Create_time",
                 0 as "Update_time",
-                \''.$charset.'\' as "Collation"
+                \'' . $charset . '\' as "Collation"
             FROM information_schema.tables ist 
                 LEFT JOIN pg_class c ON c.relname = ist.table_name
                 LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE table_schema=\'public\' OR table_schema=\''.$db.'\' 
+            WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\' 
                 AND nspname NOT IN (\'pg_catalog\', \'information_schema\') AND relkind = \'r\'
             ORDER BY table_name';
         $data = $msc->getData($sql, \PDO::FETCH_OBJ);
@@ -100,7 +101,7 @@ class PostgreSQL implements Driver {
                         ELSE null
                     END AS "Extra"
                 FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE table_name = \''.$table.'\'';
+                WHERE table_name = \'' . $table . '\'';
 
         $keys = $this->getKeys($table);
         $fields = $msc->getData($sql, \PDO::FETCH_OBJ);
@@ -140,7 +141,7 @@ class PostgreSQL implements Driver {
             $key->Index_type = ''; // BTREE
             $key->Comment = '';
             $key->Index_comment = '';
-            $result []= $key;
+            $result [] = $key;
         }
         if (!$result) {
             return [];
@@ -199,7 +200,7 @@ class PostgreSQL implements Driver {
 
     public function sqlCreateTable(string $table): string
     {
-       return '';
+        return '';
     }
 
     public function getTableDetailsWithComments(string $table): array
@@ -222,7 +223,7 @@ class PostgreSQL implements Driver {
         $sql = '
             SELECT *
             FROM information_schema.tables 
-            WHERE table_name=\''.$table.'\' and (table_schema=\'public\' OR table_schema=\''.$msc->db.'\')
+            WHERE table_name=\'' . $table . '\' and (table_schema=\'public\' OR table_schema=\'' . $msc->db . '\')
             ORDER BY table_name';
         $result = $msc->getData($sql, \PDO::FETCH_OBJ);
 
@@ -296,7 +297,7 @@ class PostgreSQL implements Driver {
         $sql = '
             SELECT identity_start
             FROM INFORMATION_SCHEMA.COLUMNS 
-            WHERE table_name = \''.$table.'\' AND is_identity = \'YES\'';
+            WHERE table_name = \'' . $table . '\' AND is_identity = \'YES\'';
         $autoIncrement = $msc->getData($sql);
         if ($autoIncrement) {
             return $autoIncrement[0]['identity_start'];

@@ -9,7 +9,8 @@ use stdClass;
 /**
  *
  */
-class MySQL implements Driver {
+class MySQL implements Driver
+{
     public function __construct()
     {
     }
@@ -137,8 +138,8 @@ class MySQL implements Driver {
                 До 5.0.3, InnoDB таблицы всегда были в формате Redundant',
             'Rows' => 'Количество рядов. Некоторые типы хранилищ, такие как MyISAM, 
                 отображают точное количество. Но в некоторых других, таких как InnoDB, 
-                это значение является приблизительным и может отличаться 
-                от действительного количество на 40-50%. В таких случаях лучше всего использовать запрос SELECT COUNT(*). 
+                это значение является приблизительным и может отличаться  от действительного количество на 40-50%.
+                В таких случаях лучше всего использовать запрос SELECT COUNT(*). 
                 Также это значение равно NULL для таблиц INFORMATION_SCHEMA базы данных',
             'Avg_row_length' => 'Средняя длина строки',
             'Data_length' => 'Размер файла данных таблицы',
@@ -157,7 +158,7 @@ class MySQL implements Driver {
             'Comment' => 'Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL 
                 не может получить доступ к информации о таблице'
         ];
-        $sql = 'SHOW TABLE STATUS LIKE "' . $table.'"';
+        $sql = 'SHOW TABLE STATUS LIKE "' . $table . '"';
         $result = $msc->getData($sql);
         foreach ($comments as $k => &$v) {
             $v = str_replace('', '', $v);

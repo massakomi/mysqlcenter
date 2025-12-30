@@ -276,7 +276,7 @@ class Menu
         $style = config('hidemessages') == '1' ? ' style="display:none"' : '';
         return '<div class="globalMessage">' .
             '  <div>Сообщение <a href="#" class="hiddenSmallLink" onClick="toggleMessages(this)">close</a></div>' .
-            '  <div '.$style.'>' . implode('<br />', $messages) . '  </div>' .
+            '  <div ' . $style . '>' . implode('<br />', $messages) . '  </div>' .
             '</div>';
     }
 

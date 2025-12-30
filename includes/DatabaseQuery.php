@@ -106,7 +106,7 @@ class DatabaseQuery
         try {
             $this->driver->selectDb($db);
         } catch (\Exception $e) {
-            $this->error('Ошибка при выборе базы данных "' . $db . '": '. $e->getMessage());
+            $this->error('Ошибка при выборе базы данных "' . $db . '": ' . $e->getMessage());
             return false;
         }
         return true;

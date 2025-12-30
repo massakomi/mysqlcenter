@@ -15,7 +15,6 @@ final class FieldInfo
         public ?string $Default = null,
         public ?string $Extra = null,
     ) {
-
     }
 
     /**
