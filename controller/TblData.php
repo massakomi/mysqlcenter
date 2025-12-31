@@ -107,10 +107,12 @@ class TblData extends Base
         } else {
             // выборка общего кол-ва записей (пока такой вариант, нужно улучшать)
             // Внимание - тут возможно несколько вложенных таблиц или запросов
-            $result = $msc->fetchPdo('EXPLAIN ' . $directSQL);
-            if (!$result) {
-                $msc->error('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
-                return [];
+            if (str_contains($directSQL, 'select')) {
+                $result = $msc->fetchPdo('EXPLAIN ' . $directSQL);
+                if (!$result) {
+                    $msc->error('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
+                    return [];
+                }
             }
             $count = 0;
             $part  = 0;

@@ -13,7 +13,7 @@ export function Sql (props) {
     return (
       <Fragment>
           <form method="post" encType="multipart/form-data" name="sqlQueryForm" id="sqlQueryForm"
-                className="tableFormEdit" onSubmit={sqlFormSubmit}>
+                className="tableFormEdit" onSubmit={sqlFormSubmit.bind(this)}>
               <textarea name="sql" rows="20" id="sqlContent" wrap="off">{props.sql}</textarea>
               <input type="submit" value="Отправить запрос!" className="submit mt-10"/>
               <fieldset className="msGeneralForm">

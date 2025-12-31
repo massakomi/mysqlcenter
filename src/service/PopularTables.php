@@ -2,6 +2,8 @@
 
 namespace service;
 
+use database\Table;
+
 /**
  * Класс для сохранения, выборки и хранения массива популярных таблиц
  */
@@ -71,7 +73,7 @@ class PopularTables
         }
         $tables[$db] [$table]['time'] = time();
         if (date('i') % 10 == 0) {
-            $tablesAll = DatabaseTable::getTables();
+            $tablesAll = Table::getTables();
             $exists = array_intersect(array_keys($tables[$db]), $tablesAll);
             $notExists = array_diff(array_keys($tables[$db]), $exists);
             if (count($notExists) > 0) {

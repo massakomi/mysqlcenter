@@ -232,9 +232,9 @@ export function msImageAction(formName, param, actionReplace) {
 /**
  * Редирект с сабмита sql форм (в шапке и на странице sql)
  */
-export function sqlFormSubmit() {
-    this.event.preventDefault()
-    let form = this.event.target.closest('form');
+export function sqlFormSubmit(event) {
+    event.preventDefault()
+    let form = event.target.closest('form');
     let sql = form.querySelector('textarea').value
     if (sql.match(/^\s*(select|show)/i)) {
         form.action = umaker({'s': 'tbl_data'})
@@ -256,14 +256,23 @@ export function sqlFormToggle() {
 }
 
 export function sqlFormEvents() {
+    // Сабмит формы
+    let form = document.querySelector('.popupGeneralForm')
+    list(form, 'submit', sqlFormSubmit);
+    // Закрыть попап форму
+    let closeLink = form.querySelector('a')
+    list(closeLink, 'click', sqlFormToggle);
+    // Открыть форму
+    let openLink = document.querySelector('.sqlFormToggle')
+    list(openLink, 'click', sqlFormToggle);
+    // Вставить значение по умолчанию
     let table = new URL(location.href).searchParams.get('table')
-    let textarea = document.querySelector('.popupGeneralForm textarea')
-    let span = document.querySelector('.popupGeneralForm span')
+    let textarea = form.querySelector('textarea')
     if (!table || textarea.value) {
         return;
     }
     textarea.value = `SELECT * FROM ${table} WHERE`
-    span.innerHTML = window.fields.join(', ')
+    form.querySelector('span').innerHTML = window.fields.join(', ')
 }
 
 /**

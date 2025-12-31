@@ -31,7 +31,7 @@ $dbs = Server::getDatabasesWithoutHidden();
 <div class="pageBlock">
     <a class="appName" href="?db_list"><?=$msc->driverName == 'pgsql' ? 'PgSQL' : 'MySQL'?> React</a>
     <?php echo $menu->getGlobalMenu() ?>
-    <span class="hiddenText" onclick="sqlFormToggle()"
+    <span class="hiddenText sqlFormToggle"
           title="Кликните, чтобы открыть форму быстрого запроса"><?php echo $time ?> с.</span>
     <span class="menuChain"><?php echo $menu->getChainMenu() ?></span>
     <div class="globalMenu menuTopRight">
@@ -90,11 +90,11 @@ $dbs = Server::getDatabasesWithoutHidden();
     </div>
 </div>
 
-<form action="<?php echo UrlMaker::make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
+<form action="<?php echo UrlMaker::make('s', 'sql') ?>" class="popupGeneralForm tableFormEdit" method="post">
     <input type="submit" value="Отправить запрос!"/>
     <textarea name="sql" rows="15" wrap="soft"><?= POST('sql') ?></textarea>
     <span></span>
-    <a href="#" onclick="sqlFormToggle(); return false">закрыть</a>
+    <a href="#">закрыть</a>
 </form>
 
 <div class="menuDb">
