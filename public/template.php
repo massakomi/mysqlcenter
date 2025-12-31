@@ -3,11 +3,14 @@
 use database\Server;
 use database\Table;
 use service\Menu;
+use service\PageLayout;
 use service\UrlMaker;
 use service\Utils;
 
 global $msc;
 
+$pageProps = (new PageLayout())->execute();
+$time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
 $menu = new Menu();
 $fields = $msc->table ? Table::getFields($msc->table, true) : [];
 $dbs = Server::getDatabasesWithoutHidden();

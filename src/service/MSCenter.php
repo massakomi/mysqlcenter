@@ -3,6 +3,7 @@
 namespace service;
 
 use database\{Driver, MySQL, PostgreSQL, Query};
+use dto\ConnectConfig;
 use enum\MessageType;
 
 /**
@@ -125,6 +126,28 @@ class MSCenter extends Query
     }
 
     /**
+     *
+     */
+    public function getConfig(): ConnectConfig
+    {
+        $settings = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
+        $current = $settings['current'];
+        $config = $settings['config'][$current];
+        if (!$config) {
+            $this->connectError("Конфиг существует, но настройка current($current) в нем не найдена");
+            return new ConnectConfig();
+        }
+        return new ConnectConfig(
+            $config['host'],
+            $config['port'],
+            $config['database'],
+            $config['user'],
+            $config['password'],
+            $config['driver'],
+        );
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function connect(): void
@@ -133,31 +156,21 @@ class MSCenter extends Query
         if (!$this->connectConfigExists()) {
             return;
         }
-        $settings = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
-        $current = $settings['current'];
-        $config = $settings['config'][$current];
-        if (!$config) {
-            $this->connectError("Конфиг существует, но настройка current($current) в нем не найдена");
-            return;
-        }
-        extract($config);
+        $config = $this->getConfig();
         try {
-            // Подставляем базу из запроса
-            if ($this->db) {
-                $database = $this->db;
-            }
             $options = [
                 \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
                 \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
                     ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
             ];
-            $dsn = $driver . ':host=' . $host . ';port=' . $port . ';dbname=' . $database;
-            $pdo = new \PDO($dsn, $user, $password, $options);
+            $database = $this->db ?: $config->database; // Подставляем базу из запроса
+            $dsn = $config->driver . ':host=' . $config->host . ';port=' . $config->port . ';dbname=' . $database;
+            $pdo = new \PDO($dsn, $config->user, $config->password, $options);
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $this->host  = $host;
-            $this->user  = $user;
-            $this->driverName  = $driver;
-            $this->driver  = $driver == 'pgsql' ? new PostgreSQL() : new MySQL();
+            $this->host  = $config->host;
+            $this->user  = $config->user;
+            $this->driverName  = $config->driver;
+            $this->driver  = $config->driver == 'pgsql' ? new PostgreSQL() : new MySQL();
             if ($database) {
                 $this->db  = $database;
             }
@@ -170,7 +183,7 @@ class MSCenter extends Query
                     return;
                 }
             }
-            $msg = 'Unable to pdo-connect to database on "' . $host . '" as ' . $user . '<br />';
+            $msg = 'Unable to pdo-connect to database on "' . $config->host . '" as ' . $config->user . '<br />';
             $this->connectError($msg . $e->getMessage());
         }
     }

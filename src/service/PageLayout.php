@@ -19,7 +19,7 @@ class PageLayout
 
     /**
      * Отображение страницы
-     * @throws Exception
+     * @throws \Exception
      */
     public function execute(): array
     {

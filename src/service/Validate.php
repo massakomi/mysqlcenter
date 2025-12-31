@@ -39,9 +39,10 @@ class Validate
     /**
      * Сообщение о серьезной ошибке выводится сразу на печать и exit
      *
-     * @param string
+     * @param string $message
+     * @return false
      */
-    private function error($message)
+    private function error(string $message): false
     {
         global $msc;
         if (isAjax()) {

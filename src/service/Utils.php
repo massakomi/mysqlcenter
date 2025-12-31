@@ -10,11 +10,11 @@ class Utils
     /**
      * Преобразует размер в байтах в строковое смотрибельное представление в форме " .. Kb .. Mb"
      *
-     * @param integer Размер файла в байтах
+     * @param integer $bytes Размер файла в байтах
      * @return string Строковое представление
      * @package number
      */
-    public static function formatSize($bytes): string
+    public static function formatSize(int $bytes): string
     {
         if ($bytes < pow(1024, 1)) {
             return "$bytes b";
@@ -24,6 +24,8 @@ class Utils
             return round($bytes / pow(1024, 2), 2) . ' Mb';
         } elseif ($bytes < pow(1024, 4)) {
             return round($bytes / pow(1024, 3), 2) . ' Gb';
+        } else {
+            return "$bytes b";
         }
     }
 
@@ -31,7 +33,6 @@ class Utils
      * Получить максимальный допустимый размер аплоада файла
      *
      * @return integer Размер в байтах
-     * @package file
      */
     public static function getMaxUploadSize(): int
     {
@@ -51,11 +52,10 @@ class Utils
     /**
      * Возвращает реальный размер в байтах строкового php ini  представления числа
      *
-     * @param string   Строковое php ini представление
-     * @return integer Размер файла в байтах
-     * @package number
+     * @param string $size Строковое php ini представление
+     * @return int Размер файла в байтах
      */
-    public static function getRealSize($size = 0): float|int
+    public static function getRealSize(string $size): int
     {
         if (!$size) {
             return 0;
@@ -69,11 +69,12 @@ class Utils
         $scan['K'] = 1024;
         $scan['k'] = 1024;
         foreach (array_keys($scan) as $key) {
-            if ((strlen($size) > strlen($key)) && (substr($size, strlen($size) - strlen($key)) == $key)) {
-                $size = substr($size, 0, strlen($size) - strlen($key)) * $scan[$key];
+            if ((strlen($size) > strlen($key)) && (str_ends_with($size, $key))) {
+                $int = (int)substr($size, 0, strlen($size) - strlen($key));
+                $size = $int * $scan[$key];
                 break;
             }
         }
-        return $size;
+        return (int)$size;
     }
 }

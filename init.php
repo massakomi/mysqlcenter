@@ -3,6 +3,10 @@
 use service\MSCenter;
 use service\Utils;
 
+if (!defined('DIR_MYSQL')) {
+    define("DIR_MYSQL", './');
+}
+
 spl_autoload_register(function ($class) {
     $path = [
         DIR_MYSQL . 'src/' . $class . '.php',
@@ -48,7 +52,8 @@ define('MS_DEFAULT_PART', config('rpage'));
 define('MS_LIST_LINKS_RANGE', config('linksrange'));
 define('MS_HEAD_WRAP', config('headwrap'));
 define('MS_TEXT_CUT', config('textcut'));
-define('MS_ROWS_INSERT', config('insertrows'));
+//define('MS_ROWS_INSERT', config('insertrows'));
+const MS_ROWS_INSERT = 2;
 define('MS_DATE_FORMAT', config('datetimeformat'));
 define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
 define('MS_FIELDS_COUNT', config('fieldsmax'));

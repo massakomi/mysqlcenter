@@ -5,11 +5,11 @@ use enum\MessageType;
 /**
  * Возвращает ключ $name массива $_GET
  *
- * @param string Ключ
- * @param string Значение по умолчанию, если ключ не будет найден
+ * @param string $name Ключ
+ * @param string $default Значение по умолчанию, если ключ не будет найден
  * @return mixed Значение параметра
  */
-function GET($name, $default = ''): mixed
+function GET(string $name, string $default = ''): mixed
 {
     if (isset($_GET[$name])) {
         return $_GET[$name];
@@ -21,12 +21,11 @@ function GET($name, $default = ''): mixed
 /**
  * Возвращает ключ $name массива $_POST
  *
- * @param string Ключ
- * @param string Значение по умолчанию, если ключ не будет найден
+ * @param string $name Ключ
+ * @param string|null $default Значение по умолчанию, если ключ не будет найден
  * @return mixed Значение параметра
- * @package url
  */
-function POST($name, $default = null): mixed
+function POST(string $name, ?string $default = null): mixed
 {
     if (array_key_exists($name, $_POST)) {
         $res = $_POST[$name];
@@ -42,9 +41,9 @@ function POST($name, $default = null): mixed
  * @access private
  * @param $string
  * @param $db
- * @return bool|void
+ * @return void
  */
-function logInFile($string, $db)
+function logInFile($string, $db): void
 {
     if (config('sqllog') != '1' || !$db) {
         return;
@@ -56,11 +55,11 @@ function logInFile($string, $db)
 /**
  * Логи ошибок + дата/время
  *
- * @param string  Сообщение
- * @param string  SQL запрос (добавляется к сообщению)
+ * @param string $message Сообщение
+ * @param string|null $sql SQL запрос (добавляется к сообщению)
  * @package debug
  */
-function logError($message, $sql = null): void
+function logError(string $message, ?string $sql = null): void
 {
     global $pdo;
     $message = str_replace("\n", ' ', $message);

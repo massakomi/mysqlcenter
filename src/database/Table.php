@@ -229,16 +229,17 @@ class Table
     {
         global $msc;
         $fields = self::getFields($tbl);
+        $primaryKey = $definition = '';
         foreach ($fields as $f) {
             if ($f->Key == 'PRI') {
                 $definition = self::getFieldDefinition($f);
-                $field      = $f->Field;
+                $primaryKey = $f->Field;
             }
         }
-        if (isset($definition)) {
+        if ($primaryKey) {
             if (stristr($definition, 'auto_increment')) {
                 $definition = str_ireplace('auto_increment', '', $definition);
-                $sql = 'ALTER TABLE `' . $tbl . '` CHANGE ' . $field . ' ' . $field . ' ' . $definition;
+                $sql = 'ALTER TABLE `' . $tbl . '` CHANGE ' . $primaryKey . ' ' . $primaryKey . ' ' . $definition;
                 $msc->execPdo($sql);
             }
             $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";

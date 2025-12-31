@@ -27,9 +27,9 @@ class TblChange extends Base
         $tableData = [];
         $fields = Table::getFields($msc->table);
 
-        if (GET('row') == '' && POST('row') == '') {
+        $isAdd = (GET('row') == '' && POST('row') == '');
+        if ($isAdd) {
             $msc->pageTitle = 'Добавить строки в таблицу';
-            $isAdd = true;
         } else {
             $msc->pageTitle = 'Редактировать данные';
             $whereCondition = $this->whereCondition();
@@ -94,8 +94,8 @@ class TblChange extends Base
         }
         $countInsert = 0;
         $fields = array_values(Table::getFields($msc->table));
+        $arrayFields = [];
         if ($editType == 1) {
-            $arrayFields = [];
             foreach ($fields as $v) {
                 if (POST('option') == 'insert' && $v->Extra != null) {
                     continue;
@@ -111,6 +111,7 @@ class TblChange extends Base
         $rows = POST('row');
         $_POST['cond'] = POST('cond');
         foreach ($rows as $numRow => $data) {
+            $where = $cValue = '';
             if ($editType == 0) {
                 $where = urldecode($_POST['cond'][$numRow]);
                 $cValue = $msc->fetchPdo('SELECT * FROM `' . $msc->table . '` WHERE ' . $where)->fetchObject();

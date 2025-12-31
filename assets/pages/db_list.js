@@ -205,7 +205,6 @@ function ColumnRight(props) {
 
           <div className="mt-10">
               {tableLink} <br/>
-              <a href={`?s=speedtest`}>Тест скорости</a><br/>
               <a href={`?s=actions&info=1`}>Информация сервера</a>
           </div>
 

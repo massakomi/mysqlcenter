@@ -22,10 +22,6 @@ class Sql extends Base
             if ($_FILES['sqlFile']['size'] <= MAX_UPLOAD_SIZE) {
                 if ($type == 'zip' || substr($_FILES['sqlFile']['name'], -3) == 'zip') {
                     $sql = $this->readZipFile($_FILES['sqlFile']['tmp_name'], 'zip');
-                } elseif ($type == 'csv') {
-                    $this->csvTest();
-                } elseif ($type == 'excel') {
-                    $this->excelTest();
                 } else {
                     $mime = '';
                     if ($type == '') {
@@ -65,68 +61,6 @@ class Sql extends Base
             'charsets' => mb_list_encodings(),
             //'sql' => POST('sql')
         ];
-    }
-
-    /**
-     * {}
-     */
-    private function csvTest()
-    {
-        $data = file_get_contents($_FILES['sqlFile']['tmp_name']);
-        $data = iconv('windows-1251', 'utf-8', $data);
-        $data = explode("\n", $data);
-        foreach ($data as $k => $v) {
-            $row = array_map(function ($value) {
-                global $pdo;
-                return $pdo->quote($value);
-            }, explode(';', trim($v)));
-            echo '<br />INSERT INTO s_products_text (brand, name) VALUES ("' . implode('","', $row) . '");';
-        }
-    }
-
-    /**
-     * {}
-     */
-    private function excelTest()
-    {
-        //include_once 'includes/excel_reader.php';
-
-        //$data = new Spreadsheet_Excel_Reader($_FILES['sqlFile']['tmp_name'], false);
-        $data = [];
-
-        foreach ($data->boundsheets as $k => $v) {
-            echo '<a href="?sheet=' . $k . '">' . $v['name'] . '</a> &nbsp; ';
-        }
-        // excel_reader.php
-
-        $sheet = 1;
-
-        echo '<br /><br />';
-        //echo '<pre>'; print_r($data->sheets[$_GET['sheet']]); echo '</pre>';
-        //$sheet = [];
-
-        echo '
-            <table class="contentTable">';
-        foreach ($data->sheets[$sheet]['cells'] as $cell => $values) {
-            //$sheet [][]= ;
-            $str = trim(implode(' ', $values));
-            if (empty($str)) {
-                continue;
-            }
-            echo '<tr>';
-            //array_shift($values);
-            foreach ($values as $k => $v) {
-                echo '<td>' . $v . '</td>';
-            }
-            echo '</tr>';
-        }
-        echo '</table>';
-
-        unset($data->sheets[$sheet]['cells']);
-
-        echo '<pre>';
-        print_r($data->sheets[$sheet]);
-        echo '</pre>';
     }
 
     /**
@@ -195,6 +129,7 @@ class Sql extends Base
         if (!file_exists($path)) {
             return false;
         }
+        $content = '';
         switch ($mime) {
             case '':
                 $file = @fopen($path, 'rb');

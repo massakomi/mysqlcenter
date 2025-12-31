@@ -13,6 +13,8 @@ class Query
     public string $lastSql = '';
     public string $error = '';
     public bool $exceptionOnError = true;
+    public ?Driver $driver = null;
+    public string $driverName = '';
 
     /**
      * Единый для всех запрос в БД
@@ -97,10 +99,10 @@ class Query
 
     /**
      * Выполняет выбор БД (select_db) на сервера
-     * @param string
+     * @param string $db
      * @throws \Exception
      */
-    public function selectDb($db): bool
+    public function selectDb(string $db): bool
     {
         if ($db == null) {
             return false;
@@ -122,7 +124,7 @@ class Query
      * @param null $result
      * @return bool
      */
-    protected function loqQuery($sql, $result = null)
+    protected function loqQuery($sql, $result = null): bool
     {
         if (!$result || preg_match('~^(SHOW|SELECT|SET)~i', trim($sql))) {
             return false;
@@ -131,6 +133,7 @@ class Query
         $string = preg_replace('/[\r\n\t]+/', ' ', $string);
         $string = str_replace('  ', ' ', $string);
         logInFile($string, $this->db);
+        return true;
     }
 
     private $logEnabled = true;
@@ -141,5 +144,13 @@ class Query
     public function enableLog(): void
     {
         $this->logEnabled = true;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function error(string $error)
+    {
+        throw new \Exception($error);
     }
 }

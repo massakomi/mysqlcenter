@@ -16,6 +16,7 @@ class TblAdd extends Base
         global $msc;
 
         // Получаем начальную инфо о полях таблицы
+        $fields = [];
         if ($msc->table) {
             $fields = Table::getFields($msc->table);
             if (!$fields) {
@@ -24,15 +25,10 @@ class TblAdd extends Base
             }
         }
 
-        // Получаем массив имён полей из формы.
-        $names = POST('name');
-        $afterSql = '';
-        if (is_array($names) && count($names) > 0 && POST('action') != '') {
-            return $this->process($names, $fields, $afterSql);
-        }
-
         // HTML форма
         // Создание таблицы или добавление полей
+        $array = [];
+        $afterSql = '';
         if ($msc->table == null || POST('action') == 'fieldsAdd') {
             $numFields = POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
             $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : $numFields;
@@ -64,7 +60,6 @@ class TblAdd extends Base
                 $edited = $_POST['field'];
             }
             // собираем только те поля, которые реально существуют в таблице
-            $array = [];
             foreach ($fields as $row) {
                 if (count($edited) > 0) {
                     if (in_array($row->Field, $edited)) {

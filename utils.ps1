@@ -5,9 +5,11 @@ Do
         'b - build webpack'
         'w - auto build webpack'
         'p - prettier'
+        "`n"
         'cbf - phpcbf'
         'cs - phpcs'
         'css - phpcs summary only'
+        'stan - phpstan analyse'
         "`n"
         'nc - node current'
         'nl - node list'
@@ -28,6 +30,10 @@ Do
     if ($operation -eq 'css')
     {
         phpcs .\controller .\src --standard=PSR12  -p --report=summary
+    }
+    if ($operation -eq 'stan')
+    {
+        phpstan analyse
     }
 
     if ($operation -eq 'b')

@@ -13,7 +13,7 @@ use database\Server;
 class DbList extends Base
 {
     /**
-     * @return array|void
+     * @return array
      */
     public function defaultAction(): array
     {
@@ -39,13 +39,11 @@ class DbList extends Base
                 }
                 $dbs [$j] = $dbItem;
             }
+        }
 
-        // Отображаем список баз данных с краткой информацией
-        } else {
-            $hidden = [];
-            if (in_array('mysqlcenter', $dbs)) {
-                $hidden = MSTable::getHiddensArray();
-            }
+        $hidden = [];
+        if (in_array('mysqlcenter', $dbs)) {
+            $hidden = MSTable::getHiddensArray();
         }
 
         list(, $vs) = Server::getServerVersion();

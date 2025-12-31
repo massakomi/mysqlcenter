@@ -64,13 +64,13 @@ class TblCompare extends Base
     }
 
     /**
-     * @param $databases
-     * @param $table
-     * @param $pk
+     * @param array $databases
+     * @param string $table
+     * @param array $pk
      * @return array[]
-     * @throws Exception
+     * @throws \Exception
      */
-    private function selectDataFromDatabase($databases, $table, $pk): array
+    private function selectDataFromDatabase(array $databases, string $table, array $pk): array
     {
         global $msc;
         $msc->selectDb($databases[0]);

@@ -1,0 +1,10 @@
+parameters:
+    level: 2
+    reportUnmatchedIgnoredErrors: false
+    paths:
+        - controller
+        - src
+        - public
+        - ./init.php
+    bootstrapFiles:
+        - ./init.php

@@ -18,20 +18,18 @@ class Export extends Base
         global $msc;
 
         // извлечение данных
-        if (count($_POST) > 0) {
-            $isStruct  = (POST('export_struct') != '');
-            $isData    = (POST('export_data') != '');
-            $exType    = POST('export_option');
-            $exWhere   = POST('export_where');
-            $isDrop    = (POST('addDrop') != '');
-            $addIfNot  = (POST('addIfNot') != '');
-            $addAuto   = (POST('addAuto') != '');
-            $addKav    = (POST('addKav') != '');
-            $insFull   = (POST('insFull') != '');
-            $insExpand = (POST('insExpand') != '');
-            $insZapazd = (POST('insZapazd') != '');
-            $insIgnor  = (POST('insIgnor') != '');
-        }
+        $isStruct  = (POST('export_struct') != '');
+        $isData    = (POST('export_data') != '');
+        $exType    = POST('export_option');
+        $exWhere   = POST('export_where');
+        $isDrop    = (POST('addDrop') != '');
+        $addIfNot  = (POST('addIfNot') != '');
+        $addAuto   = (POST('addAuto') != '');
+        $addKav    = (POST('addKav') != '');
+        $insFull   = (POST('insFull') != '');
+        $insExpand = (POST('insExpand') != '');
+        $insZapazd = (POST('insZapazd') != '');
+        $insIgnor  = (POST('insIgnor') != '');
 
         // 2. СПЕЦИАЛЬНЫЙ ЭКСПОРТ
         if (GET('action') == 'special') {
@@ -150,20 +148,16 @@ class Export extends Base
     {
         global $msc;
 
-        if (count($_POST) > 0) {
-            $isStruct  = (POST('export_struct') != '');
-            $isData    = (POST('export_data') != '');
-            $exType    = POST('export_option');
-            $exWhere   = POST('export_where');
-            $isDrop    = (POST('addDrop') != '');
-            $addIfNot  = (POST('addIfNot') != '');
-            $addAuto   = (POST('addAuto') != '');
-            $addKav    = (POST('addKav') != '');
-            $insFull   = (POST('insFull') != '');
-            $insExpand = (POST('insExpand') != '');
-            $insZapazd = (POST('insZapazd') != '');
-            $insIgnor  = (POST('insIgnor') != '');
-        }
+        $exType    = POST('export_option');
+        $isDrop    = (POST('addDrop') != '');
+        $addIfNot  = (POST('addIfNot') != '');
+        $addAuto   = (POST('addAuto') != '');
+        $addKav    = (POST('addKav') != '');
+        $insFull   = (POST('insFull') != '');
+        $insExpand = (POST('insExpand') != '');
+        $insZapazd = (POST('insZapazd') != '');
+        $insIgnor  = (POST('insIgnor') != '');
+
 
         $msct = new MSTable();
 

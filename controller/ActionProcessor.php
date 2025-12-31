@@ -388,6 +388,7 @@ class ActionProcessor
                     $struct = (POST('option') != 'data');
                 }
                 if (count($newName) > 0 && count($databases) == count($newName)) {
+                    $k = 0;
                     foreach ($databases as $k => $db) {
                         $server->databaseCopy($db, $newName[$k], $isMove, $struct, $data);
                     }
@@ -412,7 +413,7 @@ class ActionProcessor
                 if ($dbt->rowDelete($db, $tbl, implode(' OR ', $row))) {
                     $msc->success("Рядов удалёно: $msc->affectedRows", $msc->lastSql);
                 } else {
-                    $msc->error("Ошибка удаления ряда $row", $msc->lastSql);
+                    $msc->error("Ошибка удаления ряда", $msc->lastSql);
                 }
                 break;
 
@@ -538,12 +539,12 @@ class ActionProcessor
 
 
     /**
-     * Возвращет параметр запроса
+     * Возвращает параметр запроса
      *
-     * @param string  Имя параметра
-     * @return mixed  Возвращает false если парметра нет, иначе сам параметр
+     * @param string $name Имя параметра
+     * @return mixed Возвращает false если парметра нет, иначе сам параметр
      */
-    public function param($name)
+    public function param(string $name): mixed
     {
         // 1. GET-параметры имеют первичное значение (?db=...)
         if (isset($_GET[$name])) {

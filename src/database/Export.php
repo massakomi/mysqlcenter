@@ -9,6 +9,7 @@ class Export
 {
     public $db;
     public $table;
+    public $tableb;
     public $data;
     public $tableStructure = [];
     public $comments = true;
