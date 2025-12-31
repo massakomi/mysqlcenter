@@ -16,7 +16,7 @@ class Server
      */
     public function __construct()
     {
-        $this->validate = new \Validate();
+        $this->validate = new Validate();
     }
 
     /**

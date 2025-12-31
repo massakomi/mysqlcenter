@@ -18,13 +18,20 @@ $dbs = Server::getDatabasesWithoutHidden();
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title><?php echo $msc->getWindowTitle() ?></title>
-    <script language="javascript">
-        window.driver = '<?=$msc->driverName?>';
-        window.fields = <?=json_encode($fields) ?>;
-    </script>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
-    <script defer src="/js/dist.js"></script>
+    <script>
+        window.driver = '<?=$msc->driverName?>';
+        window.component = '<?=$msc->page?>'
+        window.db = '<?=$msc->db?>'
+        window.table = '<?=$msc->table?>'
+        window.pageTitle = '<?=$msc->getPageTitle()?>'
+        window.fields = <?=json_encode($fields) ?>;
+        window.options = <?=json_encode($pageProps)?>;
+        window.messages = <?=json_encode($msc->getMessagesData())?>;
+        window.post = <?=json_encode($_POST)?>;
+    </script>
+    <script defer src="/js/dist.js?<?=filemtime('js/dist.js')?>"></script>
 </head>
 <body>
 <div class="loader" hidden></div>
@@ -48,45 +55,7 @@ $dbs = Server::getDatabasesWithoutHidden();
         <?php echo $menu->getTableMenu(); ?>
     </div>
     <div class="rightCol">
-        <div class="headTop">
-            <h1><?php echo $msc->getPageTitle() ?></h1>
-            <div>
-                <?php
-                if ($msc->table) {
-                    $url = '?db=' . $msc->db . '&table=' . $msc->table . '&s=tbl_data';
-                    ?>
-                    <form action="<?php echo $url ?>" method="post" class="search-top">
-                        <input type="hidden" name="post" value="<?= count($_POST) > 0 ?>"/>
-                        <input type="hidden" name="order" value="<?= POST('order') ?>"/>
-                        <input type="hidden" name="go" value="<?= POST('go') ?>"/>
-                        <input type="hidden" name="part" value="<?= POST('part') ?>"/>
-                        <input type="text" name="query"
-                               value="<?= htmlspecialchars(POST('query', 'Поиск или where')) ?>"/>
-                        <?= $menu->selector($fields, ' name="field"', POST('field'), '', false) ?>
-                        <?= $menu->selector(['=', 'like'], ' name="like"', POST('like'), '', false) ?>
-                        <input type="text" name="byField" value="<?= POST('byField') ?>"/>
-                        <input type="submit">
-                    </form>
-                    <?php
-                }
-                if ($msc->db) {
-                    ?>
-                    <form action="?db=<?= $msc->db ?>&s=search" method="post" style="display:inline"
-                          onsubmit="this.action=this.action+'&query='+this.query.value">
-                        <input type="text" name="query" value="Поиск по базе"
-                               onfocus="this.value=''; this.style.width='auto'" style="width: 100px"/>
-                    </form>
-                    <?php
-                }
-                ?>
-            </div>
-        </div>
-        <?php echo Menu::getMessages() ?>
         <div id="root"></div>
-        <script>
-            window.component = '<?=$msc->page?>'
-            window.options = <?=json_encode($pageProps)?>;
-        </script>
     </div>
 </div>
 

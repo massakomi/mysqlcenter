@@ -202,8 +202,7 @@ function TableLinks(props) {
     function currentPart() {
         let getPart = new URL(location.href).searchParams.get('part');
         if (getPart === null) {
-            const form = document.querySelector('.search-top')
-            return form.querySelector('[name="part"]').value
+            return window.post.part
         }
         return getPart
     }

@@ -466,29 +466,6 @@ function ctrlKeyMode() {
     }
 }
 
-function searchEvents() {
-    forElementsEvent('focus', '.search-top [name="query"]', function () {
-        this.classList.add('wide')
-        if (this.value.indexOf('Поиск') === 0) {
-            this.dataset['default'] = this.value
-            this.value = ''
-        }
-    })
-    forElementsEvent('blur', '.search-top [name="query"]', function () {
-        this.classList.remove('wide')
-        if (this.dataset['default']) {
-            this.value = this.dataset['default']
-        }
-    })
-    forElementsEvent('change', '.search-top [name="field"]', function () {
-        document.querySelector('.search-top [name="byField"]').value = ''
-    })
-    forElementsEvent('focus', '.search-top [name="byField"]', function () {
-        document.querySelector('.search-top [name="query"]').value = ''
-        this.style.width = 'auto'
-    })
-}
-
 export function contentTableEvents() {
     forElements('.contentTable th', function() {
         let span = this.querySelector('.br')
@@ -510,7 +487,6 @@ export function contentTableEvents() {
 document.addEventListener('DOMContentLoaded', function () {
     dbHiddenMenu()
     ctrlKeyMode()
-    searchEvents()
     sqlFormEvents()
 })
 
@@ -652,4 +628,29 @@ export function qs(selector) {
         element = document.createElement('div')
     }
     return element
+}
+
+
+export function getComponentByPage(ComponentsMap) {
+
+    let page = window.component
+    const table = new URL(location.href).searchParams.get('table')
+    const action = new URL(location.href).searchParams.get('action')
+    if (page === 'actions' && !table) {
+        page = 'actionsdb'
+    }
+    if (page === 'search' && table) {
+        page = 'searchTable'
+    }
+    if (page === 'tbl_list' && action === 'structure') {
+        page = 'tbl_struct_view'
+    }
+    if (page === 'tbl_struct' && action === 'add_key') {
+        page = 'tbl_key_add'
+    }
+    if (page === 'export' && action === 'special') {
+        page = 'exportSp'
+    }
+    let componentName = page.replace(/^./, char => char.toUpperCase());
+    return ComponentsMap[componentName]
 }

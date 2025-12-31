@@ -8,8 +8,7 @@ fieldsmax|Количество полей при создании таблицы
 showtablecompare|Блок "Сравнить таблицу с ..." показать|1|boolean
 showtableupdated|Блок "Показать таблицы обновлённые ..." показать|1|boolean
 nulldesign|HTML код, отображаемый на месте NULL-значения в таблице|<i>NULL</i>|string
-showmessages|Показывать сообщения|1|boolean
-hidemessages|Скрывать сообщения по умолчанию|0|boolean
+hidemessages|Скрывать сообщения по умолчанию|1|boolean
 errorlog|Лог всех php ошибок в файл error.log|1|boolean
 sqllog|Лог всех не-SELECT sql запросов в папку data по базам данных|1|boolean
 greyempty|Выделять пустые таблицы цветом в меню таблиц|1|boolean

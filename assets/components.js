@@ -1,6 +1,6 @@
 import React from 'react'
 import {Fragment, useEffect} from "react";
-import {contentTableEvents} from "./MysqlCenter";
+import {contentTableEvents, forElementsEvent, searchEvents} from "./MysqlCenter";
 
 export function CharsetSelector(props) {
     let opts = [], i = 0
@@ -228,6 +228,93 @@ export function Table(props) {
               {trs}
               </tbody>
           </table>
+      </div>
+    )
+}
+
+function SearchDbForm() {
+
+    if (!window.db) {
+        return null
+    }
+
+    function onFocus(e) {
+        e.target.value = '';
+        e.target.style.width = 'auto'
+    }
+
+    function onSubmit(e) {
+        e.target.action = e.target.action + '&query=' + e.target.query.value
+    }
+
+    return (
+      <form action={`?db=${window.db}&s=search`} method="post" onSubmit={onSubmit}>
+          <input type="text" name="query" defaultValue="Поиск по базе" onFocus={onFocus}/>
+      </form>
+    );
+}
+
+function SearchTableFormEvents() {
+    forElementsEvent('focus', '.search-top [name="query"]', function () {
+        this.classList.add('wide')
+        if (this.value.indexOf('Поиск') === 0) {
+            this.dataset['default'] = this.value
+            this.value = ''
+        }
+    })
+    forElementsEvent('blur', '.search-top [name="query"]', function () {
+        this.classList.remove('wide')
+        if (this.dataset['default']) {
+            this.value = this.dataset['default']
+        }
+    })
+    forElementsEvent('change', '.search-top [name="field"]', function () {
+        document.querySelector('.search-top [name="byField"]').value = ''
+    })
+    forElementsEvent('focus', '.search-top [name="byField"]', function () {
+        document.querySelector('.search-top [name="query"]').value = ''
+        this.style.width = 'auto'
+    })
+}
+
+function SearchTableForm(props) {
+    if (!window.table) {
+        return null
+    }
+
+    useEffect(() => {
+        SearchTableFormEvents()
+    }, []);
+
+    let post = window.post || {}
+    let isPost = Object.keys(post).length > 0 ? '1' : ''
+    let query = post.query ? post.query : 'Поиск или where'
+
+    const url = `?db=${window.db}&table=${window.table}&s=tbl_data`;
+    return (
+      <form action={url} method="post" className="search-top">
+          <input type="hidden" name="post" defaultValue={isPost} />
+          <input type="hidden" name="order" defaultValue={post.order} />
+          <input type="hidden" name="go" defaultValue={post.go} />
+          <input type="hidden" name="part" defaultValue={post.part} />
+          <input type="text" name="query" defaultValue={query} />
+          <HtmlSelector data={window.fields} name="field" value={post.field}/>
+          <HtmlSelector data={['=', 'like']} name="like"  value={post.like} />
+          <input type="text" name="byField" defaultValue={post.byField} />
+          <input type="submit"/>
+      </form>
+    );
+}
+
+export function HeadTop(props) {
+
+    return (
+      <div className="headTop">
+          <h1>{window.pageTitle}</h1>
+          <div>
+              <SearchTableForm/>
+              <SearchDbForm/>
+          </div>
       </div>
     )
 }

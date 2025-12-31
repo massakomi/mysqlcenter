@@ -21,7 +21,7 @@ class Table
     {
         $this->database = $db;
         $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
-        $this->validate = new \Validate();
+        $this->validate = new Validate();
     }
 
     /**

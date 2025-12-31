@@ -224,15 +224,6 @@ class MSCenter extends Query
      */
     public function getMessagesData(): array
     {
-        if ($this->allowRepeatMessages == '' && !isAjax()) {
-            $messages = array_count_values($this->messages);
-            $this->messages = array_unique($this->messages);
-            foreach ($this->messages as $k => $message) {
-                if ($messages[$message] > 1) {
-                    $this->messages [$k] .= ' (' . $messages[$message] . ')';
-                }
-            }
-        }
         return $this->messages;
     }
 
@@ -282,31 +273,22 @@ class MSCenter extends Query
      */
     private function addMessage(string $text, MessageType $type, ?string $sql): bool
     {
-        $textError = $text;
-        if ($sql != '') {
-            $aff = '';
-            if ($this->affectedRows) {
-                $aff = '<br /><span style="color:#ccc">затронуто рядов: ' . $this->affectedRows . '</span>';
-            }
-            $text .= '<div class="sqlQuery">' . wordwrap(htmlspecialchars($sql), 200) . ';' . $aff . '</div>';
-            if ($this->error != null) {
-                $text .= '<div class="mysqlError"><b>Ошибка:</b> ' . $this->error . '</div>';
+        if (!$this->allowRepeatMessages) {
+            foreach ($this->messages as $message) {
+                if ($message['text'] == $text) {
+                    return true;
+                }
             }
         }
-
         $color = $type->getColor();
-        if (isAjax()) {
-            $this->messages [] = [
-                'text' => $textError,
-                'type' => $type->value,
-                'color' => $color,
-                'error' => $this->error,
-                'sql' => $sql,
-                'rows' => $this->affectedRows,
-            ];
-        } else {
-            $this->messages [] = '<span style="color:' . $color . '">' . $text . '</span>';
-        }
+        $this->messages [] = [
+            'text' => $text,
+            'type' => $type->value,
+            'color' => $color,
+            'error' => $this->error,
+            'sql' => $sql,
+            'rows' => $this->affectedRows,
+        ];
         if ($type == MessageType::Error) {
             return false;
         }

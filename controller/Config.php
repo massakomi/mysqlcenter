@@ -7,8 +7,9 @@ namespace controller;
 /**
  *
  */
-class Config extends Base
+final class Config extends Base
 {
+    #[\Override]
     public function defaultAction(): array
     {
         global $msc;

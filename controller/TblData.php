@@ -58,12 +58,12 @@ class TblData extends Base
 
 
         // Составляем запрос, если не определён запрос из вне
-        if (!isset($directSQL)) {
+        if (empty($directSQL)) {
             // Собираем where условие если требуется, для выборки
             $whereCondition = null;
             $query = POST('query', GET('query'));
             if ($query != '' && $query != 'Поиск или where') {
-                if (preg_match('~([=<>]| (like|in) )~i', $query)) { // isWhere?
+                if (preg_match('~([=<>]| (like|in|is) )~i', $query)) { // isWhere?
                     $whereCondition = ' WHERE ' . $query;
                 } else {
                     $where = implode('` LIKE "%' . $query . '%" OR `', $fieldsNames);
