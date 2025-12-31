@@ -1,11 +1,15 @@
 <?php
 
 use database\Server;
+use database\Table;
+use service\Menu;
+use service\UrlMaker;
+use service\Utils;
 
 global $msc;
 
 $menu = new Menu();
-$fields = $msc->table ? DatabaseTable::getFields($msc->table, true) : [];
+$fields = $msc->table ? Table::getFields($msc->table, true) : [];
 $dbs = Server::getDatabasesWithoutHidden();
 
 ?>
@@ -86,7 +90,7 @@ $dbs = Server::getDatabasesWithoutHidden();
     </div>
 </div>
 
-<form action="<?php echo \UrlMaker::make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
+<form action="<?php echo UrlMaker::make('s', 'sql') ?>" onsubmit="sqlFormSubmit()" class="popupGeneralForm tableFormEdit" method="post">
     <input type="submit" value="Отправить запрос!"/>
     <textarea name="sql" rows="15" wrap="soft"><?= POST('sql') ?></textarea>
     <span></span>

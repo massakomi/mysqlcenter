@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\Table;
 use database\Server;
+use service\UrlMaker;
 
 /**
  * Операции с БД и таблицами
@@ -52,7 +54,7 @@ class Actions extends Base
         global $msc;
 
         $msc->pageTitle = "Действия - БД";
-        $DQuery = \UrlMaker::make('db', $msc->db, 's', 'actions');
+        $DQuery = UrlMaker::make('db', $msc->db, 's', 'actions');
 
         return [
             'db' => $_GET['db'],
@@ -84,7 +86,7 @@ class Actions extends Base
             'charset' => $row->Charset ?: '',
             'charsets' => Server::getCharsetArray(),
             'dbs' => Server::getDatabases(),
-            'fields' => \DatabaseTable::getFields($msc->table, true),
+            'fields' => Table::getFields($msc->table, true),
         ];
     }
 }

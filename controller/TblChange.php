@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\Table;
+use service\UrlMaker;
+
 /**
  * Вставка/изменение рядов
  */
@@ -22,7 +25,7 @@ class TblChange extends Base
         }
 
         $tableData = [];
-        $fields = \DatabaseTable::getFields($msc->table);
+        $fields = Table::getFields($msc->table);
 
         if (GET('row') == '' && POST('row') == '') {
             $msc->pageTitle = 'Добавить строки в таблицу';
@@ -49,7 +52,7 @@ class TblChange extends Base
             'isAdd' => $isAdd,
         ];
         if (POST('redirect')) {
-            $pageProps['redirect'] = \UrlMaker::make('s', POST('redirect'));
+            $pageProps['redirect'] = UrlMaker::make('s', POST('redirect'));
         }
         return $pageProps;
     }
@@ -90,7 +93,7 @@ class TblChange extends Base
             $editType = 1;
         }
         $countInsert = 0;
-        $fields = array_values(\DatabaseTable::getFields($msc->table));
+        $fields = array_values(Table::getFields($msc->table));
         if ($editType == 1) {
             $arrayFields = [];
             foreach ($fields as $v) {

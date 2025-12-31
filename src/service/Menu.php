@@ -1,5 +1,9 @@
 <?php
 
+namespace service;
+
+use database\Table;
+
 /**
  * Класс генерирующий разные html блоки
  */
@@ -35,7 +39,7 @@ class Menu
     {
         global $msc;
         $dbMenu = $this->globalMenuItems();
-        $url = \UrlMaker::make();
+        $url = UrlMaker::make();
         $menu = '<div class="globalMenu" id="globalMenu">' . "\r\n";
         foreach ($dbMenu as $title => $array) {
             if (stristr($title, '[delim]')) {
@@ -129,7 +133,7 @@ class Menu
         $menuTables = null;
         $selectorTables = null;
 
-        $tables = DatabaseTable::getCashedTablesArray();
+        $tables = Table::getCashedTablesArray();
         if (count($tables) == 0) {
             return 'Нет таблиц в БД';
         }
@@ -216,7 +220,7 @@ class Menu
     private function addPopularTables(): string
     {
         global $msc;
-        $tables = DatabaseTable::getCashedTablesArray();
+        $tables = Table::getCashedTablesArray();
         if (count($tables) < 50) {
             return '';
         }
@@ -254,7 +258,7 @@ class Menu
             }
             $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $lastTimeDays);
         }
-        $url = \UrlMaker::make('resetPopular', 1);
+        $url = UrlMaker::make('resetPopular', 1);
         $menu .= '<a href="' . $url . '" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
         return $menu;
     }

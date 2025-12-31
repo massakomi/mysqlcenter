@@ -51,7 +51,7 @@ class DbCompare extends Base
         }
 
         $exportArray = [];
-        $export = new \Export();
+        $export = new \database\Export();
         $export->setComments(0);
         $export->setOptionsStruct(0, $addAuto = 0, 0);
         foreach ($dbArray as $db => $tables) {

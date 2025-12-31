@@ -1,10 +1,12 @@
 <?php
 
+use service\PageLayout;
+
 const DIR_MYSQL = '../';
 
 require_once DIR_MYSQL . 'init.php';
 
-new ActionProcessor();
+(new controller\ActionProcessor())();
 
 $pageProps = (new PageLayout())->execute();
 

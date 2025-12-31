@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\Table;
+
 /**
  *
  */
@@ -16,7 +18,7 @@ class TblList extends Base
     {
         global $msc;
 
-        $tables = \DatabaseTable::getCashedTablesArray();
+        $tables = Table::getCashedTablesArray();
         if (count($tables) == 0) {
             $msc->error('В базе данных нет таблиц');
         }
@@ -26,7 +28,7 @@ class TblList extends Base
         if (GET('action') == 'structure' || GET('mode') == 'structure') {
             $msc->pageTitle = 'Структура таблиц базы данных "' . $msc->db . '" ';
             foreach ($tables as $table) {
-                $table->fields = \DatabaseTable::getFields($table->Name);
+                $table->fields = Table::getFields($table->Name);
                 $table->data = $msc->getData('SELECT * FROM ' . $table->Name . ' LIMIT 3');
             }
             $pageProps = [

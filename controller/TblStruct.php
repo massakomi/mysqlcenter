@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\Table;
+use service\UrlMaker;
+
 /**
  *
  */
@@ -21,7 +24,7 @@ class TblStruct extends Base
             $msc->error('Не указана таблица в запросе');
             return [];
         }
-        $fields = \DatabaseTable::getFields($msc->table);
+        $fields = Table::getFields($msc->table);
         if (!$fields) {
             $msc->error("Таблицы $msc->table не существует");
             return [];
@@ -36,9 +39,9 @@ class TblStruct extends Base
         return [
             'db' => $msc->db,
             'table' => $msc->table,
-            'addKeyUrl' => \UrlMaker::make('s', 'tbl_struct', 'action', 'add_key'),
-            'showKeysUrl' => \UrlMaker::make('s', 'tbl_struct', 'keys', 1),
-            'addTableUrl' => \UrlMaker::make('s', 'tbl_add'),
+            'addKeyUrl' => UrlMaker::make('s', 'tbl_struct', 'action', 'add_key'),
+            'showKeysUrl' => UrlMaker::make('s', 'tbl_struct', 'keys', 1),
+            'addTableUrl' => UrlMaker::make('s', 'tbl_add'),
             'data' => $fields,
             'showKeys' => GET('keys'),
             'dataKeys' => $dataKeys,
@@ -56,7 +59,7 @@ class TblStruct extends Base
     {
         global $msc;
         $fieldRows = ['' => ''];
-        $fields = \DatabaseTable::getFields($msc->table);
+        $fields = Table::getFields($msc->table);
         foreach ($fields as $field) {
             $fieldRows [$field->Field] = "$field->Field [$field->Type]";
         }

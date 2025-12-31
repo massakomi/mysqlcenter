@@ -19,15 +19,15 @@ Do
     Clear-Host
     if ($operation -eq 'cbf')
     {
-        phpcbf .\controller .\includes --standard=PSR12 -p
+        phpcbf .\controller .\src --standard=PSR12 -p
     }
     if ($operation -eq 'cs')
     {
-        phpcs .\controller .\includes --standard=PSR12
+        phpcs .\controller .\src --standard=PSR12
     }
     if ($operation -eq 'css')
     {
-        phpcs .\controller .\includes --standard=PSR12  -p --report=summary
+        phpcs .\controller .\src --standard=PSR12  -p --report=summary
     }
 
     if ($operation -eq 'b')

@@ -1,8 +1,8 @@
 <?php
 
-use database\Driver;
-use database\MySQL;
-use database\PostgreSQL;
+namespace service;
+
+use database\{Driver, MySQL, PostgreSQL, Query};
 use enum\MessageType;
 
 /**
@@ -12,7 +12,7 @@ use enum\MessageType;
  * - заголовок раздела h1 и страницы title
  * - текущая страница, БД, таблица
  */
-class MSCenter extends DatabaseQuery
+class MSCenter extends Query
 {
     public string $db = '';
     public string $table = '';
@@ -82,10 +82,10 @@ class MSCenter extends DatabaseQuery
      * Возвращает текущую отображаемую базу данных (которую мы видим), вызывается при инициализации
      * @access private
      */
-    private function initCurrentDatabase()
+    private function initCurrentDatabase(): void
     {
         if (!$this->connectConfigExists()) {
-            return '';
+            return;
         }
         $db = GET('db') ?: POST('db');
         if ($db != '') {
@@ -147,13 +147,13 @@ class MSCenter extends DatabaseQuery
                 $database = $this->db;
             }
             $options = [
-                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
+                \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
                     ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
             ];
             $dsn = $driver . ':host=' . $host . ';port=' . $port . ';dbname=' . $database;
-            $pdo = new PDO($dsn, $user, $password, $options);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo = new \PDO($dsn, $user, $password, $options);
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $this->host  = $host;
             $this->user  = $user;
             $this->driverName  = $driver;
@@ -161,7 +161,7 @@ class MSCenter extends DatabaseQuery
             if ($database) {
                 $this->db  = $database;
             }
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $this->clearCurrentDatabase();
             // Если подставленная база не сработала - берем базу из конфигурации
             if ($config['database'] && $config['database'] != $database) {
@@ -190,10 +190,11 @@ class MSCenter extends DatabaseQuery
      * Возвращает алиас текущего раздела, вызывается при инициализации
      * @access private
      */
-    private function initCurrentPage()
+    private function initCurrentPage(): void
     {
         if (!$this->connectConfigExists()) {
-            return $this->page = 'login';
+            $this->page = 'login';
+            return;
         }
         $defaultPage = 'tbl_list';
         if (config('tblliststart') == '0' || !$this->db) {
@@ -221,7 +222,7 @@ class MSCenter extends DatabaseQuery
     /**
      * @return array
      */
-    public function getMessagesData()
+    public function getMessagesData(): array
     {
         if ($this->allowRepeatMessages == '' && !isAjax()) {
             $messages = array_count_values($this->messages);

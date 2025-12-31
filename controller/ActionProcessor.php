@@ -1,6 +1,11 @@
 <?php
 
+namespace controller;
+
 use database\Server;
+use database\Table;
+use service\UrlMaker;
+use service\Validate;
 
 /**
  * Управление запросами. Здесь должны быть централизованы все запросы на изменение данных
@@ -11,7 +16,10 @@ class ActionProcessor
     // Куда редиректить в случае не ajax запроса
     public string $redirect = '';
 
-    public function __construct()
+    /**
+     * @return false|void
+     */
+    public function __invoke()
     {
         if (POST('ajax')) {
             $queryMode = POST('mode');
@@ -112,7 +120,7 @@ class ActionProcessor
      * Действия с базой данных
      * @param string $queryMode
      * @return bool|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function databaseActions(string $queryMode)
     {
@@ -132,7 +140,7 @@ class ActionProcessor
         /**
          * Подгружаем и инициализируем функции для работы с БД
          */
-        $dbt = new DatabaseTable();
+        $dbt = new Table();
         $server = new Server();
         $validate = new Validate();
 
@@ -140,7 +148,7 @@ class ActionProcessor
         switch ($queryMode) {
             case 'querysql':
                 if ($_POST['type'] == 'pair-value') {
-                    $data = $msc->getData($_POST['sql'], PDO::FETCH_KEY_PAIR);
+                    $data = $msc->getData($_POST['sql'], \PDO::FETCH_KEY_PAIR);
                 } else {
                     $data = $msc->getData($_POST['sql']);
                 }
@@ -156,13 +164,13 @@ class ActionProcessor
 
             case 'tableTruncate':
                 $dbt->tableAction($db, $tbl, 'TRUNCATE');
-                $this->redirect = \UrlMaker::make('s', 'tbl_data', 'action', '');
+                $this->redirect = UrlMaker::make('s', 'tbl_data', 'action', '');
                 break;
 
             case 'tableRename':
                 if ($dbt->tableAction($db, $tbl, 'RENAME', $this->param('newName'))) {
                     $msc->table = $this->param('newName');
-                    $this->redirect = \UrlMaker::make('table', $msc->table, 'action', '');
+                    $this->redirect = UrlMaker::make('table', $msc->table, 'action', '');
                 }
                 break;
 
@@ -194,9 +202,9 @@ class ActionProcessor
                 $ai = intval($this->param('auto_increment'));
                 $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
                 if ($msc->execPdo($sql)) {
-                    return $msc->success('Таблица изменена', $sql);
+                    $msc->success('Таблица изменена', $sql);
                 } else {
-                    return $msc->error('Ошибка изменения таблицы', $sql);
+                    $msc->error('Ошибка изменения таблицы', $sql);
                 }
                 break;
 
@@ -335,7 +343,7 @@ class ActionProcessor
                 break;
 
             case 'dbAllAction':
-                $tables = DatabaseTable::getTables();
+                $tables = Table::getTables();
                 $action = POST('act');
                 foreach ($tables as $table) {
                     if ($action === 'drop-query') {
@@ -447,7 +455,7 @@ class ActionProcessor
             // Удаление множества полей через POST
             case 'fieldsDelete':
                 $deleteFields = $this->param('field');
-                $fields = DatabaseTable::getFields($tbl);
+                $fields = Table::getFields($tbl);
                 // если в таблице осталось только 1 поле, то удаляем таблицу
                 if (count($fields) == 1) {
                     $sql = 'DROP TABLE `' . $tbl . '`';
@@ -468,7 +476,7 @@ class ActionProcessor
                     break;
                 }
                 if ($this->param('key') == 'PRIMARY') {
-                    DatabaseTable::dropPrimaryKey($tbl);
+                    Table::dropPrimaryKey($tbl);
                 } else {
                     $sql = "ALTER TABLE `$tbl` DROP KEY " . $this->param('key');
                     if ($msc->execPdo($sql)) {

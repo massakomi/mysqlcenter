@@ -1,8 +1,11 @@
 <?php
 
+use service\MSCenter;
+use service\Utils;
+
 spl_autoload_register(function ($class) {
     $path = [
-        DIR_MYSQL . 'includes/' . $class . '.php',
+        DIR_MYSQL . 'src/' . $class . '.php',
         DIR_MYSQL . 'controller/' . $class . '.php',
         DIR_MYSQL . $class . '.php',
     ];
@@ -25,7 +28,7 @@ if (function_exists('date_default_timezone_set')) {
     date_default_timezone_set('Europe/Moscow');
 }
 
-require_once DIR_MYSQL . 'includes/func.php';
+require_once DIR_MYSQL . 'src/func.php';
 
 // Все константы
 const MS_URL = '';

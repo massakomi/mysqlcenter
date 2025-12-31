@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\Table;
+
 /**
  *
  */
@@ -15,7 +17,7 @@ class TblAdd extends Base
 
         // Получаем начальную инфо о полях таблицы
         if ($msc->table) {
-            $fields = \DatabaseTable::getFields($msc->table);
+            $fields = Table::getFields($msc->table);
             if (!$fields) {
                 $msc->error('Таблица не найдена');
                 return [];
@@ -96,8 +98,8 @@ class TblAdd extends Base
             'tableName' => POST('tableName') ?: $msc->table,
             'array' => $array,
             'post' => $_POST,
-            'keys' => \DatabaseTable::getTableKeys($msc->table),
-            'fields' => \DatabaseTable::getFields($msc->table, true)
+            'keys' => Table::getTableKeys($msc->table),
+            'fields' => Table::getFields($msc->table, true)
         ];
     }
 
@@ -145,7 +147,7 @@ class TblAdd extends Base
             $extra   = (isset($_POST['auto'][$k])) ? 'AUTO_INCREMENT' : null;
             $extra  .= $_POST['attr'][$k] != '' ? ' ' . $_POST['attr'][$k] : null;
             $length  = $_POST['length'][$k];
-            $define  = \DatabaseTable::getFieldDefinition($type, $null, $default, $extra, $length);
+            $define  = Table::getFieldDefinition($type, $null, $default, $extra, $length);
             if (empty($define)) {
                 $msc->error('Не удалось создать поле "' . $name . '". Не указаны дополнительные параметры поля');
                 unset($names[$k]);
@@ -201,7 +203,7 @@ class TblAdd extends Base
             // определение полей
             $a = [];
             foreach ($fieldsDefEdit as $oldFieldName => $def) {
-                $oldDefinition = "`$oldFieldName` " . \DatabaseTable::getFieldDefinition($fields[$oldFieldName]);
+                $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinition($fields[$oldFieldName]);
                 //echo "<br />$oldDefinition == $def";exit;
                 if ($oldDefinition == $def) {
                     continue;
@@ -211,7 +213,7 @@ class TblAdd extends Base
             $sql  = count($a) == 0 ? '' : 'ALTER TABLE `' . GET('table') . "`\r\n" . implode(",\r\n", $a);
             // ключи
             $currentKeys = [];
-            $a = \DatabaseTable::getTableKeys($msc->table);
+            $a = Table::getTableKeys($msc->table);
             $currentPrimaryKey = '';
             foreach ($a as $fieldName => $currentKeyNames) {
                 foreach ($currentKeyNames as $k => $currentKeyName) {
@@ -253,10 +255,10 @@ class TblAdd extends Base
                             }
                         }
                         if ($drop) {
-                            \DatabaseTable::dropPrimaryKey(GET('table'));
+                            Table::dropPrimaryKey(GET('table'));
                         }
                     } else {
-                        \DatabaseTable::dropPrimaryKey(GET('table'));
+                        Table::dropPrimaryKey(GET('table'));
                     }
                 }
                 if ($primaryKey != '') {
@@ -296,7 +298,7 @@ class TblAdd extends Base
             }
             $sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
             // ключи
-            $oldFields = \DatabaseTable::getFields(GET('table'));
+            $oldFields = Table::getFields(GET('table'));
             // выполнение
             if ($msc->execPdo($sql)) {
                 $msc->success('Таблица изменена', $sql);

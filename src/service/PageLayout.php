@@ -1,5 +1,7 @@
 <?php
 
+namespace service;
+
 use controller\Base;
 use database\MSTable;
 use database\Server;

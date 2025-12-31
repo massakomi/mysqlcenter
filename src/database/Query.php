@@ -1,11 +1,13 @@
 <?php
 
+namespace database;
+
 use enum\FetchType;
 
 /**
  *
  */
-class DatabaseQuery
+class Query
 {
     public int $affectedRows = 0;
     public string $lastSql = '';
@@ -17,7 +19,7 @@ class DatabaseQuery
      *
      * @param string $sql
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function execPdo(string $sql)
     {
@@ -25,8 +27,8 @@ class DatabaseQuery
     }
 
     /**
-     * @return false|int|PDOStatement
-     * @throws Exception
+     * @return false|int|\PDOStatement
+     * @throws \Exception
      */
     public function fetchPdo(string $sql)
     {
@@ -36,13 +38,13 @@ class DatabaseQuery
     /**
      * @param $mode
      * @param string $sql
-     * @return false|int|PDOStatement
+     * @return false|int|\PDOStatement
      */
     private function queryPdo(FetchType $mode, string $sql)
     {
         global $pdo;
         if (!$pdo) {
-            throw new Exception($sql);
+            throw new \Exception($sql);
         }
         try {
             if ($this->driverName == 'pgsql') {
@@ -54,7 +56,7 @@ class DatabaseQuery
                 $this->affectedRows = $pdo->exec($sql);
                 $result = true;
             } else {
-                $result = $pdo->query($sql, PDO::FETCH_ASSOC);
+                $result = $pdo->query($sql, \PDO::FETCH_ASSOC);
             }
         } catch (\PDOException $e) {
             $result = false;
@@ -66,7 +68,7 @@ class DatabaseQuery
                 if (!str_starts_with($sql, 'USE')) {
                     echo '<pre>';
                 }
-                throw new Exception($this->error);
+                throw new \Exception($this->error);
             }
         }
         if ($this->logEnabled) {
@@ -79,12 +81,12 @@ class DatabaseQuery
      * @param $sql
      * @param bool|int $type
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
-    public function getData($sql, bool|int $type = PDO::FETCH_ASSOC): array
+    public function getData($sql, bool|int $type = \PDO::FETCH_ASSOC): array
     {
         if (!is_numeric($type)) {
-            $type = PDO::FETCH_ASSOC;
+            $type = \PDO::FETCH_ASSOC;
         }
         $res = $this->fetchPdo($sql);
         if (!$res) {
@@ -96,7 +98,7 @@ class DatabaseQuery
     /**
      * Выполняет выбор БД (select_db) на сервера
      * @param string
-     * @throws Exception
+     * @throws \Exception
      */
     public function selectDb($db): bool
     {

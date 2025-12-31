@@ -1,11 +1,14 @@
 <?php
 
+namespace database;
+
 use dto\FieldInfo;
+use service\Validate;
 
 /**
  * Класс, отвечающий за работу с таблицами базы данных
  */
-class DatabaseTable
+class Table
 {
     public ?string $database;
     public ?string $table;
@@ -18,7 +21,7 @@ class DatabaseTable
     {
         $this->database = $db;
         $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
-        $this->validate = new Validate();
+        $this->validate = new \Validate();
     }
 
     /**
@@ -229,7 +232,7 @@ class DatabaseTable
         $fields = self::getFields($tbl);
         foreach ($fields as $f) {
             if ($f->Key == 'PRI') {
-                $definition = DatabaseTable::getFieldDefinition($f);
+                $definition = self::getFieldDefinition($f);
                 $field      = $f->Field;
             }
         }
@@ -364,7 +367,7 @@ class DatabaseTable
             $msc->selectDb($database);
         }
 
-        $tables = DatabaseTable::getCashedTablesArray();
+        $tables = self::getCashedTablesArray();
         $array = [];
         foreach ($tables as $o) {
             $array[] = $o->Name;
@@ -380,7 +383,7 @@ class DatabaseTable
      * @param string $row
      * @param integer
      * @return boolean
-     * @throws Exception
+     * @throws \Exception
      */
     public function rowDelete($db, $table, $row): bool
     {
@@ -400,12 +403,12 @@ class DatabaseTable
      * @param string
      * @param string
      * @return boolean
-     * @throws Exception
+     * @throws \Exception
      */
     public function rowCopy($table, $row)
     {
         global $msc;
-        $fields = DatabaseTable::getFields($table);
+        $fields = self::getFields($table);
         $fieldsWithoutKey = [];
         $ai = null;
         foreach ($fields as $field) {

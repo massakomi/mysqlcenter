@@ -6,6 +6,7 @@ namespace controller;
 
 use database\MSTable;
 use database\Server;
+use database\Table;
 
 /**
  *
@@ -46,7 +47,7 @@ class Export extends Base
             // 3.2.1. Создание
             if (is_array($array) && count($array) > 0 || is_array($exportDb) && count($exportDb) > 0) {
                 // создание дампа
-                $exp = new \Export();
+                $exp = new \database\Export();
                 $exp->setComments(POST('addComment') != '');
                 $exp->setHeader($this->dumpHeader());
                 $exp->setOptionsStruct($addIfNot, $addAuto, $addKav);
@@ -58,7 +59,7 @@ class Export extends Base
                             MS_CHARACTER_SET . ' COLLATE ' . MS_COLLATION . ';' . "\r\n" . ' USE `' . $db . '`;' .
                             "\r\n" . "\r\n";
                         $exp->setDatabase($db);
-                        $array = \DatabaseTable::getTables($db);
+                        $array = Table::getTables($db);
                         foreach ($array as $t) {
                             $exp->setTable($t);
                             $exp->startFull($isStruct, $isData, true, $isDrop, $exType, $exWhere);
@@ -99,7 +100,7 @@ class Export extends Base
         // 3.2.2.1. только если указана в запросе!
         if (GET('db') != '') {
             // массив таблиц из списка таблиц
-            $tablesAll = \DatabaseTable::getTables();
+            $tablesAll = Table::getTables();
             $tables = isset($_POST['table']) ? $_POST['table'] : [];
             if (is_null($tables) || count($tables) == 0) {
                 if ($msc->table == '') {
@@ -138,7 +139,7 @@ class Export extends Base
             'selectMultName' => $selectMultName,
             'optionsData' => $optionsData,
             'optionsSelected' => $optionsSelected,
-            'fields' => GET('table') ? \DatabaseTable::getFields(GET('table'), true) : [],
+            'fields' => GET('table') ? Table::getFields(GET('table'), true) : [],
         ];
     }
 
@@ -205,7 +206,7 @@ class Export extends Base
                 // Send
             } else {
                 $drawForm = false;
-                $exp = new \Export();
+                $exp = new \database\Export();
                 if (POST('addComment') != null) {
                     $exp->setHeader($this->dumpHeader());
                 }
@@ -254,7 +255,7 @@ class Export extends Base
             if ($msc->db) {
                 $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db, \PDO::FETCH_OBJ);
                 foreach ($result as $o) {
-                    $o->Fields = \DatabaseTable::getFields($o->Name);
+                    $o->Fields = Table::getFields($o->Name);
                     $data [] = $o;
                 }
             }
@@ -264,7 +265,7 @@ class Export extends Base
                 'data' => $data,
                 'configSet' => $cSet,
                 'setsArray' => $msct->getSetsArray(),
-                'fields' => $table ? \DatabaseTable::getFields($table, true) : [],
+                'fields' => $table ? Table::getFields($table, true) : [],
             ];
         }
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace controller;
 
 use database\Server;
+use database\Table;
 
 /**
  *
@@ -18,7 +19,7 @@ class Search extends Base
         $array = POST('table');
         $query = POST('query');
         $queryField = POST('queryField');
-        $listTables = \DatabaseTable::getTables();
+        $listTables = Table::getTables();
 
         if (isAjax()) {
             if (GET('db') && !in_array(GET('db'), Server::getDatabases())) {
@@ -40,7 +41,7 @@ class Search extends Base
         // 1. Режим поиска по таблице
         if ($msc->table != null) {
             $msc->pageTitle = 'Поиск по таблице';
-            $pageProps ['fields'] = \DatabaseTable::getFields(GET('table'), true);
+            $pageProps ['fields'] = Table::getFields(GET('table'), true);
             return $pageProps;
         }
 
@@ -51,7 +52,7 @@ class Search extends Base
             $founded = 0;
             $foundedTotal = 0;
             foreach ($listTables as $table) {
-                $fields = \DatabaseTable::getFields($table, true);
+                $fields = Table::getFields($table, true);
                 $founds = [];
                 foreach ($fields as $field) {
                     if (stristr($field, $queryField)) {
@@ -81,7 +82,7 @@ class Search extends Base
             $results = [];
             $founded = 0;
             foreach ($array as $table) {
-                $fields = \DatabaseTable::getFields($table, true);
+                $fields = Table::getFields($table, true);
                 $whereCondition = " WHERE " . implode(' LIKE "%' . $query . '%" OR ', $fields) . ' LIKE "%'
                     . $query . '%"';
                 $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";

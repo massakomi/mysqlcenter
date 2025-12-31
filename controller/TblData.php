@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace controller;
 
 use database\Server;
+use database\Table;
+use service\PopularTables;
+use service\UrlMaker;
 
 /**
  *
@@ -31,7 +34,7 @@ class TblData extends Base
         }
 
         // Получение полей таблицы
-        $fields = \DatabaseTable::getFields($msc->table);
+        $fields = Table::getFields($msc->table);
         // Если полей нет, значит и таблицы нет
         if (!$fields || count($fields) == 0) {
             $msc->error("Таблицы $msc->table не существует");
@@ -152,14 +155,14 @@ class TblData extends Base
             'go' => $start,
             'order' => POST('order'),
             'part' => $part,
-            'url' => \UrlMaker::make('s', '#s#'),
+            'url' => UrlMaker::make('s', '#s#'),
             'showtablecompare' => config('showtablecompare'),
             'dbs' => Server::getDatabases(),
             'directSQL' => isset($directSQL),
             'fields' => $fields,
             'data' => $data,
         ];
-        \PopularTables::save(db: $msc->db, table: $msc->table);
+        PopularTables::save(db: $msc->db, table: $msc->table);
         return $pageProps;
     }
 

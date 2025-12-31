@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\Table;
+
 /**
  *
  */
@@ -36,7 +38,7 @@ class TblCompare extends Base
             'tables' => []
         ];
         foreach ($tables as $table) {
-            $fields = \DatabaseTable::getFields($table);
+            $fields = Table::getFields($table);
             $pk = $this->getPrimaryKeys($fields);
             [$data1, $data2] = $this->selectDataFromDatabase($databases, $table, $pk);
             $tableData = compact('fields', 'pk', 'data1', 'data2');
