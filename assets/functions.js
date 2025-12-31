@@ -1,3 +1,4 @@
+
 /**
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
  *
@@ -31,9 +32,8 @@ async function queryResponse(response, callback, type = 'json') {
         if (type === 'json') {
             if (response.headers.get('Content-type') === 'application/json') {
                 try {
-                    let json = JSON.parse(content)
-                    showMessages(json)
-                    if (json.status === false) {
+                    content = JSON.parse(content)
+                    if (content.status === false) {
                         return onError('')
                     }
                 } catch (e) {
@@ -632,7 +632,6 @@ export function qs(selector) {
 
 
 export function getComponentByPage(ComponentsMap) {
-
     let page = window.component
     const table = new URL(location.href).searchParams.get('table')
     const action = new URL(location.href).searchParams.get('action')
@@ -652,5 +651,9 @@ export function getComponentByPage(ComponentsMap) {
         page = 'exportSp'
     }
     let componentName = page.replace(/^./, char => char.toUpperCase());
+
+    if (typeof(ComponentsMap[componentName]) == 'undefined') {
+        componentName = 'NotFound'
+    }
     return ComponentsMap[componentName]
 }

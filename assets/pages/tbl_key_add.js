@@ -1,5 +1,5 @@
 import React from 'react';
-import {addRow, removeRow} from "../MysqlCenter";
+import {addRow, removeRow} from "../functions";
 export function Tbl_key_add(props) {
 
     let types = ['PRIMARY KEY','INDEX','UNIQUE','FULLTEXT']

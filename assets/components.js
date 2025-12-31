@@ -1,6 +1,6 @@
 import React from 'react'
 import {Fragment, useEffect} from "react";
-import {contentTableEvents, forElementsEvent, searchEvents} from "./MysqlCenter";
+import {contentTableEvents, forElementsEvent, searchEvents} from "./functions";
 
 export function CharsetSelector(props) {
     let opts = [], i = 0
@@ -317,4 +317,12 @@ export function HeadTop(props) {
           </div>
       </div>
     )
+}
+
+export function NotFound(props) {
+    return (
+      <div>
+        Компонент не найден
+      </div>
+    );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import {HtmlSelector} from "../components";
-import {umaker} from "../MysqlCenter";
+import {umaker} from "../functions";
 export function SearchTable(props) {
 
     const sendGet = (e) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import {msQuery} from "../MysqlCenter";
+import {msQuery} from "../functions";
 
 export function Config(props) {
 

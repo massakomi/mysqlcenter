@@ -1,5 +1,5 @@
 import React, {Fragment, useEffect} from 'react';
-import {addRow, forElementsEvent, msQuery, qs, umaker} from "../MysqlCenter";
+import {addRow, forElementsEvent, msQuery, qs, umaker} from "../functions";
 
 function TableHead(props) {
     return (

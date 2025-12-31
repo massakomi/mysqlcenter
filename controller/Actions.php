@@ -16,34 +16,11 @@ class Actions extends Base
     public function defaultAction(): array
     {
         global $msc;
-        if (GET('users')) {
-            return $this->userInfoAction();
-        } elseif ($msc->table == '') {
+        if ($msc->table == '') {
             return $this->databaseActions();
         } else {
             return $this->tableActions();
         }
-    }
-
-    /**
-     * Различная информация
-     */
-    public function userInfoAction(): array
-    {
-        global $msc;
-        $msc->pageTitle = 'Различная информация';
-
-        $users = $msc->getData('SELECT * FROM mysql.user');
-        $grants = $msc->getData('SHOW GRANTS');
-        $privileges = $msc->getData('SHOW PRIVILEGES');
-        $engines = $msc->getData('SHOW ENGINES');
-
-        return [
-            'users' => $users,
-            'grants' => $grants,
-            'privileges' => $privileges,
-            'engines' => $engines,
-        ];
     }
 
     /**

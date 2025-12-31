@@ -1,7 +1,7 @@
 import {Fragment, useState} from "react";
 import React from 'react';
 import {CharsetSelector, HtmlSelector} from "../components";
-import {msQuery} from "../MysqlCenter";
+import {msQuery} from "../functions";
 
 export function Actions(props) {
     

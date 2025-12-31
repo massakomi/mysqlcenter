@@ -19,8 +19,9 @@ import {Tbl_key_add} from "./pages/tbl_key_add";
 import {Tbl_list} from "./pages/tbl_list";
 import {Tbl_struct} from "./pages/tbl_struct";
 import {Tbl_struct_view} from "./pages/tbl_struct_view";
-import {HeadTop, Messages} from "./components";
-import {getComponentByPage} from "./MysqlCenter";
+import {HeadTop, Messages, NotFound} from "./components";
+import {getComponentByPage} from "./functions";
+import {Users} from "./pages/users";
 
 const ComponentsMap = {
     'Actions': Actions,
@@ -42,6 +43,8 @@ const ComponentsMap = {
     'Tbl_list': Tbl_list,
     'Tbl_struct': Tbl_struct,
     'Tbl_struct_view': Tbl_struct_view,
+    'Users': Users,
+    'NotFound': NotFound,
 }
 
 const Component = getComponentByPage(ComponentsMap)

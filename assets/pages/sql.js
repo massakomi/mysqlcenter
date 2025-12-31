@@ -1,6 +1,6 @@
 import {Fragment} from "react";
 import React from 'react';
-import {sqlFormSubmit} from "../MysqlCenter";
+import {sqlFormSubmit} from "../functions";
 
 export function Sql (props) {
 

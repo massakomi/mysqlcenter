@@ -32,7 +32,6 @@ class Table
      * @param string  DROP | TRUNCATE | ANALISE | OPTIMIZE | CHECK | REPAIR | FLUSH
      * @param string
      * @return boolean
-     * @todo  проверка существования таблицы
      */
     public function tableAction($db, $table, $type = 'DROP', $param = null): bool
     {

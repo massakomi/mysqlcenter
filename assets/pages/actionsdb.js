@@ -1,7 +1,7 @@
 import React from 'react';
 import {Fragment, useEffect, useState} from "react";
 import {CharsetSelector, Table} from "../components";
-import {msQuery} from "../MysqlCenter";
+import {msQuery} from "../functions";
 
 function FieldSet(props) {
     return (
@@ -124,27 +124,27 @@ function Server_variables() {
 }
 
 
-function UserInfo(props) {
+function MysqlServerInfo() {
+
+    const [engines, setEngines] = useState([])
+
+    const loadAll = async () => {
+        let engines = await msQuery('querysql', {sql: 'SHOW ENGINES'})
+        setEngines(engines)
+    }
+
+    useEffect(() => {
+        loadAll()
+    }, []);
+
     return (
       <Fragment>
           <fieldset className="msGeneralForm">
-              <legend>Пользователи</legend>
-              <Table data={props.users} />
-          </fieldset>
-          <fieldset className="msGeneralForm">
-              <legend>SHOW GRANTS</legend>
-              <div className="mb-5">Список привилегий, предоставленных аккаунту, который вы используете для соединения с сервером (FOR CURRENT_USER)</div>
-              <Table data={props.grants} />
-          </fieldset>
-          <fieldset className="msGeneralForm">
-              <legend>SHOW PRIVILEGES</legend>
-              <div className="mb-5">Список системных привилегий, которые поддерживает MySQL сервер. Точный список привилегий зависит от версии вашего сервера.</div>
-              <Table data={props.privileges} />
-          </fieldset>
-          <fieldset className="msGeneralForm">
               <legend>SHOW ENGINES</legend>
-              <div className="mb-5">SHOW ENGINES displays status information about the server\'s storage engines. This is particularly useful for checking whether a storage engine is supported, or to see what the default engine is</div>
-              <Table data={props.engines} />
+              <div className="mb-5">SHOW ENGINES displays status information about the server\'s storage engines.
+                  This is particularly useful for checking whether a storage engine is supported,
+                  or to see what the default engine is</div>
+              <Table data={engines} />
           </fieldset>
           <fieldset className="msGeneralForm">
               <legend>Переменные сервера</legend>
@@ -155,6 +155,8 @@ function UserInfo(props) {
 }
 
 export function Actionsdb(props) {
+
+    let info = new URL(location.href).searchParams.get('info');
 
     const operations = (
       <Fragment>
@@ -168,7 +170,7 @@ export function Actionsdb(props) {
               <input name="option" type="radio" value="data"/> Только данные <br/>
               <input name="switch" type="checkbox" value="1"/> Перейти к скопированной БД <br/><br/>
           </FieldSet>
-          {props.charsets.length ? <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...props}>
+          {props.charsets != null && Object.keys(props.charsets).length > 0 ? <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...props}>
               <CharsetSelector charsets={props.charsets}/>
           </FieldSet> : null}
           <fieldset className="msGeneralForm">
@@ -180,8 +182,7 @@ export function Actionsdb(props) {
 
     return (
       <Fragment>
-          {props.users ? <UserInfo {...props} />
-            : operations}
+          {info ? <MysqlServerInfo {...props} /> : operations}
       </Fragment>
     );
 

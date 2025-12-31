@@ -8,7 +8,7 @@ import {
     msQuery,
     processRowValue,
     umaker
-} from "../MysqlCenter";
+} from "../functions";
 
 function TableHeader(props) {
 

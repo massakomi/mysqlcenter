@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {checkboxAction, msImageAction, msQuery} from "../MysqlCenter";
+import React from 'react';
+import {checkboxAction, msImageAction, msQuery} from "../functions";
 
 function TableFull(props) {
 
@@ -192,33 +192,6 @@ function ColumnLeft(props) {
 
 function ColumnRight(props) {
 
-    const [database, setDatabase] = useState('');
-    const [passwordField, setPasswordField] = useState('');
-    const [password2Field, setPassword2Field] = useState('');
-    const [formDisabled, setFormDisabled] = useState(true);
-
-    const updateLoginName = event => {
-        setDatabase(event.target.value)
-    };
-
-    const updatePasswordField = event => {
-        setPasswordField(event.target.value)
-        let s = event.target.value !== password2Field
-        setFormDisabled(s)
-    };
-
-    const updatePasswordField2 = event => {
-        setPassword2Field(event.target.value)
-        let s = passwordField !== event.target.value
-        setFormDisabled(s)
-    };
-
-    const userAdd = event => {
-        event.preventDefault()
-        msQuery('userAdd', event.target.closest('form'))
-    };
-
-
     let tableLink;
     if (!props.showFullInfo) {
         tableLink = <a href={`?s=db_list&db=${props.dbname}&mode=full`} title="Сканирует все таблицы всех баз данных и выводит количество таблиц, размер, дату обновления и количество рядов">Показать полную таблицу</a>
@@ -233,25 +206,13 @@ function ColumnRight(props) {
           <div className="mt-10">
               {tableLink} <br/>
               <a href={`?s=speedtest`}>Тест скорости</a><br/>
-              <a href={`?s=actions&users=1`}>Информация о пользователях и правах</a>
+              <a href={`?s=actions&info=1`}>Информация сервера</a>
           </div>
 
           <div className="mt-10">Хост: {props.dbHost}</div>
           <div>Версия сервера: {props.mysqlVersion}</div>
           <div>Версия PHP: {props.phpversion}</div>
           <div>БД: {props.dbname}<br /></div>
-
-          <fieldset className="msGeneralForm">
-              <legend>Добавить пользователя</legend>
-              <form onSubmit={userAdd} method="post">
-                  <div className="mb-5"><input name="rootpass" type="text" /> Пароль админа</div>
-                  <div className="mb-5"><input name="database" type="text" required={true} id="databaseField" onKeyUp={updateLoginName} /> Имя базы данных</div>
-                  <div className="mb-5"><input name="databaseuser" id="unameField" type="text" required={true} defaultValue={database}  /> Логин пользователя</div>
-                  <div className="mb-5"><input name="userpass" type="password" id="passwordField" required={true} onChange={updatePasswordField} /> Пароль</div>
-                  <div className="mb-5"><input name="userpass2" type="password" id="password2Field" required={true} onChange={updatePasswordField2} /> Пароль еще раз</div>
-                  <div className="mb-5"><input type="submit" value="Добавить" disabled={formDisabled} id="submitBtnId" /></div>
-              </form>
-          </fieldset>
       </div>
     );
 }

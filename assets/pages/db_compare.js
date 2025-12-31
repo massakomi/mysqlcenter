@@ -1,6 +1,6 @@
 import React, {Fragment} from 'react';
 import {Messages} from "../components";
-import {formatSize} from "../MysqlCenter";
+import {formatSize} from "../functions";
 
 export function Db_compare(props) {
 

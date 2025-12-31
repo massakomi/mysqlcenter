@@ -92,9 +92,10 @@ class Menu
             $dbMenu = [
                 'ввести доступы к базе данных' => ['login', ''],
             ];
-        } elseif (in_array($msc->page, ['db_list', 'users', 'login'])) {
+        } elseif (in_array($msc->page, ['db_list', 'users'])) {
             $dbMenu = array_merge([
                 'базы данных' => ['db_list', ''],
+                'пользователи' => ['users', ''],
             ], $dbMenuGlobal);
         } elseif (($msc->db != '' && $msc->table == '') || $msc->page == 'tbl_list') {
             $dbMenu = array_merge([

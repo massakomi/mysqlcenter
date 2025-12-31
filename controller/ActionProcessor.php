@@ -152,7 +152,7 @@ class ActionProcessor
                 } else {
                     $data = $msc->getData($_POST['sql']);
                 }
-                exit(json_encode($data));
+                ajaxResult($data);
 
             // операции с таблицами
             // в запросе обязательно должна быть указана БД и таблица

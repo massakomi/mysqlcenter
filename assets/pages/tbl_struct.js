@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react';
-import {check, forElements, msImageAction, submitFormIfFieldNotEmpty} from "../MysqlCenter";
+import {check, forElements, msImageAction, submitFormIfFieldNotEmpty} from "../functions";
 
 function TableObject(props) {
     // нулевой элемент раскидвать по ключ-значение, бред редко нужно
