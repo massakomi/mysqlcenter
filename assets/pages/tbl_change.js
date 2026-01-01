@@ -222,7 +222,6 @@ function EditRows(props) {
               </table>
           </Fragment>)
         outerRows.push(tableInner)
-        j ++
     }
 
     return (

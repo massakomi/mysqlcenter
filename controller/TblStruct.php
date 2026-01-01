@@ -16,10 +16,6 @@ class TblStruct extends Base
     {
         global $msc;
 
-        if (GET('action') == 'add_key') {
-            return $this->addKeyAction();
-        }
-
         if ($msc->table == '') {
             $msc->error('Не указана таблица в запросе');
             return [];
@@ -39,7 +35,7 @@ class TblStruct extends Base
         return [
             'db' => $msc->db,
             'table' => $msc->table,
-            'addKeyUrl' => UrlMaker::make('s', 'tbl_struct', 'action', 'add_key'),
+            'addKeyUrl' => UrlMaker::make('s', 'tbl_struct', 'mode', 'add_key'),
             'showKeysUrl' => UrlMaker::make('s', 'tbl_struct', 'keys', 1),
             'addTableUrl' => UrlMaker::make('s', 'tbl_add'),
             'data' => $fields,

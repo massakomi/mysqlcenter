@@ -20,34 +20,35 @@ class TblChange extends Base
             return [];
         }
 
-        if ($_POST) {
+        if (POST('option')) {
             $this->processRowsEdit($_POST['action'] == 'rowsEdit' ? 0 : 1);
         }
 
         $tableData = [];
         $fields = Table::getFields($msc->table);
 
-        $isAdd = (GET('row') == '' && POST('row') == '');
+        $isAdd = (GET('row') == '' && POST('cond') == '');
         if ($isAdd) {
             $msc->pageTitle = 'Добавить строки в таблицу';
         } else {
             $msc->pageTitle = 'Редактировать данные';
             $whereCondition = $this->whereCondition();
             if ($whereCondition != null) {
-                $tableData = $msc->getData('SELECT * FROM ' . $msc->table . ' WHERE ' . $whereCondition);
+                $sql = 'SELECT * FROM ' . $msc->table . ' WHERE ' . $whereCondition;
+                $tableData = $msc->getData($sql);
                 if (!$tableData) {
-                    $msc->error('Ничего не выбрано');
-                    return [];
+                    $msc->error('Ничего не выбрано', $sql);
                 }
             }
         }
+
 
         $pageProps = [
             'table' => $msc->table,
             'db' => $msc->db,
             'fields' => $fields,
             'tableData' => $tableData,
-            'msRowsInsert' => (int)MS_ROWS_INSERT,
+            'msRowsInsert' => MS_ROWS_INSERT,
             'dirImage' => MS_DIR_IMG,
             'isAdd' => $isAdd,
         ];
@@ -63,7 +64,7 @@ class TblChange extends Base
     private function whereCondition(): ?string
     {
         $whereCondition = null;
-        $array = POST('row');
+        $array = POST('cond');
         if (GET('row') != '') {
             $whereCondition = urldecode(stripslashes(GET('row')));
             // массовый едит

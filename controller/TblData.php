@@ -44,7 +44,7 @@ class TblData extends Base
         // Собираем массив имён полей, и также массив имён только ключевых полей
         $pk = [];
         $fieldsNames = [];
-        foreach ($fields as $k => $v) {
+        foreach ($fields as$v) {
             $fieldsNames [] = $v->Field;
             if (strchr($v->Key, 'PRI')) {
                 $pk [] = $v->Field;
@@ -59,25 +59,7 @@ class TblData extends Base
 
         // Составляем запрос, если не определён запрос из вне
         if (empty($directSQL)) {
-            // Собираем where условие если требуется, для выборки
-            $whereCondition = null;
-            $query = POST('query', GET('query'));
-            if ($query != '' && $query != 'Поиск или where') {
-                if (preg_match('~([=<>]| (like|in|is) )~i', $query)) { // isWhere?
-                    $whereCondition = ' WHERE ' . $query;
-                } else {
-                    $where = implode('` LIKE "%' . $query . '%" OR `', $fieldsNames);
-                    $whereCondition = ' WHERE `' . $where . '` LIKE "%' . $query . '%"';
-                }
-            } elseif (GET('where') != null) {
-                $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
-            } elseif (POST('byField') != null) {
-                if (POST('like') == 'like') {
-                    $whereCondition  = " WHERE `" . POST('field') . "` LIKE '%" . POST('byField') . "%'";
-                } else {
-                    $whereCondition  = " WHERE `" . POST('field') . "`='" . POST('byField') . "'";
-                }
-            }
+            $whereCondition = $this->getWhere($fieldsNames);
 
             // Получаем кол-во рядов в таблице
             $count = 0;
@@ -99,7 +81,7 @@ class TblData extends Base
             // Сразу выход, если ничего не найдено
             if ($count == 0) {
                 $msc->pageTitle = "Таблица: $msc->table (пустая)";
-                $msc->error("В таблице $msc->table нет данных");
+                $msc->notice("В таблице $msc->table нет данных");
                 return [];
             }
 
@@ -122,38 +104,24 @@ class TblData extends Base
             $sql = $directSQL;
         }
 
-        // Запрос и если ничего не найдено тут - выходим
-        if (!$result = $msc->fetchPdo($sql)) {
+        $data = $msc->getData($sql);
+        if (!$data) {
             $msc->error('Ничего не найдено в таблице по запросу');
             return [];
         }
 
-        $data = [];
-        while ($row = $result->fetchObject()) {
-            $data [] = $row;
-        }
-        $j = count($data);
-        if (!$count) {
-            $count = $j;
-        }
-        if ($count != $j) {
-            $add = '';
-            if ($start > 0) {
-                $add = ", начиная с $start,";
-            }
-            $msc->pageTitle = "Таблица: $msc->table ($j строк$add из $count)";
-        } else {
-            $msc->pageTitle = "Таблица: $msc->table ($count)";
-        }
+        $countSelected = count($data);
+        $this->setPageTitle($count, $countSelected, $start);
 
-        $pageProps = [
+        PopularTables::save(db: $msc->db, table: $msc->table);
+        return [
             'dirImage' => MS_DIR_IMG,
             'headWrap' => MS_HEAD_WRAP,
             'textCut' => MS_TEXT_CUT,
             'linksRange' => (int)MS_LIST_LINKS_RANGE,
             'db' => $msc->db,
             'table' => $msc->table,
-            'count' => $count,
+            'count' => $count ?: $countSelected,
             'go' => $start,
             'order' => POST('order'),
             'part' => $part,
@@ -164,8 +132,53 @@ class TblData extends Base
             'fields' => $fields,
             'data' => $data,
         ];
-        PopularTables::save(db: $msc->db, table: $msc->table);
-        return $pageProps;
+    }
+
+    /**
+     *
+     */
+    private function getWhere($fieldsNames)
+    {
+        // Собираем where условие если требуется, для выборки
+        $whereCondition = null;
+        $query = POST('query', GET('query'));
+        if ($query != '' && $query != 'Поиск или where') {
+            if (preg_match('~([=<>]| (like|in|is) )~i', $query)) { // isWhere?
+                $whereCondition = ' WHERE ' . $query;
+            } else {
+                $where = implode('` LIKE "%' . $query . '%" OR `', $fieldsNames);
+                $whereCondition = ' WHERE `' . $where . '` LIKE "%' . $query . '%"';
+            }
+        } elseif (GET('where') != null) {
+            $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
+        } elseif (POST('byField') != null) {
+            if (POST('like') == 'like') {
+                $whereCondition  = " WHERE `" . POST('field') . "` LIKE '%" . POST('byField') . "%'";
+            } else {
+                $whereCondition  = " WHERE `" . POST('field') . "`='" . POST('byField') . "'";
+            }
+        }
+        return $whereCondition;
+    }
+
+    /**
+     *
+     */
+    private function setPageTitle($count, $countSelected, $start): void
+    {
+        global $msc;
+        if (!$count) {
+            $count = $countSelected;
+        }
+        if ($count != $countSelected) {
+            $add = '';
+            if ($start > 0) {
+                $add = ", начиная с $start,";
+            }
+            $msc->pageTitle = "Таблица: $msc->table ($countSelected строк$add из $count)";
+        } else {
+            $msc->pageTitle = "Таблица: $msc->table ($count)";
+        }
     }
 
     /**

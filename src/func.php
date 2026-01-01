@@ -6,10 +6,10 @@ use enum\MessageType;
  * Возвращает ключ $name массива $_GET
  *
  * @param string $name Ключ
- * @param string $default Значение по умолчанию, если ключ не будет найден
+ * @param string|null $default Значение по умолчанию, если ключ не будет найден
  * @return mixed Значение параметра
  */
-function GET(string $name, string $default = ''): mixed
+function GET(string $name, ?string $default = ''): mixed
 {
     if (isset($_GET[$name])) {
         return $_GET[$name];
@@ -28,8 +28,7 @@ function GET(string $name, string $default = ''): mixed
 function POST(string $name, ?string $default = null): mixed
 {
     if (array_key_exists($name, $_POST)) {
-        $res = $_POST[$name];
-        return $res;
+        return $_POST[$name];
     } else {
         return $default;
     }
@@ -96,21 +95,41 @@ function writeLogFile($string, $filename)
     fclose($file);
 }
 
+
 /**
- * В случае назначния set_error_handler, перехватывает сообщения об ошибках. При наличии msclog() делает лог в файл.
- * Параметры передаются автоматически обработчиком ошибок
- *
- * @package debug
+ * @param $errno
+ * @param $errstr
+ * @param $errfile
+ * @param $errline
+ * @return void
  */
-function mscErrorHandler($errno, $errstr, $errfile, $errline)
+function errorHandlerNotice($errno, $errstr, $errfile, $errline): void
+{
+    global $msc;
+    $log = $errstr . ' [' . $errfile . ':' . $errline . ']';
+    if (isset($msc)) {
+        $msc->notice($log);
+    } else {
+        throw new ErrorException($errstr, $errno);
+    }
+}
+
+/**
+ * @param $errno
+ * @param $errstr
+ * @param $errfile
+ * @param $errline
+ * @return void
+ */
+function errorHandlerFile($errno, $errstr, $errfile, $errline): void
 {
     global $mscGlobalErrorsCash, $pdo;
-    $logstr = $errstr . '[' . $errfile . ':' . $errline . ']';
+    $log = $errstr . '[' . $errfile . ':' . $errline . ']';
     if (!isset($mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash = [];
     }
-    if (!in_array($logstr, $mscGlobalErrorsCash)) {
-        $mscGlobalErrorsCash [] = $logstr;
+    if (!in_array($log, $mscGlobalErrorsCash)) {
+        $mscGlobalErrorsCash [] = $log;
     } else {
         return;
     }
@@ -118,10 +137,10 @@ function mscErrorHandler($errno, $errstr, $errfile, $errline)
         return;
     }
     if (stristr($errstr, 'Unable to save result set')) {
-        $logstr .= '(' . $pdo->errorInfo()[2] . ')';
+        $log .= '(' . $pdo->errorInfo()[2] . ')';
     }
     $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
-    logError($errno . ' ' . $logstr);
+    logError($errno . ' ' . $log);
 }
 
 /**
@@ -184,7 +203,7 @@ function ajaxResultWithMessages(): void
     global $msc;
     $data = $msc->getMessagesData();
     foreach ($data as $item) {
-        if ($item['type'] == MessageType::Error) {
+        if ($item->type == MessageType::Error->value) {
             ajaxError($data);
         }
     }

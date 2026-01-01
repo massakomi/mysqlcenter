@@ -24,7 +24,7 @@ class DbList extends Base
         $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
 
         // Определяем, показывать ли полную информацию или нет
-        $showFullInfo = GET('mode') == 'full';
+        $showFullInfo = GET('type') == 'full';
 
         // Отображаем список баз данных с полной информацией
         if ($showFullInfo) {

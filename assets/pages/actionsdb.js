@@ -1,7 +1,7 @@
 import React from 'react';
 import {Fragment, useEffect, useState} from "react";
 import {CharsetSelector, Table} from "../components";
-import {msQuery} from "../functions";
+import {empty, GET, msQuery} from "../functions";
 
 function FieldSet(props) {
     return (
@@ -156,7 +156,7 @@ function MysqlServerInfo() {
 
 export function Actionsdb(props) {
 
-    let info = new URL(location.href).searchParams.get('info');
+    let info = GET('info');
 
     const operations = (
       <Fragment>
@@ -170,7 +170,7 @@ export function Actionsdb(props) {
               <input name="option" type="radio" value="data"/> Только данные <br/>
               <input name="switch" type="checkbox" value="1"/> Перейти к скопированной БД <br/><br/>
           </FieldSet>
-          {props.charsets != null && Object.keys(props.charsets).length > 0 ? <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...props}>
+          {!empty(props.charsets) ? <FieldSet title="Изменить кодировку базы данных:" action="dbCharset" {...props}>
               <CharsetSelector charsets={props.charsets}/>
           </FieldSet> : null}
           <fieldset className="msGeneralForm">

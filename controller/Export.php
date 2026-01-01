@@ -32,7 +32,7 @@ class Export extends Base
         $insIgnor  = (POST('insIgnor') != '');
 
         // 2. СПЕЦИАЛЬНЫЙ ЭКСПОРТ
-        if (GET('action') == 'special') {
+        if (GET('mode') == 'special') {
             return $this->specialExport();
 
         // 3. ОБЫЧНЫЙ ЭКСПОРТ
@@ -137,7 +137,7 @@ class Export extends Base
             'selectMultName' => $selectMultName,
             'optionsData' => $optionsData,
             'optionsSelected' => $optionsSelected,
-            'fields' => GET('table') ? Table::getFields(GET('table'), true) : [],
+            'fields' => GET('table') ? Table::getFieldNames(GET('table')) : [],
         ];
     }
 
@@ -259,7 +259,7 @@ class Export extends Base
                 'data' => $data,
                 'configSet' => $cSet,
                 'setsArray' => $msct->getSetsArray(),
-                'fields' => $table ? Table::getFields($table, true) : [],
+                'fields' => $table ? Table::getFieldNames($table) : [],
             ];
         }
     }

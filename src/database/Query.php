@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace database;
 
 use enum\FetchType;
@@ -52,6 +54,7 @@ class Query
             if ($this->driverName == 'pgsql') {
                 $sql = str_replace('`', '"', $sql);
             }
+            $this->error = '';
             $this->lastSql = $sql;
             $this->affectedRows = 0;
             if ($mode == FetchType::Exec) {
@@ -149,8 +152,8 @@ class Query
     /**
      * @throws \Exception
      */
-    public function error(string $error)
+    public function error(string $text)
     {
-        throw new \Exception($error);
+        throw new \Exception($text);
     }
 }

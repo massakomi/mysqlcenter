@@ -68,6 +68,9 @@ export function Login(props) {
         e.preventDefault()
         const c = JSON.stringify(config);
         await msQuery(mode, { config: c, current: current }, function(data) {
+            if (mode === 'connectOpen') {
+                location.href = '?s=db_list'
+            }
             console.log(data)
         })
     };
@@ -132,7 +135,7 @@ export function Login(props) {
               </div>
               <div>
                   <label></label>
-                  <input type="button" onClick={save.bind(this, 'connectCheck')} defaultValue="Проверить"/>
+                  <input type="button" onClick={save.bind(this, 'connectOpen')} defaultValue="Открыть"/>
                   <input type="button" onClick={save.bind(this, 'connectSave')} defaultValue="Сохранить"/>
               </div>
           </form>

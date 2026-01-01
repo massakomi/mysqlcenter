@@ -1,13 +1,22 @@
 import {Fragment, useState} from "react";
 import React from 'react';
 import {CharsetSelector, HtmlSelector} from "../components";
-import {msQuery} from "../functions";
+import {empty, msQuery} from "../functions";
+import {Actionsdb} from "./actionsdb";
 
 export function Actions(props) {
+
+    return (
+      <Fragment>
+          {props.table ? <ActionsTable {...props} /> : <Actionsdb {...props} />}
+      </Fragment>
+    );
+}
+
+function ActionsTable(props) {
     
     const [comment, setComment] = useState(props.comment);
     const [renameName, setRenameName] = useState(props.table);
- 
 
     let onChangeComment = (e) => {
         setComment(e.target.value)
@@ -72,7 +81,7 @@ export function Actions(props) {
               </form>
           </fieldset>
 
-          {props.charsets && Object.keys(props.charsets).length > 0 ? <fieldset className="msGeneralForm">
+          {!empty(props.charsets) ? <fieldset className="msGeneralForm">
               <legend>Изменить кодировку таблицы</legend>
               <form>
                   <CharsetSelector charsets={props.charsets} value={props.charset}/>

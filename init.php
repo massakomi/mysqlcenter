@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use service\MSCenter;
 use service\Utils;
 
@@ -61,7 +63,7 @@ define('MS_NULL_DESIGN', config('nulldesign'));
 define('MAX_UPLOAD_SIZE', Utils::getMaxUploadSize());
 
 if (config('errorlog') == '1') {
-    set_error_handler('mscErrorHandler');
+    set_error_handler('errorHandlerNotice');
 }
 
 global $msc, $pdo;

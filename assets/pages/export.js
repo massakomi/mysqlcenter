@@ -36,7 +36,7 @@ function Form(props) {
                   <input type="submit" value="Экспортировать!" />
               </div>
           </div>
-          <a href={umaker({s: 'export', 'action': 'special'})}>Специальный экспорт</a>
+          <a href={umaker({s: 'export', 'mode': 'special'})}>Специальный экспорт</a>
       </form>
     );
 }

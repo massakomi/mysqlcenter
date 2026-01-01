@@ -1,10 +1,10 @@
 import {HtmlSelector} from "../components";
 import React, {useEffect, Fragment} from 'react';
 import {
-    contentTableEvents,
-    forElementsEvent, getElementIndex,
-    isNumeric,
-    msImageAction,
+    checkboxAction,
+    contentTableEvents, empty,
+    forElementsEvent, GET, getElementIndex,
+    isNumeric, msFormQuery,
     msQuery,
     processRowValue,
     umaker
@@ -146,7 +146,7 @@ function Table(props) {
 
     // Собираем ряды
     let trs = []
-    let j = 0
+    let rowNumber = 0
     for (let row of props.data) {
 
         let idRow = getRowId(row)
@@ -154,24 +154,24 @@ function Table(props) {
         // создание ссылок на действия
         let u1 = umaker({s: 'tbl_change', row: idRow});
         let values = [
-            <input name="row[]" type="checkbox" value={idRow} className="cb" />,
-            <a href={u1} title="Редактировать ряд"><img src={`${props.dirImage}edit.gif`} alt="" border="0" /></a>,
-            <a href="#" onClick={deleteRow.bind(this, idRow)} title="Удалить ряд"><img src={`${props.dirImage}close.png`} alt="" border="0" /></a>
+            <input name="cond[]" type="checkbox" value={idRow} className="cb" />,
+            <a href={u1} title="Редактировать ряд или ctrl + click по ячейке для редактирования на месте"><img src={`${props.dirImage}edit.gif`} alt="" /></a>,
+            <a href="#" onClick={deleteRow.bind(this, idRow)} title="Удалить ряд"><img src={`${props.dirImage}close.png`} alt="" /></a>
         ]
 
         // загрузка данных
-        let i = 0
-        for (let k in row) {
+        let cellNumber = 0
+        for (let index in row) {
             let type = "varchar";
-            if (fields[i]) {
-                type = fields[i].Type
+            if (fields[cellNumber]) {
+                type = fields[cellNumber].Type
             }
-            let val = processRowValue(row[k], type, props.textCut)
+            let val = processRowValue(row[index], type, props.textCut)
             if (val === 'null') {
                 val = <span className="hiddenText">{val}</span>
             }
             values.push(val)
-            i ++
+            cellNumber ++
         }
 
         let tds = [];
@@ -181,9 +181,9 @@ function Table(props) {
             z ++;
         }
         trs.push(
-          <tr key={j}>{tds}</tr>
+          <tr key={rowNumber}>{tds}</tr>
         )
-        j ++
+        rowNumber ++
     }
 
     return (
@@ -200,11 +200,7 @@ function TableLinks(props) {
     }
 
     function currentPart() {
-        let getPart = new URL(location.href).searchParams.get('part');
-        if (getPart === null) {
-            return window.post.part
-        }
-        return getPart
+        return GET('part', window.post.part)
     }
 
     const onChangePart = (e) => {
@@ -271,16 +267,17 @@ function TableLinks(props) {
 
 export function Tbl_data(props) {
 
-    const checkboxAction = (opt, e) => {
+    const chbx_action = (opt, e) => {
         e.preventDefault()
-        checkboxAction('formTableRows', opt, 'row[]')
+        checkboxAction('formTableRows', opt, 'cond[]')
     }
 
-    const imageAction = (opt, url) => {
-        if (url) {
-            url = props.url.replace('#s#', url)
-        }
-        msImageAction('formTableRows', opt, url)
+    const submitForm = (action, page, event) => {
+        event.preventDefault()
+        let form = event.target.closest('form')
+        form.setAttribute('action', umaker({'s': page}))
+        form.querySelector('[name="action"]').value = action
+        form.submit()
     }
 
     useEffect(() => {
@@ -302,24 +299,30 @@ export function Tbl_data(props) {
             location.href = this.querySelector('a').getAttribute('href');
         })
 
-        // todo реализовать inline редактирование значений (пока сделано только вот это)
+        // inline редактирование значений (пока сделано только вот это)
         forElementsEvent('click', '.contentTable td', function() {
-            if (getElementIndex(this) <= 2) {
+            let index = getElementIndex(this)
+            if (index <= 2 || !globalCtrlKeyMode) {
                 return true;
             }
-            if (globalCtrlKeyMode) {
-                let value = this.innerHTML
-                this.innerHTML = `<input type="text" value="${value}" id="editable" />`
-                document.getElementById('editable').focus()
-                document.getElementById('editable').addEventListener('focusout', function() {
-                    this.parentNode.innerHTML = this.value
-                })
-            }
-            return true;
+            let fields = Object.keys(props.fields)
+            let column = fields[index - 3]
+            let rowId = this.closest('tr').querySelector('[type="checkbox"]').value
+            rowId = decodeURIComponent(rowId)
+            let value = this.innerHTML
+            this.innerHTML = `<input type="text" value="${value}" id="editable" />`
+            let input = document.getElementById('editable')
+            input.focus()
+            input.addEventListener('focusout', function() {
+                this.parentNode.innerHTML = this.value
+                let table = '`'+window.table+'`'
+                let sql = `UPDATE ${table} SET ${column}="${this.value}" WHERE ${rowId}`
+                msQuery('querysql', {sql})
+            })
         })
     }, []);
 
-    if (Object.keys(props).length === 0) {
+    if (empty(props)) {
         return ''
     }
 
@@ -338,17 +341,17 @@ export function Tbl_data(props) {
               {links}
 
               <div className="chbxAction">
-                  <img src={image("arrow_ltr.png")} alt="" border="0" align="absmiddle" />
-                  <a href="#" onClick={checkboxAction.bind(this, 'check')}>выбрать все</a>  &nbsp;
-                  <a href="#" onClick={checkboxAction.bind(this, 'uncheck')}>очистить</a>
+                  <img src={image("arrow_ltr.png")} alt="" align="absmiddle" />
+                  <a href="#" onClick={chbx_action.bind(this, 'check')}>выбрать все</a>  &nbsp;
+                  <a href="#" onClick={chbx_action.bind(this, 'uncheck')}>очистить</a>
               </div>
 
               <div className="imageAction">
                   <u>Выбранные</u>
-                  <img src={image("edit.gif")} alt="" border="0" onClick={imageAction.bind(this, 'editRows', 'tbl_change')} />
-                  <img src={image("close.png")} alt="" border="0" onClick={imageAction.bind(this, 'deleteRows', '')} />
-                  <img src={image("copy.gif")} alt="" border="0" onClick={imageAction.bind(this, 'copyRows', '')} />
-                  <img src={image("b_tblexport.png")} alt="" border="0" onClick={imageAction.bind(this, 'exportRows', 'export')} />
+                  <input type="image" src={image("edit.gif")} alt="" onClick={submitForm.bind(this, 'editRows', 'tbl_change')} />
+                  <input type="image" src={image("close.png")} alt="" onClick={msFormQuery.bind(this, 'deleteRows')} />
+                  <input type="image" src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copyRows')} />
+                  <input type="image" src={image("b_tblexport.png")} alt="" onClick={submitForm.bind(this, 'exportRows', 'export')} />
               </div>
           </form>
           <form name="form1" method="post" action={props.url.replace('#s#', 'tbl_compare')}>

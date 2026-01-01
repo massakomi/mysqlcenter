@@ -1,5 +1,17 @@
 import React, {Fragment, useEffect} from 'react';
-import {addRow, forElementsEvent, msQuery, qs, umaker} from "../functions";
+import {addRow, empty, forElementsEvent, GET, msQuery, qs, umaker} from "../functions";
+
+const getAction = () => {
+    const s = GET('s')
+    const field = GET('field')
+    if (s === 'tbl_add' && empty(window.post) && !field) {
+        return 'tableAddEnd';
+    }
+    if (window.post.action === 'fieldsAdd') {
+        return 'fieldsAddEnd';
+    }
+    return 'fieldsEditEnd';
+}
 
 function TableHead(props) {
     return (
@@ -40,63 +52,49 @@ function MSC_DrawFields(props) {
         return false;
     };
 
-
-    let POST = props.post || {};
-
-    let array = props.array;
-
-    // получение массива из post
-    if (array.length === 0) {
-        alert("TODO")
-        Object.keys(POST.name).forEach(function(key) {
-            //let name = POST.name[key]
-        })
-        /*
-                $array = array();
-                foreach ($_POST['name'] as $key => $name) {
-                    if (empty($name)) {
-                        continue;
-                    }
-                    $object = new A;
-                    $object->Field   = $name;
-                    $object->Type    = strtolower($_POST['ftype'][$key]);
-                    if ($_POST['length'][$key] > 0) {
-                        $object->Type .= '('. $_POST['length'][$key].')';
-                    }
-                    if ($_POST['attr'][$key] == 'UNSIGNED ZEROFILL') {
-                        $object->Type .= ' UNSIGNED ZEROFILL';
-                    } else if ($_POST['attr'][$key] == 'UNSIGNED') {
-                        $object->Type .= ' UNSIGNED';
-                    }
-                    $object->Null    = isset($_POST['isNull'][$key]) ? 'YES' : '';
-                    if (isset($_POST['uni'][$key])) {
-                        $object->Key = 'UNI';
-                    }
-                    if (isset($_POST['mul'][$key])) {
-                        $object->Key = 'MUL';
-                    }
-                    $object->Key = $_POST['primaryKey'] == $name ? 'PRI' : '';
-                    $object->Default = $_POST['default'][$key];
-                    $object->Extra = '';
-                    if (isset($_POST['auto'][$key])) {
-                        $object->Extra   = 'AUTO_INCREMENT';
-                    }
-                    $array []= $object;
-                }
-        * */
+    // Оставить только те поля, которе редактируем
+    const filterFields = (props) => {
+        let edited = []
+        const fieldGet = GET('field')
+        if (fieldGet) {
+            edited.push(fieldGet)
+        }
+        if (window.post.fields) {
+            edited = window.post.fields.split(',')
+        }
+        if (window.post.field) {
+            edited = window.post.field
+        }
+        fields = props.fields.filter(function(item) {
+            return edited.includes(item.Field);
+        });
+        return fields
     }
 
+    let POST = window.post || {};
     let keys = props.keys;
+    let action = getAction()
+
+    console.log(action, props)
 
     // получение массива "предыдущих полей" полей
-    let fields = ['FIRST']
+    let fieldsAfter = ['FIRST']
     let previousFields = {}
     let prev = '';
-    props.fields.forEach(function(field) {
-        previousFields[field] = prev
-        prev = field
-        fields.push(field)
-    })
+    let fields
+    if (action === 'tableAddEnd' || action === 'fieldsAddEnd') {
+        fields = []
+        for (let i = 0; i < props.fieldsCount; i ++) {
+            fields.push(i)
+        }
+    } else {
+        fields = filterFields(props);
+        fields.map((field) => {
+            previousFields[field.Field] = prev
+            prev = field.Field
+            fieldsAfter.push(field.Field)
+        })
+    }
 
     // создание селектора типов данных
     let columnTypes = [
@@ -108,35 +106,34 @@ function MSC_DrawFields(props) {
         'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
     ];
 
-    const trs = array.map((v, k) => {
+    const trs = fields.map((field, index) => {
 
         let NAME='', TYPE='', LENGTH='', DEFAULT='', ISNULL='', AUT='', extra='';
         let isUnsignedZero=false, isUnsigned=false;
         let PRI='', UNI='', MUL='', uniName='', mulName='';
 
-        if (typeof v == 'object') {
-            let a = v.Type.match(/\((.*)\)/)
+        if (typeof field == 'object') {
+            let a = field.Type.match(/\((.*)\)/)
             if (a) {
                 LENGTH = a[1]
             }
-            isUnsignedZero = v.Type.match(/unsigned zerofill/i) !== null;
-            isUnsigned = v.Type.match(/unsigned/i) !== null;
-            NAME = v.Field;
-            TYPE = v.Type.replace(/\((.*)\).*/i, '').toUpperCase();
-            DEFAULT = v.Default;
-            ISNULL = v.Null === true || v.Null === "YES";
-            AUT = v.Extra !== ""
+            isUnsignedZero = field.Type.match(/unsigned zerofill/i) !== null;
+            isUnsigned = field.Type.match(/unsigned/i) !== null;
+            NAME = field.Field;
+            TYPE = field.Type.replace(/\((.*)\).*/i, '').toUpperCase();
+            DEFAULT = field.Default;
+            ISNULL = field.Null === true || field.Null === "YES";
+            AUT = field.Extra !== ""
             extra = (
               <Fragment>
-                  <select name="after[]" defaultValue={previousFields[v.Field]}>
-                      {fields.map((v) =>
+                  <select name="after[]" defaultValue={previousFields[field.Field]}>
+                      {fieldsAfter.map((v) =>
                         <option key={v}>{v}</option>
                       )}
                   </select>
-                  <input type="hidden" name="afterold[]" defaultValue={previousFields[v.Field] || 'FIRST'} />
+                  <input type="hidden" name="afterold[]" defaultValue={previousFields[field.Field] || 'FIRST'} />
               </Fragment>
             )
-            console.log(NAME)
             if (keys[NAME]) {
                 Object.keys(keys[NAME]).forEach(function(keyName) {
                     let key = keys[NAME][keyName];
@@ -155,50 +152,50 @@ function MSC_DrawFields(props) {
         } else if (POST.afterOption) {
             let checked = ''
             if (POST.afterOption === 'end') {
-                checked = fields[fields.length - 1]
+                checked = fieldsAfter[fieldsAfter.length - 1]
             } else if (POST.afterOption === 'field') {
                 checked = POST.afterField
             }
             extra = (
               <Fragment>
-                  <select name={`after[${k}]`} defaultValue={checked}>
-                      {fields.map((v) =>
+                  <select name={`after[${index}]`} defaultValue={checked}>
+                      {fieldsAfter.map((v) =>
                         <option key={v}>{v}</option>
                       )}
                   </select>
-                  <input type="hidden" name={`afterold[${k}]`} defaultValue={checked} />
+                  <input type="hidden" name={`afterold[${index}]`} defaultValue={checked} />
               </Fragment>
             )
         }
 
-        let j = NAME === '' ? k : NAME;
+        let j = NAME === '' ? index : NAME;
 
         let attr = isUnsigned ? 'UNSIGNED' : (isUnsignedZero ? 'UNSIGNED ZEROFILL' : '');
 
         return (
-          <tr key={k} id={`tableFormEditTr${k}`}>
+          <tr key={index} id={`tableFormEditTr${index}`}>
               <td>
-                  <input name="name[]" tabIndex="1" id={`name${k}`} type="text" defaultValue={NAME} size="15" />
+                  <input name="name[]" tabIndex="1" id={`name${index}`} type="text" defaultValue={NAME} size="15" />
                   <input type="hidden" name="oldname[]" defaultValue={NAME} />
               </td>
               <td>
-                  <select name="ftype[]" tabIndex="2" id={`typeSelectorId${k}`} defaultValue={TYPE}>
+                  <select name="ftype[]" tabIndex="2" id={`typeSelectorId${index}`} defaultValue={TYPE}>
                       {columnTypes.map((v) =>
                         <option key={v}>{v}</option>
                       )}
                   </select>
               </td>
-              <td><input name="length[]" tabIndex="3" id={`length${k}`} type="text" defaultValue={LENGTH} size="30" /></td>
-              <td><input name={`isNull[${k}]`} tabIndex="4" id={`isNull${k}`} type="checkbox" value="1" defaultChecked={ISNULL} /></td>
-              <td><input name="default[]" tabIndex="5" id={`default${k}`} type="text" size="10" defaultValue={DEFAULT} /></td>
-              <td><input name={`auto[${k}]`} tabIndex="6" id={`auto${k}`} onClick={aiClick.bind(this, k)} type="checkbox" value="1" defaultChecked={AUT}  /></td>
-              <td><input name="primaryKey" tabIndex="7" id={`key1${k}`} type="radio" defaultValue={j} defaultChecked={PRI} /></td>
-              <td><input name={`uni[${j}]`} tabIndex="8" id={`key2${k}`} type="checkbox" defaultValue={uniName} defaultChecked={UNI} /></td>
-              <td><input name={`mul[${j}]`} tabIndex="9" id={`key3${k}`} type="checkbox" defaultValue={mulName} defaultChecked={MUL}  /></td>
-              <td><a href="#" onClick={clearKeys.bind(this, k)}>clear</a></td>
-              <td><input name={`fulltext[${k}]`} tabIndex="11" id={`fulltext${k}`} type="checkbox" value="1" /></td>
+              <td><input name="length[]" tabIndex="3" id={`length${index}`} type="text" defaultValue={LENGTH} size="30" /></td>
+              <td><input name={`isNull[${index}]`} tabIndex="4" id={`isNull${index}`} type="checkbox" value="1" defaultChecked={ISNULL} /></td>
+              <td><input name="default[]" tabIndex="5" id={`default${index}`} type="text" size="10" defaultValue={DEFAULT} /></td>
+              <td><input name={`auto[${index}]`} tabIndex="6" id={`auto${index}`} onClick={aiClick.bind(this, index)} type="checkbox" value="1" defaultChecked={AUT}  /></td>
+              <td><input name="primaryKey" tabIndex="7" id={`key1${index}`} type="radio" defaultValue={j} defaultChecked={PRI} /></td>
+              <td><input name={`uni[${j}]`} tabIndex="8" id={`key2${index}`} type="checkbox" defaultValue={uniName} defaultChecked={UNI} /></td>
+              <td><input name={`mul[${j}]`} tabIndex="9" id={`key3${index}`} type="checkbox" defaultValue={mulName} defaultChecked={MUL}  /></td>
+              <td><a href="#" onClick={clearKeys.bind(this, index)}>clear</a></td>
+              <td><input name={`fulltext[${index}]`} tabIndex="11" id={`fulltext${index}`} type="checkbox" value="1" /></td>
               <td>
-                  <select name="attr[]" tabIndex="12" id={`attr${k}`} style={{width:'70px'}} defaultValue={attr}>
+                  <select name="attr[]" tabIndex="12" id={`attr${index}`} style={{width:'70px'}} defaultValue={attr}>
                       <option value="">-</option>
                       <option>UNSIGNED</option>
                       <option>UNSIGNED ZEROFILL</option>
@@ -260,7 +257,7 @@ export function Tbl_add(props) {
         e.preventDefault()
         msQuery('', e.target, () => {
             setTimeout(function() {
-                if (props.showTableName) {
+                if (showTableName) {
                     location.href = umaker({s: 'tbl_struct', table: document.querySelector('[name="table_name"]').value})
                 } else {
                     location.href = umaker({s: 'tbl_struct', field: false})
@@ -269,16 +266,31 @@ export function Tbl_add(props) {
         })
     }
 
+    const getAfterSql = () => {
+        if (window.post.afterOption === 'start') {
+            return 'FIRST'
+        }
+        if (window.post.afterOption === 'field') {
+            return 'AFTER `'+window.post.afterField+'`'
+        }
+        return ''
+    }
+
+    let action = getAction()
+    const field = GET('field')
+    const showTableName = action === 'tableAddEnd' && !field
+    const afterSql = getAfterSql()
+
     return (
       <form method="post" action="" className="tableFormEdit" name="addForm" onSubmit={save.bind(this)}>
-          {props.showTableName &&
+          {showTableName &&
             <Fragment>
                 <input tabIndex="1" type="text" name="table_name" size="40" defaultValue={props.tableName} /> имя таблицы <br />
             </Fragment>
           }
-          {props.afterSql &&
-            <input type="hidden" name="afterSql" value={props.afterSql} /> }
-          <input type="hidden" name="action" value={props.action} />
+          {afterSql &&
+            <input type="hidden" name="afterSql" value={afterSql} /> }
+          <input type="hidden" name="action" value={action} />
 
           <img src={`${props.dirImage}nolines_plus.gif`} alt="" border="0" onClick={addDataRow.bind(this, 'tableFormEdit')} title="Добавить поле" style={{cursor: 'pointer'}} />
           <img src={`${props.dirImage}nolines_minus.gif`} alt="" border="0" onClick={removeRow.bind(this, 'tableFormEdit', 'end')}  title="Удалить поле" style={{cursor: 'pointer'}} /><br />

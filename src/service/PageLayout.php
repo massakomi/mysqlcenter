@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace service;
 
 use controller\Base;
@@ -34,8 +36,14 @@ class PageLayout
             $this->initController();
         }
 
-        $pageProps = $this->controller->defaultAction();
+        $method = $this->getMethod();
+        $pageProps = $this->controller->$method();
+
         if (isAjax()) {
+            // Если метод контроллера ничего не возвращает, то генерим простой ответ из сообщений
+            if (!is_array($pageProps)) {
+                ajaxResultWithMessages();
+            }
             $data = [
                 'page' => $pageProps,
                 'messages' => $msc->getMessagesData(),
@@ -43,6 +51,25 @@ class PageLayout
             ajaxResult($data);
         }
         return $pageProps;
+    }
+
+    /**
+     * Текущий метод контроллера
+     */
+    private function getMethod(): string
+    {
+        $method = 'defaultAction';
+        $action = POST('mode', GET('mode'));
+        if ($action) {
+            $action = preg_replace_callback('~_([a-z])~i', function ($match) {
+                return strtoupper($match[1]);
+            }, $action);
+            $actionMethod = $action . 'Action';
+            if (method_exists($this->controller, $actionMethod)) {
+                $method = $actionMethod;
+            }
+        }
+        return $method;
     }
 
     /**

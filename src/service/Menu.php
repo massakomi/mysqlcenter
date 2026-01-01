@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace service;
 
 use database\Table;
@@ -17,7 +19,7 @@ class Menu
         global $msc;
         $chain = '<a href="?s=db_list">DB</a>';
         if ($msc->db != null) {
-            $chain .= ' &nbsp; <a href="?s=tbl_list&db=' . $msc->db . '&action=structure">&#8250;</a> &nbsp; ';
+            $chain .= ' &nbsp; &#8250; &nbsp; ';
             $chain .= '<a href="?s=tbl_list&db=' . $msc->db . '">' . $msc->db . '</a>';
         }
         if ($msc->table != null) {
@@ -140,17 +142,11 @@ class Menu
         }
         // статистика префиксов
         $prefixes = [];
-        $rows = [];
         foreach ($tables as $row) {
             $t = $row->Name;
             $end = strlen($t) > 2 && strpos($t, '_', 3) > 0 ? strpos($t, '_', 3) : 50;
             $prefix = substr($t, 0, $end);
             $prefixes [$prefix] = !isset($prefixes [$prefix]) ? 1 : $prefixes [$prefix] + 1;
-            if (substr($t, 0, strpos($t, '_')) == 'pr') {
-                array_unshift($rows, $row);
-            } else {
-                $rows [] = $row;
-            }
         }
         // создание меню и селектора
         $menuTables .= "\r\n" . '<div class="menuTables">' . "\r\n";
@@ -161,7 +157,7 @@ class Menu
             $selectorTables .= '<select name="' . $auto . '">' . "\r\n";
         }
         $greyEmpty = config('greyempty');
-        foreach ($rows as $t) {
+        foreach ($tables as $t) {
             if (strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0) {
                 $end = strpos($t->Name, '_', 3);
             } else {

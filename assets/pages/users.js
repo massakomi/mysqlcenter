@@ -1,6 +1,6 @@
 import React, {Fragment, useEffect, useState} from 'react';
 import {msQuery} from "../functions";
-import {Table} from "../components";
+import {HtmlSelector, Table} from "../components";
 
 export function Users() {
     return (
@@ -30,11 +30,16 @@ function MysqlUserInfo(props) {
         loadAll()
     }, []);
 
+    const onDelete = (row, e) => {
+        e.preventDefault()
+        msQuery('userDelete', `user=${row.User}`)
+    }
+
     return (
       <Fragment>
           <fieldset className="msGeneralForm">
               <legend>Пользователи</legend>
-              <Table data={users} />
+              <Table data={users} onDelete={onDelete} />
           </fieldset>
           <fieldset className="msGeneralForm">
               <legend>SHOW GRANTS</legend>
@@ -56,9 +61,11 @@ function MysqlAddUser(props) {
     const [passwordField, setPasswordField] = useState('');
     const [password2Field, setPassword2Field] = useState('');
     const [formDisabled, setFormDisabled] = useState(true);
+    const requiredPassword = false
 
     const updateLoginName = event => {
-        setDatabase(event.target.value)
+        //setDatabase(event.target.value)
+        setFormDisabled(!event.target.value)
     };
 
     const updatePasswordField = event => {
@@ -84,20 +91,24 @@ function MysqlAddUser(props) {
           <fieldset className="msGeneralForm">
               <legend>Добавить пользователя</legend>
               <form onSubmit={userAdd} method="post">
-                  <div className="mb-5"><input name="rootpass" type="text"/> Пароль админа</div>
-                  <div className="mb-5"><input name="database" type="text" required={true} id="databaseField"
-                                               onKeyUp={updateLoginName}/> Имя базы данных
+                  <div>Будет создан пользователь и база данных. Пользователю будут выданы все права на эту базу данных. Пароль можно не указывать.</div>
+                  <div className="mb-5">
+                      <input name="databaseuser" type="text" onKeyUp={updateLoginName} required={true} /> Имя пользователя
                   </div>
-                  <div className="mb-5"><input name="databaseuser" id="unameField" type="text" required={true}
-                                               defaultValue={database}/> Логин пользователя
+                  <div className="mb-5">
+                      <HtmlSelector data={window.databases} name="database" auto="false" defaultValue={window.db} /> Выбрать БД, на которую дать права
                   </div>
-                  <div className="mb-5"><input name="userpass" type="password" id="passwordField" required={true}
-                                               onChange={updatePasswordField}/> Пароль
+                  <div className="mb-5">
+                      <input name="databaseCreate" type="text" defaultValue={database} /> или создать новую БД
                   </div>
-                  <div className="mb-5"><input name="userpass2" type="password" id="password2Field" required={true}
-                                               onChange={updatePasswordField2}/> Пароль еще раз
+                  <div className="mb-5">
+                      <input name="userpass" type="password" required={requiredPassword} onChange={updatePasswordField}/> Пароль
                   </div>
-                  <div className="mb-5"><input type="submit" value="Добавить" disabled={formDisabled} id="submitBtnId"/>
+                  <div className="mb-5">
+                      <input name="userpass2" type="password" required={requiredPassword} onChange={updatePasswordField2}/> Пароль еще раз
+                  </div>
+                  <div className="mb-5">
+                      <input type="submit" value="Добавить" disabled={formDisabled} />
                   </div>
               </form>
           </fieldset>

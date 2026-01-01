@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use database\Server;
 use database\Table;
 use service\Menu;
@@ -12,8 +14,9 @@ global $msc;
 $pageProps = (new PageLayout())->execute();
 $time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
 $menu = new Menu();
-$fields = $msc->table ? Table::getFields($msc->table, true) : [];
-$dbs = Server::getDatabasesWithoutHidden();
+$fields = $msc->table ? Table::getFieldNames($msc->table) : [];
+$databases = Server::getDatabases();
+$databasesVisible = Server::getDatabasesWithoutHidden();
 
 ?>
 <!DOCTYPE>
@@ -23,17 +26,6 @@ $dbs = Server::getDatabasesWithoutHidden();
     <title><?php echo $msc->getWindowTitle() ?></title>
     <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
-    <script>
-        window.driver = '<?=$msc->driverName?>';
-        window.component = '<?=$msc->page?>'
-        window.db = '<?=$msc->db?>'
-        window.table = '<?=$msc->table?>'
-        window.pageTitle = '<?=$msc->getPageTitle()?>'
-        window.fields = <?=json_encode($fields) ?>;
-        window.options = <?=json_encode($pageProps)?>;
-        window.messages = <?=json_encode($msc->getMessagesData())?>;
-        window.post = <?=json_encode($_POST)?>;
-    </script>
     <script defer src="/js/dist.js?<?=filemtime('js/dist.js')?>"></script>
 </head>
 <body>
@@ -71,7 +63,7 @@ $dbs = Server::getDatabasesWithoutHidden();
 
 <div class="menuDb">
     <?php
-    foreach ($dbs as $db) {
+    foreach ($databasesVisible as $db) {
         echo '<a href="?db=' . $db . '">' . $db . '</a>';
     }
     ?>
@@ -87,5 +79,19 @@ $dbs = Server::getDatabasesWithoutHidden();
     <span class="hiddenText">inc <?php echo Utils::formatSize(array_sum(array_map(fn($file) => filesize($file), get_included_files()))) ?></span>
     <span class="hiddenText">limit <?php echo ini_get('memory_limit') ?></span>
 </div>
+
+
+<script>
+    window.driver = '<?=$msc->driverName?>';
+    window.component = '<?=$msc->page?>'
+    window.db = '<?=$msc->db?>'
+    window.table = '<?=$msc->table?>'
+    window.pageTitle = '<?=$msc->getPageTitle()?>'
+    window.databases = <?=json_encode($databases) ?>;
+    window.fields = <?=json_encode($fields) ?>;
+    window.options = <?=json_encode($pageProps)?>;
+    window.messages = <?=json_encode($msc->getMessagesData())?>;
+    window.post = <?=json_encode($_POST)?>;
+</script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 import {ExportOptions, HtmlSelector} from "../components";
 import React, {Fragment} from 'react';
+import {GET} from "../functions";
 
 function Form(props) {
 
@@ -77,7 +78,7 @@ function Form(props) {
           <input type="hidden" name="exportSpecial" value="1" />
           <ExportOptions fields={props.fields} dirImage={props.dirImage} structChecked={props.structChecked} />
           <p><input type="submit" value="Выполнить" /></p>
-          <select onChange={selectSet} defaultValue={new URL(location.href).searchParams.get('set')}>
+          <select onChange={selectSet} defaultValue={GET('set')}>
               {Object.values(props.setsArray).map((v) =>
                 <option key={v.toString()}>{v}</option>
               )}
@@ -110,7 +111,7 @@ function Results(props) {
     return <textarea name="export" rows="40" wrap="off" defaultValue={props.content}></textarea>
 }
 
-export function ExportSp(props) {
+export function Export_special(props) {
     return (
       <Fragment>
           {props.content ? <Results content={props.content} /> : <Form {...props} />}

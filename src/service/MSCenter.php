@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace service;
 
 use database\{Driver, MySQL, PostgreSQL, Query};
 use dto\ConnectConfig;
+use dto\Message;
 use enum\MessageType;
 
 /**
@@ -24,6 +27,7 @@ class MSCenter extends Query
     public string $driverName = '';
     public string $pageTitle = ''; // для заголовка раздела h1
 
+    /* @var Message[] */
     public array $messages = [];
 
     /**
@@ -177,7 +181,7 @@ class MSCenter extends Query
         } catch (\PDOException $e) {
             $this->clearCurrentDatabase();
             // Если подставленная база не сработала - берем базу из конфигурации
-            if ($config['database'] && $config['database'] != $database) {
+            if ($config->database && $config->database != $database) {
                 if (preg_match('~database .*? does not exist~', $e->getMessage())) {
                     $this->connect();
                     return;
@@ -246,6 +250,7 @@ class MSCenter extends Query
      *
      * @param string $text
      * @param null $sql
+     * @return bool
      */
     public function error(string $text, $sql = null): bool
     {
@@ -265,7 +270,7 @@ class MSCenter extends Query
     }
 
     /**
-     * Заметка
+     * Ошибка, но не вызывает status error при ajax запросах
      *
      * @param string $text
      * @param null $sql
@@ -288,20 +293,19 @@ class MSCenter extends Query
     {
         if (!$this->allowRepeatMessages) {
             foreach ($this->messages as $message) {
-                if ($message['text'] == $text) {
+                if ($message->text == $text && $message->sql == $sql) {
                     return true;
                 }
             }
         }
-        $color = $type->getColor();
-        $this->messages [] = [
-            'text' => $text,
-            'type' => $type->value,
-            'color' => $color,
-            'error' => $this->error,
-            'sql' => $sql,
-            'rows' => $this->affectedRows,
-        ];
+        $this->messages [] = new Message(
+            text: $text,
+            type: $type->value,
+            color: $type->getColor(),
+            error: $this->error,
+            sql: $sql,
+            rows: $this->affectedRows,
+        );
         if ($type == MessageType::Error) {
             return false;
         }

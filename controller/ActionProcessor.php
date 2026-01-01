@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace controller;
 
 use database\Server;
@@ -13,26 +15,30 @@ use service\Validate;
  */
 class ActionProcessor
 {
-    // Куда редиректить в случае не ajax запроса
+    // Куда перенаправлять в случае не ajax запроса
     public string $redirect = '';
 
     /**
      * @return false|void
+     * @throws \Exception
      */
     public function __invoke()
     {
         if (POST('ajax')) {
-            $queryMode = POST('mode');
+            $action = POST('mode');
         } else {
-            $queryMode = GET('action') != null ? GET('action') : POST('action');
+            $action = GET('action', POST('action'));
         }
 
-        if ($queryMode == null) {
+        if ($action == null) {
             return false;
         }
 
-        $this->generalActions($queryMode);
-        $this->databaseActions($queryMode);
+        if (!$this->generalActions($action)) {
+            if (!$this->databaseActions($action)) {
+                return ;
+            }
+        }
 
         if (isAjax()) {
             ajaxResultWithMessages();
@@ -42,14 +48,14 @@ class ActionProcessor
     }
 
     /**
-     * @param string $queryMode
-     * @return void
+     * @param string $action
+     * @return bool
      */
-    public function generalActions(string $queryMode): void
+    public function generalActions(string $action): bool
     {
         global $msc;
 
-        switch ($queryMode) {
+        switch ($action) {
             case 'configUpdate':
                 $data = file(MS_CONFIG_FILE);
                 $newFileContent = [];
@@ -90,7 +96,7 @@ class ActionProcessor
                 break;
 
             case 'connectSave':
-            case 'connectCheck':
+            case 'connectOpen':
                 $config = json_decode($_POST['config'], true);
                 $config = [
                     'current' => $_POST['current'],
@@ -101,7 +107,7 @@ class ActionProcessor
                     copy(MS_CONNECT_CONFIG_FILE, $backupFile);
                 }
                 $res = file_put_contents(MS_CONNECT_CONFIG_FILE, json_encode($config));
-                if ($queryMode == 'connectSave') {
+                if ($action == 'connectSave') {
                     if ($res) {
                         $msc->success('Конфиг сохранен');
                     } else {
@@ -110,19 +116,24 @@ class ActionProcessor
                     break;
                 }
                 $msc->connect();
-                $msc->success('Connect success!');
+                if ($msc->connected()) {
+                    $msc->success('Connect success!');
+                }
                 break;
+            default:
+                return false;
         }
+        return true;
     }
 
 
     /**
      * Действия с базой данных
-     * @param string $queryMode
-     * @return bool|void
+     * @param string $action
+     * @return bool
      * @throws \Exception
      */
-    public function databaseActions(string $queryMode)
+    public function databaseActions(string $action): bool
     {
         global $msc;
 
@@ -145,14 +156,32 @@ class ActionProcessor
         $validate = new Validate();
 
         // Выполнение запросов
-        switch ($queryMode) {
+        switch ($action) {
             case 'querysql':
-                if ($_POST['type'] == 'pair-value') {
-                    $data = $msc->getData($_POST['sql'], \PDO::FETCH_KEY_PAIR);
-                } else {
-                    $data = $msc->getData($_POST['sql']);
+                $sql = POST('sql');
+                $type = POST('type');
+                if (preg_match('~^\s*(update|delete|insert)~i', $sql)) {
+                    $type = 'exec';
                 }
-                ajaxResult($data);
+                if ($type == 'exec') {
+                    $data = $msc->execPdo($sql);
+                } elseif ($type == 'pair-value') {
+                    $data = $msc->getData($sql, \PDO::FETCH_KEY_PAIR);
+                } else {
+                    $data = $msc->getData($sql);
+                }
+                if (is_array($data)) {
+                    if (count($data) === 0) {
+                        $msc->notice('Пустой результат запроса', $msc->lastSql);
+                        ajaxResultWithMessages();
+                    } else {
+                        ajaxResult($data);
+                    }
+                } else {
+                    $msc->success('Запрос выполнен, затронуто рядов: '.$msc->affectedRows, $msc->lastSql);
+                    ajaxResultWithMessages();
+                }
+                break;
 
             // операции с таблицами
             // в запросе обязательно должна быть указана БД и таблица
@@ -278,11 +307,11 @@ class ActionProcessor
                 $cs = (POST('copy_struct') != '');
                 $cd = (POST('copy_data') != '');
                 foreach ($a as $t) {
-                    if ($queryMode == 'delete_all') {
+                    if ($action == 'delete_all') {
                         $dbt->tableAction($db, $t, 'DROP');
-                    } elseif ($queryMode == 'truncate_all') {
+                    } elseif ($action == 'truncate_all') {
                         $dbt->tableAction($db, $t, 'TRUNCATE');
-                    } elseif ($queryMode == 'copy_all') {
+                    } elseif ($action == 'copy_all') {
                         $dbt->copyTable($db, $t, $cs, $cd);
                     }
                 }
@@ -335,7 +364,7 @@ class ActionProcessor
 
             case 'dbCollate':
             case 'dbCharset':
-                if ($server->databaseAlterCharset($db, $this->param('charset'), $queryMode == 'dbCharset')) {
+                if ($server->databaseAlterCharset($db, $this->param('charset'), $action == 'dbCharset')) {
                     $msc->success("Успешно выполнено", $msc->lastSql);
                 } else {
                     $msc->error("Ошибка при выполнении операции с $db", $msc->lastSqlr);
@@ -343,17 +372,12 @@ class ActionProcessor
                 break;
 
             case 'dbAllAction':
-                $tables = Table::getTables();
-                $action = POST('act');
+                $tables = POST('table');
+                $act = POST('act');
                 foreach ($tables as $table) {
-                    if ($action === 'drop-query') {
-                        $sql = 'DROP TABLE `' . $table . '`;';
-                        $msc->success($sql);
-                    }
-
-                    if (in_array($action, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
-                        $sql = strtoupper($action) . ' TABLE `' . $table . '`';
-                        if ($msc->execPdo($sql)) {
+                    if (in_array($act, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
+                        $sql = strtoupper($act) . ' TABLE `' . $table . '`';
+                        if ($msc->fetchPdo($sql)) {
                             $msc->success('Запрос выполнен', $sql);
                         } else {
                             $msc->error('Ошибка запроса', $sql);
@@ -366,7 +390,7 @@ class ActionProcessor
             // массово + единично
             case 'dbRename':
             case 'dbCopy':
-                $isMove = ($queryMode == 'dbRename');
+                $isMove = ($action == 'dbRename');
                 if ($this->param('dbMulty')) {
                     $databases = $this->param('databases');
                     $newName = [];
@@ -513,12 +537,6 @@ class ActionProcessor
                 }
                 break;
 
-            // операции с пользователем
-
-            case 'userAdd':
-                Server::userAdd();
-                break;
-
             // разное
 
             case 'killProcess':
@@ -531,10 +549,10 @@ class ActionProcessor
                     }
                 }
                 break;
-
             default:
                 return false;
         }
+        return true;
     }
 
 
@@ -544,7 +562,7 @@ class ActionProcessor
      * @param string $name Имя параметра
      * @return mixed Возвращает false если парметра нет, иначе сам параметр
      */
-    public function param(string $name): mixed
+    private function param(string $name): mixed
     {
         // 1. GET-параметры имеют первичное значение (?db=...)
         if (isset($_GET[$name])) {

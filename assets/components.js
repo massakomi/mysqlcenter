@@ -1,6 +1,6 @@
 import React from 'react'
 import {Fragment, useEffect} from "react";
-import {contentTableEvents, forElementsEvent, searchEvents} from "./functions";
+import {contentTableEvents, empty, forElementsEvent, searchEvents} from "./functions";
 
 export function CharsetSelector(props) {
     let opts = [], i = 0
@@ -21,7 +21,7 @@ export function CharsetSelector(props) {
 export function HtmlSelector(props) {
 
     let onChange = (e) => {
-        if (props.auto) {
+        if (props.auto && props.auto !== 'false') {
             let value = e.target.options[e.target.selectedIndex].value
             if (value) {
                 window.location = value
@@ -38,14 +38,19 @@ export function HtmlSelector(props) {
         } else {
             value = null
         }
-        opts.push(<option value={value} key={i++}>{title}</option>)
+        opts.push(<option defaultValue={value} key={i++}>{title}</option>)
+    }
+
+    let value = props.value
+    if (typeof(value) == 'undefined' || typeof(value) == 'object') {
+        value = props.multiple ? [''] : ''
     }
 
     return (
       <select onChange={props.onChange ? props.onChange : onChange.bind(this)}
               name={props.name}
               multiple={props.multiple}
-              defaultValue={props.value}
+              defaultValue={value}
               className={props.className}>{opts}
       </select>
     )
@@ -173,8 +178,7 @@ export function ExportOptions(props) {
               {props.fields &&
                 <Fragment>
                     <div> Выбрать поля для экспорта:</div>
-                    <HtmlSelector data={props.fields} name="fields[]" multiple="multiple"
-                                  value={props.fields} />
+                    <HtmlSelector data={props.fields} name="fields[]" multiple="multiple" value={props.fields} />
                 </Fragment>
               }
           </div>
@@ -190,28 +194,48 @@ export function Table(props) {
         contentTableEvents()
     })
 
+    // item может быть объектом с полями text, href для создания ссылки
+    const getValue = (item) => {
+        let value = ''
+        if (item !== null && typeof(item) == 'object') {
+            if (item.hasOwnProperty('text')) {
+                value = item.text
+                if (item.href) {
+                    value = <a href={item.href}>{value}</a>
+                }
+            } else {
+                value = item.toString()
+            }
+        } else {
+            value = item
+        }
+        return value
+    }
+
+    if (props.data[0] == null || typeof(props.data[0]) == 'undefined') {
+        return
+    }
+
+    let headers = Object.keys(props.data[0])
+    if (props.onDelete) {
+        headers.unshift('Actions')
+    }
+
     let ths = []
-    for (let key in props.data[0]) {
+    for (let key of headers) {
         ths.push(<th key={`th-${key}`}><span className="br">{key}</span></th>)
     }
 
     let trs = []
     for (let index in props.data) {
         let tds = []
-        for (let key in props.data[index]) {
-            const item = props.data[index][key]
-            let value = ''
-            if (item !== null && typeof(item) == 'object') {
-                if (item.hasOwnProperty('text')) {
-                    value = item.text
-                    if (item.href) {
-                        value = <a href={item.href}>{value}</a>
-                    }
-                } else {
-                    value = item.toString()
-                }
+        const row = props.data[index]
+        for (let key of headers) {
+            let value
+            if (key === 'Actions') {
+                value = <a href="#" onClick={props.onDelete.bind(this, row)} title="Удалить"><img alt="" border="0" src="/images/close.png" /></a>
             } else {
-                value = item
+                value = getValue(row[key])
             }
             tds.push(<td key={`td-${key}`}>{value}</td>)
         }
@@ -287,7 +311,7 @@ function SearchTableForm(props) {
     }, []);
 
     let post = window.post || {}
-    let isPost = Object.keys(post).length > 0 ? '1' : ''
+    let isPost = !empty(post) ? '1' : ''
     let query = post.query ? post.query : 'Поиск или where'
 
     const url = `?db=${window.db}&table=${window.table}&s=tbl_data`;
@@ -319,10 +343,11 @@ export function HeadTop(props) {
     )
 }
 
-export function NotFound(props) {
+export function NotFound() {
     return (
       <div>
-        Компонент не найден
+          <br />
+        Компонент не найден, см. консоль
       </div>
     );
 }

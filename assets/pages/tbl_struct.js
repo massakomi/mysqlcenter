@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react';
-import {check, forElements, msImageAction, submitFormIfFieldNotEmpty} from "../functions";
+import {check, forElements, msFormQuery, msQuery, submitFormIfFieldNotEmpty} from "../functions";
 
 function TableObject(props) {
     // нулевой элемент раскидвать по ключ-значение, бред редко нужно
@@ -36,16 +36,16 @@ function TableStruct(props) {
         msQuery('deleteField', query)
     };
 
-    const listItems = Object.values(props.data).map((v, k) => {
-        let key = v.Key;
+    const getKey = (props, field) => {
+        let key = field.Key;
         if (key === 'PRI') {
             key = <img src={props.dirImage + "acl.gif"} alt="" border="0" />
         }
         for (let keyObject of props.dataKeys) {
-            if (keyObject.Column_name === v.Field) {
+            if (keyObject.Column_name === field.Field) {
                 let fkTable = '';
                 for (let key of props.foreignKeys) {
-                    if (key.COLUMN_NAME === v.Field) {
+                    if (key.COLUMN_NAME === field.Field) {
                         fkTable = key.REFERENCED_TABLE_NAME;
                     }
                 }
@@ -54,17 +54,29 @@ function TableStruct(props) {
                 }
             }
         }
+        return key
+    }
+
+    const getDefault = (field) => {
+        let value = field.Default
+        if (value && value.indexOf('nextval') > -1) {
+            value = <span title={value}>SERIAL</span>
+        }
+        return value
+    }
+
+    const listItems = Object.values(props.data).map((field, k) => {
         return (
-          <tr id={"f-"+v.Field} key={v.Field}>
-              <td><input name="field[]" id={"field"+k} type="checkbox" value={v.Field} className="cb" /></td>
-              <td>{v.Field}</td>
-              <td>{v.Type}</td>
-              <td>{v.Null}</td>
-              <td>{v.Default}</td>
-              <td>{key}</td>
-              <td>{v.Extra}</td>
-              <td><a href={`?s=tbl_add&table=${props.table}&field=`+encodeURIComponent(v.Field)} title="Редактировать ряд"><img src={props.dirImage + "edit.gif"} alt="" /></a></td>
-              <td><a href="#" onClick={deleteField.bind(this, v.Field)} title="Удалить ряд"><img src={props.dirImage + "close.png"} alt="" /></a></td>
+          <tr id={"f-"+field.Field} key={field.Field}>
+              <td><input name="field[]" id={"field"+k} type="checkbox" value={field.Field} className="cb" /></td>
+              <td>{field.Field}</td>
+              <td>{field.Type}</td>
+              <td>{field.Null}</td>
+              <td>{getDefault(field)}</td>
+              <td>{getKey(props, field)}</td>
+              <td>{field.Extra}</td>
+              <td><a href={`?s=tbl_add&table=${props.table}&field=`+encodeURIComponent(field.Field)} title="Редактировать ряд"><img src={props.dirImage + "edit.gif"} alt="" /></a></td>
+              <td><a href="#" onClick={deleteField.bind(this, field.Field)} title="Удалить ряд"><img src={props.dirImage + "close.png"} alt="" /></a></td>
           </tr>
         )
     });
@@ -93,10 +105,14 @@ function TableStruct(props) {
 
 function KeysInfo(props) {
 
-    const checkDelete = (e) => {
+    const deleteKey = (query, e) => {
         e.preventDefault();
-        check(e.currentTarget, 'удаление ключа');
-        return false
+        if (!confirm('Подтвердите')) {
+            return false
+        }
+        msQuery('deleteKey', query, () => {
+            e.target.closest('tr').remove()
+        })
     }
 
     return (
@@ -135,10 +151,10 @@ function KeysInfo(props) {
           </thead>
           <tbody>
           {props.dataKeys.map((v) => {
-              let href = `?db=${props.db}&table=${props.table}&s=tbl_struct&action=deleteKey&key=${v.Key_name}&field=${v.Column_name}`
+              let query = `?key=${v.Key_name}&field=${v.Column_name}`
               return (
                 <tr key={v.Key_name + v.Seq_in_index}>
-                    <td><a href={href} onClick={checkDelete}><img src={props.dirImage + "close.png"} alt="" border="0"/></a></td>
+                    <td><a href="#" onClick={deleteKey.bind(this, query)}><img src={props.dirImage + "close.png"} alt="" border="0"/></a></td>
                     {Object.values(v).map((value, key) =>
                       <td key={key + "index"}>{value}</td>
                     )}
@@ -160,10 +176,6 @@ export function Tbl_struct(props) {
         })
      };
 
-    const imageAction = (opt, e) => {
-        msImageAction('formTableStructure', opt)
-    }
-
     const onSubmit = (e, xx) => {
         e.preventDefault()
         submitFormIfFieldNotEmpty(e.target, 'fieldsNum')
@@ -179,7 +191,7 @@ export function Tbl_struct(props) {
               <div>
                   <form action={props.addTableUrl} method="post" name="formTableStructure"
                         id="formTableStructure">
-                      <input type="hidden" name="action" value=""/>
+                      <input type="hidden" name="action" value="fieldsEdit" />
 
                       <TableStruct {...props} />
 
@@ -191,10 +203,9 @@ export function Tbl_struct(props) {
 
                       <div className="imageAction">
                           <u>Выбранные</u>
-                          <input type="image" src={props.dirImage + "edit.gif"}
-                                 onClick={imageAction.bind(this, 'fieldsEdit')} alt=""/>
+                          <input type="image" src={props.dirImage + "edit.gif"} alt=""/>
                           <input type="image" src={props.dirImage + "close.png"}
-                                 onClick={imageAction.bind(this, 'fieldsDelete')} alt=""/>
+                                 onClick={msFormQuery.bind(this, 'fieldsDelete')} alt=""/>
                       </div>
                   </form>
 

@@ -1,11 +1,20 @@
 import React from 'react';
-import {addRow, removeRow} from "../functions";
-export function Tbl_key_add(props) {
+import {addRow, msQuery, removeRow, umaker} from "../functions";
+export function Tbl_struct_add_key(props) {
+
+    const onSubmit = (e) => {
+        e.preventDefault()
+        msQuery('addKey', e.target, () => {
+            setTimeout(function() {
+                location.href = umaker({mode: false})
+            }, 2000);
+        })
+    }
 
     let types = ['PRIMARY KEY','INDEX','UNIQUE','FULLTEXT']
 
     return (
-      <form method="post" action="" className="tableFormEdit">
+      <form method="post" action="" className="tableFormEdit" onSubmit={onSubmit.bind(this)}>
 
           имя индекса:
           <input type="text" required name="keyName" defaultValue={props.keyName} /><br /><br />

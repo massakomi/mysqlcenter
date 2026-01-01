@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace database;
 
 use dto\FieldInfo;
@@ -30,11 +32,11 @@ class PostgreSQL implements Driver
 
         $sql = '
             SELECT identity_start, table_name
-            FROM INFORMATION_SCHEMA.COLUMNS 
+            FROM information_schema.columns 
             WHERE is_identity = \'YES\'';
         $data = $msc->getData($sql);
         $autoIncrementsByTables = [];
-        foreach ($data as $key => $value) {
+        foreach ($data as $value) {
             $autoIncrementsByTables [$value['table_name']] = $value['identity_start'];
         }
 
@@ -48,7 +50,7 @@ class PostgreSQL implements Driver
             WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\'';
             $data = $msc->getData($sql, \PDO::FETCH_OBJ);
             foreach ($data as $key => $value) {
-                $msc->execPdo("ANALYZE " . $value->table_name);
+                $msc->execPdo('ANALYZE "' . $value->table_name . '"');
             }
         }
 
@@ -62,7 +64,8 @@ class PostgreSQL implements Driver
                 0 as "Auto_increment",
                 0 as "Create_time",
                 0 as "Update_time",
-                \'' . $charset . '\' as "Collation"
+                \'' . $charset . '\' as "Collation",
+                table_schema as "Schema"
             FROM information_schema.tables ist 
                 LEFT JOIN pg_class c ON c.relname = ist.table_name
                 LEFT JOIN pg_namespace n ON n.oid = c.relnamespace

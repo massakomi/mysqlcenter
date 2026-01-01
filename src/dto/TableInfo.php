@@ -7,6 +7,17 @@ namespace dto;
  */
 final class TableInfo
 {
+    /**
+     * Сюда загружаются поля в TblList
+     * @var array
+     */
+    public array $fields = [];
+    /**
+     * Сюда загружаются данные частично в TblList
+     * @var array
+     */
+    public array $data = [];
+
     public function __construct(
         public ?string $Name = null,
         public ?string $Engine = null,

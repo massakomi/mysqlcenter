@@ -27,40 +27,7 @@ export async function msQuery(mode, query = '', callback = '') {
  */
 async function queryResponse(response, callback, type = 'json') {
 
-    if (response.ok) {
-        let content = await response.text()
-        if (type === 'json') {
-            if (response.headers.get('Content-type') === 'application/json') {
-                try {
-                    content = JSON.parse(content)
-                    if (content.status === false) {
-                        return onError('')
-                    }
-                } catch (e) {
-                    return onError('Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack)
-                }
-            } else {
-                return onError('Ошибка, вернулся не Json, см. консоль.', content)
-            }
-        }
-
-        // Оставляю на всякий случай, хотя возвращается всегда Json
-        if (type === 'text') {
-            if (content.match(/(Parse|Fatal) error/i)) {
-                return onError('Ошибка на сервере, см. консоль.', content)
-            } else {
-                try {
-                    eval(content)
-                } catch (e) {
-                    return onError('JS код не выполнен: ' + content)
-                }
-            }
-        }
-        if (callback && typeof callback == 'function') {
-            callback(content)
-        }
-        return content
-    } else {
+    if (!response.ok) {
         try {
             let error = await response.json()
             showError(`${error.message} <span class="text-black-50">${error.file}</span>`)
@@ -69,6 +36,40 @@ async function queryResponse(response, callback, type = 'json') {
             return onError(`${response.status} ${response.statusText}`)
         }
     }
+
+    let content = await response.text()
+    if (type === 'json') {
+        if (response.headers.get('Content-type') === 'application/json') {
+            try {
+                content = JSON.parse(content)
+                Messages.show(content)
+                if (content.status === false) {
+                    return onError('')
+                }
+            } catch (e) {
+                return onError('Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack)
+            }
+        } else {
+            return onError('Ошибка, вернулся не Json, см. консоль.', content)
+        }
+    }
+
+    // Оставляю на всякий случай, хотя возвращается всегда Json
+    if (type === 'text') {
+        if (content.match(/(Parse|Fatal) error/i)) {
+            return onError('Ошибка на сервере, см. консоль.', content)
+        } else {
+            try {
+                eval(content)
+            } catch (e) {
+                return onError('JS код не выполнен: ' + content)
+            }
+        }
+    }
+    if (callback && typeof callback == 'function') {
+        callback(content)
+    }
+    return content
 }
 
 function onError(message, content) {
@@ -81,62 +82,78 @@ function onError(message, content) {
     return { error: true, message }
 }
 
-function showMessages(json) {
-    if (!json.messages || !json.messages.length) {
-        return
-    }
+// Всплывающие сообщения после ajax запросов
+const Messages = {
 
-    let div = document.getElementById('msAjaxQueryDiv')
-    div.classList.add('visible')
-
-    if (div.querySelectorAll('table').length > 2) {
-        div.querySelector('table:last-child').remove()
-    }
-
-    let messages
-    if (typeof(json.messages) == 'string') {
-        messages = json.messages
-    } else {
-        messages = []
-        for (let message of json.messages) {
-            let textError = message.text
-            if (message.sql !== '' && message.sql !== null) {
-                let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
-                textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
-            }
-            if (message.error !== '' && message.error !== null) {
-                textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
-            }
-            messages.push(textError)
+    show(json) {
+        if (!json.messages || !json.messages.length) {
+            return
         }
-        messages = messages.join('<br />')
-    }
 
-    div.insertAdjacentHTML(
-        'afterbegin',
-        `
-        <div class="globalMessage">
-            <div>Сообщение <a href="#" class="hiddenSmallLink" style="color:#fff" onClick="toggleMessages(this)">close</a></div>
-            <div><td>${messages}</div>
-        </div>`,
-    )
+        let div = document.getElementById('msAjaxQueryDiv')
+        div.classList.add('visible')
 
-    let clearMsgTimeout = () => {
-        if (typeof msAjaxQueryDivTm != 'undefined' && msAjaxQueryDivTm != null) {
-            clearTimeout(msAjaxQueryDivTm)
-            window.msAjaxQueryDivTm = null
+        let previousMessage = div.querySelector('.globalMessage:last-child')
+        if (previousMessage) {
+            previousMessage.remove()
         }
-    }
-    let restartMsgTimeout = () => {
-        clearMsgTimeout()
-        window.msAjaxQueryDivTm = setTimeout(function () {
-            div.classList.remove('visible')
-        }, 5000)
-    }
-    div.addEventListener('mousemove', clearMsgTimeout)
-    restartMsgTimeout()
-    div.addEventListener('mouseout', restartMsgTimeout)
+
+        div.insertAdjacentHTML(
+          'afterbegin',
+          `
+            <div class="globalMessage">
+                <div>Сообщение</div>
+                <div><td>${this.collect(json)}</div>
+            </div>`,
+        )
+
+        this.hideAfterTimeout(div)
+    },
+
+    collect(json) {
+        let messages
+        if (typeof(json.messages) == 'string') {
+            messages = json.messages
+        } else {
+            messages = []
+            for (let message of json.messages) {
+                let textError = message.text
+                if (message.sql !== '' && message.sql !== null) {
+                    let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
+                    textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
+                }
+                if (message.error !== '' && message.error !== null) {
+                    textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
+                }
+                messages.push(textError)
+            }
+            messages = messages.join('<br />')
+        }
+        return messages
+    },
+
+    hideAfterTimeout(div) {
+        let clearMsgTimeout = () => {
+            if (typeof msAjaxQueryDivTm != 'undefined' && msAjaxQueryDivTm != null) {
+                clearTimeout(msAjaxQueryDivTm)
+                window.msAjaxQueryDivTm = null
+            }
+        }
+        let restartMsgTimeout = () => {
+            clearMsgTimeout()
+            window.msAjaxQueryDivTm = setTimeout(function () {
+                div.classList.remove('visible')
+            }, 5000)
+        }
+        div.addEventListener('mousemove', clearMsgTimeout)
+        restartMsgTimeout()
+        div.addEventListener('mouseout', restartMsgTimeout)
+    },
 }
+
+
+
+
 
 /**
  *
@@ -165,26 +182,23 @@ function getFetchOptions(mode, query) {
     }
 }
 
-
 /**
- * Показать / скрыть элемент
- * Внимание! первоначальный style.display должен быть назначен скриптом, иначе он будет не виден
+ * Отправка родительской формы с указанным mode
  */
-function toggleMessages(obj) {
-    const id = obj.parentNode.nextElementSibling
-    if (id.style.display === '') {
-        id.style.display = 'block'
+export function msFormQuery(mode, event) {
+    event.preventDefault()
+    if (mode.match(/delete/i) || mode.match(/truncate/i)) {
+        if (!confirm('Подтвердите...')) {
+            return false
+        }
     }
-    if (id.style.display === 'none') {
-        id.style.display = 'block'
-    } else {
-        id.style.display = 'none'
-    }
+    let form = event.target.closest('form')
+    msQuery(mode, form)
 }
 
 function showError(message) {
     console.error(message)
-    showMessages({'messages': message})
+    Messages.show({'messages': message})
 }
 
 // umaker({db: 'xxx'})
@@ -196,7 +210,7 @@ export function umaker(query = {}, doSwitch = false) {
             continue
         }
         if (doSwitch) {
-            if (new URL(location.href).searchParams.get(key) === query[key]) {
+            if (GET(key) === query[key]) {
                 if (doSwitch === true) {
                     u.searchParams.delete(key)
                     continue
@@ -210,24 +224,6 @@ export function umaker(query = {}, doSwitch = false) {
     return u.href
 }
 
-/**
- * Присваивает полю 'image_action' значение param и отправляет форму (для image кнопок)
- * @ actionReplace - новое значение action формы (опционально)
- */
-export function msImageAction(formName, param, actionReplace) {
-    if (param.match(/delete/i) || param.match(/truncate/i)) {
-        if (!confirm('Подтвердите...')) {
-            return false
-        }
-    }
-    let f = document.getElementsByName(formName)
-    let forma = f[0]
-    forma['action'].value = param
-    if (!is_null(actionReplace)) {
-        forma.setAttribute('action', actionReplace)
-    }
-    forma.submit()
-}
 
 /**
  * Редирект с сабмита sql форм (в шапке и на странице sql)
@@ -266,7 +262,7 @@ export function sqlFormEvents() {
     let openLink = document.querySelector('.sqlFormToggle')
     list(openLink, 'click', sqlFormToggle);
     // Вставить значение по умолчанию
-    let table = new URL(location.href).searchParams.get('table')
+    let table = new GET('table')
     let textarea = form.querySelector('textarea')
     if (!table || textarea.value) {
         return;
@@ -367,6 +363,17 @@ export function submitFormIfFieldNotEmpty(forma, fieldName) {
 // Полезнейший набор функций
 function is_null(v) {
     return typeof v == 'undefined'
+}
+
+export function empty(value) {
+    if (typeof value == 'undefined') {
+        return true
+    }
+    if (value !== null && typeof(value) == 'object') {
+        return Object.keys(value).length === 0
+    } else {
+        return !value
+    }
 }
 
 function trim(s) {
@@ -531,7 +538,7 @@ export function processRowValue(v, type, textCut) {
             v = htmlspecialchars(v)
         }
         if (v.length > textCut) {
-            let fullText = new URL(location.href).searchParams.get('fullText')
+            let fullText = new GET('fullText')
             if (fullText === null) {
                 v = v.substring(0, textCut)
             }
@@ -631,29 +638,28 @@ export function qs(selector) {
 }
 
 
+function ucfirst(value) {
+    return value.replace(/^./, char => char.toUpperCase());
+}
+
 export function getComponentByPage(ComponentsMap) {
     let page = window.component
-    const table = new URL(location.href).searchParams.get('table')
-    const action = new URL(location.href).searchParams.get('action')
-    if (page === 'actions' && !table) {
-        page = 'actionsdb'
+    let componentName = ucfirst(page);
+    const mode = GET('mode')
+    if (mode) {
+        componentName += '_' + mode
     }
-    if (page === 'search' && table) {
-        page = 'searchTable'
-    }
-    if (page === 'tbl_list' && action === 'structure') {
-        page = 'tbl_struct_view'
-    }
-    if (page === 'tbl_struct' && action === 'add_key') {
-        page = 'tbl_key_add'
-    }
-    if (page === 'export' && action === 'special') {
-        page = 'exportSp'
-    }
-    let componentName = page.replace(/^./, char => char.toUpperCase());
-
     if (typeof(ComponentsMap[componentName]) == 'undefined') {
-        componentName = 'NotFound'
+        console.log(componentName)
+        componentName = ''
     }
     return ComponentsMap[componentName]
+}
+
+export function GET(param, defaultValue=null) {
+    let value = new URL(location.href).searchParams.get(param);
+    if (!value) {
+        return defaultValue
+    }
+    return value
 }

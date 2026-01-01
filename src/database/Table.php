@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace database;
 
 use dto\FieldInfo;
@@ -91,8 +93,15 @@ class Table
                 return $msc->error('Неверный тип обработки');
         }
         $msc->selectDb($db);
-        if ($msc->execPdo($sql)) {
-            $msc->fetchPdo("ANALYZE TABLE `$table`;");
+        if (in_array($type, ['CHECK', 'ANALYZE', 'REPAIR', 'OPTIMIZE', 'FLUSH'])) {
+            $result = $msc->fetchPdo($sql);
+        } else {
+            $result = $msc->execPdo($sql);
+        }
+        if ($result) {
+            if (in_array($type, ['TRUNCATE'])) {
+                $msc->fetchPdo("ANALYZE TABLE `$table`;");
+            }
             return $msc->success("Таблица $table $text", $sql);
         } else {
             $text = "Ошибка при выполнении операции с таблицей $table";
@@ -166,10 +175,9 @@ class Table
      * Возвращает массив SQL объектов-полей таблицы $table
      *
      * @param string $table таблица
-     * @param bool $onlyNames возвратить только массив имён полей
      * @return FieldInfo[] Массив полей
      */
-    public static function getFields(string $table, bool $onlyNames = false): array
+    public static function getFields(string $table): array
     {
         if (empty($table)) {
             return [];
@@ -187,11 +195,16 @@ class Table
                 $cache[$cacheId] [$row->Field] = $row;
             }
         }
-        if ($onlyNames) {
-            return array_keys($cache[$cacheId]);
-        } else {
-            return $cache[$cacheId];
-        }
+        return $cache[$cacheId];
+    }
+
+    /**
+     * Только массив имен полей
+     */
+    public static function getFieldNames(string $table): array
+    {
+        $fields = self::getFields($table);
+        return array_keys($fields);
     }
 
     /**

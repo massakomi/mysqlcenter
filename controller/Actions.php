@@ -63,7 +63,7 @@ class Actions extends Base
             'charset' => $row->Charset ?: '',
             'charsets' => Server::getCharsetArray(),
             'dbs' => Server::getDatabases(),
-            'fields' => Table::getFields($msc->table, true),
+            'fields' => Table::getFieldNames($msc->table),
         ];
     }
 }

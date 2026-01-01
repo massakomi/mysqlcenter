@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useRef, Fragment} from 'react';
 import {Table} from "../components";
-import {forElements} from "../functions";
+import {empty, forElements} from "../functions";
+import {SearchTable} from "./searchTable";
 
-function SearchForm(props) {
+function SearchDatabase(props) {
 
     const [query, setQuery] = useState('');
     const [queryField, setQueryField] = useState('');
@@ -64,10 +65,11 @@ function SearchForm(props) {
 }
 
 export function Search(props) {
+
     return (
       <Fragment>
           {props.results ? <Table data={props.results} /> : null}
-          <SearchForm {...props} />
+          {empty(props.table) ? <SearchDatabase {...props} /> : <SearchTable {...props} /> }
       </Fragment>
     )
 }

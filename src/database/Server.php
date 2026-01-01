@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace database;
 
 use service\Validate;
@@ -91,64 +93,6 @@ class Server
         }
         ksort($charsetList);
         return $charsetList;
-    }
-
-    /**
-     * @return bool
-     */
-    public static function userAdd()
-    {
-        global $msc;
-
-        $username  = $_POST['databaseuser'];
-        $database  = $_POST['database'];
-        $userpass  = $_POST['userpass'];
-
-
-        /*$result = $msc->query('DROP USER ""');
-        var_dump($result);
-        exit;*/
-
-        // Проверяем, может уже есть такой пользователь
-        $sql = 'SELECT * FROM mysql.user WHERE User="' . $username . '"';
-        $result = $msc->getData($sql);
-        if ($result) {
-            $msc->error('Пользователь с именем "' . $username . '" уже существует');
-            return false;
-        }
-
-
-        // Сначала добавляем пользователя
-        $sql = 'CREATE USER `' . $username . '` IDENTIFIED BY "' . $userpass . '"';
-        $result = $msc->execPdo($sql);
-        if ($result) {
-            $msc->success('Пользователь "' . $username . '" добавлен', $sql);
-        } else {
-            $msc->error('Ошибка добавления пользователя "' . $username . '"', $sql);
-            return false;
-        }
-
-        // Теперь добавляем базу данных
-        $sql = 'CREATE DATABASE `' . $database . '`';
-        $result = $msc->execPdo($sql);
-        if ($result) {
-            $msc->success('База данных "' . $database . '" создана', $sql);
-        } else {
-            $msc->error('Ошибка создания базы данных "' . $database . '"', $sql);
-            return false;
-        }
-
-        // Теперь наделяем привелегиями пользователя на эту базу
-        $sql = 'GRANT ALL ON `' . $database . '`.* TO `' . $username . '`';
-        $result = $msc->execPdo($sql);
-        if ($result) {
-            $str = 'Права на базу "' . $database . '" отданы пользоватлю "' . $username . '"';
-            $msc->success($str, $sql);
-        } else {
-            $msc->error('Ошибка наделения прав на базу "' . $database . '"', $sql);
-            return false;
-        }
-        return true;
     }
 
 

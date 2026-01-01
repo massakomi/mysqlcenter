@@ -56,7 +56,7 @@ function TableData(props) {
     })
 }
 
-export function Tbl_struct_view(props) {
+export function Tbl_list_structure(props) {
 
     let fieldVariants = {}
     for (const v of props.tables) {

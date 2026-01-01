@@ -25,83 +25,39 @@ class TblAdd extends Base
             }
         }
 
+        // Получаем массив имён полей из формы.
+        $names = POST('name');
+        if (is_array($names) && count($names) > 0 && POST('action') != '') {
+            return $this->process($names, $fields, $afterSql);
+        }
+
         // HTML форма
         // Создание таблицы или добавление полей
-        $array = [];
-        $afterSql = '';
+        $numFields = POST('fieldsNum', GET('fieldsNum', MS_FIELDS_COUNT));
+        $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : $numFields;
         if ($msc->table == null || POST('action') == 'fieldsAdd') {
-            $numFields = POST('numFields', GET('fieldsNum', MS_FIELDS_COUNT));
-            $fieldsCount = isset($_POST['name']) ? count($_POST['name']) : $numFields;
-            if (is_array(POST('name'))) {
-            } else {
-                $array = range(0, $fieldsCount - 1);
-            }
             $msc->pageTitle = "Добавить таблицу в базу данных $msc->db";
-            // Добавление полей
             if (POST('action') == 'fieldsAdd') {
                 $msc->pageTitle = 'Добавить поля';
-                if (POST('afterOption') == 'start') {
-                    $afterSql = 'FIRST';
-                } elseif (POST('afterOption') == 'field') {
-                    $afterSql = 'AFTER `' . POST('afterField') . '`';
-                }
             }
-
         // Редактирование полей или таблицы
         } else {
-            // TODO весь этот блок тоже в js
-            // редактируемые поля
-            $edited = [];
-            if (GET('field') != '') {
-                $edited [] = stripslashes(urldecode(GET('field')));
-            } elseif (!empty($_POST['fields'])) {
-                $edited = explode(',', $_POST['fields']);
-            } elseif (isset($_POST['field']) && count($_POST['field']) > 0) {
-                $edited = $_POST['field'];
-            }
-            // собираем только те поля, которые реально существуют в таблице
-            foreach ($fields as $row) {
-                if (count($edited) > 0) {
-                    if (in_array($row->Field, $edited)) {
-                        $array [] = $row;
-                    }
-                    continue;
-                }
-                $array [] = $row;
-            }
             $msc->pageTitle = 'Редактировать структуру';
         }
 
-        $getAction = function () {
-            if (GET('s') == 'tbl_add' && empty($_POST) && !isset($_GET['field'])) {
-                return 'tableAddEnd';
-            } elseif (POST('action') == 'fieldsAdd') {
-                return 'fieldsAddEnd';
-            }
-            return 'fieldsEditEnd';
-        };
-
-        $showTableName = function () {
-            return POST('action') != 'fieldsAdd' && !isset($_GET['field']) && POST('action') != 'fieldsEdit';
-        };
-
         return [
             'dirImage' => MS_DIR_IMG,
-            'action' => $getAction(),
-            'afterSql' => $afterSql,
-            'showTableName' => $showTableName(),
             'tableName' => POST('tableName') ?: $msc->table,
-            'array' => $array,
-            'post' => $_POST,
-            'keys' => Table::getTableKeys($msc->table),
-            'fields' => Table::getFields($msc->table, true)
+            'fields' => array_values($fields),
+            'fieldsCount' => $fieldsCount,
+            'keys' => Table::getTableKeys($msc->table)
         ];
     }
 
     /**
      * {}
      */
-    public function process($names, $fields, &$afterSql): array
+    private function process($names, $fields, &$afterSql): array
     {
         global $msc;
         // Ключи

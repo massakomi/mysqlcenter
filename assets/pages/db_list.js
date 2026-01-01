@@ -1,5 +1,5 @@
 import React from 'react';
-import {checkboxAction, msImageAction, msQuery} from "../functions";
+import {checkboxAction, msFormQuery, msQuery} from "../functions";
 
 function TableFull(props) {
 
@@ -146,15 +146,6 @@ function Table(props) {
 
 function ColumnLeft(props) {
 
-    const imageAction = (param, actionReplace) => {
-        if (typeof actionReplace == 'string') {
-            actionReplace = props.url + '?s=' + actionReplace
-        } else {
-            actionReplace = ''
-        }
-        msImageAction('formDatabases', param, actionReplace)
-    }
-
     const chbxAction = opt => {
         checkboxAction('formDatabases', opt, 'databases[]')
     };
@@ -162,27 +153,26 @@ function ColumnLeft(props) {
 
     return (
       <div>
-          <form action="?s=db_list" method="post" name="formDatabases" id="formDatabases">
+          <form action="?s=db_compare" method="post" name="formDatabases" id="formDatabases">
               <input type="hidden" name="dbMulty" value="1" />
               <input type="hidden" name="action" value="" />
               {!props.showFullInfo ?
                 <Table folder={props.folder} databases={props.databases} hiddens={props.hiddens} /> :
                 <TableFull folder={props.folder} databases={props.databases} hiddens={props.hiddens} />}
+
+              <div className="chbxAction">
+                  <img src={"/" + props.folder + "arrow_ltr.png"} alt="" border="0" align="absmiddle" />
+                  <a href="#" onClick={chbxAction.bind(this, 'check')}>выбрать все</a>  &nbsp;
+                  <a href="#" onClick={chbxAction.bind(this, 'uncheck')}>очистить</a>
+              </div>
+
+              <div className="imageAction">
+                  <u>Выбранные</u>
+                  <input type="image" src={"/" + props.folder + "close.png"} onClick={msFormQuery.bind(this, 'dbDelete')} title="Удалить базы данных" alt="" />
+                  <input type="image" src={"/" + props.folder + "copy.gif"} onClick={msFormQuery.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" alt="" />
+                  <input type="image" src={"/" + props.folder + "fixed.gif"} title="Сравнить выбранные базы данных" alt="" />
+              </div>
           </form>
-
-          <div className="chbxAction">
-              <img src={"/" + props.folder + "arrow_ltr.png"} alt="" border="0" align="absmiddle" />
-              <a href="#" onClick={chbxAction.bind(this, 'check')}>выбрать все</a>  &nbsp;
-              <a href="#" onClick={chbxAction.bind(this, 'uncheck')}>очистить</a>
-          </div>
-
-          <div className="imageAction">
-              <u>Выбранные</u>
-              <input type="image" src={"/" + props.folder + "close.png"} onClick={imageAction.bind(this, 'dbDelete')} title="Удалить базы данных" alt="" />
-              <input type="image" src={"/" + props.folder + "copy.gif"} onClick={imageAction.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" alt="" />
-              <input type="image" src={"/" + props.folder + "b_tblexport.png"} onClick={imageAction.bind(this, 'exportDatabases', 'export')} title="Перейти к экспорту баз данных" alt="" />
-              <input type="image" src={"/" + props.folder + "fixed.gif"} onClick={imageAction.bind(this, 'db_compare', 'db_compare')} title="Сравнить выбранные базы данных" alt="" />
-          </div>
       </div>
     );
 }
@@ -194,7 +184,7 @@ function ColumnRight(props) {
 
     let tableLink;
     if (!props.showFullInfo) {
-        tableLink = <a href={`?s=db_list&db=${props.dbname}&mode=full`} title="Сканирует все таблицы всех баз данных и выводит количество таблиц, размер, дату обновления и количество рядов">Показать полную таблицу</a>
+        tableLink = <a href={`?s=db_list&db=${props.dbname}&type=full`} title="Сканирует все таблицы всех баз данных и выводит количество таблиц, размер, дату обновления и количество рядов">Показать полную таблицу</a>
     } else {
         tableLink = <a href={`?s=db_list&db=${props.dbname}`}>Показать краткую таблицу</a>
     }

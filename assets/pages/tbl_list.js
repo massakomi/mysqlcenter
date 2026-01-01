@@ -1,6 +1,6 @@
 import React, {useState, Fragment} from 'react';
 import {Table} from "../components";
-import {checkboxAction, date2rusString, formatSize, msImageAction, msQuery} from "../functions";
+import {checkboxAction, date2rusString, formatSize, msFormQuery, msQuery} from "../functions";
 
 function Selector(props) {
 
@@ -102,19 +102,33 @@ function TableList(props) {
         return collation
     }
 
-    const renderRow = (table, key, tablesCount) => {
-        // Увеличение счётчика видимых таблиц
-        let sumTable = key + 1
-        // Форматирование даты
+    // Форматирование даты
+    const getTime = (time) => {
         let updateTime = null;
-
-        if (table.Update_time) {
-            const dateUt = new Date(table.Update_time);
+        if (time) {
+            const dateUt = new Date(time);
             updateTime = date2rusString(dateUt)
             if (updateTime.match(/(дня|ера)/i)) {
                 updateTime = <b>{updateTime}</b>
             }
         }
+        return updateTime
+    }
+
+    const getEngine = (table) => {
+        let engine = table.Engine
+        if (engine === 'MyISAM') {
+            engine = <span style={{color: '#ccc'}}>MyISAM</span>
+        }
+        if (engine === 'PostgreSQL') {
+            engine += ' / ' + table.Schema
+        }
+        return engine
+    }
+
+    const renderRow = (table, key, tablesCount) => {
+        // Увеличение счётчика видимых таблиц
+        let sumTable = key + 1
         // Форматирование названия таблицы
         let valueName = table.Name
         if (table.Rows === '0') {
@@ -128,7 +142,7 @@ function TableList(props) {
         const msquery = `db=${props.db}&table=${table.Name}`;
         const idRow = "row" + sumTable;
         const idChbx = 'table_' + table.Name
-        const engine = table.Engine === 'MyISAM' ? <span style={{color: '#ccc'}}>MyISAM</span> : table.Engine;
+
 
         return (
           <tr key={table.Name} id={idRow}>
@@ -144,9 +158,9 @@ function TableList(props) {
               </td>
               <td className="rig">{table.Rows}</td>
               <td className="rig">{printSize(size, tablesCount)}</td>
-              <td>{updateTime}</td>
+              <td>{getTime(table.Update_time)}</td>
               <td className="num">{table.Auto_increment}</td>
-              <td><span>{engine}</span></td>
+              <td>{getEngine(table)}</td>
               <td className="rig"><span title={table.Collation} style={{color: '#aaa'}}>{getCollation(table)}</span></td>
           </tr>
         )
@@ -201,13 +215,6 @@ export function Tbl_list(props) {
 
     const [tables, setTables] = useState(props.tables);
 
-    const imageAction = (opt, url) => {
-        if (opt === 'auto') {
-            opt = this.target.options[this.target.selectedIndex].value
-        }
-        msImageAction('formTableList', opt, url)
-    }
-
     const chbxAction = (opt, e) => {
         e.preventDefault()
         checkboxAction('formTableList', opt, 'table[]')
@@ -250,12 +257,11 @@ export function Tbl_list(props) {
 
               <div className="imageAction">
                   <u>Выбранные</u>
-                  <img src={image("close.png")} alt="" onClick={imageAction.bind(this, 'delete_all', '')} />
-                  <img src={image("delete.gif")} alt="" onClick={imageAction.bind(this, 'truncate_all', '')} />
-                  <img src={image("copy.gif")} alt="" onClick={imageAction.bind(this, 'copy_all', '')} />
-                  <img src={image("b_tblexport.png")} alt="" onClick={imageAction.bind(this, 'export_all', `?db=${props.db}&s=export`)} />
+                  <img src={image("close.png")} alt="" onClick={msFormQuery.bind(this, 'delete_all')} />
+                  <img src={image("delete.gif")} alt="" onClick={msFormQuery.bind(this, 'truncate_all')} />
+                  <img src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copy_all')} />
 
-                  <select name="act" onChange={imageAction.bind(this, 'auto', '')} >
+                  <select name="act" onChange={msFormQuery.bind(this, 'dbAllAction')} className="ml-20">
                       <option></option>
                       <option value="check">проверить</option>
                       <option value="analyze">анализ</option>
@@ -269,8 +275,8 @@ export function Tbl_list(props) {
               </div>
           </form>
           <div className="links-block">
-              <a href="?s=tbl_list&action=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
-              <a href="?s=tbl_list&action=structure">Исследование структуры таблиц</a>
+              <a href="?s=tbl_list&mode=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
+              <a href="?s=tbl_list&mode=structure">Исследование структуры таблиц</a>
           </div>
           {props.showtableupdated > 0 &&
             <form className="showtableupdated">
