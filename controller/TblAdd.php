@@ -105,13 +105,15 @@ class TblAdd extends Base
                 continue;
             }
             // after
-            $after    = $_POST['after'][$k];
-            $afterold = $_POST['afterold'][$k];
-            if ($after != $afterold) {
-                if ($after == 'FIRST') {
-                    $define .= ' FIRST';
-                } else {
-                    $define .= ' AFTER `' . $after . '`';
+            if (POST('action') !== 'tableAddEnd') {
+                $after    = $_POST['after'][$k];
+                $afterold = $_POST['afterold'][$k];
+                if ($after != $afterold) {
+                    if ($after == 'FIRST') {
+                        $define .= ' FIRST';
+                    } else {
+                        $define .= ' AFTER `' . $after . '`';
+                    }
                 }
             }
             $fieldsDefFull [] = "`$name` $define";
@@ -126,7 +128,6 @@ class TblAdd extends Base
                 $newKeys [] = "$name MUL " . $mulKeys[$name];
             }
         }
-        // TODO обработка SET ENUM полей
 
         // создание запроса на сздание таблицы
         if (POST('action') == 'tableAddEnd') {
@@ -155,7 +156,6 @@ class TblAdd extends Base
             $a = [];
             foreach ($fieldsDefEdit as $oldFieldName => $def) {
                 $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinition($fields[$oldFieldName]);
-                //echo "<br />$oldDefinition == $def";exit;
                 if ($oldDefinition == $def) {
                     continue;
                 }

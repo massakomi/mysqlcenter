@@ -160,13 +160,13 @@ function ColumnLeft(props) {
                 <Table folder={props.folder} databases={props.databases} hiddens={props.hiddens} /> :
                 <TableFull folder={props.folder} databases={props.databases} hiddens={props.hiddens} />}
 
-              <div className="chbxAction">
+              <div className="chbxAction mt-10">
                   <img src={"/" + props.folder + "arrow_ltr.png"} alt="" border="0" align="absmiddle" />
                   <a href="#" onClick={chbxAction.bind(this, 'check')}>выбрать все</a>  &nbsp;
                   <a href="#" onClick={chbxAction.bind(this, 'uncheck')}>очистить</a>
               </div>
 
-              <div className="imageAction">
+              <div className="imageAction mt-10">
                   <u>Выбранные</u>
                   <input type="image" src={"/" + props.folder + "close.png"} onClick={msFormQuery.bind(this, 'dbDelete')} title="Удалить базы данных" alt="" />
                   <input type="image" src={"/" + props.folder + "copy.gif"} onClick={msFormQuery.bind(this, 'dbCopy')} title="Скопировать базы данных по шаблону {db_name}_copy" alt="" />
@@ -195,7 +195,6 @@ function ColumnRight(props) {
 
           <div className="mt-10">
               {tableLink} <br/>
-              <a href={`?s=actions&info=1`}>Информация сервера</a>
           </div>
 
           <div className="mt-10">Хост: {props.dbHost}</div>
@@ -209,10 +208,10 @@ function ColumnRight(props) {
 function DbCreateForm() {
     return  (
       <fieldset className="msGeneralForm">
-          <legend>Создание базы данных</legend>
+          <legend>Создать базу данных</legend>
           <form action="?s=tbl_list&action=dbCreate" method="post">
-              <input name="dbName" type="text" defaultValue="" />
-              <button type="submit">Создать!</button>
+              <input name="dbName" type="text" />
+              <button type="submit" className="ml-10">Создать!</button>
           </form>
       </fieldset>
     )

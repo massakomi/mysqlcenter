@@ -1,5 +1,6 @@
 import React, {Fragment, useEffect} from 'react';
 import {addRow, empty, forElementsEvent, GET, msQuery, qs, umaker} from "../functions";
+import {Messages} from "../functions";
 
 const getAction = () => {
     const s = GET('s')
@@ -27,8 +28,7 @@ function TableHead(props) {
               <th>PR</th>
               <th>UN</th>
               <th>IND</th>
-              <th>-</th>
-              <th>FU</th>
+              <th>Full</th>
               <th>Атрибуты</th>
               <th>После...</th>
           </tr></thead>
@@ -39,17 +39,10 @@ function TableHead(props) {
     );
 }
 
-function MSC_DrawFields(props) {
+function PrintFields(props) {
 
-    const aiClick = k => {
-        document.getElementById(`default${k}`).value = ''
-    };
-
-    const clearKeys = k => {
-        document.getElementById('key1'+k).checked = false;
-        document.getElementById('key2'+k).checked = false;
-        document.getElementById('key3'+k).checked = false;
-        return false;
+    const aiClick = (event) => {
+        event.target.parentNode.previousElementSibling.firstChild.value = ''
     };
 
     // Оставить только те поля, которе редактируем
@@ -71,16 +64,45 @@ function MSC_DrawFields(props) {
         return fields
     }
 
-    let POST = window.post || {};
-    let keys = props.keys;
-    let action = getAction()
+    // Длина поля, получаем из типа
+    const getLength = (type) => {
+        if (type !== undefined) {
+            let a = type.match(/\((.*)\)/)
+            if (a) {
+                return a[1]
+            }
+        }
+        return ''
+    }
 
-    console.log(action, props)
+    // Информация по ключам по текущему ряду поля
+    const getKeys = (field, keys) => {
+        let output = {}
+        // Если открыто на редактирование - нужно подставить текущие значения
+        if (typeof field == 'object') {
+            let name = field.Field;
+            if (keys[name]) {
+                Object.keys(keys[name]).forEach(function(keyName) {
+                    let key = keys[name][keyName];
+                    output.PRI = key === "PRI" || POST.primaryKey === name
+                    if (key === "UNI" || POST.uni && POST.uni[name]) {
+                        output.UNI = true
+                        output.uniName = keyName
+                    }
+                    if (key === "MUL" || POST.mul && POST.mul[name]) {
+                        output.MUL = true
+                        output.mulName = keyName
+                    }
+                });
+            }
+        }
+        return output
+    }
+
+    let POST = window.post || {};
+    let action = props.action
 
     // получение массива "предыдущих полей" полей
-    let fieldsAfter = ['FIRST']
-    let previousFields = {}
-    let prev = '';
     let fields
     if (action === 'tableAddEnd' || action === 'fieldsAddEnd') {
         fields = []
@@ -89,119 +111,30 @@ function MSC_DrawFields(props) {
         }
     } else {
         fields = filterFields(props);
-        fields.map((field) => {
-            previousFields[field.Field] = prev
-            prev = field.Field
-            fieldsAfter.push(field.Field)
-        })
     }
-
-    // создание селектора типов данных
-    let columnTypes = [
-        'VARCHAR', 'TINYINT', 'TEXT', 'DATE', 'JSON',
-        'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
-        'FLOAT', 'DOUBLE', 'DECIMAL',
-        'DATETIME', 'TIMESTAMP', 'TIME', 'YEAR',
-        'CHAR', 'TINYBLOB', 'TINYTEXT', 'BLOB', 'MEDIUMBLOB', 'MEDIUMTEXT', 'LONGBLOB', 'LONGTEXT',
-        'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
-    ];
 
     const trs = fields.map((field, index) => {
 
-        let NAME='', TYPE='', LENGTH='', DEFAULT='', ISNULL='', AUT='', extra='';
-        let isUnsignedZero=false, isUnsigned=false;
-        let PRI='', UNI='', MUL='', uniName='', mulName='';
-
-        if (typeof field == 'object') {
-            let a = field.Type.match(/\((.*)\)/)
-            if (a) {
-                LENGTH = a[1]
-            }
-            isUnsignedZero = field.Type.match(/unsigned zerofill/i) !== null;
-            isUnsigned = field.Type.match(/unsigned/i) !== null;
-            NAME = field.Field;
-            TYPE = field.Type.replace(/\((.*)\).*/i, '').toUpperCase();
-            DEFAULT = field.Default;
-            ISNULL = field.Null === true || field.Null === "YES";
-            AUT = field.Extra !== ""
-            extra = (
-              <Fragment>
-                  <select name="after[]" defaultValue={previousFields[field.Field]}>
-                      {fieldsAfter.map((v) =>
-                        <option key={v}>{v}</option>
-                      )}
-                  </select>
-                  <input type="hidden" name="afterold[]" defaultValue={previousFields[field.Field] || 'FIRST'} />
-              </Fragment>
-            )
-            if (keys[NAME]) {
-                Object.keys(keys[NAME]).forEach(function(keyName) {
-                    let key = keys[NAME][keyName];
-                    PRI = key === "PRI" || POST.primaryKey === NAME
-                    if (key === "UNI" || POST.uni && POST.uni[NAME]) {
-                        UNI = true
-                        uniName = keyName
-                    }
-                    if (key === "MUL" || POST.mul && POST.mul[NAME]) {
-                        MUL = true
-                        mulName = keyName
-                    }
-                });
-            }
-
-        } else if (POST.afterOption) {
-            let checked = ''
-            if (POST.afterOption === 'end') {
-                checked = fieldsAfter[fieldsAfter.length - 1]
-            } else if (POST.afterOption === 'field') {
-                checked = POST.afterField
-            }
-            extra = (
-              <Fragment>
-                  <select name={`after[${index}]`} defaultValue={checked}>
-                      {fieldsAfter.map((v) =>
-                        <option key={v}>{v}</option>
-                      )}
-                  </select>
-                  <input type="hidden" name={`afterold[${index}]`} defaultValue={checked} />
-              </Fragment>
-            )
-        }
-
-        let j = NAME === '' ? index : NAME;
-
-        let attr = isUnsigned ? 'UNSIGNED' : (isUnsignedZero ? 'UNSIGNED ZEROFILL' : '');
+        let keys = getKeys(field, props.keys)
+        let j = field.Field === '' ? index : field.Field;
 
         return (
-          <tr key={index} id={`tableFormEditTr${index}`}>
+          <tr key={index}>
               <td>
-                  <input name="name[]" tabIndex="1" id={`name${index}`} type="text" defaultValue={NAME} size="15" />
-                  <input type="hidden" name="oldname[]" defaultValue={NAME} />
+                  <input name="name[]" type="text" defaultValue={field.Field} size="15" />
+                  <input type="hidden" name="oldname[]" defaultValue={field.Field} />
               </td>
-              <td>
-                  <select name="ftype[]" tabIndex="2" id={`typeSelectorId${index}`} defaultValue={TYPE}>
-                      {columnTypes.map((v) =>
-                        <option key={v}>{v}</option>
-                      )}
-                  </select>
-              </td>
-              <td><input name="length[]" tabIndex="3" id={`length${index}`} type="text" defaultValue={LENGTH} size="30" /></td>
-              <td><input name={`isNull[${index}]`} tabIndex="4" id={`isNull${index}`} type="checkbox" value="1" defaultChecked={ISNULL} /></td>
-              <td><input name="default[]" tabIndex="5" id={`default${index}`} type="text" size="10" defaultValue={DEFAULT} /></td>
-              <td><input name={`auto[${index}]`} tabIndex="6" id={`auto${index}`} onClick={aiClick.bind(this, index)} type="checkbox" value="1" defaultChecked={AUT}  /></td>
-              <td><input name="primaryKey" tabIndex="7" id={`key1${index}`} type="radio" defaultValue={j} defaultChecked={PRI} /></td>
-              <td><input name={`uni[${j}]`} tabIndex="8" id={`key2${index}`} type="checkbox" defaultValue={uniName} defaultChecked={UNI} /></td>
-              <td><input name={`mul[${j}]`} tabIndex="9" id={`key3${index}`} type="checkbox" defaultValue={mulName} defaultChecked={MUL}  /></td>
-              <td><a href="#" onClick={clearKeys.bind(this, index)}>clear</a></td>
-              <td><input name={`fulltext[${index}]`} tabIndex="11" id={`fulltext${index}`} type="checkbox" value="1" /></td>
-              <td>
-                  <select name="attr[]" tabIndex="12" id={`attr${index}`} style={{width:'70px'}} defaultValue={attr}>
-                      <option value="">-</option>
-                      <option>UNSIGNED</option>
-                      <option>UNSIGNED ZEROFILL</option>
-                  </select>
-              </td>
-              <td>{extra}</td>
+              <td><TypeSelect type={field.Type} action={action} /> </td>
+              <td><input name="length[]" type="text" defaultValue={getLength(field.Type)} size="30" /></td>
+              <td><input name={`isNull[${index}]`} type="checkbox" value="1" defaultChecked={field.Null === "YES"} /></td>
+              <td><input name="default[]" type="text" size="10" defaultValue={field.Default} /></td>
+              <td><input name={`auto[${index}]`} onClick={aiClick} type="checkbox" value="1" defaultChecked={field.Extra !== ""}  /></td>
+              <td><input name="primaryKey" type="radio" defaultValue={j} defaultChecked={keys.PRI} /></td>
+              <td><input name={`uni[${j}]`} type="checkbox" defaultValue={keys.uniName} defaultChecked={keys.UNI} /></td>
+              <td><input name={`mul[${j}]`} type="checkbox" defaultValue={keys.mulName} defaultChecked={keys.MUL}  /></td>
+              <td><input name={`fulltext[${index}]`} type="checkbox" value="1" /></td>
+              <td><UnsignedSelect type={field.Type} /></td>
+              <td><AfterFieldSelect field={field} fields={props.fields} post={POST} index={index} action={action} /></td>
           </tr>
         )
     });
@@ -213,6 +146,99 @@ function MSC_DrawFields(props) {
     );
 }
 
+export function AfterFieldSelect(props) {
+
+    let fieldsAfter = ['FIRST']
+    let previousFields = {}
+    let prev = '';
+    props.fields.forEach(item => {
+        previousFields[item.Field] = prev
+        prev = item.Field
+        fieldsAfter.push(item.Field)
+    })
+    let POST = props.post
+    let index = props.index
+    let field = props.field
+    if (typeof field == 'object') {
+        // редактирование значений
+        return (
+          <Fragment>
+              <select name="after[]" defaultValue={previousFields[field.Field]}>
+                  {fieldsAfter.map((v) =>
+                    <option key={v}>{v}</option>
+                  )}
+              </select>
+              <input type="hidden" name="afterold[]" defaultValue={previousFields[field.Field] || 'FIRST'}/>
+          </Fragment>
+        );
+    } else if (POST.afterOption) {
+        // Добавление новых полей
+        let checked = ''
+        if (POST.afterOption === 'end') {
+            checked = fieldsAfter[fieldsAfter.length - 1]
+        } else if (POST.afterOption === 'field') {
+            checked = POST.afterField
+        }
+        return (
+          <Fragment>
+              <select name={`after[${index}]`} defaultValue={checked}>
+                  {fieldsAfter.map((v) =>
+                    <option key={v}>{v}</option>
+                  )}
+              </select>
+              <input type="hidden" name={`afterold[${index}]`} defaultValue={checked}/>
+          </Fragment>
+        );
+    }
+}
+
+export function TypeSelect(props) {
+    // создание селектора типов данных
+    let columnTypes = [
+        'VARCHAR', 'TINYINT', 'TEXT', 'DATE', 'JSON',
+        'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
+        'FLOAT', 'DOUBLE', 'DECIMAL',
+        'DATETIME', 'TIMESTAMP', 'TIME', 'YEAR',
+        'CHAR', 'TINYBLOB', 'TINYTEXT', 'BLOB', 'MEDIUMBLOB', 'MEDIUMTEXT', 'LONGBLOB', 'LONGTEXT',
+        'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
+    ];
+    let value = ''
+    if (props.type) {
+        value = props.type.replace(/\((.*)\).*/i, '').toUpperCase()
+        value = value.replace(/\s*(UNSIGNED)( ZEROFILL)?/, '')
+        if (props.action === 'fieldsEditEnd') {
+            if (!columnTypes.includes(value)) {
+                console.error(`Тип ${value} не найден в списке`)
+                Messages.show({'messages': `Тип ${value} не найден в списке`})
+            }
+        }
+    }
+
+    return (
+      <select name="ftype[]" defaultValue={value}>
+          {columnTypes.map((type) =>
+            <option key={type}>{type}</option>
+          )}
+      </select>
+    );
+}
+
+export function UnsignedSelect(props) {
+    let value = ''
+    if (props.type) {
+        const isUnsignedZero = props.type.match(/unsigned zerofill/i) !== null;
+        const isUnsigned = props.type.match(/unsigned/i) !== null;
+        value = isUnsigned ? 'UNSIGNED' : (isUnsignedZero ? 'UNSIGNED ZEROFILL' : '');
+    }
+    return (
+      <select name="attr[]" style={{width: '70px'}} defaultValue={value}>
+          <option value="">-</option>
+          <option>UNSIGNED</option>
+          <option>UNSIGNED ZEROFILL</option>
+      </select>
+    );
+}
+
 
 export function Tbl_add(props) {
 
@@ -221,7 +247,7 @@ export function Tbl_add(props) {
     }
 
     useEffect(() => {
-        forElementsEvent('change', '[name="ftype[]"]', function() {
+        forElementsEvent('change', '[name="ftype[]"]', function () {
             let curType = this.value;
             if (curType === 'SERIAL') {
                 let autoinc = this.closest('tr').querySelector('td:nth-child(6) input');
@@ -232,7 +258,7 @@ export function Tbl_add(props) {
             }
             if (curType === 'ENUM' || curType === 'SET') {
                 let value = this.closest('tr').querySelector('[name="length[]"]');
-                value.value = "'','',''"
+                value.value = "'a','b','c'"
             }
         })
         qs('[name="table_name"]').focus()
@@ -285,7 +311,7 @@ export function Tbl_add(props) {
       <form method="post" action="" className="tableFormEdit" name="addForm" onSubmit={save.bind(this)}>
           {showTableName &&
             <Fragment>
-                <input tabIndex="1" type="text" name="table_name" size="40" defaultValue={props.tableName} /> имя таблицы <br />
+                <input type="text" name="table_name" size="40" defaultValue={props.tableName} /> имя таблицы <br />
             </Fragment>
           }
           {afterSql &&
@@ -295,9 +321,9 @@ export function Tbl_add(props) {
           <img src={`${props.dirImage}nolines_plus.gif`} alt="" border="0" onClick={addDataRow.bind(this, 'tableFormEdit')} title="Добавить поле" style={{cursor: 'pointer'}} />
           <img src={`${props.dirImage}nolines_minus.gif`} alt="" border="0" onClick={removeRow.bind(this, 'tableFormEdit', 'end')}  title="Удалить поле" style={{cursor: 'pointer'}} /><br />
 
-          <MSC_DrawFields {...props} />
+          <PrintFields {...props} action={action} />
 
-          <input tabIndex="100" type="submit" value="Выполнить!" className="submit" />
+          <input type="submit" value="Выполнить!" className="submit" />
       </form>
     );
 }

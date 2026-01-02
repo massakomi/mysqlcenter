@@ -12,20 +12,16 @@ export function Config(props) {
         await msQuery('configRestore', '')
     }
 
-    const trs = Object.values(props.data).map((item) => {
-        if (!item.includes('|')) {
-            return;
-        }
-        let [name, title, value, type] = item.split('|')
+    const trs = props.data.map((item) => {
         let input = ''
-        if (type.includes('boolean')) {
-            input = <input type="checkbox" name={name} value="1" defaultChecked={value !== '0'} />
+        if (item.type.includes('boolean')) {
+            input = <input type="checkbox" name={item.name} value="1" defaultChecked={item.value !== 0} />
         } else {
-            input = <input type="text" name={name} defaultValue={value} />
+            input = <input type="text" name={item.name} defaultValue={item.value} />
         }
         return (
-          <tr key={item.toString()}>
-              <td>{title}</td>
+          <tr key={item.title}>
+              <td>{item.title}</td>
               <td>{input}</td>
           </tr>
         )

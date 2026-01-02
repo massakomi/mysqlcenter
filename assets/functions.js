@@ -3,7 +3,7 @@
  * Общий ajax запрос к серверу. Ответ помещается в "msAjaxQueryDiv".
  *
  * @param  mode string  Режим запроса
- * @param  query string  Строка запроса urldecoded
+ * @param  query string|object  Строка запроса urldecoded
  * @param callback
  * @return boolean false
  */
@@ -83,7 +83,7 @@ function onError(message, content) {
 }
 
 // Всплывающие сообщения после ajax запросов
-const Messages = {
+export const Messages = {
 
     show(json) {
         if (!json.messages || !json.messages.length) {
@@ -113,22 +113,21 @@ const Messages = {
     collect(json) {
         let messages
         if (typeof(json.messages) == 'string') {
-            messages = json.messages
-        } else {
-            messages = []
-            for (let message of json.messages) {
-                let textError = message.text
-                if (message.sql !== '' && message.sql !== null) {
-                    let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
-                    textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
-                }
-                if (message.error !== '' && message.error !== null) {
-                    textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
-                }
-                messages.push(textError)
-            }
-            messages = messages.join('<br />')
+            return json.messages
         }
+        messages = []
+        for (let message of json.messages) {
+            let textError = message.text
+            if (message.sql !== '' && message.sql !== null) {
+                let aff = `<br /><span style="color:#ccc">затронуто рядов: ${message.rows}}</span>`
+                textError += `<div class="sqlQuery">${message.sql}; ${aff}</div>`
+            }
+            if (message.type === 'error' && message.error !== '' && message.error !== null) {
+                textError += `<div class="mysqlError"><b>Ошибка:</b> ${message.error}</div>`
+            }
+            messages.push(`<div style="color: ${message.color}">${textError}</div>`)
+        }
+        messages = messages.join('')
         return messages
     },
 
@@ -538,10 +537,7 @@ export function processRowValue(v, type, textCut) {
             v = htmlspecialchars(v)
         }
         if (v.length > textCut) {
-            let fullText = new GET('fullText')
-            if (fullText === null) {
-                v = v.substring(0, textCut)
-            }
+            v = v.substring(0, textCut) + '...'
         }
     }
     return v

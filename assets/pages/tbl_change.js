@@ -2,6 +2,26 @@ import React, {useState, useEffect, Fragment} from 'react';
 import {HtmlSelector} from "../components";
 import {list} from "../functions";
 
+
+export function Tbl_change() {
+
+    useEffect(() => {
+        refreshActions()
+    }, []);
+
+    if (options.redirect) {
+        setTimeout(function () {
+            location.href = options.redirect
+        }, 2000);
+    }
+
+    return (
+      <Fragment>
+          {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} />}
+      </Fragment>
+    );
+}
+
 function FormBottom() {
     return (
       <Fragment>
@@ -64,6 +84,7 @@ function MSC_InsertInput(props) {
     let type = props.type
 
     if (type.match(/enum/i)) {
+        // todo доделать обработку enums set при вставке строк
         /*
           preg_match_all('~(\'|")(.*)(\'|")~iU', $type, $items);
           if (isset($items[2])) {
@@ -234,26 +255,6 @@ function EditRows(props) {
           <label htmlFor="f4"><input name="option" type="radio" value="insert" id="f4"/> вставить новый ряд</label>
             <FormBottom />
       </form>
-    );
-}
-
-
-export function Tbl_change() {
-
-    useEffect(() => {
-        refreshActions()
-    }, []);
-
-    if (options.redirect) {
-        setTimeout(function () {
-            location.href = options.redirect
-        }, 2000);
-    }
-
-    return (
-      <Fragment>
-          {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} />}
-      </Fragment>
     );
 }
 

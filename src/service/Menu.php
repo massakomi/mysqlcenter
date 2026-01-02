@@ -94,12 +94,13 @@ class Menu
             $dbMenu = [
                 'ввести доступы к базе данных' => ['login', ''],
             ];
-        } elseif (in_array($msc->page, ['db_list', 'users'])) {
+        } elseif (in_array($msc->page, ['db_list', 'users', 'info', 'login', 'config'])) {
             $dbMenu = array_merge([
                 'базы данных' => ['db_list', ''],
                 'пользователи' => ['users', ''],
+                'информация' => ['info', ''],
             ], $dbMenuGlobal);
-        } elseif (($msc->db != '' && $msc->table == '') || $msc->page == 'tbl_list') {
+        } elseif ($msc->db != '' && $msc->table == '') {
             $dbMenu = array_merge([
                 'таблицы' => ['tbl_list', ''],
                 'создать таблицу' => ['tbl_add', ''],
@@ -156,7 +157,6 @@ class Menu
         } else {
             $selectorTables .= '<select name="' . $auto . '">' . "\r\n";
         }
-        $greyEmpty = config('greyempty');
         foreach ($tables as $t) {
             if (strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0) {
                 $end = strpos($t->Name, '_', 3);
@@ -169,7 +169,7 @@ class Menu
             } else {
                 $class = 't2';
             }
-            if ($greyEmpty && $t->Rows == 0) {
+            if ($t->Rows == 0) {
                 $class .= ' empty';
             }
             $menuTables .= $this->makeTableMenuItem(table: $t->Name, class: $class);
@@ -189,7 +189,13 @@ class Menu
         }
     }
 
-    private function makeTableMenuItem($table, $class, $title = '')
+    /**
+     * @param $table
+     * @param $class
+     * @param string $title
+     * @return string
+     */
+    private function makeTableMenuItem($table, $class, string $title = ''): string
     {
         global $msc;
         if ($msc->table == $table) {
@@ -199,11 +205,14 @@ class Menu
         return '  <a class="' . $class . '" title="' . $title . '" href="' . $href . '">' . $table . '</a>' . "\r\n";
     }
 
-    private function getMenuTableLink($table)
+    /**
+     * @param $table
+     * @return string
+     */
+    private function getMenuTableLink($table): string
     {
         global $msc;
-        // если есть текущая страница, то переход на неё (переход по структурам всех таблиц)
-        if ($msc->page == 'tbl_struct') {
+        if (in_array($msc->page, ['tbl_struct', 'search', 'export', 'actions', 'tbl_change'])) {
             $link = '?db=' . $msc->db . '&table=' . $table . '&s=' . $msc->page;
         } else {
             $link = '?db=' . $msc->db . '&table=' . $table . '&s=tbl_data';

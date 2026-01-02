@@ -34,10 +34,9 @@ class Actions extends Base
         $DQuery = UrlMaker::make('db', $msc->db, 's', 'actions');
 
         return [
-            'db' => $_GET['db'],
+            'db' => $msc->db,
             'url' => $DQuery,
             'charsets' => Server::getCharsetArray(),
-            'processes' => $msc->driver->getProcessList(),
         ];
     }
 

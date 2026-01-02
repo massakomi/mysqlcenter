@@ -156,33 +156,24 @@ class MSCenter extends Query
      */
     public function connect(): void
     {
-        global $pdo;
         if (!$this->connectConfigExists()) {
             return;
         }
         $config = $this->getConfig();
         try {
-            $options = [
-                \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
-                    ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
-            ];
-            $database = $this->db ?: $config->database; // Подставляем базу из запроса
-            $dsn = $config->driver . ':host=' . $config->host . ';port=' . $config->port . ';dbname=' . $database;
-            $pdo = new \PDO($dsn, $config->user, $config->password, $options);
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->connectPdo($config, $this->db);
             $this->host  = $config->host;
             $this->user  = $config->user;
             $this->driverName  = $config->driver;
             $this->driver  = $config->driver == 'pgsql' ? new PostgreSQL() : new MySQL();
-            if ($database) {
-                $this->db  = $database;
+            if (!$this->db) {
+                $this->db  = $config->database;
             }
         } catch (\PDOException $e) {
-            $this->clearCurrentDatabase();
             // Если подставленная база не сработала - берем базу из конфигурации
-            if ($config->database && $config->database != $database) {
+            if ($config->database && $config->database != $this->db) {
                 if (preg_match('~database .*? does not exist~', $e->getMessage())) {
+                    $this->clearCurrentDatabase();
                     $this->connect();
                     return;
                 }
@@ -213,10 +204,7 @@ class MSCenter extends Query
             $this->page = 'login';
             return;
         }
-        $defaultPage = 'tbl_list';
-        if (config('tblliststart') == '0' || !$this->db) {
-            $defaultPage = 'db_list';
-        }
+        $defaultPage = $this->db ? 'tbl_list' : 'db_list';
         if ($this->page == null) {
             if (count($_GET) > 0) {
                 if (GET('s') != '') {

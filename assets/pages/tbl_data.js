@@ -48,7 +48,7 @@ function TableHeader(props) {
         return headers;
     };
 
-    const headers = getTableHeaders(props.fieldsEx, !props.directSQL, props.headWrap);
+    const headers = getTableHeaders(props.fieldsEx, !props.directSQL);
     return (
       <table className="contentTable interlaced">
           <thead>
@@ -340,26 +340,31 @@ export function Tbl_data(props) {
               <Table {...props} />
               {links}
 
-              <div className="chbxAction">
-                  <img src={image("arrow_ltr.png")} alt="" align="absmiddle" />
-                  <a href="#" onClick={chbx_action.bind(this, 'check')}>выбрать все</a>  &nbsp;
-                  <a href="#" onClick={chbx_action.bind(this, 'uncheck')}>очистить</a>
+              <div className="flex baseline">
+                  <div className="chbxAction mt-10 mb-10">
+                      <img src={image("arrow_ltr.png")} alt="" align="absmiddle"/>
+                      <a href="#" onClick={chbx_action.bind(this, 'check')}>выбрать все</a>  &nbsp;
+                      <a href="#" onClick={chbx_action.bind(this, 'uncheck')}>очистить</a>
+                  </div>
+
+                  <div className="imageAction mb-10">
+                      <u>Выбранные</u>
+                      <input type="image" src={image("edit.gif")} alt="" onClick={submitForm.bind(this, 'editRows', 'tbl_change')}/>
+                      <input type="image" src={image("close.png")} alt="" onClick={msFormQuery.bind(this, 'deleteRows')}/>
+                      <input type="image" src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copyRows')}/>
+                      <input type="image" src={image("b_tblexport.png")} alt="" onClick={submitForm.bind(this, 'exportRows', 'export')}/>
+                  </div>
               </div>
 
-              <div className="imageAction">
-                  <u>Выбранные</u>
-                  <input type="image" src={image("edit.gif")} alt="" onClick={submitForm.bind(this, 'editRows', 'tbl_change')} />
-                  <input type="image" src={image("close.png")} alt="" onClick={msFormQuery.bind(this, 'deleteRows')} />
-                  <input type="image" src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copyRows')} />
-                  <input type="image" src={image("b_tblexport.png")} alt="" onClick={submitForm.bind(this, 'exportRows', 'export')} />
-              </div>
           </form>
-          <form name="form1" method="post" action={props.url.replace('#s#', 'tbl_compare')}>
-              <input type="hidden" name="table[]" value={props.table} />
+
+          {props.dbs.length > 1 && props.showTableCompare ? <form name="form1" method="post" action={props.url.replace('#s#', 'tbl_compare')} className="mb-10">
+              <input type="hidden" name="table[]" value={props.table}/>
               Сравнить таблицу с такой же в &nbsp;
-              <HtmlSelector data={props.dbs} name="database" /> &nbsp;
-              <input type="submit" value="Сравнить" />
-          </form>
+              <HtmlSelector data={props.dbs} name="database"/> &nbsp;
+              <input type="submit" value="Сравнить"/>
+          </form> : null}
+
       </Fragment>
     );
 }

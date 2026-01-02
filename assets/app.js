@@ -2,7 +2,6 @@ import React, {Fragment} from 'react'
 import { createRoot } from 'react-dom/client'
 import { Sql } from './pages/Sql'
 import { Actions } from './pages/actions'
-import { Actionsdb } from './pages/Actionsdb'
 import { Config } from './pages/Config'
 import {Login} from "./pages/login";
 import {Db_compare} from "./pages/db_compare";
@@ -22,6 +21,7 @@ import {Tbl_list_structure} from "./pages/tbl_list_structure";
 import {HeadTop, Messages, NotFound} from "./components";
 import {getComponentByPage} from "./functions";
 import {Users} from "./pages/users";
+import {Info} from "./pages/info";
 
 const ComponentsMap = {
     'Actions': Actions,
@@ -32,6 +32,7 @@ const ComponentsMap = {
     'Export': Export,
     'ExportSpecial': Export_special,
     'Search': Search,
+    'Info': Info,
     'SearchTable': SearchTable,
     'Sql': Sql,
     'Tbl_add': Tbl_add,

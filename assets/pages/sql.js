@@ -6,7 +6,7 @@ export function Sql (props) {
 
     const opts = Object.values(props.charsets).map((charset) =>
       <option key={charset.toString()}>
-          {charset}
+          {charset.toLowerCase()}
       </option>
     );
 
@@ -28,7 +28,7 @@ export function Sql (props) {
                   <input name="compress" type="radio" value="excel"/> excel
                   <input name="compress" type="radio" value="csv"/> csv
                   <br/>
-                  Кодировка файла: <select name="sqlFileCharset" defaultValue="utf8">{opts}</select><br/>
+                  Кодировка файла: <select name="sqlFileCharset" defaultValue="utf-8">{opts}</select><br/>
                   (Максимальный размер: {props.maxSize} Mb)
               </fieldset>
           </form>

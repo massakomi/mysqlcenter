@@ -74,8 +74,10 @@ class PostgreSQL implements Driver
             ORDER BY table_name';
         $data = $msc->getData($sql, \PDO::FETCH_OBJ);
 
-        foreach ($data as $key => $value) {
-            $value->Auto_increment = $autoIncrementsByTables[$value->Name];
+        foreach ($data as $value) {
+            if (array_key_exists($value->Name, $autoIncrementsByTables)) {
+                $value->Auto_increment = $autoIncrementsByTables[$value->Name];
+            }
         }
 
         return $data;
@@ -109,8 +111,8 @@ class PostgreSQL implements Driver
         $keys = $this->getKeys($table);
         $fields = $msc->getData($sql, \PDO::FETCH_OBJ);
         foreach ($fields as $key => $field) {
-            $fieldKeys = $keys[$field->Field];
-            if ($fieldKeys) {
+            if (array_key_exists($field->Field, $keys)) {
+                $fieldKeys = $keys[$field->Field];
                 foreach ($fieldKeys as $type) {
                     $field->Key = $type;
                 }

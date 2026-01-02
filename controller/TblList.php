@@ -17,14 +17,13 @@ class TblList extends Base
     public function defaultAction(): array
     {
         global $msc;
-
         $tables = Table::getCashedTablesArray();
         if (count($tables) == 0) {
             $msc->error('В базе данных нет таблиц');
         }
         $msc->pageTitle = 'Список таблиц базы данных "' . $msc->db . '" ';
         return [
-            'showtableupdated' => config('showtableupdated') == '1',
+            'showTableUpdated' => config('showTableUpdated') == '1',
             'full' => GET('mode') == 'full',
             'tables' => $tables,
             'dirImage' => MS_DIR_IMG,

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef, Fragment} from 'react';
-import {Table} from "../components";
 import {empty, forElements} from "../functions";
 import {SearchTable} from "./searchTable";
+import {Table} from "../components/Table";
 
 function SearchDatabase(props) {
 

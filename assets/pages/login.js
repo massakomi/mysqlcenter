@@ -48,7 +48,7 @@ export function Login(props) {
     });
 
     const rename = () => {
-        let selector =  document.querySelector('.login select')
+        let selector =  document.querySelector('.login select[multiple]')
         if (selector.selectedIndex === -1) {
             alert('Не выбрано ничего')
             return
@@ -134,9 +134,9 @@ export function Login(props) {
                   </select>
               </div>
               <div>
-                  <label></label>
                   <input type="button" onClick={save.bind(this, 'connectOpen')} defaultValue="Открыть"/>
                   <input type="button" onClick={save.bind(this, 'connectSave')} defaultValue="Сохранить"/>
+                  <input type="button" onClick={save.bind(this, 'connectCheck')} defaultValue="Проверить"/>
               </div>
           </form>
           <div className="list">

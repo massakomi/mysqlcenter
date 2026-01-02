@@ -44,7 +44,7 @@ function POST(string $name, ?string $default = null): mixed
  */
 function logInFile($string, $db): void
 {
-    if (config('sqllog') != '1' || !$db) {
+    if (config('sqlLog') != '1' || !$db) {
         return;
     }
     $string .= ";\r\n";
@@ -108,7 +108,7 @@ function errorHandlerNotice($errno, $errstr, $errfile, $errline): void
     global $msc;
     $log = $errstr . ' [' . $errfile . ':' . $errline . ']';
     if (isset($msc)) {
-        $msc->notice($log);
+        $msc->error($log);
     } else {
         throw new ErrorException($errstr, $errno);
     }
@@ -156,13 +156,13 @@ function config(string $param, string $default = ''): string
     global $mscConfigCash;
     if (!isset($mscConfigCash)) {
         $mscConfigCash = [];
-        $data = file(MS_CONFIG_FILE);
-        foreach ($data as $k => $line) {
-            if (empty($line) || substr_count($line, '|') < 3) {
-                continue;
+        $json = json_decode(file_get_contents(MS_CONFIG_FILE));
+        foreach ($json as $item) {
+            $value = $item->value;
+            if ($item->type === 'integer' || $item->type === 'boolean') {
+                $value = (int)$value;
             }
-            list($name, $title, $value, $type) = explode('|', trim($line));
-            $mscConfigCash [$name] = $value;
+            $mscConfigCash [$item->name] = $value;
         }
     }
     return $mscConfigCash[$param] ?? $default;

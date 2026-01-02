@@ -1,6 +1,6 @@
 import React, {Fragment} from 'react';
-import {ExportOptions} from "../components";
 import {forElements, umaker} from "../functions";
+import {ExportOptions} from "../components/ExportOptions";
 
 function Form(props) {
 

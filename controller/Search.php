@@ -33,7 +33,7 @@ class Search extends Base
 
         // по таблице
         if ($msc->table != null) {
-            $msc->pageTitle = 'Поиск по таблице';
+            $msc->pageTitle = 'Поиск по таблице ' . $msc->table;
             $pageProps ['table'] = $msc->table;
             $pageProps ['fields'] = Table::getFieldNames(GET('table'));
             return $pageProps;

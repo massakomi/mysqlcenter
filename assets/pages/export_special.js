@@ -1,6 +1,7 @@
-import {ExportOptions, HtmlSelector} from "../components";
+import {HtmlSelector} from "../components";
 import React, {Fragment} from 'react';
 import {GET} from "../functions";
+import {ExportOptions} from "../components/ExportOptions";
 
 function Form(props) {
 

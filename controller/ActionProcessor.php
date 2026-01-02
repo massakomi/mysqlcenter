@@ -6,6 +6,7 @@ namespace controller;
 
 use database\Server;
 use database\Table;
+use dto\ConnectConfig;
 use service\UrlMaker;
 use service\Validate;
 
@@ -57,33 +58,27 @@ class ActionProcessor
 
         switch ($action) {
             case 'configUpdate':
-                $data = file(MS_CONFIG_FILE);
-                $newFileContent = [];
+                $json = json_decode(file_get_contents(MS_CONFIG_FILE));
                 $changed = false;
-                foreach ($data as $k => $line) {
-                    if (empty($line) || substr_count($line, '|') < 3) {
-                        continue;
-                    }
-                    list($name, $title, $value, $type) = explode('|', trim($line));
-                    if ($type == 'boolean') {
-                        if (intval(POST($name)) != intval($value)) {
-                            $value = intval(POST($name));
+                foreach ($json as $item) {
+                    $newValue = POST($item->name);
+                    if ($item->type === 'integer' || $item->type === 'boolean') {
+                        if (intval($newValue) != intval($item->value)) {
+                            $item->value = intval($newValue);
                             $changed = true;
                         }
-                    } elseif (isset($_POST[$name]) && POST($name) != $value) {
-                        $value = POST($name);
+                    } elseif ($newValue != $item->value) {
+                        $item->value = $newValue;
                         $changed = true;
                     }
-                    $newFileContent [] = "$name|$title|$value|$type";
                 }
                 if ($changed) {
-                    $f = fopen(MS_CONFIG_FILE, 'w+');
-                    if (fwrite($f, implode("\n", $newFileContent))) {
+                    $content = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    if (file_put_contents(MS_CONFIG_FILE, $content)) {
                         $msc->success('Конфиг обновлён');
                     } else {
                         $msc->error('Не удалось записать конфиг в файл');
                     }
-                    fclose($f);
                 } else {
                     $msc->error('Нечего обновлять');
                 }
@@ -95,9 +90,28 @@ class ActionProcessor
                 }
                 break;
 
+            case 'connectCheck':
+                $config = json_decode($_POST['config'], true);
+                $config = $config[$_POST['current']];
+                $config = new ConnectConfig(
+                    $config['host'],
+                    $config['port'],
+                    $config['database'],
+                    $config['user'],
+                    $config['password'],
+                    $config['driver'],
+                );
+                try {
+                    $msc->connectPdo($config);
+                    $msc->success('Connect success');
+                } catch (\PDOException $e) {
+                    $msc->error($e->getMessage());
+                };
+                break;
+
             case 'connectSave':
             case 'connectOpen':
-                $config = json_decode($_POST['config'], true);
+            $config = json_decode($_POST['config'], true);
                 $config = [
                     'current' => $_POST['current'],
                     'config' => $config,
@@ -106,7 +120,8 @@ class ActionProcessor
                 if (file_exists(MS_CONNECT_CONFIG_FILE)) {
                     copy(MS_CONNECT_CONFIG_FILE, $backupFile);
                 }
-                $res = file_put_contents(MS_CONNECT_CONFIG_FILE, json_encode($config));
+                $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                $res = file_put_contents(MS_CONNECT_CONFIG_FILE, $content);
                 if ($action == 'connectSave') {
                     if ($res) {
                         $msc->success('Конфиг сохранен');
@@ -160,7 +175,7 @@ class ActionProcessor
             case 'querysql':
                 $sql = POST('sql');
                 $type = POST('type');
-                if (preg_match('~^\s*(update|delete|insert)~i', $sql)) {
+                if (preg_match('~^\s*(update|delete|insert|drop)~i', $sql)) {
                     $type = 'exec';
                 }
                 if ($type == 'exec') {
@@ -549,6 +564,20 @@ class ActionProcessor
                     }
                 }
                 break;
+
+            // PostgresSQL
+
+            case 'schemaAdd':
+                $name = POST('name');
+                if (!empty($name)) {
+                    if ($msc->execPdo($sql = 'CREATE SCHEMA  ' . $name)) {
+                        $msc->success('Схема успешно создана');
+                    } else {
+                        $msc->error('Ошибка создания схемы', $sql);
+                    }
+                }
+                break;
+
             default:
                 return false;
         }

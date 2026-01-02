@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace database;
 
+use dto\ConnectConfig;
 use enum\FetchType;
 
 /**
@@ -48,6 +49,7 @@ class Query
     {
         global $pdo;
         if (!$pdo) {
+            echo '<pre>';
             throw new \Exception($sql);
         }
         try {
@@ -117,6 +119,25 @@ class Query
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param ConnectConfig $config
+     * @param string|null $database опционально другая бд для подключения
+     * @return void
+     */
+    public function connectPdo(ConnectConfig $config, ?string $database = null): void
+    {
+        global $pdo;
+        $options = [
+            \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
+                ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
+        ];
+        $database = $database ?: $config->database;
+        $dsn = $config->driver . ':host=' . $config->host . ';port=' . $config->port . ';dbname=' . $database;
+        $pdo = new \PDO($dsn, $config->user, $config->password, $options);
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 
     /**

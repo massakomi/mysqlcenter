@@ -25,9 +25,9 @@ export function SearchTable(props) {
           <fieldset className="msGeneralForm">
               <legend>Добавить к условию WHERE</legend>
               <form action={umaker({s: 'tbl_data'})} method="get" onSubmit={sendGet}>
-                  <input name="where" type="text" id="where" className="w95" />
-                  <input type="submit" value="Выполнить!" className="submit mr10" style={{display: 'inline'}} />
-                  <span className="mr10">вставить</span>
+                  <input name="where" type="text" id="where" className="w-100" />
+                  <input type="submit" value="Выполнить!" className="submit mr-10" style={{display: 'inline'}} />
+                  <span className="mr-10">вставить</span>
 
                   <HtmlSelector data={fields} onChange={onFunctionChange} />
                   <HtmlSelector data={opers} onChange={onFunctionChange} />
@@ -43,11 +43,11 @@ export function SearchTable(props) {
                       <tbody>
                       <tr>
                           <td width="100">Найти</td>
-                          <td><input name="search_for" className="w95" type="text" defaultValue={props.search_for}/></td>
+                          <td><input name="search_for" className="w-100" type="text" defaultValue={props.search_for}/></td>
                       </tr>
                       <tr>
                           <td width="100">Заменить</td>
-                          <td><input name="replace_in" className="w95" type="text" defaultValue={props.replace_in}/></td>
+                          <td><input name="replace_in" className="w-100" type="text" defaultValue={props.replace_in}/></td>
                       </tr>
                       <tr>
                           <td width="100">Поле</td>

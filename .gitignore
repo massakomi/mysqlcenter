@@ -6,3 +6,4 @@
 /config/connect.txt
 /node_modules
 /public/js/dist.js
+/config/connect.json

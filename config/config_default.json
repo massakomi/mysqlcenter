@@ -1,0 +1,62 @@
+[
+  {
+    "name": "dataOnPage",
+    "title": "Сколько рядов таблицы показывать на 1 страницу максимум",
+    "value": 100,
+    "type": "integer"
+  },
+  {
+    "name": "insertRows",
+    "title": "Сколько рядов вставлять за 1 раз",
+    "value": 2,
+    "type": "integer"
+  },
+  {
+    "name": "linksRange",
+    "title": "Сколько ссылок на постраничный вывод показывать максимум",
+    "value": 20,
+    "type": "integer"
+  },
+  {
+    "name": "textCut",
+    "title": "Text поля обрезка",
+    "value": 100,
+    "type": "integer"
+  },
+  {
+    "name": "fieldsMax",
+    "title": "Количество полей при создании таблицы по умолчанию",
+    "value": 3,
+    "type": "integer"
+  },
+  {
+    "name": "showTableCompare",
+    "title": "Блок 'Сравнить таблицу с ...' показать",
+    "value": 0,
+    "type": "boolean"
+  },
+  {
+    "name": "showTableUpdated",
+    "title": "Блок 'Показать таблицы обновлённые ...' показать",
+    "value": 0,
+    "type": "boolean"
+  },
+  {
+    "name": "hideMessages",
+    "title": "Скрывать сообщения по умолчанию",
+    "value": 1,
+    "type": "boolean"
+  },
+  {
+    "name": "sqlLog",
+    "title": "Лог всех не-SELECT sql запросов в папку data по базам данных",
+    "value": 1,
+    "type": "boolean"
+  },
+  {
+    "name": "sortDescDefault",
+    "title": "Сортировка в обратном порядке по умолчанию",
+    "value": 0,
+    "type": "boolean"
+  }
+]

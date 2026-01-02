@@ -20,7 +20,7 @@ class TblChange extends Base
             return [];
         }
 
-        if (POST('option')) {
+        if (in_array(POST('action'), ['rowsEdit', 'rowsAdd'])) {
             $this->processRowsEdit($_POST['action'] == 'rowsEdit' ? 0 : 1);
         }
 

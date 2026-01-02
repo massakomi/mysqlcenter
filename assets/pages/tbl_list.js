@@ -1,6 +1,7 @@
 import React, {useState, Fragment} from 'react';
-import {Table} from "../components";
 import {checkboxAction, date2rusString, formatSize, msFormQuery, msQuery} from "../functions";
+import {TblListPostgresSQL} from "./pgsql/tbl_list";
+import {Table} from "../components/Table";
 
 function Selector(props) {
 
@@ -249,41 +250,51 @@ export function Tbl_list(props) {
 
               <TableList tables={tables} dirImage={props.dirImage} db={props.db} />
 
-              <div className="chbxAction">
-                  <img src={image("arrow_ltr.png")} alt=""  />
-                  <a href="#" onClick={chbxAction.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
-                  <a href="#" onClick={chbxAction.bind(this, 'uncheck')}>очистить</a>
-              </div>
+              <div className="flex baseline mt-5">
+                  <div className="chbxAction">
+                      <img src={image("arrow_ltr.png")} alt=""/>
+                      <a href="#" onClick={chbxAction.bind(this, 'check')} id="chooseAll">выбрать все</a>  &nbsp;
+                      <a href="#" onClick={chbxAction.bind(this, 'uncheck')}>очистить</a>
+                  </div>
 
-              <div className="imageAction">
-                  <u>Выбранные</u>
-                  <img src={image("close.png")} alt="" onClick={msFormQuery.bind(this, 'delete_all')} />
-                  <img src={image("delete.gif")} alt="" onClick={msFormQuery.bind(this, 'truncate_all')} />
-                  <img src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copy_all')} />
+                  <div className="imageAction">
+                      <u>Выбранные</u>
+                      <img src={image("close.png")} alt="" onClick={msFormQuery.bind(this, 'delete_all')}/>
+                      <img src={image("delete.gif")} alt="" onClick={msFormQuery.bind(this, 'truncate_all')}/>
+                      <img src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copy_all')}/>
 
-                  <select name="act" onChange={msFormQuery.bind(this, 'dbAllAction')} className="ml-20">
-                      <option></option>
-                      <option value="check">проверить</option>
-                      <option value="analyze">анализ</option>
-                      <option value="optimize">оптимизировать</option>
-                      <option value="repair">починить</option>
-                      <option value="flush">сбросить кэш</option>
-                  </select>
+                      <select name="act" onChange={msFormQuery.bind(this, 'dbAllAction')} className="ml-20">
+                          <option></option>
+                          <option value="check">проверить</option>
+                          <option value="analyze">анализ</option>
+                          <option value="optimize">оптимизировать</option>
+                          <option value="repair">починить</option>
+                          <option value="flush">сбросить кэш</option>
+                      </select>
 
-                  <input type="hidden" name="copy_struct" value="1" />
-                  <input type="hidden" name="copy_data" value="1" />
+                      <input type="hidden" name="copy_struct" value="1"/>
+                      <input type="hidden" name="copy_data" value="1"/>
+                  </div>
               </div>
           </form>
-          <div className="links-block">
-              <a href="?s=tbl_list&mode=full" title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная таблица</a>
-              <a href="?s=tbl_list&mode=structure">Исследование структуры таблиц</a>
+
+          <div className="flex baseline mt-5">
+              <div className="links-block">
+                  <a href="?s=tbl_list&mode=full"
+                     title="Отобразить простую таблицу с полными данными всех таблиц, полученными с помощью запроса SHOW TABLE STATUS">Полная
+                      таблица</a>
+                  <a href="?s=tbl_list&mode=structure">Исследование структуры таблиц</a>
+              </div>
+              {props.showTableUpdated > 0 &&
+                <form className="showTableUpdated">
+                    Показать таблицы обновлённые с <DateSelector/>
+                    <input type="button" value="Показать!" className="ml-10" onClick={filterByDate.bind(this)}/>
+                </form>
+              }
           </div>
-          {props.showtableupdated > 0 &&
-            <form className="showtableupdated">
-                Показать таблицы обновлённые с <DateSelector />
-                <input type="button" value="Показать!" className="ml-10" onClick={filterByDate.bind(this)} />
-            </form>
-          }
+
+          <TblListPostgresSQL />
+
       </div>
     );
 }

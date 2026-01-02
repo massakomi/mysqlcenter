@@ -116,7 +116,6 @@ class TblData extends Base
         PopularTables::save(db: $msc->db, table: $msc->table);
         return [
             'dirImage' => MS_DIR_IMG,
-            'headWrap' => MS_HEAD_WRAP,
             'textCut' => MS_TEXT_CUT,
             'linksRange' => (int)MS_LIST_LINKS_RANGE,
             'db' => $msc->db,
@@ -126,7 +125,7 @@ class TblData extends Base
             'order' => POST('order'),
             'part' => $part,
             'url' => UrlMaker::make('s', '#s#'),
-            'showtablecompare' => config('showtablecompare'),
+            'showTableCompare' => config('showTableCompare'),
             'dbs' => Server::getDatabases(),
             'directSQL' => isset($directSQL),
             'fields' => $fields,

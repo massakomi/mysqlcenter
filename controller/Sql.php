@@ -33,12 +33,12 @@ class Sql extends Base
                 }
 
                 // Применяем кодировку если надо
-                if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
+                if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf-8') {
                     $sql = mb_convert_encoding($sql, 'UTF-8', POST('sqlFileCharset'));
                 }
                 $log = strlen($sql) < 10000;
                 $this->execSql($db, $sql, $log);
-                if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf8') {
+                if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf-8') {
                     $msc->execPdo("SET NAMES 'utf8'");
                 }
             } else {
@@ -81,37 +81,16 @@ class Sql extends Base
         if ($log) {
             logInFile($sql, $msc->db);
         }
-        $sql = str_replace("\r\n", "\n", $sql);
-        $array = explode(";\n", $sql);
-        $errors = [];
-        $c = 0;
-        $affected = 0;
-        $count = count($array);
         $msc->exceptionOnError = false;
-        for ($i = 0; $i < $count; $i++) {
-            $q = trim($array[$i]);
-            if (empty($q) || (strpos($q, '--') === 0 && strpos($q, "\n") === false)) {
-                continue;
-            }
-            $c++;
-            if (!$msc->execPdo($q)) {
-                $errors [] = $msc->error . ' (' . substr($q, 0, 100) . ')';
-            } else {
-                $affected += $msc->affectedRows;
-            }
-        }
-        $fault = count($errors);
-        $succ = $c - $fault;
-        $info = " $succ запросов выполнено, $fault неудач. ";
-        if (count($errors) == 0) {
-            $msc->success('Запрос выполнен без ошибок - ' . $info);
+        if ($msc->execPdo($sql)) {
+            $msc->success('Запрос выполнен без ошибок');
         } else {
-            $msc->error('Запрос выполнен с ошибками' . $info);
-            $msc->error(implode('<br />', $errors));
+            $msc->error('Запрос выполнен с ошибками');
+            //$msc->error($msc->error);
         }
         $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
         $msc->success("Выполнено за $mysqlGenerationTime с.");
-        $msc->success("Затронуто рядов: $affected");
+        $msc->success("Затронуто рядов: $msc->affectedRows");
         return true;
     }
 

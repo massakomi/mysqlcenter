@@ -195,18 +195,21 @@ export function Tbl_struct(props) {
 
                       <TableStruct {...props} />
 
-                      <div className="chbxAction">
-                          <img src={props.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle"/>
-                          <a href="#" onClick={checkboxAction.bind(this, "check")}>выбрать все</a>  &nbsp;
-                          <a href="#" onClick={checkboxAction.bind(this, "uncheck")}>очистить</a>
+                      <div className="flex baseline mt-10 mb-10">
+                          <div className="chbxAction">
+                              <img src={props.dirImage + "arrow_ltr.png"} alt="" border="0" align="absmiddle"/>
+                              <a href="#" onClick={checkboxAction.bind(this, "check")}>выбрать все</a>  &nbsp;
+                              <a href="#" onClick={checkboxAction.bind(this, "uncheck")}>очистить</a>
+                          </div>
+
+                          <div className="imageAction">
+                              <u>Выбранные</u>
+                              <input type="image" src={props.dirImage + "edit.gif"} alt=""/>
+                              <input type="image" src={props.dirImage + "close.png"}
+                                     onClick={msFormQuery.bind(this, 'fieldsDelete')} alt=""/>
+                          </div>
                       </div>
 
-                      <div className="imageAction">
-                          <u>Выбранные</u>
-                          <input type="image" src={props.dirImage + "edit.gif"} alt=""/>
-                          <input type="image" src={props.dirImage + "close.png"}
-                                 onClick={msFormQuery.bind(this, 'fieldsDelete')} alt=""/>
-                      </div>
                   </form>
 
                   <fieldset className="msGeneralForm">

@@ -35,36 +35,29 @@ if (function_exists('date_default_timezone_set')) {
 }
 
 require_once DIR_MYSQL . 'src/func.php';
+set_error_handler('errorHandlerNotice');
 
 // Все константы
 const MS_URL = '';
 const MS_DIR_IMG = 'images/';
-const MS_DIR_CSS = 'css/';
 const MS_DIR_UPLOAD = DIR_MYSQL . 'logs';
 const MS_DIR_LOGS = DIR_MYSQL . 'logs';
 
-const MS_CONNECT_CONFIG_FILE = DIR_MYSQL . 'config/connect.txt';
-const MS_CONFIG_FILE = DIR_MYSQL . 'config/config.txt';
-const MS_CONFIG_DEFAULT_FILE = DIR_MYSQL . 'config/config_default.txt';
+const MS_CONNECT_CONFIG_FILE = DIR_MYSQL . 'config/connect.json';
+const MS_CONFIG_FILE = DIR_MYSQL . 'config/config.json';
+const MS_CONFIG_DEFAULT_FILE = DIR_MYSQL . 'config/config_default.json';
 const MS_POPULAR_TABLES_FILE = DIR_MYSQL . 'config/popular.json';
 const MS_CHARACTER_SET = 'utf8';
 const MS_COLLATION = 'utf8_general_ci';
 
-define('MS_DEFAULT_PART', config('rpage'));
-define('MS_LIST_LINKS_RANGE', config('linksrange'));
-define('MS_HEAD_WRAP', config('headwrap'));
-define('MS_TEXT_CUT', config('textcut'));
-//define('MS_ROWS_INSERT', config('insertrows'));
-const MS_ROWS_INSERT = 2;
-define('MS_DATE_FORMAT', config('datetimeformat'));
+define('MS_DEFAULT_PART', config('dataOnPage'));
+define('MS_LIST_LINKS_RANGE', config('linksRange'));
+define('MS_TEXT_CUT', config('textCut'));
+define('MS_ROWS_INSERT', config('insertRows'));
 define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
-define('MS_FIELDS_COUNT', config('fieldsmax'));
-define('MS_NULL_DESIGN', config('nulldesign'));
+define('MS_FIELDS_COUNT', config('fieldsMax'));
 define('MAX_UPLOAD_SIZE', Utils::getMaxUploadSize());
 
-if (config('errorlog') == '1') {
-    set_error_handler('errorHandlerNotice');
-}
 
 global $msc, $pdo;
 

@@ -24,7 +24,7 @@ $databasesVisible = Server::getDatabasesWithoutHidden();
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title><?php echo $msc->getWindowTitle() ?></title>
-    <link rel="stylesheet" type="text/css" href="<?php echo MS_DIR_CSS ?>page.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/page.css?<?=filemtime('css/page.css')?>"/>
     <link rel="shortcut icon" href="/favicon.ico"/>
     <script defer src="/js/dist.js?<?=filemtime('js/dist.js')?>"></script>
 </head>
@@ -80,7 +80,6 @@ $databasesVisible = Server::getDatabasesWithoutHidden();
     <span class="hiddenText">limit <?php echo ini_get('memory_limit') ?></span>
 </div>
 
-
 <script>
     window.driver = '<?=$msc->driverName?>';
     window.component = '<?=$msc->page?>'
@@ -90,7 +89,8 @@ $databasesVisible = Server::getDatabasesWithoutHidden();
     window.databases = <?=json_encode($databases) ?>;
     window.fields = <?=json_encode($fields) ?>;
     window.options = <?=json_encode($pageProps)?>;
-    window.messages = <?=json_encode($msc->getMessagesData())?>;
+    window.messages = <?=json_encode($msc->getMessagesData(), JSON_INVALID_UTF8_IGNORE)?>;
+    window.messagesHide = <?=config('hideMessages')?>;
     window.post = <?=json_encode($_POST)?>;
 </script>
 </body>

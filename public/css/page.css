@@ -11,6 +11,7 @@
 /* Основные стили для шаблона, используются глобально во всех страницах*/
 
 body, table {font-size:12px; font-family: Arial, serif; color: var(--text-color); background-color: var(--bg-color)}
+form {margin: 0}
 
 /* Верх и низ */
 div.pageBlock { padding:5px; margin: 5px 0; display: flex}
@@ -87,7 +88,7 @@ div.menuDb a:hover {color:black; text-decoration:underline}
 table.contentTable { border-collapse:collapse; empty-cells:show; margin:10px 0 0}
 table.contentTable td { padding: 3px; font-size:12px}
 table.contentTable th { padding: 3px; font-size:12px; text-align:left; color: var(--head-text-color); vertical-align: top;}
-table.contentTable th:not(.wide) .br {overflow-wrap: anywhere; width: 20px; display: block; word-break: break-all;}
+table.contentTable:not(.wide) th:not(.wide) .br {overflow-wrap: anywhere; width: 20px; display: block; word-break: break-all;}
 table.contentTable .cb { margin:0; width:18px; height:18px}
 table.contentTable th a { text-decoration:none; font-size:10px}
 table.contentTable th a:hover { text-decoration:underline}
@@ -104,6 +105,7 @@ table.contentTable + form {margin-top: 10px}
 .contentTable.anone a { text-decoration:none}
 .contentTable .e { background-color: #afa}
 .contentTable .n { background-color: #faa}
+.contentTable a + a {margin-left: 5px}
 
 /* Таблица с формой */
 form.tableFormEdit { margin:10px 0}
@@ -137,16 +139,14 @@ textarea[name="export"] { width:100%; font-size:11px; overflow:scroll}
 /* Общая форма внтури fieldset actionsdb actions */
 fieldset.msGeneralForm { margin:20px 0; padding: 10px}
 fieldset.msGeneralForm form, fieldset.msGeneralForm table { margin:0;}
-fieldset.msGeneralForm LEGEND { font-size:14px; }
+fieldset.msGeneralForm legend { font-size:14px; }
 fieldset.msGeneralForm [type="checkbox"] { vertical-align: middle }
 fieldset.msGeneralForm input.submit { display:block; margin-top:5px;}
 
 /* Блок с картинками сабмит: db_list, tbl_data, tbl_struct, tbl_list */
-div.imageAction { margin:20px 0}
 div.imageAction img, div.imageAction input{ margin:0 0 0 20px; vertical-align:text-top }
 div.imageAction img {cursor:pointer}
 div.imageAction u { font-weight:bold; font-size:14px}
-div.chbxAction {font-size:12px; margin:5px; color: var(--light-text-color)}
 img.helpimg {cursor:pointer}
 
 /* Страницы-ссылки для tbl_data */
@@ -155,7 +155,7 @@ div.contentPageLinks a { text-decoration:none; font-size:10px; margin: 0; paddin
 div.contentPageLinks a.cur { background-color: var(--link-color); color:#FFFFFF}
 
 /* tbl_list */
-form.showtableupdated select, form.showtableupdated [type="submit"] {margin-left:3px}
+form.showTableUpdated select, form.showTableUpdated [type="submit"] {margin-left:3px}
 .links-block {padding:10px 0; margin-bottom:10px; font-size:14px;}
 .links-block a + a {margin-left: 10px}
 table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
@@ -169,13 +169,9 @@ table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
 .login form > div label {width: 90px}
 
 /* Разное */
-h4 {font-size:16px; margin:10px 0 10px; background-color:#eee; padding:10px; width:800px}
-.dateString {color: var(--head-text-color)}
-a.truncate { color: var(--text-color)!important}
-a.delete { color: var(--head-text-color)!important}
-span.hiddenText { color: var(--hidden-text-color)}
 textarea.wide {width: 100%; height: 100px}
-.responsive {overflow-x: scroll; overflow-y: hidden}
+[type="checkbox"].aligned { vertical-align: -2px; margin: 0;}
+.responsive {overflow-x: auto; overflow-y: hidden}
 /* Кнопки */
 input[type="submit"], input[type="button"] {border-radius: 3px; border: 1px solid var(--light-text-color); cursor: pointer;/* padding: 5px 10px*/}
 input[type="submit"]:hover, input[type="button"]:hover {border-color: var(--head-text-color); background-color: var(--hidden-text-color)}
@@ -198,18 +194,33 @@ a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
   100% { transform: rotate(360deg); }
 }
 
-/* Utilities */
-.grey {color:#aaa}
+/* Colors */
+.warning {color: var(--head-text-color)}
+.warning-light {color: #fdbdbd}
+.success-light {color: #8ac971}
+a.truncate { color: var(--text-color)!important}
+a.delete { color: var(--head-text-color)!important}
+span.hiddenText { color: var(--hidden-text-color)}
+.grey { color:#aaa }
+
+/* Margins */
 .mb-5 {margin-bottom: 5px;}
+.mb-10 {margin-bottom: 10px}
 .mb-20 {margin-bottom: 20px;}
+.mt-5 {margin-top: 5px}
 .mt-10 {margin-top: 10px}
 .mt-20 {margin-top: 20px}
 .ml-10 {margin-left: 10px}
 .ml-20 {margin-left: 20px}
-.w95 {width: 95%}
-.mr10 {margin-right: 10px}
-.print_r {color:#666; border:1px solid #ccc; padding:10px;}
+.mr-10 {margin-right: 10px}
+.mr-20 {margin-right: 20px}
+
+/* Layout */
 .flex {display: flex; gap: 20px}
+.flex.baseline {align-items: baseline;}
+.inline { display: inline-block}
+
+.w-100 {width: 100%}
 
 
 

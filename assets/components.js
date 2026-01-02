@@ -1,6 +1,5 @@
-import React from 'react'
-import {Fragment, useEffect} from "react";
-import {contentTableEvents, empty, forElementsEvent, searchEvents} from "./functions";
+import React, {useEffect} from 'react'
+import {empty, forElementsEvent} from "./functions";
 
 export function CharsetSelector(props) {
     let opts = [], i = 0
@@ -57,7 +56,7 @@ export function HtmlSelector(props) {
 
 }
 
-// Оставляю, жалко удалять, вдруг пригодится
+// Сообщения, отображаемые при загрузке страницы под заголовком
 export function Messages(props) {
 
     const MessageText = (item) => {
@@ -70,190 +69,31 @@ export function Messages(props) {
             if (item.rows) {
                 extra.push(<div key="v2" style={{ color: '#ccc' }}>затронуто рядов: {item.rows}</div>)
             }
-            if (item.error !== '' && item.error != null) {
-                extra.push(<div key="v3" className="mysqlError"><b>Ошибка:</b> {item.error}</div>)
-            }
+        }
+        if (item.type === 'error' && item.error !== '' && item.error != null) {
+            extra.push(<div key="v3" className="mysqlError"><b>Ошибка:</b> {item.error}</div>)
         }
         return (<div style={{ color: item.color }}>{item.text}{extra}</div>)
     }
 
     const CloseMessage = (e) => {
-        e.target.closest('tr').nextElementSibling.toggleAttribute('hidden')
+        let block = e.target.closest('div').nextElementSibling
+        e.target.innerHTML = block.hidden ? 'hide' : 'show'
+        block.toggleAttribute('hidden')
+    }
+    if (empty(props.messages)) {
+        return null
     }
 
-    return <div className="messages">{props.messages.map((item, key) =>
-      (
+    let text = window.messagesHide === 1 ? 'show' : 'hide'
+    return <div className="messages">
         <div className="globalMessage" key={key}>
-            <div>Сообщение <a href="#" className="hiddenSmallLink" style={{ color: 'white' }}
-                             onClick={CloseMessage.bind(this)}>close</a></div>
-            <div>{MessageText(item)}</div>
+            <div>Сообщение <a href="#" className="hiddenSmallLink" style={{ color: 'white' }} onClick={CloseMessage.bind(this)}>{text}</a></div>
+            <div hidden={window.messagesHide === 1}>{props.messages.map((item) =>
+              MessageText(item)
+            )}</div>
         </div>
-      )
-    )}</div>
-}
-
-
-export function ExportOptions(props) {
-
-    const image = (src) => {
-        return props.dirImage + src
-    }
-
-    return (
-      <div className="options">
-          <div>
-              <label htmlFor="f1"><input type="checkbox" value="1" name="export_struct" id="f1"
-                                         defaultChecked={props.structChecked} /> Структура</label>
-
-              <label htmlFor="f2" title="Укажите эту опцию, если вы хотите заменить таблицу (команда DROP TABLE)">
-                  <input type="checkbox" value="1" className="l2" name="addDrop" id="f2" />
-                  Добавить удаление таблицы
-              </label>
-
-              <label htmlFor="f3"
-                     title="Будут преобразованы команды: CREATE TABLE IF NOT EXISTS... и при удалении таблиц DROP TABLE IF EXISTS ...">
-                  <input type="checkbox" value="1" className="l2" name="addIfNot" id="f3" />
-                  Добавить IF NOT EXISTS
-              </label>
-
-              <label htmlFor="f4" title="К каждой таблице будет добавлено AUTO_INCREMENT=текущее значение">
-                  <input type="checkbox" value="1" className="l2" name="addAuto" id="f4" />
-                  Добавить значение AUTO_INCREMENT
-              </label>
-
-              <label htmlFor="f5" title="Оставьте эту опцию, чтобы быть уверенным, что всё пройдет гладко">
-                  <input type="checkbox" value="1" className="l2" name="addKav" id="f5" defaultChecked />
-                  Обратные `кавычки` в названиях таблиц и полей
-              </label>
-
-              <label htmlFor="f12" title="Шапка к дампу с информацией о версиях ПО, а также заголовки таблиц">
-                  <input type="checkbox" value="1" name="addComment" id="f12" defaultChecked />
-                  Добавлять комментарии
-              </label>
-
-              <label htmlFor="f13"><input name="export_to" id="f13" type="radio" value="1" /> в архив</label>
-              <label htmlFor="f14"><input name="export_to" id="f14" type="radio" value="2" defaultChecked /> в
-                  текст</label>
-          </div>
-          <div>
-              <label htmlFor="f6"><input type="checkbox" value="1" name="export_data" id="f6" defaultChecked />Данные</label>
-
-              <label htmlFor="f7">
-                  <input type="checkbox" value="1" className="l2" name="insFull" id="f7" defaultChecked />
-                  Указать все поля <img src={image('i-help2.gif')}
-                                        title="В запросе будут перечислены все поля INSERT INTO table (fields...) VALUES (...), иначе перечисление полей пропускается. Используейте эту опцию, если вы не уверены, что порядок полей сохранится."
-                                        className="helpimg" alt="" />
-              </label>
-
-              <label htmlFor="f8">
-                  <input type="checkbox" value="1" className="l2" name="insExpand" id="f8" />
-                  Одним запросом <img src={image('i-help2.gif')}
-                                      title="Все вставки будут осуществлены одним запросом вида INSERT INTO table VALUES (set1..), (set2...), (set3...) etc"
-                                      className="helpimg" alt="" />
-              </label>
-
-              <label htmlFor="f9">
-                  <input type="checkbox" value="1" className="l2" name="insZapazd" id="f9" />
-                  DELAYED <img src={image('i-help2.gif')} title="DELAYED. Сервер сначала отправит запрос в буфер и если таблица используется, то вставку рядов приостановится. Когда таблица освободится, сервер начнёт выполнять запрос и вставлять строки, периодически проверяя, появились ли новые запросы к таблице. Если да, то вставка рядов будет снова приостановлена до того момента, как таблица снова освободится.
---- Эта опция полезна, когда немедленное обновление таблицы не требуется (например, при логах), а также если осуществляется множество запросов на вставку. Это даёт существенный прирост производительности при вставках и не задерживает обычную выборку. В то же время такие запросы медленнее обычных и вы должны быть уверенными, что они вам нужны."
-                               className="helpimg" alt="" />
-              </label>
-
-              <label htmlFor="f10">
-                  <input type="checkbox" value="1" className="l2" name="insIgnor" id="f10" />
-                  IGNORE <img src={image('i-help2.gif')}
-                              title="IGNORE. Ошибки, которые происходят при выполнении INSERT запроса игнорируются, то есть статус сообщения об ошибке меняется с ERROR на WARNING. С IGNORE, неправильные значения исправляются до ближайших валидных значений и вставляются, warning`и появляются, но выражение выполняется. Кроме этого в выражениях вида INSERT IGNORE INTO sdf (a,b) VALUES (6,6), (2,2), (7,7) будут вставлены все значения за исключением дублирующих. При отсутствии опции IGNORE будут вставлены все значения ДО дублирующих и выскочит ошибка."
-                              alt="" className="helpimg" />
-              </label>
-
-              Тип экспорта
-              <select name="export_option">
-                  <option>INSERT</option>
-                  <option>UPDATE</option>
-                  <option
-                    title="REPLACE работает точно так же, как INSERT, за исключением тех случаев, когда старая строка в таблице имеет те же значения, что и новая строка для полей с индексами PRIMARY KEY или UNIQUE. В этом случае старый ряд будет удалён перед вставкой нового ряда. REPLACE это собственное расширение MySQL. Он либо вставляет, либо удаляет и вставляет. Заметьте, что если таблица не имеет ключей PRIMARY KEY либо UNIQUE, то использование REPLACE не даст ничего. В этом случае он становится аналогичным INSERT">REPLACE
-                  </option>
-              </select>
-
-              {props.fields &&
-                <Fragment>
-                    <div> Выбрать поля для экспорта:</div>
-                    <HtmlSelector data={props.fields} name="fields[]" multiple="multiple" value={props.fields} />
-                </Fragment>
-              }
-          </div>
-
-      </div>
-    )
-}
-
-
-export function Table(props) {
-
-    useEffect(() => {
-        contentTableEvents()
-    })
-
-    // item может быть объектом с полями text, href для создания ссылки
-    const getValue = (item) => {
-        let value = ''
-        if (item !== null && typeof(item) == 'object') {
-            if (item.hasOwnProperty('text')) {
-                value = item.text
-                if (item.href) {
-                    value = <a href={item.href}>{value}</a>
-                }
-            } else {
-                value = item.toString()
-            }
-        } else {
-            value = item
-        }
-        return value
-    }
-
-    if (props.data[0] == null || typeof(props.data[0]) == 'undefined') {
-        return
-    }
-
-    let headers = Object.keys(props.data[0])
-    if (props.onDelete) {
-        headers.unshift('Actions')
-    }
-
-    let ths = []
-    for (let key of headers) {
-        ths.push(<th key={`th-${key}`}><span className="br">{key}</span></th>)
-    }
-
-    let trs = []
-    for (let index in props.data) {
-        let tds = []
-        const row = props.data[index]
-        for (let key of headers) {
-            let value
-            if (key === 'Actions') {
-                value = <a href="#" onClick={props.onDelete.bind(this, row)} title="Удалить"><img alt="" border="0" src="/images/close.png" /></a>
-            } else {
-                value = getValue(row[key])
-            }
-            tds.push(<td key={`td-${key}`}>{value}</td>)
-        }
-        trs.push(<tr key={`tr-${index}`}>{tds}</tr>)
-    }
-
-    return (
-      <div className="responsive">
-          <table className="contentTable">
-              <thead>
-              <tr>{ths}</tr>
-              </thead>
-              <tbody>
-              {trs}
-              </tbody>
-          </table>
-      </div>
-    )
+    </div>
 }
 
 function SearchDbForm() {
