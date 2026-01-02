@@ -490,10 +490,20 @@ export function contentTableEvents() {
     })
 }
 
+
+function generalEvents() {
+    forElementsEvent('click', '.js-confirm', function(event) {
+        if (!confirm('Подтвердите')) {
+            event.preventDefault()
+        }
+    })
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     dbHiddenMenu()
     ctrlKeyMode()
     sqlFormEvents()
+    generalEvents()
 })
 
 function htmlspecialchars(text) {

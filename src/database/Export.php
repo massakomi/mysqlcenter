@@ -197,7 +197,7 @@ class Export
                     $field_info .= ' default ' . $row->Default;
                 }
             } elseif ($row->Default != null || ($row->Null != 'YES' && !strchr($row->Type, 'text'))) {
-                if (!stristr($row->Extra, 'auto')) {
+                if ($row->Extra && !stristr($row->Extra, 'auto')) {
                     if ($row->Null != 'YES' && $row->Default == '') {
                     } else {
                         $field_info .= ' default \'' . $row->Default . '\'';
@@ -286,7 +286,7 @@ class Export
         } else {
             $ai = ' AUTO_INCREMENT=' . $ai . ' ';
         }
-        if (strlen($pack) > 0) {
+        if (!empty($pack)) {
             $pack = ' ' . $pack;
         }
         if ($comment != null) {

@@ -1,6 +1,6 @@
-import React, {Fragment} from 'react'
+import React, {Fragment, StrictMode} from 'react'
 import { createRoot } from 'react-dom/client'
-import { Sql } from './pages/Sql'
+import App from './pages/Sql'
 import { Actions } from './pages/actions'
 import { Config } from './pages/Config'
 import {Login} from "./pages/login";
@@ -34,7 +34,7 @@ const ComponentsMap = {
     'Search': Search,
     'Info': Info,
     'SearchTable': SearchTable,
-    'Sql': Sql,
+    'Sql': App,
     'Tbl_add': Tbl_add,
     'Tbl_change': Tbl_change,
     'Tbl_compare': Tbl_compare,
@@ -51,9 +51,9 @@ const Component = getComponentByPage(ComponentsMap)
 const domNode = document.getElementById('root')
 const root = createRoot(domNode)
 root.render(
-  <Fragment>
+  <StrictMode>
       <HeadTop />
       <Messages messages={window.messages} />
       <Component {...window.options} />
-  </Fragment>
+  </StrictMode>
 )

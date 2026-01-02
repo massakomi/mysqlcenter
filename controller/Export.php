@@ -305,12 +305,11 @@ class Export extends Base
     private function dumpHeader(): string
     {
         global $msc;
-        list(, $vs) = Server::getServerVersion();
         return '-- SQL Экспорт
 --
 -- Хост: ' . $msc->host . '
 -- Время создания: ' . date('j.m.Y, H-i') . '
--- Версия сервера: ' . $vs . '
+-- Версия сервера: ' . Server::getServerVersion() . '
 -- Версия PHP: ' . phpversion() . '
 -- 
 -- БД: `' . $msc->db . '`

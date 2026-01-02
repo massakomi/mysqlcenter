@@ -17,7 +17,7 @@ class Table
     private Validate $validate;
 
     /**
-     * @access private
+     *
      */
     public function __construct($db = null, $table = null)
     {
@@ -133,33 +133,48 @@ class Table
         if ($database == null) {
             $database = $db;
         }
-        $exp = new Export();
-        $exp->setDatabase($db);
-        $exp->setTable($table);
-        $sql = $exp->exportStructure(1, false);
-        $sql = preg_replace(
-            '/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i',
-            'CREATE TABLE `' . $newName . '`',
-            $sql,
-            1
-        );
-        $msc->selectDb($database);
-        if ($msc->execPdo($sql)) {
-            $msc->success("Таблица $table скопирована", $sql);
-        } else {
-            $msc->error("Ошибка копирования $table", $sql);
-            return false;
+
+        if ($struct) {
+            if ($msc->driverName == 'pgsql') {
+                $sql = "CREATE TABLE $newName (
+                    LIKE $table INCLUDING ALL
+                );";
+            } else {
+                $exp = new Export();
+                $exp->setDatabase($db);
+                $exp->setTable($table);
+                $sql = $exp->exportStructure(1, false);
+                $sql = preg_replace(
+                    '/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i',
+                    'CREATE TABLE `' . $newName . '`',
+                    $sql,
+                    1
+                );
+            }
+
+            $msc->selectDb($database);
+            if ($msc->execPdo($sql)) {
+                $msc->success("Таблица $table скопирована", $sql);
+            } else {
+                $msc->error("Ошибка копирования $table", $sql);
+                return false;
+            }
+            // переход в старую БД после запроса
+            if ($database != $db) {
+                $msc->selectDb($db);
+            }
         }
-        // переход в старую БД после запроса
-        if ($database != $db) {
-            $msc->selectDb($db);
-        }
+
         // дамп данных
         if ($data) {
+            $add = '';
+            if ($msc->driverName == 'pgsql') {
+                $add = ' OVERRIDING SYSTEM VALUE';
+            }
             if ($database != $db) {
-                $sql = 'INSERT INTO ' . $database . '.' . $newName . ' SELECT * FROM ' . $db . '.' . $table;
+                $sql = 'INSERT INTO ' . $database . '.' . $newName . ' '.$add.' SELECT * FROM ' . $db . '.' . $table;
             } else {
-                $sql = "INSERT INTO $newName SELECT * FROM $table";
+                $sql = "INSERT INTO $newName $add SELECT * FROM $table";
             }
             if ($msc->execPdo($sql)) {
                 $msc->success('Данные скопированы', $sql);
@@ -223,7 +238,6 @@ class Table
      *
      * @param string $table Имя таблицы
           * @return array
-     *@package sql
      */
     public static function getTableKeys(string $table): array
     {
@@ -234,7 +248,6 @@ class Table
     /**
      * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть
      *
-     * @package sql
      * @param string  Имя таблицы
      * @return boolean Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
      */
@@ -268,7 +281,6 @@ class Table
     /**
      * Создаёт определение поля из объекта или на основе параметров, со свойствами поля (field, type...)
      *
-     * @package sql
      * @param mixed  Либо field-объект, либо тип поля (в случае указания параметров по отдельности)
      * @param string Значение Null field-объекта (YES|NO - строка, определяющая, является ли поле NULL)
      * @param string Значение по умолчанию
@@ -327,21 +339,21 @@ class Table
             $type .= "($length)";
         }
         $field_info  = $type;
-        if (stristr($extra, 'UNSIGNED')) {
-            // это алиас
-            if ($type != 'BOOLEAN') {
-                $field_info .= ' UNSIGNED';
-            }
-            $extra = str_replace('UNSIGNED', '', $extra); // UNSIGNED - после типа поля
-        }
-        if (stristr($extra, 'ZEROFILL')) {
-            $field_info .= ' ZEROFILL';
-            $extra = str_replace('ZEROFILL', '', $extra);
-        }
         if ($null != 'YES') {
             $field_info .=  ' NOT NULL';
         }
-        if (trim($extra) != null) {
+        if ($extra != null) {
+            if (stristr($extra, 'UNSIGNED')) {
+                // это алиас
+                if ($type != 'BOOLEAN') {
+                    $field_info .= ' UNSIGNED';
+                }
+                $extra = str_replace('UNSIGNED', '', $extra); // UNSIGNED - после типа поля
+            }
+            if (stristr($extra, 'ZEROFILL')) {
+                $field_info .= ' ZEROFILL';
+                $extra = str_replace('ZEROFILL', '', $extra);
+            }
             $field_info .= ' ' . $extra;
         }
         if ($default != null) {

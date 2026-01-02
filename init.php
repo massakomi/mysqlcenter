@@ -58,8 +58,9 @@ define('MSC_MAX_DB_LIST', 100);  // вряд ли такое будет
 define('MS_FIELDS_COUNT', config('fieldsMax'));
 define('MAX_UPLOAD_SIZE', Utils::getMaxUploadSize());
 
-
-global $msc, $pdo;
+/* @var MSCenter $msc */
+global $msc;
+global $pdo;
 
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше
 

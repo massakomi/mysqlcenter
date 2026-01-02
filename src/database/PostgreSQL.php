@@ -20,40 +20,60 @@ class PostgreSQL implements Driver
     public function getDatabases(): array
     {
         global $msc;
+        return $msc->getData('SELECT * FROM pg_database');
+    }
+
+    public function getDatabaseNames(): array
+    {
+        global $msc;
         return $msc->getData('SELECT datname FROM pg_database WHERE datistemplate = false', \PDO::FETCH_COLUMN);
     }
 
     public function getTables(string $db = ''): array
     {
         global $msc;
+        $oldDatabase = false;
         if (!$db) {
             $db = $msc->db;
-        }
-
-        $sql = '
-            SELECT identity_start, table_name
-            FROM information_schema.columns 
-            WHERE is_identity = \'YES\'';
-        $data = $msc->getData($sql);
-        $autoIncrementsByTables = [];
-        foreach ($data as $value) {
-            $autoIncrementsByTables [$value['table_name']] = $value['identity_start'];
-        }
-
-        $charset = $this->getCharset();
-
-        // Выполнить analize, чтобы обновить статистику количества строк
-        if ($msc->page == 'tbl_list') {
-            $sql = '
-            SELECT *
-            FROM information_schema.tables 
-            WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\'';
-            $data = $msc->getData($sql, \PDO::FETCH_OBJ);
-            foreach ($data as $key => $value) {
-                $msc->execPdo('ANALYZE "' . $value->table_name . '"');
+        } elseif ($db != $msc->db) {
+            $oldDatabase = $msc->db;
+            try {
+                $config = $msc->getConfig();
+                $msc->connectPdo($config, $db);
+            } catch (\PDOException $e) {
+                $msc->error("Не смог соединиться с БД $db, чтобы получить инфо таблиц");
+                return [];
             }
         }
 
+        if ($msc->page == 'tbl_list') {
+            $this->updateStatistics($db);
+        }
+
+        $data = $this->fetchTables($db);
+
+        $autoIncrementsByTables = $this->getAutoIncrements();
+        foreach ($data as $value) {
+            if (array_key_exists($value->Name, $autoIncrementsByTables)) {
+                $value->Auto_increment = $autoIncrementsByTables[$value->Name];
+            }
+        }
+
+        if ($oldDatabase) {
+            $config = $msc->getConfig();
+            $msc->connectPdo($config, $oldDatabase);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Непосредственно запрос на выборку таблиц без лишнего кода
+     */
+    private function fetchTables(string $db)
+    {
+        global $msc;
+        $charset = $this->getCharset();
         $sql = '
             SELECT 
                 table_name as "Name",
@@ -72,15 +92,41 @@ class PostgreSQL implements Driver
             WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\' 
                 AND nspname NOT IN (\'pg_catalog\', \'information_schema\') AND relkind = \'r\'
             ORDER BY table_name';
-        $data = $msc->getData($sql, \PDO::FETCH_OBJ);
+        return $msc->getData($sql, \PDO::FETCH_OBJ);
+    }
 
+    /**
+     * Статистика по autoIncrements
+     */
+    private function getAutoIncrements()
+    {
+        global $msc;
+        $sql = '
+            SELECT identity_start, table_name
+            FROM information_schema.columns 
+            WHERE is_identity = \'YES\'';
+        $data = $msc->getData($sql);
+        $autoIncrementsByTables = [];
         foreach ($data as $value) {
-            if (array_key_exists($value->Name, $autoIncrementsByTables)) {
-                $value->Auto_increment = $autoIncrementsByTables[$value->Name];
-            }
+            $autoIncrementsByTables [$value['table_name']] = $value['identity_start'];
         }
+        return $autoIncrementsByTables;
+    }
 
-        return $data;
+    /**
+     * Выполнить analyze, чтобы обновить статистику количества строк
+     */
+    private function updateStatistics(string $db)
+    {
+        global $msc;
+        $sql = '
+            SELECT *
+            FROM information_schema.tables 
+            WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\'';
+        $data = $msc->getData($sql, \PDO::FETCH_OBJ);
+        foreach ($data as $key => $value) {
+            $msc->execPdo('ANALYZE "' . $value->table_name . '"');
+        }
     }
 
     /**
@@ -102,7 +148,7 @@ class PostgreSQL implements Driver
                     column_default AS "Default",
                     \'\' AS "Key",
                     CASE
-                        WHEN is_identity = \'YES\' THEN \'auto\'
+                        WHEN is_identity = \'YES\' THEN \'AUTO_INCREMENT\'
                         ELSE null
                     END AS "Extra"
                 FROM INFORMATION_SCHEMA.COLUMNS 
@@ -194,12 +240,12 @@ class PostgreSQL implements Driver
         return $keys;
     }
 
-    public function selectDb(string $db)
+    public function selectDb(string $db): void
     {
         global $msc;
         if ($db != $msc->db) {
-            throw new \Exception('In PostgreSQL, you cannot change the current database within
-                an existing PDO connection');
+            $config = $msc->getConfig();
+            $msc->connectPdo($config, $db);
         }
     }
 

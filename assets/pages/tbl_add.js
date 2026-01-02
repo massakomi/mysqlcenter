@@ -128,7 +128,7 @@ function PrintFields(props) {
               <td><input name="length[]" type="text" defaultValue={getLength(field.Type)} size="30" /></td>
               <td><input name={`isNull[${index}]`} type="checkbox" value="1" defaultChecked={field.Null === "YES"} /></td>
               <td><input name="default[]" type="text" size="10" defaultValue={field.Default} /></td>
-              <td><input name={`auto[${index}]`} onClick={aiClick} type="checkbox" value="1" defaultChecked={field.Extra !== ""}  /></td>
+              <td><input name={`auto[${index}]`} onClick={aiClick} type="checkbox" value="1" defaultChecked={!empty(field.Extra)}  /></td>
               <td><input name="primaryKey" type="radio" defaultValue={j} defaultChecked={keys.PRI} /></td>
               <td><input name={`uni[${j}]`} type="checkbox" defaultValue={keys.uniName} defaultChecked={keys.UNI} /></td>
               <td><input name={`mul[${j}]`} type="checkbox" defaultValue={keys.mulName} defaultChecked={keys.MUL}  /></td>
@@ -202,11 +202,17 @@ export function TypeSelect(props) {
         'CHAR', 'TINYBLOB', 'TINYTEXT', 'BLOB', 'MEDIUMBLOB', 'MEDIUMTEXT', 'LONGBLOB', 'LONGTEXT',
         'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
     ];
+    let pgTypes = {
+        'CHARACTER VARYING': 'VARCHAR'
+    }
     let value = ''
     if (props.type) {
         value = props.type.replace(/\((.*)\).*/i, '').toUpperCase()
         value = value.replace(/\s*(UNSIGNED)( ZEROFILL)?/, '')
         if (props.action === 'fieldsEditEnd') {
+            if (typeof pgTypes[value] !== 'undefined') {
+                value = pgTypes[value]
+            }
             if (!columnTypes.includes(value)) {
                 console.error(`Тип ${value} не найден в списке`)
                 Messages.show({'messages': `Тип ${value} не найден в списке`})

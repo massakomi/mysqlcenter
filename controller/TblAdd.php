@@ -95,7 +95,12 @@ class TblAdd extends Base
             $type    = $_POST['ftype'][$k];
             $null    = (isset($_POST['isNull'][$k]));
             $default = $_POST['default'][$k];
-            $extra   = (isset($_POST['auto'][$k])) ? 'AUTO_INCREMENT' : null;
+            $extra = null;
+            if (isset($_POST['auto'][$k])) {
+                if ($msc->driverName == 'mysql') {
+                    $extra = 'AUTO_INCREMENT';
+                }
+            }
             $extra  .= $_POST['attr'][$k] != '' ? ' ' . $_POST['attr'][$k] : null;
             $length  = $_POST['length'][$k];
             $define  = Table::getFieldDefinition($type, $null, $default, $extra, $length);
@@ -159,7 +164,7 @@ class TblAdd extends Base
                 if ($oldDefinition == $def) {
                     continue;
                 }
-                $a [] = ' CHANGE `' . $oldFieldName . '` ' . $def;
+                $a [] = ' ALTER `' . $oldFieldName . '` ' . $def;
             }
             $sql  = count($a) == 0 ? '' : 'ALTER TABLE `' . GET('table') . "`\r\n" . implode(",\r\n", $a);
             // ключи

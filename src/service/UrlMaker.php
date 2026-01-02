@@ -49,8 +49,12 @@ class UrlMaker
 
     /**
      * Функция редактирует URL добавляя/заменяя значение переменной name на value
+     * @param string $url
+     * @param string $name
+     * @param string $value
+     * @return string
      */
-    public static function edit($url, $name, $value)
+    public static function edit(string $url, string $name, string $value) :string
     {
         $url = str_replace("&amp;", "&", $url);
         $first = strpos($url, ($name . "="));

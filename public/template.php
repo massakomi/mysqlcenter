@@ -85,6 +85,7 @@ $databasesVisible = Server::getDatabasesWithoutHidden();
     window.component = '<?=$msc->page?>'
     window.db = '<?=$msc->db?>'
     window.table = '<?=$msc->table?>'
+    window.user = '<?=$msc->user?>'
     window.pageTitle = '<?=$msc->getPageTitle()?>'
     window.databases = <?=json_encode($databases) ?>;
     window.fields = <?=json_encode($fields) ?>;

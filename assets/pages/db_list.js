@@ -1,7 +1,10 @@
-import React from 'react';
-import {checkboxAction, msFormQuery, msQuery} from "../functions";
+import React, {Fragment} from 'react';
+import {checkboxAction, GET, msFormQuery, msQuery} from "../functions";
+import {PgRoles} from "./pgsql/roles";
+import {PgDbCreate} from "./pgsql/db_create";
+import {Table} from "../components/Table";
 
-function TableFull(props) {
+function DbStatInfo(props) {
 
     const dbDelete = db => {
         msQuery('dbDelete', `db=${db}&id=db${db}`)
@@ -89,7 +92,7 @@ function TableFull(props) {
     );
 }
 
-function Table(props) {
+function DbListTable(props) {
 
     const dbDelete = (db, event) => {
         msQuery('dbDelete', `dbDelete=${db}`, () => {
@@ -144,6 +147,20 @@ function Table(props) {
     );
 }
 
+
+export function DbFullInfo(props) {
+    return (
+      <Fragment>
+          <Table data={props.data} />
+          {window.driver === 'pgsql' ?
+            <ul>
+              <li><b>datistemplate</b> указывает на факт того, что база данных может выступать в качестве шаблона в команде CREATE DATABASE</li>
+              <li><b>datallowconn</b> допустимы ли новые подключения к этой базе (текущие сеансы не закрываются при сбросе этого флага)</li>
+            </ul> : null}
+      </Fragment>
+    );
+}
+
 function ColumnLeft(props) {
 
     const chbxAction = opt => {
@@ -156,9 +173,12 @@ function ColumnLeft(props) {
           <form action="?s=db_compare" method="post" name="formDatabases" id="formDatabases">
               <input type="hidden" name="dbMulty" value="1" />
               <input type="hidden" name="action" value="" />
-              {!props.showFullInfo ?
-                <Table folder={props.folder} databases={props.databases} hiddens={props.hiddens} /> :
-                <TableFull folder={props.folder} databases={props.databases} hiddens={props.hiddens} />}
+              {!props.showStatInfo && !props.showFullInfo ?
+                <DbListTable folder={props.folder} databases={props.databases} hiddens={props.hiddens} /> : null }
+              {props.showFullInfo ?
+                <DbFullInfo data={props.databases} /> : null}
+              {props.showStatInfo ?
+                <DbStatInfo folder={props.folder} databases={props.databases} hiddens={props.hiddens} /> : null}
 
               <div className="chbxAction mt-10">
                   <img src={"/" + props.folder + "arrow_ltr.png"} alt="" border="0" align="absmiddle" />
@@ -181,24 +201,28 @@ function ColumnLeft(props) {
 
 
 function ColumnRight(props) {
-
-    let tableLink;
-    if (!props.showFullInfo) {
-        tableLink = <a href={`?s=db_list&db=${props.dbname}&type=full`} title="Сканирует все таблицы всех баз данных и выводит количество таблиц, размер, дату обновления и количество рядов">Показать полную таблицу</a>
-    } else {
-        tableLink = <a href={`?s=db_list&db=${props.dbname}`}>Показать краткую таблицу</a>
+    let links = [];
+    if (GET('type') !== 'stat') {
+        let help = 'Сканирует все таблицы всех баз данных и выводит количество таблиц, размер, дату обновления и количество рядов'
+        links.push(<a className="block" href={`?s=db_list&db=${props.dbname}&type=stat`} title={help}>Показать кол-во строк, размеры и даты</a>)
+    }
+    if (GET('type')) {
+        links.push(<a className="block" href={`?s=db_list&db=${props.dbname}`}>Показать обычную таблицу</a>)
+    }
+    if (GET('type') !== 'full') {
+        links.push(<a className="block" href={`?s=db_list&db=${props.dbname}&type=full`}>Показать полную таблицу</a>)
     }
 
     return (
       <div>
-          <DbCreateForm />
+          <DbCreateForm/>
 
           <div className="mt-10">
-              {tableLink} <br/>
+              {links}
           </div>
 
           <div className="mt-10">Хост: {props.dbHost}</div>
-          <div>Версия сервера: {props.mysqlVersion}</div>
+          <div>Версия сервера: {props.serverVersion}</div>
           <div>Версия PHP: {props.phpversion}</div>
           <div>БД: {props.dbname}<br /></div>
       </div>
@@ -206,24 +230,31 @@ function ColumnRight(props) {
 }
 
 function DbCreateForm() {
+
+    const onSubmit = (e) => {
+        e.preventDefault()
+        msQuery('dbCreate', e.target)
+    }
+
     return  (
       <fieldset className="msGeneralForm">
           <legend>Создать базу данных</legend>
-          <form action="?s=tbl_list&action=dbCreate" method="post">
-              <input name="dbName" type="text" />
-              <button type="submit" className="ml-10">Создать!</button>
+          <form action="" onSubmit={onSubmit} method="post">
+              <div className="mb-5">
+                  <input name="dbName" type="text"/>
+                  <button type="submit" className="ml-10">Создать!</button>
+              </div>
+              <PgDbCreate />
           </form>
       </fieldset>
     )
 }
 
 export function Db_list(props) {
-    return  (
+    return (
       <div className="flex">
-          <ColumnLeft folder={props.folder} url={props.url} showFullInfo={props.showFullInfo} databases={props.databases} hiddens={props.hiddens} />
-
-          <ColumnRight appName={props.appName} appVersion={props.appVersion} dbHost={props.dbHost} showFullInfo={props.showFullInfo} dbname={props.dbname}
-                       phpversion={props.phpversion} mysqlVersion={props.mysqlVersion} />
+          <ColumnLeft {...props} />
+          <ColumnRight {...props} />
       </div>
     )
 }

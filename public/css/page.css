@@ -217,8 +217,11 @@ span.hiddenText { color: var(--hidden-text-color)}
 
 /* Layout */
 .flex {display: flex; gap: 20px}
+.flex.g0 {gap: 0}
 .flex.baseline {align-items: baseline;}
+.flex.center {align-items: center}
 .inline { display: inline-block}
+.block { display: block}
 
 .w-100 {width: 100%}
 

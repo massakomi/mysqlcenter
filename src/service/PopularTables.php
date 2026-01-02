@@ -12,10 +12,10 @@ use database\Table;
 class PopularTables
 {
     /**
-     * @param $db
+     * @param string $db
      * @return array
      */
-    public static function getPopularTables($db): array
+    public static function getPopularTables(string $db): array
     {
         if (!file_exists(MS_POPULAR_TABLES_FILE) || !$db) {
             return [];
@@ -40,10 +40,10 @@ class PopularTables
 
     /**
      * Популярные таблицы для указанной БД
-     * @param $db
+     * @param string $db
      * @return array
      */
-    public static function forDb($db): array
+    public static function forDb(string $db): array
     {
         $tables = self::getPopularTables($db);
         if ($db && array_key_exists($db, $tables)) {
@@ -55,11 +55,11 @@ class PopularTables
 
     /**
      * Сохраняет хит о просмотре таблицы в БД
-     * @param $db
-     * @param $table
+     * @param string $db
+     * @param string $table
      * @return void
      */
-    public static function save($db, $table): void
+    public static function save(string $db, string $table): void
     {
         if (!$db || !$table) {
             return;

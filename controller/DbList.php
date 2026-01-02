@@ -18,46 +18,49 @@ class DbList extends Base
     public function defaultAction(): array
     {
         global $msc;
+
         // Получаем массив баз данных
-        $dbs = Server::getDatabases();
-
-        $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
-
-        // Определяем, показывать ли полную информацию или нет
+        $showStatInfo = GET('type') == 'stat';
         $showFullInfo = GET('type') == 'full';
-
-        // Отображаем список баз данных с полной информацией
         if ($showFullInfo) {
-            foreach ($dbs as $j => $db) {
-                $dbItem = [
-                    'name' => $db,
-                    'extra' => []
-                ];
-                $result = $msc->driver->getTables($db);
-                foreach ($result as $row) {
-                    $dbItem ['extra'][] = $row;
+            $dbs = $msc->driver->getDatabases();
+        } else {
+            $dbs = Server::getDatabases();
+
+            // Отображаем список баз данных с полной информацией
+            if ($showStatInfo) {
+                foreach ($dbs as $j => $db) {
+                    $dbItem = [
+                        'name' => $db,
+                        'extra' => []
+                    ];
+                    $result = $msc->driver->getTables($db);
+                    foreach ($result as $row) {
+                        $dbItem ['extra'][] = $row;
+                    }
+                    $dbs [$j] = $dbItem;
                 }
-                $dbs [$j] = $dbItem;
             }
         }
+
+        $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
 
         $hidden = [];
         if (in_array('mysqlcenter', $dbs)) {
             $hidden = MSTable::getHiddensArray();
         }
 
-        list(, $vs) = Server::getServerVersion();
-
         return [
             'databases' => $dbs,
             'hiddens' => $hidden,
             'dbHost' => $msc->host,
             'showFullInfo' => $showFullInfo,
+            'showStatInfo' => $showStatInfo,
             'folder' => MS_DIR_IMG,
             'url' => MS_URL,
             'dbname' => $msc->db,
             'phpversion' => phpversion(),
-            'mysqlVersion' => $vs,
+            'serverVersion' => Server::getServerVersion(),
         ];
     }
 }

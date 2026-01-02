@@ -14,7 +14,6 @@ class Utils
      *
      * @param integer $bytes Размер файла в байтах
      * @return string Строковое представление
-     * @package number
      */
     public static function formatSize(int $bytes): string
     {

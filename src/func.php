@@ -37,7 +37,6 @@ function POST(string $name, ?string $default = null): mixed
 /**
  * Логи всех sql запросов в базы
  *
- * @access private
  * @param $string
  * @param $db
  * @return void
@@ -56,7 +55,6 @@ function logInFile($string, $db): void
  *
  * @param string $message Сообщение
  * @param string|null $sql SQL запрос (добавляется к сообщению)
- * @package debug
  */
 function logError(string $message, ?string $sql = null): void
 {
@@ -149,7 +147,6 @@ function errorHandlerFile($errno, $errstr, $errfile, $errline): void
  * @param string $param Параметр
  * @param string $default Значение по умолчанию, если параметра нет
  * @return string Значение
- * @package msc
  */
 function config(string $param, string $default = ''): string
 {
@@ -178,9 +175,9 @@ function isAjax(): bool
 
 /**
  * @param $data
- * @return void
+ * @return never
  */
-function ajaxResult($data): void
+function ajaxResult($data): never
 {
     header('Content-Type: application/json');
     exit(json_encode($data, JSON_INVALID_UTF8_IGNORE));

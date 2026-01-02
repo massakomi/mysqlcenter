@@ -20,6 +20,12 @@ class MySQL implements Driver
     public function getDatabases(): array
     {
         global $msc;
+        return $msc->getData('SHOW DATABASES');
+    }
+
+    public function getDatabaseNames(): array
+    {
+        global $msc;
         return $msc->getData('SHOW DATABASES', \PDO::FETCH_COLUMN);
     }
 

@@ -14,7 +14,7 @@ class Server
     private Validate $validate;
 
     /**
-     * @access private
+     *
      */
     public function __construct()
     {
@@ -29,7 +29,7 @@ class Server
         static $array;
         if (!isset($array)) {
             global $msc;
-            $array = $msc->driver->getDatabases();
+            $array = $msc->driver->getDatabaseNames();
         }
         return $array;
     }
@@ -59,27 +59,25 @@ class Server
     /**
      * Определение версии сервера в виде числа и строки
      *
-     * @package sql
-     * @return array Числовое и строковое значение версии
+     * @return string
+     * @throws \Exception
      */
-    public static function getServerVersion()
+    public static function getServerVersion(): array|string
     {
         global $msc;
         $result = $msc->fetchPdo('SELECT VERSION() AS version');
         if (!$result) {
-            return ['-', '-'];
+            return 'Unknown';
         }
         $row   = $result->fetch();
-        $match = explode('.', $row['version']);
-        $vi = (int)sprintf('%d%02d%02d', $match[0], $match[1], intval($match[2]));
-        $vs = $row['version'];
-        return [$vi, $vs];
+        $match = explode(' ', $row['version']);
+        $match = array_slice($match, 0, 2);
+        return implode(' ', $match);
     }
 
     /**
      * Возвращает массив кодировок сервера.
      *
-     * @package sql
      * @param boolean Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
      * @return array
      */
@@ -99,12 +97,14 @@ class Server
     /**
      * Удаляет / создаёт БД
      *
-     * @param string База данных
-     * @param string DROP|CREATE
-     * @return boolean
-     * @throws Exception
+     * @param string $db
+     * @param string $type DROP|CREATE
+     * @param string|null $user Для постгрес роль
+     * @param string|null $option Для постгрес template
+     * @return bool
+     * @throws \Exception
      */
-    public function databaseAction($db, $type = 'DROP'): bool
+    public function databaseAction(string $db, string $type, ?string $user = '', ?string $option = ''): bool
     {
         global $msc;
         if (!$this->validate->queryCheck($db)) {
@@ -113,10 +113,27 @@ class Server
         switch ($type) {
             case 'DROP':
                 $sql = "DROP DATABASE `$db`;";
+                if ($msc->driverName == 'pgsql' && $db === $msc->db) {
+                    // В постгрес нельзя удалить текущую бд, поэтому нужно поменять на другую
+                    $dbs = Server::getDatabases();
+                    $dbs = array_filter($dbs, fn($value) => $value !== $db);
+                    if (!count($dbs)) {
+                        return $msc->error('Невозможно удалить единственную БД');
+                    }
+                    $msc->selectDb($dbs[0]);
+                }
                 $text = 'удалена';
                 break;
             case 'CREATE':
-                $sql = "CREATE DATABASE `$db`;";
+                $sql = "CREATE DATABASE `$db`";
+                if ($msc->driverName == 'pgsql') {
+                    if ($option) {
+                        $sql .= " TEMPLATE `$option`;";
+                    }
+                    if ($user) {
+                        $sql .= " OWNER `$user`;";
+                    }
+                }
                 $text = 'создана';
                 break;
             default:
@@ -173,15 +190,19 @@ class Server
      */
     public function databaseCopy($dbFrom, $dbTo, $isMove = false, $struct = true, $data = true): bool
     {
+        global $msc;
+        if ($msc->driverName == 'pgsql') {
+            if ($this->databaseAction($dbTo, 'CREATE', '', $dbFrom)) {
+                return true;
+            }
+            return false;
+        }
         if ($this->databaseAction($dbTo, 'CREATE')) {
             $dbt = new Table();
             // скопировать все таблицы туда и удалить из старой БД
             $a = Table::getTables($dbFrom);
             foreach ($a as $table) {
                 $dbt->copyTable($dbFrom, $table, $struct, $data, $table, $dbTo);
-                if ($isMove) {
-                    //$dbt->tableAction($dbFrom, $table, 'DROP');
-                }
             }
             // удалить БД
             if ($isMove) {

@@ -13,6 +13,7 @@ use dto\TableInfo;
 interface Driver
 {
     public function getDatabases(): array;
+    public function getDatabaseNames(): array;
     /**
      * @return TableInfo[]
      */

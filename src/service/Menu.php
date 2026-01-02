@@ -56,9 +56,9 @@ class Menu
             }
             $extra = null;
             if (stristr($action, 'delete')) {
-                $extra = ' class="delete" onClick="check(this, \'удаление\'); return false"';
+                $extra = ' class="delete js-confirm"';
             } elseif (stristr($action, 'truncate')) {
-                $extra = ' class="truncate" onClick="check(this, \'очистка\'); return false"';
+                $extra = ' class="truncate js-confirm"';
             }
             // создание урл
             $curl = UrlMaker::edit(url: $curl, name: 's', value: $page);
@@ -107,7 +107,7 @@ class Menu
             ], $dbMenuGlobal, [
                 '[delim]2' => ['', ''],
                 'очистить' => [$msc->page, 'dbTruncate'],
-                'удалить' => [$msc->page, 'dbDelete'],
+                'удалить' => [$msc->page, 'dbDelete', $_SERVER['PHP_SELF'] . '?dbDelete=' . $msc->db],
                 'удалить таблицы' => [$msc->page, 'dbTablesDelete']
             ]);
         } else {

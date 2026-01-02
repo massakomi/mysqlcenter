@@ -47,6 +47,10 @@ export function Table(props) {
         return value
     }
 
+    if (!Array.isArray(props.data)) {
+        return <div>data не массив</div>
+    }
+
     if (props.data[0] == null || typeof (props.data[0]) == 'undefined') {
         return
     }

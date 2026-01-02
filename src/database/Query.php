@@ -41,11 +41,12 @@ class Query
     }
 
     /**
-     * @param $mode
+     * @param FetchType $mode
      * @param string $sql
-     * @return false|int|\PDOStatement
+     * @return bool|int|\PDOStatement|null
+     * @throws \Exception
      */
-    private function queryPdo(FetchType $mode, string $sql)
+    private function queryPdo(FetchType $mode, string $sql): bool|int|\PDOStatement|null
     {
         global $pdo;
         if (!$pdo) {
@@ -75,13 +76,15 @@ class Query
                 if (!str_starts_with($sql, 'USE')) {
                     echo '<pre>';
                 }
+                echo $sql;
+                echo '<hr />';
                 throw new \Exception($this->error);
             }
         }
         if ($this->logEnabled) {
             $this->loqQuery($sql, $result);
         }
-        return $result;
+        return $result === false ? null : $result;
     }
 
     /**
@@ -95,11 +98,7 @@ class Query
         if (!is_numeric($type)) {
             $type = \PDO::FETCH_ASSOC;
         }
-        $res = $this->fetchPdo($sql);
-        if (!$res) {
-            return [];
-        }
-        return $res->fetchAll($type);
+        return $this->fetchPdo($sql)?->fetchAll($type) ?? [];
     }
 
     /**
@@ -122,6 +121,8 @@ class Query
     }
 
     /**
+     * Закрывать соединение не нужно, оно автоматически закрывается при завершении скрипта или при обнулении
+     * переменной $pdo
      * @param ConnectConfig $config
      * @param string|null $database опционально другая бд для подключения
      * @return void
@@ -143,7 +144,6 @@ class Query
     /**
      * Перехватывает запрос и сохраняет его в файле
      *
-     * @access private
      * @param $sql
      * @param null $result
      * @return bool

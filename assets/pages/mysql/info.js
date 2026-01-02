@@ -4,10 +4,9 @@ import {msQuery} from "../../functions";
 import {Table} from "../../components/Table";
 
 export function MysqlInfo(props) {
-
     return (
       <div>
-          <MysqlServerInfo {...props} />
+           <MysqlServerInfo {...props} />
       </div>
     );
 }

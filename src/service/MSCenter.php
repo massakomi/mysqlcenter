@@ -7,7 +7,6 @@ namespace service;
 use database\{Driver, MySQL, PostgreSQL, Query};
 use dto\ConnectConfig;
 use dto\Message;
-use enum\MessageType;
 
 /**
  * Управляющий класс
@@ -18,28 +17,22 @@ use enum\MessageType;
  */
 class MSCenter extends Query
 {
+    use \service\Message;
+
     public string $db = '';
     public string $table = '';
     public string $page = '';
     public string $host = '';
     public string $user = '';
+
     public ?Driver $driver = null;
     public string $driverName = '';
-    public string $pageTitle = ''; // для заголовка раздела h1
 
-    /* @var Message[] */
-    public array $messages = [];
-
-    /**
-     * Время timestamp начала работы программы. Используется для подсчёта времени выполнения.
-     */
+    public string $pageTitle = '';
     public float $timer;
-
-    public bool $allowRepeatMessages = false;
 
     /**
      * Конструктор, для начала анализа скорости
-     * @access private
      */
     public function __construct()
     {
@@ -48,7 +41,6 @@ class MSCenter extends Query
 
     /**
      * Инициализация - отдельно от конструтора, чтобы тот раньше запустился
-     * @access private
      */
     public function init()
     {
@@ -61,7 +53,6 @@ class MSCenter extends Query
 
     /**
      * Возвращает заголовок страницы, вызывается только в основном шаблоне
-     * @access private
      */
     public function getPageTitle()
     {
@@ -73,7 +64,6 @@ class MSCenter extends Query
 
     /**
      * Возвращает заголовок окна, относится только к основному шаблону
-     * @access private
      */
     public function getWindowTitle()
     {
@@ -84,8 +74,36 @@ class MSCenter extends Query
     }
 
     /**
+     * Возвращает алиас текущего раздела, вызывается при инициализации
+     */
+    private function initCurrentPage(): void
+    {
+        if (!$this->connectConfigExists()) {
+            $this->page = 'login';
+            return;
+        }
+        $defaultPage = $this->db ? 'tbl_list' : 'db_list';
+        if ($this->page == null) {
+            if (count($_GET) > 0) {
+                if (GET('s') != '') {
+                    $this->page = GET('s');
+                } else {
+                    $a = array_key_first($_GET);
+                    $value = $_GET[$a];
+                    if ($value != '') {
+                        $this->page = $defaultPage;
+                    } else {
+                        $this->page = $a;
+                    }
+                }
+            } else {
+                $this->page = $defaultPage;
+            }
+        }
+    }
+
+    /**
      * Возвращает текущую отображаемую базу данных (которую мы видим), вызывается при инициализации
-     * @access private
      */
     private function initCurrentDatabase(): void
     {
@@ -171,11 +189,15 @@ class MSCenter extends Query
             }
         } catch (\PDOException $e) {
             // Если подставленная база не сработала - берем базу из конфигурации
-            if ($config->database && $config->database != $this->db) {
-                if (preg_match('~database .*? does not exist~', $e->getMessage())) {
+            if (preg_match('~database .*? does not exist~', $e->getMessage())) {
+                if ($config->database) {
+                    if ($config->database != $this->db) {
+                        $this->clearCurrentDatabase();
+                        $this->connect();
+                        return;
+                    }
+                } else {
                     $this->clearCurrentDatabase();
-                    $this->connect();
-                    return;
                 }
             }
             $msg = 'Unable to pdo-connect to database on "' . $config->host . '" as ' . $config->user . '<br />';
@@ -194,109 +216,4 @@ class MSCenter extends Query
         $this->table = '';
     }
 
-    /**
-     * Возвращает алиас текущего раздела, вызывается при инициализации
-     * @access private
-     */
-    private function initCurrentPage(): void
-    {
-        if (!$this->connectConfigExists()) {
-            $this->page = 'login';
-            return;
-        }
-        $defaultPage = $this->db ? 'tbl_list' : 'db_list';
-        if ($this->page == null) {
-            if (count($_GET) > 0) {
-                if (GET('s') != '') {
-                    $this->page = GET('s');
-                } else {
-                    $a = array_key_first($_GET);
-                    $value = $_GET[$a];
-                    if ($value != '') {
-                        $this->page = $defaultPage;
-                    } else {
-                        $this->page = $a;
-                    }
-                }
-            } else {
-                $this->page = $defaultPage;
-            }
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function getMessagesData(): array
-    {
-        return $this->messages;
-    }
-
-
-    /**
-     * Ошибка
-     *
-     * @param string $text
-     * @param null $sql
-     * @return bool
-     */
-    public function error(string $text, $sql = null): bool
-    {
-        return $this->addMessage($text, MessageType::Error, $sql);
-    }
-
-    /**
-     * Успешная операция
-     *
-     * @param string $text
-     * @param null $sql
-     * @return bool
-     */
-    public function success(string $text, $sql = null): bool
-    {
-        return $this->addMessage($text, MessageType::Success, $sql);
-    }
-
-    /**
-     * Ошибка, но не вызывает status error при ajax запросах
-     *
-     * @param string $text
-     * @param null $sql
-     * @return bool
-     */
-    public function notice(string $text, $sql = null): bool
-    {
-        return $this->addMessage($text, MessageType::Notice, $sql);
-    }
-
-    /**
-     * Сохраняет важное сообщение о процессе выполнения, которое будет выведено пользователю
-     *
-     * @param string $text текст сообщения
-     * @param MessageType $type сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
-     * @param string|null $sql sql запрос
-     * @return bool
-     */
-    private function addMessage(string $text, MessageType $type, ?string $sql): bool
-    {
-        if (!$this->allowRepeatMessages) {
-            foreach ($this->messages as $message) {
-                if ($message->text == $text && $message->sql == $sql) {
-                    return true;
-                }
-            }
-        }
-        $this->messages [] = new Message(
-            text: $text,
-            type: $type->value,
-            color: $type->getColor(),
-            error: $this->error,
-            sql: $sql,
-            rows: $this->affectedRows,
-        );
-        if ($type == MessageType::Error) {
-            return false;
-        }
-        return true;
-    }
 }

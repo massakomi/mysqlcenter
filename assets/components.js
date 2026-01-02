@@ -85,11 +85,12 @@ export function Messages(props) {
         return null
     }
 
-    let text = window.messagesHide === 1 ? 'show' : 'hide'
+    let messagesHide = window.messagesHide && props.messages.length > 1
+    let text = messagesHide === 1  ? 'show' : 'hide'
     return <div className="messages">
         <div className="globalMessage" key={key}>
             <div>Сообщение <a href="#" className="hiddenSmallLink" style={{ color: 'white' }} onClick={CloseMessage.bind(this)}>{text}</a></div>
-            <div hidden={window.messagesHide === 1}>{props.messages.map((item) =>
+            <div hidden={messagesHide === 1}>{props.messages.map((item) =>
               MessageText(item)
             )}</div>
         </div>
