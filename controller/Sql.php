@@ -66,17 +66,20 @@ class Sql extends Base
     /**
      * Ускоренное выполнение большого кол-ва запросов с логом
      *
-     * @param string База данных
-     * @param string SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
+     * @param string $db База данных
+     * @param string $sql SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
+     * @param bool $log
+     * @return void
      * @throws \Exception
      * @package msc
      */
-    private function execSql($db, &$sql, $log = true)
+    private function execSql(string $db, string &$sql, bool $log = true): void
     {
         global $msc;
         $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
         if (!$msc->selectDb($db)) {
-            return $msc->error('Не смог выбрать базу данных');
+            $msc->error('Не смог выбрать базу данных');
+            return;
         }
         if ($log) {
             logInFile($sql, $msc->db);
@@ -86,23 +89,21 @@ class Sql extends Base
             $msc->success('Запрос выполнен без ошибок');
         } else {
             $msc->error('Запрос выполнен с ошибками');
-            //$msc->error($msc->error);
         }
         $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
         $msc->success("Выполнено за $mysqlGenerationTime с.");
         $msc->success("Затронуто рядов: $msc->affectedRows");
-        return true;
     }
 
     /**
      * Считывает (и распаковывает сжатый) файл в строку
      *
-     * @param string   Путь к файлу
-     * @param string   MIME тип файла, иначе определяется автоматически
-     * @return  mixed    string контент файла либо boolean FALSE в случае ошибок
+     * @param string $path Путь к файлу
+     * @param string $mime MIME тип файла, иначе определяется автоматически
+     * @return  false|int|string    string контент файла либо boolean FALSE в случае ошибок
      * @package file
      */
-    private function readZipFile($path, $mime = '')
+    private function readZipFile(string $path, string $mime = ''): false|int|string
     {
         global $msc;
         if (!file_exists($path)) {

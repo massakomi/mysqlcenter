@@ -9,7 +9,7 @@ if (!defined('DIR_MYSQL')) {
     define("DIR_MYSQL", './');
 }
 
-spl_autoload_register(function ($class) {
+spl_autoload_register(function (string $class): void {
     $path = [
         DIR_MYSQL . 'src/' . $class . '.php',
         DIR_MYSQL . 'controller/' . $class . '.php',
@@ -18,7 +18,7 @@ spl_autoload_register(function ($class) {
     foreach ($path as $value) {
         if (file_exists($value)) {
             include_once $value;
-            return true;
+            return;
         }
     }
     //throw new Exception("Autoload error $class");
@@ -60,6 +60,7 @@ define('MAX_UPLOAD_SIZE', Utils::getMaxUploadSize());
 
 /* @var MSCenter $msc */
 global $msc;
+/* @var PDO $pdo */
 global $pdo;
 
 $msc = new MSCenter(); // чтобы начать анализ скорости раньше

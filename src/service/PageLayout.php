@@ -21,6 +21,7 @@ class PageLayout
 
     /**
      * Отображение страницы
+     * @return array<string>
      * @throws \Exception
      */
     public function execute(): array

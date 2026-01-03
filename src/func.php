@@ -37,11 +37,11 @@ function POST(string $name, ?string $default = null): mixed
 /**
  * Логи всех sql запросов в базы
  *
- * @param $string
- * @param $db
+ * @param string $string
+ * @param string $db
  * @return void
  */
-function logInFile($string, $db): void
+function logInFile(string $string, string $db): void
 {
     if (config('sqlLog') != '1' || !$db) {
         return;
@@ -73,11 +73,11 @@ function logError(string $message, ?string $sql = null): void
 
 /**
  * Общий метод записи в файл
- * @param $string
- * @param $filename
- * @return false|void
+ * @param string $string
+ * @param string $filename
+ * @return void
  */
-function writeLogFile($string, $filename)
+function writeLogFile(string $string, string $filename): void
 {
     if (!file_exists(MS_DIR_LOGS)) {
         if (!mkdir(MS_DIR_LOGS)) {
@@ -87,7 +87,7 @@ function writeLogFile($string, $filename)
     $logFile = MS_DIR_LOGS . '/' . $filename;
     $file = fopen($logFile, file_exists($logFile) ? 'a+' : 'w+');
     if (!$file) {
-        return false;
+        return;
     }
     fwrite($file, $string);
     fclose($file);
@@ -95,31 +95,32 @@ function writeLogFile($string, $filename)
 
 
 /**
- * @param $errno
- * @param $errstr
- * @param $errfile
- * @param $errline
- * @return void
+ * If the function returns false then the normal error handler continues.
+ * @param int $errno
+ * @param string $errstr
+ * @param string $errfile
+ * @param int $errline
+ * @return bool
  */
-function errorHandlerNotice($errno, $errstr, $errfile, $errline): void
+function errorHandlerNotice(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     global $msc;
     $log = $errstr . ' [' . $errfile . ':' . $errline . ']';
     if (isset($msc)) {
         $msc->error($log);
-    } else {
-        throw new ErrorException($errstr, $errno);
+        return true;
     }
+    return false;
 }
 
 /**
- * @param $errno
- * @param $errstr
- * @param $errfile
- * @param $errline
- * @return void
+ * @param int $errno
+ * @param string $errstr
+ * @param string $errfile
+ * @param int $errline
+ * @return bool
  */
-function errorHandlerFile($errno, $errstr, $errfile, $errline): void
+function errorHandlerFile(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     global $mscGlobalErrorsCash, $pdo;
     $log = $errstr . '[' . $errfile . ':' . $errline . ']';
@@ -129,10 +130,10 @@ function errorHandlerFile($errno, $errstr, $errfile, $errline): void
     if (!in_array($log, $mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash [] = $log;
     } else {
-        return;
+        return false;
     }
     if ($errno == 8) {
-        return;
+        return false;
     }
     if (stristr($errstr, 'Unable to save result set')) {
         $log .= '(' . $pdo->errorInfo()[2] . ')';
@@ -174,24 +175,24 @@ function isAjax(): bool
 }
 
 /**
- * @param $data
+ * @param array $data
  * @return never
  */
-function ajaxResult($data): never
+function ajaxResult(array $data): never
 {
     header('Content-Type: application/json');
     exit(json_encode($data, JSON_INVALID_UTF8_IGNORE));
 }
 
 /**
- * @param $message
+ * @param array $messages
  * @return void
  */
-function ajaxError($message): void
+function ajaxError(array $messages): void
 {
     ajaxResult([
         'status' => false,
-        'messages' => $message
+        'messages' => $messages
     ]);
 }
 

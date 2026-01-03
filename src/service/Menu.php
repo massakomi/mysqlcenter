@@ -36,8 +36,9 @@ class Menu
     /**
      * Общее меню менеджера
      * массивы в формате (s, action)
+     * @return string
      */
-    public function getGlobalMenu()
+    public function getGlobalMenu(): string
     {
         global $msc;
         $dbMenu = $this->globalMenuItems();
@@ -76,7 +77,7 @@ class Menu
     }
 
     /**
-     *
+     * @return array<array<string>>
      */
     private function globalMenuItems(): array
     {
@@ -128,15 +129,12 @@ class Menu
     /**
      * Меню таблиц или селектор таблиц
      */
-    public function getTableMenu($selector = false, $auto = true): string
+    public function getTableMenu(): string
     {
         global $msc;
         if ($msc->db == null) {
             return 'Не выбрана БД';
         }
-        $menuTables = null;
-        $selectorTables = null;
-
         $tables = Table::getCashedTablesArray();
         if (count($tables) == 0) {
             return 'Нет таблиц в БД';
@@ -150,13 +148,8 @@ class Menu
             $prefixes [$prefix] = !isset($prefixes [$prefix]) ? 1 : $prefixes [$prefix] + 1;
         }
         // создание меню и селектора
-        $menuTables .= "\r\n" . '<div class="menuTables">' . "\r\n";
+        $menuTables =  '<div class="menuTables">' . "\r\n";
         $menuTables .= $this->addPopularTables();
-        if ($auto === true) {
-            $selectorTables .= '<select onchange="location=this.options[this.selectedIndex].value">' . "\r\n";
-        } else {
-            $selectorTables .= '<select name="' . $auto . '">' . "\r\n";
-        }
         foreach ($tables as $t) {
             if (strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0) {
                 $end = strpos($t->Name, '_', 3);
@@ -173,29 +166,18 @@ class Menu
                 $class .= ' empty';
             }
             $menuTables .= $this->makeTableMenuItem(table: $t->Name, class: $class);
-            if ($msc->table == $t->Name) {
-                $selectorTables .= '  <option value="" selected><b>' . $t->Name . '</b></option>' . "\r\n";
-            } else {
-                $value = $this->getMenuTableLink(table: $t->Name);
-                $selectorTables .= '  <option value="' . $value . '">' . $t->Name . '</option>' . "\r\n";
-            }
         }
         $menuTables .= '</div>' . "\r\n";
-        $selectorTables .= '</select>' . "\r\n";
-        if ($selector) {
-            return $selectorTables;
-        } else {
-            return $menuTables;
-        }
+        return $menuTables;
     }
 
     /**
-     * @param $table
-     * @param $class
+     * @param string $table
+     * @param string $class
      * @param string $title
      * @return string
      */
-    private function makeTableMenuItem($table, $class, string $title = ''): string
+    private function makeTableMenuItem(string $table, string $class, string $title = ''): string
     {
         global $msc;
         if ($msc->table == $table) {
@@ -206,10 +188,10 @@ class Menu
     }
 
     /**
-     * @param $table
+     * @param string $table
      * @return string
      */
-    private function getMenuTableLink($table): string
+    private function getMenuTableLink(string $table): string
     {
         global $msc;
         if (in_array($msc->page, ['tbl_struct', 'search', 'export', 'actions', 'tbl_change'])) {

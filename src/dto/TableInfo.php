@@ -9,12 +9,12 @@ final class TableInfo
 {
     /**
      * Сюда загружаются поля в TblList
-     * @var array
+     * @var array<FieldInfo>
      */
     public array $fields = [];
     /**
      * Сюда загружаются данные частично в TblList
-     * @var array
+     * @var array<array<string>>
      */
     public array $data = [];
 
@@ -42,7 +42,7 @@ final class TableInfo
     }
 
     /**
-     * @param \stdClass|array $row
+     * @param \stdClass|array<array<string>> $row
      * @return void
      */
     public function fill(\stdClass|array $row): void

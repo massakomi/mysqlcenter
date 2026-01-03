@@ -13,9 +13,9 @@ class PopularTables
 {
     /**
      * @param string $db
-     * @return array
+     * @return array<array<array<int>>>
      */
-    public static function getPopularTables(string $db): array
+    private static function getPopularTables(string $db): array
     {
         if (!file_exists(MS_POPULAR_TABLES_FILE) || !$db) {
             return [];
@@ -41,7 +41,7 @@ class PopularTables
     /**
      * Популярные таблицы для указанной БД
      * @param string $db
-     * @return array
+     * @return array<array<int>>
      */
     public static function forDb(string $db): array
     {

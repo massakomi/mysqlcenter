@@ -128,13 +128,12 @@ class Export extends Base
         global $msc;
         $structChecked = ' defaultChecked';
         $whereCondition = null;
-        $tableSelectMult = null;
         // 3.2.2.1. только если указана в запросе!
         if (GET('db') != '') {
             // массив таблиц из списка таблиц
             $tablesAll = Table::getTables();
-            $tables = isset($_POST['table']) ? $_POST['table'] : [];
-            if (is_null($tables) || count($tables) == 0) {
+            $tables = $_POST['table'] ?? [];
+            if (count($tables) == 0) {
                 if ($msc->table == '') {
                     $optionsSelected = $tablesAll;
                 } else {
@@ -196,7 +195,6 @@ class Export extends Base
         $msct = new MSTable();
 
         $msc->pageTitle = 'Специальный экспорт данных';
-        $drawForm = true;
         // Экспорт
         if (POST('exportSpecial') != null && $msc->db != null) {
             // Save
@@ -211,29 +209,16 @@ class Export extends Base
                     $pk_top = intval($_POST['to'][$key]);
                     $where_sql = $_POST['where'][$key];
                     if ($data) {
-                        $where = [];
-                        $pri  = $_POST['field'][$key];
-                        $from = intval($_POST['from'][$key]);
-                        $to   = intval($_POST['to'][$key]);
-                        if ($from < 1) {
-                            $where [] = "$pri >= $from";
-                        }
-                        if ($to > 0) {
-                            $where [] = "$pri <= $to";
-                        }
-                        if ($where_sql != '') {
-                            $where [] = $where_sql;
-                        }
+                        $where = $this->getWhere($key, $where_sql);
                         $where_sql = implode(' AND ', $where);
                     }
-                    $msct->insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
+                    $msct::insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
                 }
                 $msc->success('Сет добавлен');
                 return [];
 
                 // Send
             } else {
-                $drawForm = false;
                 $exp = new \database\Export();
                 if (POST('addComment') != null) {
                     $exp->setHeader($this->dumpHeader());
@@ -249,19 +234,7 @@ class Export extends Base
                         $exp->exportStructure($addDelim = 1, $isDrop);
                     }
                     if (isset($_POST['data'][$key])) {
-                        $where = [];
-                        $pri  = $_POST['field'][$key];
-                        $from = intval($_POST['from'][$key]);
-                        $to   = intval($_POST['to'][$key]);
-                        if ($from < 1) {
-                            $where [] = "$pri >= $from";
-                        }
-                        if ($to > 0) {
-                            $where [] = "$pri <= $to";
-                        }
-                        if ($whereLocal != '') {
-                            $where [] = $whereLocal;
-                        }
+                        $where = $this->getWhere($key, $whereLocal);
                         $exp->exportData($exType, implode(' AND ', $where));
                     }
                 }
@@ -275,27 +248,25 @@ class Export extends Base
                 ];
             }
         }
-        if ($drawForm) {
-            $table = GET('table') ?: POST('table');
-            // Отображение формы экспорта
-            $cSet = $msct->getSetInfo(GET('set'));
-            $data = [];
-            if ($msc->db) {
-                $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db, \PDO::FETCH_OBJ);
-                foreach ($result as $o) {
-                    $o->Fields = Table::getFields($o->Name);
-                    $data [] = $o;
-                }
+        $table = GET('table') ?: POST('table');
+        // Отображение формы экспорта
+        $cSet = $msct::getSetInfo(GET('set'));
+        $data = [];
+        if ($msc->db) {
+            $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db, \PDO::FETCH_OBJ);
+            foreach ($result as $o) {
+                $o->Fields = Table::getFields($o->Name);
+                $data [] = $o;
             }
-            return [
-                'dirImage' => MS_DIR_IMG,
-                'structChecked' => true,
-                'data' => $data,
-                'configSet' => $cSet,
-                'setsArray' => $msct->getSetsArray(),
-                'fields' => $table ? Table::getFieldNames($table) : [],
-            ];
         }
+        return [
+            'dirImage' => MS_DIR_IMG,
+            'structChecked' => true,
+            'data' => $data,
+            'configSet' => $cSet,
+            'setsArray' => $msct->getSetsArray(),
+            'fields' => $table ? Table::getFieldNames($table) : [],
+        ];
     }
 
 
@@ -317,5 +288,28 @@ class Export extends Base
 
 -- --------------------------------------------------------
 ';
+    }
+
+    /**
+     * @param int|string $key
+     * @param mixed $where_sql
+     * @return array
+     */
+    private function getWhere(int|string $key, mixed $where_sql): array
+    {
+        $where = [];
+        $pri = $_POST['field'][$key];
+        $from = intval($_POST['from'][$key]);
+        $to = intval($_POST['to'][$key]);
+        if ($from < 1) {
+            $where [] = "$pri >= $from";
+        }
+        if ($to > 0) {
+            $where [] = "$pri <= $to";
+        }
+        if ($where_sql != '') {
+            $where [] = $where_sql;
+        }
+        return $where;
     }
 }

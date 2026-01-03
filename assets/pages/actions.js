@@ -124,7 +124,7 @@ function ActionsTable(props) {
               <a onClick={tableAction.bind(this, "tableAnalize")} href="#">Анализ таблицы</a>
               <a onClick={tableAction.bind(this, "tableRepair")} href="#">Починить таблицу</a>
               <a onClick={tableAction.bind(this, "tableOptimize")} href="#">Оптимизировать таблицу</a>
-              <a onClick={tableAction.bind(this, "tableFlush")} href="#">Сбросить кэш таблицы ("FLUSH")</a>
+              <a onClick={tableAction.bind(this, "tableFlush")} href="#">Сбросить кэш таблицы (FLUSH)</a>
           </div>
       </Fragment>
     );

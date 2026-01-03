@@ -23,8 +23,9 @@ class Server
 
     /**
      * Возвращает массив баз данных
+     * @return array<string>
      */
-    public static function getDatabases()
+    public static function getDatabases(): array
     {
         static $array;
         if (!isset($array)) {
@@ -35,7 +36,7 @@ class Server
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public static function getDatabasesWithoutHidden(): array
     {
@@ -62,7 +63,7 @@ class Server
      * @return string
      * @throws \Exception
      */
-    public static function getServerVersion(): array|string
+    public static function getServerVersion(): string
     {
         global $msc;
         $result = $msc->fetchPdo('SELECT VERSION() AS version');
@@ -78,10 +79,10 @@ class Server
     /**
      * Возвращает массив кодировок сервера.
      *
-     * @param boolean Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
-     * @return array
+     * @param bool $extended Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
+     * @return array<string>
      */
-    public static function getCharsetArray($extended = false)
+    public static function getCharsetArray(bool $extended = false): array
     {
         global $msc;
         $charsetList = [];
@@ -149,11 +150,11 @@ class Server
     /**
      * Удаляет / очищает все таблицы БД
      *
-     * @param string База данных
-     * @param boolean Если true - удалить таблицы, иначе очистить
-     * @return boolean true только если ошибок нет, false - если хотя бы одна таблица не обработана
+     * @param string $db База данных
+     * @param boolean $delete Если true - удалить таблицы, иначе очистить
+     * @return bool true только если ошибок нет, false - если хотя бы одна таблица не обработана
      */
-    public function databaseTruncate($db, $delete = false)
+    public function databaseTruncate(string $db, bool $delete = false): bool
     {
         global $msc;
         $dbt = new Table();
@@ -180,15 +181,15 @@ class Server
     /**
      * Копирует / переименовывает БД
      *
-     * @param string БД-источник
-     * @param string БД, куда копируется/перемещается
-     * @param boolean Если true, то перемещает, иначе копирует
-     * @param boolean Если true, копирует структуру (CREATE TABLE...), иначе нет
-     * @param boolean Если true, копирует данные, иначе нет
-     * @return boolean
-     * @throws Exception
+     * @param string $dbFrom БД-источник
+     * @param string $dbTo БД, куда копируется/перемещается
+     * @param boolean $isMove Если true, то перемещает, иначе копирует
+     * @param boolean $struct Если true, копирует структуру (CREATE TABLE...), иначе нет
+     * @param boolean $data Если true, копирует данные, иначе нет
+     * @return bool
+     * @throws \Exception
      */
-    public function databaseCopy($dbFrom, $dbTo, $isMove = false, $struct = true, $data = true): bool
+    public function databaseCopy(string $dbFrom, string $dbTo, bool $isMove = false, bool $struct = true, bool $data = true): bool
     {
         global $msc;
         if ($msc->driverName == 'pgsql') {
@@ -216,13 +217,13 @@ class Server
     /**
      * Изменяет кодировку или сравнение БД
      *
-     * @param string БД
-     * @param string Кодировка
-     * @param boolean Если true, то меняется кодировка, иначе сравнение
-     * @return boolean
-     * @throws Exception
+     * @param string $db БД
+     * @param string $charset Кодировка
+     * @param bool $isCharset Если true, то меняется кодировка, иначе сравнение
+     * @return bool
+     * @throws \Exception
      */
-    public function databaseAlterCharset($db, $charset, $isCharset = true): bool
+    public function databaseAlterCharset(string $db, string $charset, bool $isCharset = true): bool
     {
         global $msc;
         if (!$this->validate->queryCheck($db, 'table', $charset)) {

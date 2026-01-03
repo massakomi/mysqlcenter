@@ -9,13 +9,11 @@ use enum\MessageType;
  */
 trait Message
 {
-    final const bool ALLOW_REPEAT_MESSAGE = false;
-
-    /* @var \dto\Message[] */
-    public array $messages = [];
+    /* @var array<\dto\Message> */
+    private array $messages = [];
 
     /**
-     * @return array
+     * @return array<\dto\Message>
      */
     public function getMessagesData(): array
     {
@@ -26,10 +24,10 @@ trait Message
      * Ошибка
      *
      * @param string $text
-     * @param null $sql
+     * @param string|null $sql
      * @return bool
      */
-    public function error(string $text, $sql = null): bool
+    public function error(string $text, ?string $sql = null): bool
     {
         return $this->addMessage($text, MessageType::Error, $sql);
     }
@@ -38,10 +36,10 @@ trait Message
      * Успешная операция
      *
      * @param string $text
-     * @param null $sql
+     * @param string|null $sql
      * @return bool
      */
-    public function success(string $text, $sql = null): bool
+    public function success(string $text, ?string $sql = null): bool
     {
         return $this->addMessage($text, MessageType::Success, $sql);
     }
@@ -50,10 +48,10 @@ trait Message
      * Ошибка, но не вызывает status error при ajax запросах
      *
      * @param string $text
-     * @param null $sql
+     * @param string|null $sql
      * @return bool
      */
-    public function notice(string $text, $sql = null): bool
+    public function notice(string $text, ?string $sql = null): bool
     {
         return $this->addMessage($text, MessageType::Notice, $sql);
     }
@@ -68,11 +66,9 @@ trait Message
      */
     private function addMessage(string $text, MessageType $type, ?string $sql): bool
     {
-        if (!self::ALLOW_REPEAT_MESSAGE) {
-            foreach ($this->messages as $message) {
-                if ($message->text == $text && $message->sql == $sql) {
-                    return true;
-                }
+        foreach ($this->messages as $message) {
+            if ($message->text == $text && $message->sql == $sql) {
+                return true;
             }
         }
         $this->messages [] = new \dto\Message(

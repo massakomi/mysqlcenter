@@ -305,26 +305,23 @@ class Export
 
 
     /**
-     * Возврвщает дамп данных таблицы (sql запрос )
-     * @param string   тип экспорта (INSERT-REPLACE-UPDATE)
-     * @param string   SQL условие
-     * @param boolean  пропускать ли поля с auto_increment
+     * Возвращает дамп данных таблицы (sql запрос )
+     * @param string $type тип экспорта (INSERT-REPLACE-UPDATE)
+     * @param string|null $where SQL условие
+     * @param bool$skipAi пропускать ли поля с auto_increment
      */
-    public function exportData($type = 'INSERT', $where = null, $skipAi = false)
+    public function exportData(string $type = 'INSERT', ?string $where = null, bool $skipAi = false): true|int|null
     {
         global $msc, $pdo;
         $memory_limit = (intval(ini_get('memory_limit')) * 1024 * 1024) / 2;
         $delim = ";\r\n";
         $wr = "\r\n";
-        $tab = '    ';
         if (is_null($where) || strlen(trim($where)) < 2) {
             $sql = "SELECT * FROM $this->tableb";
+        } elseif (stristr($where, 'WHERE ')) {
+            $sql = "SELECT * FROM $this->tableb $where";
         } else {
-            if (stristr($where, 'WHERE ')) {
-                $sql = "SELECT * FROM $this->tableb $where";
-            } else {
-                $sql = "SELECT * FROM $this->tableb WHERE $where";
-            }
+            $sql = "SELECT * FROM $this->tableb WHERE $where";
         }
         if (!$q_result = $msc->fetchPdo($sql)) {
             return null;
@@ -335,18 +332,18 @@ class Export
         if ($_POST['fields']) {
             $exportedFields = $_POST['fields'];
         }
-        $f = $this->getFields($this->table);
-        foreach ($f as $k => $v) {
+        $fields = $this->getFields($this->table);
+        foreach ($fields as $k => $v) {
             if ($exportedFields && !in_array($v->Field, $exportedFields) && ($type != 'UPDATE' || $v->Key != 'PRI')) {
-                unset($f[$k]);
+                unset($fields[$k]);
             }
         }
-        $fnames = [];
-        foreach ($f as $i => $v) {
+        $fieldNames = [];
+        foreach ($fields as $i => $v) {
             if ($skipAi && $v->Extra != '') {
                 continue;
             }
-            $fnames[] = $v->Field;
+            $fieldNames[] = $v->Field;
         }
         // подготовка для INSERT
         $typeName = substr($type, 0, 6);
@@ -357,12 +354,12 @@ class Export
             $type = $type . ' IGNORE';
         }
         if ($this->insFull) {
-            $start = $type . ' INTO ' . $this->tableb . ' (`' . implode('`,`', $fnames) . '`) VALUES (';
+            $start = $type . ' INTO ' . $this->tableb . ' (`' . implode('`,`', $fieldNames) . '`) VALUES (';
         } else {
             $start = $type . ' INTO ' . $this->tableb . ' VALUES (';
         }
         if ($this->insExpand && $typeName != 'UPDATE') {
-            $dump .= $type . ' INTO ' . $this->tableb . ' (`' . implode('`,`', $fnames) . '`) VALUES ';
+            $dump .= $type . ' INTO ' . $this->tableb . ' (`' . implode('`,`', $fieldNames) . '`) VALUES ';
         }
         $count = 0;
         $isFullDump = true;
@@ -376,7 +373,7 @@ class Export
             if ($typeName == 'UPDATE') {
                 $a = [];
                 $primary = [];
-                foreach ($f as $i => $v) {
+                foreach ($fields as $i => $v) {
                     if (isset($row[$i])) {
                         if (stristr($v->Type, 'int')) {
                             $val = $row[$i];
@@ -402,7 +399,7 @@ class Export
             } elseif ($typeName == 'INSERT' || $typeName == 'REPLAC') {
                 // INSERT - REPLACE
                 $values = [];
-                foreach ($f as $i => $v) {
+                foreach ($fields as $i => $v) {
                     if ($skipAi && $v->Extra != '') {
                         continue;
                     }

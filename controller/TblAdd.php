@@ -93,7 +93,7 @@ class TblAdd extends Base
                 continue;
             }
             $type    = $_POST['ftype'][$k];
-            $null    = (isset($_POST['isNull'][$k]));
+            $null    = isset($_POST['isNull'][$k]) ? 'YES' : '';
             $default = $_POST['default'][$k];
             $extra = null;
             if (isset($_POST['auto'][$k])) {

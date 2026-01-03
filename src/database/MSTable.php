@@ -9,12 +9,9 @@ namespace database;
  */
 class MSTable
 {
-    public $data;
-
-    /**
+     /**
      * Статистика просмотров баз данных
-     * @return void
-     * @throws Exception
+      * @throws \Exception
      */
     public static function dbViewStat(): void
     {
@@ -56,8 +53,11 @@ class MSTable
 
     /**
      * Возвращает все переменные сета
+     * @param $idSet
+     * @return array
+     * @throws \Exception
      */
-    public static function getSetInfo($idSet)
+    public static function getSetInfo($idSet): array
     {
         if ($idSet == null) {
             return [];
@@ -76,8 +76,10 @@ class MSTable
 
     /**
      * Возвращает массив сетов
+     * @return array
+     * @throws \Exception
      */
-    public static function getSetsArray()
+    public static function getSetsArray(): array
     {
         global $msc;
         return $msc->getData('SELECT id, name FROM mysqlcenter.export_set', \PDO::FETCH_KEY_PAIR);
@@ -85,8 +87,10 @@ class MSTable
 
     /**
      * Возвращает массив сетов
+     * @return array
+     * @throws \Exception
      */
-    public static function getHiddensArray()
+    public static function getHiddensArray(): array
     {
         global $msc;
         return $msc->getData('SELECT db_name FROM mysqlcenter.db_info WHERE visible=0', \PDO::FETCH_COLUMN);
@@ -94,8 +98,11 @@ class MSTable
 
     /**
      * Добавляет новый сет
+     * @param $name
+     * @return false|string
+     * @throws \Exception
      */
-    public static function insertSet($name)
+    public static function insertSet($name): false|string
     {
         global $msc, $pdo;
         if ($msc->execPdo('INSERT INTO mysqlcenter.export_set (`name`) VALUES ("' . $name . '")')) {
@@ -107,8 +114,16 @@ class MSTable
 
     /**
      * Вставляет новую переменю сета
+     * @param string|null $id_set
+     * @param string $table_name
+     * @param int $struct
+     * @param int $data
+     * @param string $where_sql
+     * @param int $pk_top
+     * @return false
+     * @throws \Exception
      */
-    public static function insertOption($id_set, $table_name, $struct, $data, $where_sql, $pk_top)
+    public static function insertOption(?string $id_set, string $table_name, int $struct, int $data, string $where_sql, int $pk_top): false
     {
         global $msc, $pdo;
         if ($struct + $data == 0) {

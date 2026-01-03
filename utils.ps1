@@ -4,12 +4,17 @@ Do
         "Select command`n"
         'b - build webpack'
         'w - auto build webpack'
+        "`n"
         'p - prettier'
+        'es - eslint check all'
+        'esh - eslint help'
         "`n"
         'cbf - phpcbf'
         'cs - phpcs'
         'css - phpcs summary only'
-        'stan - phpstan analyse'
+        "`n"
+        'stan - phpstan analyse, levels: '
+        'stan0 stan1 stan2 stan3 stan4'
         "`n"
         'nc - node current'
         'nl - node list'
@@ -19,54 +24,35 @@ Do
     $operation = Read-Host $prompt
 
     Clear-Host
-    if ($operation -eq 'cbf')
-    {
-        phpcbf .\controller .\src --standard=PSR12 -p
-    }
-    if ($operation -eq 'cs')
-    {
-        phpcs .\controller .\src --standard=PSR12
-    }
-    if ($operation -eq 'css')
-    {
-        phpcs .\controller .\src --standard=PSR12  -p --report=summary
-    }
-    if ($operation -eq 'stan')
-    {
-        phpstan analyse
+    switch ($operation) {
+    "b"         { npx webpack }
+    "w"         { npx webpack --watch }
+
+    "p"         { npx prettier .\js\MysqlCenter.js --write }
+    "es"        { npx eslint }
+    "esh"       { npx eslint -h }
+
+    "cbf"       { phpcbf .\controller .\src --standard=PSR12 -p }
+    "cs"        { phpcs .\controller .\src --standard=PSR12 }
+    "css"       { phpcs .\controller .\src --standard=PSR12  -p --report=summary }
+
+    "stan"      { phpstan analyse }
+    "stan0"     { phpstan analyse -l 0 }
+    "stan1"     { phpstan analyse -l 1 }
+    "stan2"     { phpstan analyse -l 2 }
+    "stan3"     { phpstan analyse -l 3 }
+    "stan4"     { phpstan analyse -l 4 }
+    "stan5"     { phpstan analyse -l 5 }
+    "stan6"     { phpstan analyse -l 6 }
+    "stan7"     { phpstan analyse -l 7 }
+    "stan8"     { phpstan analyse -l 8 }
+
+    "nc"        { nvm current }
+    "nl"        { nvm list }
+    "n1"        { nvm use 15.14.0 }
+    "n2"        { nvm use 24.12.0 }
     }
 
-    if ($operation -eq 'b')
-    {
-        npx webpack
-    }
-    if ($operation -eq 'w')
-    {
-        npx webpack --watch
-    }
-    if ($operation -eq 'p')
-    {
-        # https://prettier.io/docs/options#semicolons
-        # Запустить на всех файлах форматирование
-        # npx prettier . --write
-        npx prettier .\js\MysqlCenter.js --write
-    }
-    if ($operation -eq 'nc')
-    {
-        nvm current
-    }
-    if ($operation -eq 'nl')
-    {
-        nvm list
-    }
-    if ($operation -eq 'n1')
-    {
-        nvm use 15.14.0
-    }
-    if ($operation -eq 'n2')
-    {
-        nvm use 24.12.0
-    }
 }
 While (1)
 

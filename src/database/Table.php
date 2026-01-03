@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace database;
 
 use dto\FieldInfo;
+use dto\TableInfo;
 use service\Validate;
 
 /**
@@ -17,9 +18,10 @@ class Table
     private Validate $validate;
 
     /**
-     *
+     * @param string|null $db
+     * @param string|null $table
      */
-    public function __construct($db = null, $table = null)
+    public function __construct(?string $db = null, ?string $table = null)
     {
         $this->database = $db;
         $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
@@ -29,11 +31,12 @@ class Table
     /**
      * Совершает действие типа $type с $table, используя если надо параметр $param
      *
-     * @param string
-     * @param string
-     * @param string  DROP | TRUNCATE | ANALISE | OPTIMIZE | CHECK | REPAIR | FLUSH
-     * @param string
-     * @return boolean
+     * @param string $db
+     * @param string $table
+     * @param string $type DROP | TRUNCATE | ANALISE | OPTIMIZE | CHECK | REPAIR | FLUSH
+     * @param string $param
+     * @return bool
+     * @throws \Exception
      */
     public function tableAction($db, $table, $type = 'DROP', $param = null): bool
     {
@@ -112,15 +115,16 @@ class Table
     /**
      * Копирует таблицу $table, если надо со структурой, данными. если надо переименовывает
      *
-     * @param string  текущая БД
-     * @param string  таблица
-     * @param boolean надо ли создавать таблицу на новом месте
-     * @param boolean надо ли копировать данные
-     * @param string  новое имя, если таблица переименовывается
-     * @param string  База данных, куда надо копировать
-     * @return boolean
+     * @param string $db текущая БД
+     * @param string $table таблица
+     * @param bool $struct надо ли создавать таблицу на новом месте
+     * @param bool $data надо ли копировать данные
+     * @param string|null $newName новое имя, если таблица переименовывается
+     * @param string|null $database База данных, куда надо копировать
+     * @return bool
+     * @throws \Exception
      */
-    public function copyTable($db, $table, $struct = true, $data = false, $newName = null, $database = null)
+    public function copyTable(string $db, string $table, bool $struct = true, bool $data = false, ?string $newName = null, ?string $database = null): bool
     {
         global $msc;
         if (!$this->validate->queryCheck($db, $table)) {
@@ -197,7 +201,6 @@ class Table
         if (empty($table)) {
             return [];
         }
-        global $msc;
         static $cache;
         $cacheId = $table;
         if (!isset($cache[$cacheId])) {
@@ -215,6 +218,8 @@ class Table
 
     /**
      * Только массив имен полей
+     * @param string $table
+     * @return array<string>
      */
     public static function getFieldNames(string $table): array
     {
@@ -237,7 +242,7 @@ class Table
      * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа]
      *
      * @param string $table Имя таблицы
-          * @return array
+     * @return array<array<string>>
      */
     public static function getTableKeys(string $table): array
     {
@@ -248,10 +253,11 @@ class Table
     /**
      * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть
      *
-     * @param string  Имя таблицы
-     * @return boolean Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
+     * @param string $tbl Имя таблицы
+     * @return bool Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
+     * @throws \Exception
      */
-    public static function dropPrimaryKey($tbl)
+    public static function dropPrimaryKey(string $tbl): bool
     {
         global $msc;
         $fields = self::getFields($tbl);
@@ -275,31 +281,32 @@ class Table
                 return $msc->error('Ошибка удаления ключа', $sql);
             }
         }
-        return '';
+        return false;
     }
 
     /**
      * Создаёт определение поля из объекта или на основе параметров, со свойствами поля (field, type...)
      *
-     * @param mixed  Либо field-объект, либо тип поля (в случае указания параметров по отдельности)
-     * @param string Значение Null field-объекта (YES|NO - строка, определяющая, является ли поле NULL)
-     * @param string Значение по умолчанию
-     * @param string Значение Extra field-объекта
-     * @param string Длина поля, если необходимо
+     * @param mixed|null $type Либо field-объект, либо тип поля (в случае указания параметров по отдельности)
+     * @param string|null $null Значение Null field-объекта (YES|NO - строка, определяющая, является ли поле NULL)
+     * @param string|null $default Значение по умолчанию
+     * @param string|null $extra Значение Extra field-объекта
+     * @param string|null $length Длина поля, если необходимо
      * @return string Определение поля (field definition)
      */
     public static function getFieldDefinition(
-        $type = null,
-        $null = null,
-        $default = null,
-        $extra = null,
-        $length = null
-    ) {
+         mixed  $type = null,
+        ?string $null = null,
+        ?string $default = null,
+        ?string $extra = null,
+        ?string $length = null
+    ): false|string
+    {
         if (is_object($type)) {
-            foreach ($type as $param => $value) {
-                $param = strtolower($param);
-                $$param = $value;
-            }
+            $null = $type->Null;
+            $default = $type->Default;
+            $extra = $type->Extra;
+            $type = $type->Type;
             if (stristr($type, 'UNSIGNED')) {
                 $extra .= ' UNSIGNED';
                 $type   = str_ireplace('UNSIGNED', '', $type);
@@ -367,7 +374,7 @@ class Table
     }
 
     /**
-     * @return array
+     * @return array<TableInfo>>
      */
     public static function getCashedTablesArray(): array
     {
@@ -382,10 +389,11 @@ class Table
     /**
      * Возвращает массив таблиц базы данных
      *
-     * @param string База данных
-     * @return array
+     * @param string|null $database База данных
+     * @return array<string>
+     * @throws \Exception
      */
-    public static function getTables($database = null)
+    public static function getTables(?string $database = null): array
     {
         global $msc;
         if (!is_null($database)) {
@@ -403,14 +411,13 @@ class Table
     /**
      * Удаляет $limit строк из $table по условию $row
      *
-     * @param string
-     * @param string
+     * @param string $db
+     * @param string $table
      * @param string $row
-     * @param integer
-     * @return boolean
+     * @return bool
      * @throws \Exception
      */
-    public function rowDelete($db, $table, $row): bool
+    public function rowDelete(string $db, string $table, string $row): bool
     {
         global $msc;
         if (!$this->validate->queryCheck($db, $table, $row)) {
@@ -424,13 +431,12 @@ class Table
     /**
      * Копирует строки $table по условию $row
      *
-     * @param string
-     * @param string
-     * @param string
-     * @return boolean
+     * @param string $table
+     * @param string $row
+     * @return bool
      * @throws \Exception
      */
-    public function rowCopy($table, $row)
+    public function rowCopy(string $table, string $row): bool
     {
         global $msc;
         $fields = self::getFields($table);

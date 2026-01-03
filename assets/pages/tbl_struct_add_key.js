@@ -1,5 +1,7 @@
 import React from 'react';
 import {addRow, msQuery, removeRow, umaker} from "../functions";
+import PropTypes from 'prop-types';
+
 export function Tbl_struct_add_key(props) {
 
     const onSubmit = (e) => {
@@ -52,3 +54,10 @@ export function Tbl_struct_add_key(props) {
       </form>
     );
 }
+
+Tbl_struct_add_key.propTypes = {
+    keyName: PropTypes.string.isRequired,
+    keyType: PropTypes.string.isRequired,
+    dirImage: PropTypes.string.isRequired,
+    fieldRows: PropTypes.object
+};

@@ -36,7 +36,7 @@ class TblData extends Base
         // Получение полей таблицы
         $fields = Table::getFields($msc->table);
         // Если полей нет, значит и таблицы нет
-        if (!$fields || count($fields) == 0) {
+        if (!$fields) {
             $msc->error("Таблицы $msc->table не существует");
             return [];
         }

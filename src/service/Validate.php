@@ -48,7 +48,7 @@ class Validate
     {
         global $msc;
         if (isAjax()) {
-            ajaxError($message);
+            ajaxError([$message]);
         }
         $msc->error($message);
         return false;

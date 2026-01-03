@@ -67,7 +67,7 @@ class UrlMaker
                 if (is_integer($p)) {
                     $result .= substr($url, $p + 1);
                 }
-                return UrlMaker::edit($result, $name, $value);
+                $url = UrlMaker::edit($result, $name, $value);
             }
         } else {
             $p = strpos($url, "?");
@@ -80,7 +80,7 @@ class UrlMaker
                 }
             }
             $url .= $name . "=" . $value;
-            return str_replace("&", "&amp;", $url);
         }
+        return $url;
     }
 }

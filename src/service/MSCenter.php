@@ -40,9 +40,9 @@ class MSCenter extends Query
     }
 
     /**
-     * Инициализация - отдельно от конструтора, чтобы тот раньше запустился
+     * Инициализация - отдельно от конструктора, чтобы тот раньше запустился
      */
-    public function init()
+    public function init(): void
     {
         $this->initCurrentDatabase();
         if ($this->table == null && $this->db != null) {
@@ -53,8 +53,9 @@ class MSCenter extends Query
 
     /**
      * Возвращает заголовок страницы, вызывается только в основном шаблоне
+     * @return string
      */
-    public function getPageTitle()
+    public function getPageTitle(): string
     {
         if ($this->pageTitle == null) {
             $this->pageTitle = $this->getWindowTitle();
@@ -65,7 +66,7 @@ class MSCenter extends Query
     /**
      * Возвращает заголовок окна, относится только к основному шаблону
      */
-    public function getWindowTitle()
+    public function getWindowTitle(): string
     {
         $mainTitle = null;
         $mainTitle .= $this->table != null ? "$this->table < " : null;
@@ -207,8 +208,9 @@ class MSCenter extends Query
 
     /**
      * Приходится тут все сбрасывать, т.к. к этому времени в init можно все заполнится
+     * @param string $msg
      */
-    public function connectError($msg): void
+    public function connectError(string $msg): void
     {
         $this->error($msg, '');
         $this->page = 'login';

@@ -15,6 +15,7 @@ class Query
     public int $affectedRows = 0;
     public string $lastSql = '';
     public string $error = '';
+    public string $db = '';
     public bool $exceptionOnError = true;
     public ?Driver $driver = null;
     public string $driverName = '';
@@ -32,10 +33,11 @@ class Query
     }
 
     /**
-     * @return false|int|\PDOStatement
+     * @param string $sql
+     * @return \PDOStatement|null
      * @throws \Exception
      */
-    public function fetchPdo(string $sql)
+    public function fetchPdo(string $sql): \PDOStatement|null
     {
         return $this->queryPdo(FetchType::Fetch, $sql);
     }
@@ -81,29 +83,27 @@ class Query
                 throw new \Exception($this->error);
             }
         }
-        if ($this->logEnabled) {
-            $this->loqQuery($sql, $result);
+        if ($this->logEnabled && $result) {
+            $this->loqQuery($sql);
         }
         return $result === false ? null : $result;
     }
 
     /**
-     * @param $sql
-     * @param bool|int $type
+     * @param string $sql
+     * @param int $type
      * @return array
      * @throws \Exception
      */
-    public function getData($sql, bool|int $type = \PDO::FETCH_ASSOC): array
+    public function getData(string $sql, int $type = \PDO::FETCH_ASSOC): array
     {
-        if (!is_numeric($type)) {
-            $type = \PDO::FETCH_ASSOC;
-        }
         return $this->fetchPdo($sql)?->fetchAll($type) ?? [];
     }
 
     /**
      * Выполняет выбор БД (select_db) на сервера
      * @param string $db
+     * @return bool
      * @throws \Exception
      */
     public function selectDb(string $db): bool
@@ -114,8 +114,7 @@ class Query
         try {
             $this->driver->selectDb($db);
         } catch (\Exception $e) {
-            $this->error('Ошибка при выборе базы данных "' . $db . '": ' . $e->getMessage());
-            return false;
+            $this->fatalError('Ошибка при выборе базы данных "' . $db . '": ' . $e->getMessage());
         }
         return true;
     }
@@ -144,23 +143,22 @@ class Query
     /**
      * Перехватывает запрос и сохраняет его в файле
      *
-     * @param $sql
-     * @param null $result
+     * @param string $sql
      * @return bool
      */
-    protected function loqQuery($sql, $result = null): bool
+    protected function loqQuery(string $sql): bool
     {
-        if (!$result || preg_match('~^(SHOW|SELECT|SET)~i', trim($sql))) {
+        $sql = trim($sql);
+        if (preg_match('~^(SHOW|SELECT|SET)~i', $sql)) {
             return false;
         }
-        $string = trim($sql);
-        $string = preg_replace('/[\r\n\t]+/', ' ', $string);
+        $string = preg_replace('/[\r\n\t]+/', ' ', $sql);
         $string = str_replace('  ', ' ', $string);
         logInFile($string, $this->db);
         return true;
     }
 
-    private $logEnabled = true;
+    private bool $logEnabled = true;
     public function disableLog(): void
     {
         $this->logEnabled = false;
@@ -173,7 +171,7 @@ class Query
     /**
      * @throws \Exception
      */
-    public function error(string $text)
+    public function fatalError(string $text): never
     {
         throw new \Exception($text);
     }

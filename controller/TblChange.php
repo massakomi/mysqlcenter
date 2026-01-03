@@ -83,11 +83,11 @@ class TblChange extends Base
     /**
      * Общая обработка для редактирования/добавления ряда
      *
-     * @param integer Тип редактирования: 0-update, 1-insert
+     * @param integer $editType Тип редактирования: 0-update, 1-insert
      * @package msc
      * @access private
      */
-    private function processRowsEdit($editType)
+    private function processRowsEdit(int $editType): void
     {
         global $msc;
         if (POST('option') == 'insert') {
@@ -170,13 +170,13 @@ class TblChange extends Base
      * Преобразует значение в sql-оптимальное значение для использования в запросе (edit,add). Значение либо
      * остаётся прежним (для чисел), либо становится NULL, либо закавычивается и экранируется
      *
-     * @param string Значение
-     * @param string Тип поля
-     * @param boolean Является ли значение NULL-пустым
-     * @return string Результат
+     * @param string $value Значение
+     * @param string $type Тип поля
+     * @param bool $isNull Является ли значение NULL-пустым
+     * @return float|int|string Результат
      * @package sql
      */
-    private function processValueType($value, $type, $isNull)
+    private function processValueType(string $value, string $type, bool $isNull): float|int|string
     {
         global $pdo;
         if ($isNull) {

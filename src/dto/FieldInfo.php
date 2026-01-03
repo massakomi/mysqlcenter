@@ -18,7 +18,7 @@ final class FieldInfo
     }
 
     /**
-     * @param \stdClass|array $row
+     * @param \stdClass|array<array<string>> $row
      * @return void
      */
     public function fill(\stdClass|array $row): void

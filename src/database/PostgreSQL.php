@@ -17,18 +17,30 @@ class PostgreSQL implements Driver
     {
     }
 
+    /**
+     * @return array<array<string>>
+     * @throws \Exception
+     */
     public function getDatabases(): array
     {
         global $msc;
         return $msc->getData('SELECT * FROM pg_database');
     }
 
+    /**
+     * @return array<string>
+     * @throws \Exception
+     */
     public function getDatabaseNames(): array
     {
         global $msc;
         return $msc->getData('SELECT datname FROM pg_database WHERE datistemplate = false', \PDO::FETCH_COLUMN);
     }
 
+    /**
+     * @param string $db
+     * @return array<array<string>>
+     */
     public function getTables(string $db = ''): array
     {
         global $msc;
@@ -70,7 +82,7 @@ class PostgreSQL implements Driver
     /**
      * Непосредственно запрос на выборку таблиц без лишнего кода
      */
-    private function fetchTables(string $db)
+    private function fetchTables(string $db): array
     {
         global $msc;
         $charset = $this->getCharset();
@@ -98,7 +110,7 @@ class PostgreSQL implements Driver
     /**
      * Статистика по autoIncrements
      */
-    private function getAutoIncrements()
+    private function getAutoIncrements(): array
     {
         global $msc;
         $sql = '
@@ -116,7 +128,7 @@ class PostgreSQL implements Driver
     /**
      * Выполнить analyze, чтобы обновить статистику количества строк
      */
-    private function updateStatistics(string $db)
+    private function updateStatistics(string $db): void
     {
         global $msc;
         $sql = '
@@ -311,6 +323,11 @@ class PostgreSQL implements Driver
         return $tableInfo;
     }
 
+    /**
+     * @param $table
+     * @return string
+     * @throws \Exception
+     */
     private function getComment($table): string
     {
         global $msc;
