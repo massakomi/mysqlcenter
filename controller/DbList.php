@@ -13,7 +13,8 @@ use database\Server;
 class DbList extends Base
 {
     /**
-     * @return array
+     * @return array<string, mixed>
+     * @throws \Exception
      */
     public function defaultAction(): array
     {

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace controller;
 
 use database\Table;
+use dto\FieldInfo;
 
 /**
  *
  */
 class TblAdd extends Base
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -28,7 +32,7 @@ class TblAdd extends Base
         // Получаем массив имён полей из формы.
         $names = POST('name');
         if (is_array($names) && count($names) > 0 && POST('action') != '') {
-            return $this->process($names, $fields, $afterSql);
+            return $this->process($names, $fields);
         }
 
         // HTML форма
@@ -55,9 +59,12 @@ class TblAdd extends Base
     }
 
     /**
-     * {}
+     * @param array<string> $names
+     * @param FieldInfo[] $fields
+     * @return array<string>
+     * @throws \Exception
      */
-    private function process($names, $fields, &$afterSql): array
+    private function process(array $names, array $fields): array
     {
         global $msc;
         // Ключи
@@ -244,6 +251,7 @@ class TblAdd extends Base
         }
         // создание запроса на добавление
         if (POST('action') == 'fieldsAddEnd') {
+            $afterSql = '';
             if (POST('afterOption') == 'start') {
                 $afterSql = 'FIRST';
             } elseif (POST('afterOption') == 'field') {

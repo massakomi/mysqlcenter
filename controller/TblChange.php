@@ -12,6 +12,10 @@ use service\UrlMaker;
  */
 class TblChange extends Base
 {
+    /**
+     * @return array<string, mixed>
+     * @throws \Exception
+     */
     public function defaultAction(): array
     {
         global $msc;

@@ -11,6 +11,9 @@ use database\Server;
  */
 final class Users extends Base
 {
+    /**
+     * @return array<string>
+     */
     #[\Override]
     public function defaultAction(): array
     {

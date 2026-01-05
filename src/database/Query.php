@@ -92,7 +92,7 @@ class Query
     /**
      * @param string $sql
      * @param int $type
-     * @return array
+     * @return array<array<string>>
      * @throws \Exception
      */
     public function getData(string $sql, int $type = \PDO::FETCH_ASSOC): array

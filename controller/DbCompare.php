@@ -9,6 +9,9 @@ namespace controller;
  */
 class DbCompare extends Base
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -30,10 +33,11 @@ class DbCompare extends Base
     }
 
     /**
-     * @param $databases
-     * @return array
+     * @param array<string> $databases
+     * @return array<string, mixed>
+     * @throws \Exception
      */
-    public function pageProps($databases): array
+    public function pageProps(array $databases): array
     {
         global $msc;
 
@@ -52,14 +56,14 @@ class DbCompare extends Base
 
         $exportArray = [];
         $export = new \database\Export();
-        $export->setComments(0);
-        $export->setOptionsStruct(0, $addAuto = 0, 0);
+        $export->setComments(false);
+        $export->setOptionsStruct(false, false, false);
         foreach ($dbArray as $db => $tables) {
             foreach ($tables as $table => $values) {
                 $export->data = null;
                 $export->setDatabase($db);
                 $export->setTable($table);
-                $exportData = $export->exportStructure(0, 0);
+                $exportData = $export->exportStructure(false, false);
                 $exportData = str_replace(' PACK_KEYS=0', '', $exportData);
                 $exportData = preg_replace('~COMMENT=".*"~U', '', $exportData);
                 $exportArray [$db][$table] = $exportData;

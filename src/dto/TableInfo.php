@@ -38,11 +38,12 @@ final class TableInfo
         public ?string $Create_options = null,
         public ?string $Comment = null,
         public ?string $Charset = null,
+        public ?string $Schema = null,
     ) {
     }
 
     /**
-     * @param \stdClass|array<array<string>> $row
+     * @param \stdClass|array<string> $row
      * @return void
      */
     public function fill(\stdClass|array $row): void

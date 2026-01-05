@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace controller;
 
 use database\Table;
+use dto\FieldInfo;
 
 /**
  *
  */
 class TblCompare extends Base
 {
+    /**
+     * @return array<string, mixed>
+     * @throws \Exception
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -49,10 +54,10 @@ class TblCompare extends Base
     }
 
     /**
-     * @param $fields
-     * @return array
+     * @param FieldInfo[] $fields
+     * @return array<string>
      */
-    private function getPrimaryKeys($fields): array
+    private function getPrimaryKeys(array $fields): array
     {
         $pk = [];
         foreach ($fields as $v) {
@@ -64,10 +69,10 @@ class TblCompare extends Base
     }
 
     /**
-     * @param array $databases
+     * @param array<string> $databases
      * @param string $table
-     * @param array $pk
-     * @return array[]
+     * @param array<string> $pk
+     * @return array<int, list<mixed>>
      * @throws \Exception
      */
     private function selectDataFromDatabase(array $databases, string $table, array $pk): array

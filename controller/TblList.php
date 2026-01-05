@@ -12,6 +12,7 @@ use database\Table;
 class TblList extends Base
 {
     /**
+     * @return array<string, mixed>
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -32,7 +33,8 @@ class TblList extends Base
     }
 
     /**
-     *
+     * @return array<string, mixed>
+     * @throws \Exception
      */
     public function structureAction(): array
     {

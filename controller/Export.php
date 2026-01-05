@@ -13,7 +13,7 @@ use database\Table;
  */
 class Export extends Base
 {
-    public function pgDumpConsole()
+    public function pgDumpConsole(): never
     {
         global $msc;
         try {
@@ -46,6 +46,10 @@ class Export extends Base
         }
     }
 
+    /**
+     * @return array<string>
+     * @throws \Exception
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -121,6 +125,8 @@ class Export extends Base
 
     /**
      * HTML форма экспорта
+     * @return array<string, mixed>
+     * @throws \Exception
      */
     private function exportForm(): array
     {
@@ -174,9 +180,10 @@ class Export extends Base
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, mixed>
+     * @throws \Exception
      */
-    private function specialExport()
+    private function specialExport(): array
     {
         global $msc;
 
@@ -230,7 +237,7 @@ class Export extends Base
                     $exp->setTable($t);
                     $whereLocal = stripslashes($_POST['where'][$key]);
                     if (isset($_POST['struct'][$key])) {
-                        $exp->exportStructure($addDelim = 1, $isDrop);
+                        $exp->exportStructure(true, $isDrop);
                     }
                     if (isset($_POST['data'][$key])) {
                         $where = $this->getWhere($key, $whereLocal);
@@ -252,9 +259,9 @@ class Export extends Base
         $cSet = $msct::getSetInfo(GET('set'));
         $data = [];
         if ($msc->db) {
-            $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db, \PDO::FETCH_OBJ);
+            $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db);
             foreach ($result as $o) {
-                $o->Fields = Table::getFields($o->Name);
+                $o['Fields'] = Table::getFields($o['Name']);
                 $data [] = $o;
             }
         }
@@ -271,6 +278,8 @@ class Export extends Base
 
     /**
      * шапка дампа
+     * @return string
+     * @throws \Exception
      */
     private function dumpHeader(): string
     {
@@ -292,7 +301,7 @@ class Export extends Base
     /**
      * @param int|string $key
      * @param mixed $where_sql
-     * @return array
+     * @return array<string>
      */
     private function getWhere(int|string $key, mixed $where_sql): array
     {

@@ -13,6 +13,7 @@ use database\Table;
 class Search extends Base
 {
     /**
+     * @return array<string, mixed>
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -56,11 +57,11 @@ class Search extends Base
     }
 
     /**
-     * @param $query
-     * @return array
+     * @param string $query
+     * @return array<string, int<0, max>|list<array<string, mixed>>>
      * @throws \Exception
      */
-    private function searchInDatabase($query): array
+    private function searchInDatabase(string $query): array
     {
         global $msc;
         $array = POST('table');
@@ -101,11 +102,11 @@ class Search extends Base
     }
 
     /**
-     * @param $listTables
-     * @param $queryField
-     * @return array
+     * @param array<string> $listTables
+     * @param string $queryField
+     * @return array<string, int<0, max>|list<array<string, array<string, string>|string>>>
      */
-    private function searchFieldInDatabase($listTables, $queryField): array
+    private function searchFieldInDatabase(array $listTables, string $queryField): array
     {
         global $msc;
         $results = [];

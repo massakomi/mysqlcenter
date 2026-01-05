@@ -9,6 +9,10 @@ namespace controller;
  */
 class Sql extends Base
 {
+    /**
+     * @return array<string, mixed>
+     * @throws \Exception
+     */
     public function defaultAction(): array
     {
         global $msc;

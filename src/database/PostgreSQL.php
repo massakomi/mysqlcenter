@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace database;
 
+use dto\Constraint;
 use dto\FieldInfo;
+use dto\KeyInfo;
 use dto\TableInfo;
 use stdClass;
 
@@ -39,7 +41,7 @@ class PostgreSQL implements Driver
 
     /**
      * @param string $db
-     * @return array<array<string>>
+     * @return TableInfo[]
      */
     public function getTables(string $db = ''): array
     {
@@ -81,6 +83,9 @@ class PostgreSQL implements Driver
 
     /**
      * Непосредственно запрос на выборку таблиц без лишнего кода
+     * @param string $db
+     * @return array<TableInfo>
+     * @throws \Exception
      */
     private function fetchTables(string $db): array
     {
@@ -109,6 +114,7 @@ class PostgreSQL implements Driver
 
     /**
      * Статистика по autoIncrements
+     * @return array<string, string>
      */
     private function getAutoIncrements(): array
     {
@@ -182,36 +188,14 @@ class PostgreSQL implements Driver
         return $fields;
     }
 
-    public function getKeys(string $table, bool $full = false): array
+    /**
+     * @param string $table
+     * @return array<string, array<string, string>>
+     */
+    public function getKeys(string $table): array
     {
-        if (empty($table)) {
-            return [];
-        }
-        $constraintsGrouped = $this->getConstraints($table, full: true);
-        $result = [];
-        foreach ($constraintsGrouped as $constraint) {
-            $key = new stdClass();
-            $key->Table = $constraint->table_name;
-            $key->Non_unique = $constraint->constraint_type == 'UNIQUE' ? 0 : 1;
-            $key->Key_name = $constraint->constraint_type;
-            $key->Seq_in_index = $constraint->ordinal_position;
-            $key->Column_name = $constraint->column_name;
-            $key->Collation = '';
-            $key->Cardinality = '';
-            $key->Sub_part = '';
-            $key->Packed = '';
-            $key->Null = '';
-            $key->Index_type = ''; // BTREE
-            $key->Comment = '';
-            $key->Index_comment = '';
-            $result [] = $key;
-        }
-        if (!$result) {
-            return [];
-        }
-        if ($full) {
-            return $result;
-        }
+        $result = $this->getKeysFull($table);
+        $keys = [];
         foreach ($result as $row) {
             if ($row->Key_name == 'PRIMARY KEY') {
                 $keys [$row->Column_name][$row->Key_name] = 'PRI';
@@ -222,7 +206,43 @@ class PostgreSQL implements Driver
         return $keys;
     }
 
-    public function getConstraints(string $table, bool $full = false): array
+    /**
+     * @param $table
+     * @return array<KeyInfo>
+     */
+    public function getKeysFull($table): array
+    {
+        if (empty($table)) {
+            return [];
+        }
+        $constraints = $this->getConstraints($table);
+        $result = [];
+        foreach ($constraints as $constraint) {
+            $key = new KeyInfo();
+            $key->Table = $constraint->TABLE_NAME;
+            $key->Non_unique = $constraint->CONSTRAINT_TYPE == 'UNIQUE' ? 0 : 1;
+            $key->Key_name = $constraint->CONSTRAINT_TYPE;
+            $key->Seq_in_index = $constraint->ORDINAL_POSITION;
+            $key->Column_name = $constraint->COLUMN_NAME;
+            $key->Collation = '';
+            $key->Cardinality = '';
+            $key->Sub_part = '';
+            $key->Packed = '';
+            $key->Null = '';
+            $key->Index_type = ''; // BTREE
+            $key->Comment = '';
+            $key->Index_comment = '';
+            $result [] = $key;
+        }
+        return $result;
+    }
+
+    /**
+     * @param string $table
+     * @return array<Constraint>
+     * @throws \Exception
+     */
+    public function getConstraints(string $table): array
     {
         global $msc;
         if (empty($table)) {
@@ -230,26 +250,18 @@ class PostgreSQL implements Driver
         }
         $sql = "
             SELECT 
-                *
+                tc.table_schema AS \"TABLE_SCHEMA\",
+                tc.table_name AS \"TABLE_NAME\",
+                tc.constraint_type AS \"CONSTRAINT_TYPE\",
+                tc.constraint_name AS \"CONSTRAINT_NAME\",
+                kcu.ordinal_position AS  \"ORDINAL_POSITION\",
+                kcu.column_name AS \"COLUMN_NAME\"
             FROM information_schema.table_constraints AS tc
             JOIN information_schema.key_column_usage AS kcu
             ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
             WHERE tc.table_name = '$table' AND (tc.table_schema = 'public' OR tc.table_schema = '$msc->db')
             ORDER BY kcu.ordinal_position; ";
-        $keys = [];
-        $data = $msc->getData($sql, \PDO::FETCH_OBJ);
-        if ($full) {
-            return $data;
-        }
-        foreach ($data as $obj) {
-            $cloned = new stdClass();
-            foreach ($obj as $key => $value) {
-                $keyUpper = strtoupper($key);
-                $cloned->{$keyUpper} = $obj->{$key};
-            }
-            $keys[$cloned->CONSTRAINT_TYPE][] = $cloned;
-        }
-        return $keys;
+        return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
 
     public function selectDb(string $db): void
@@ -266,6 +278,11 @@ class PostgreSQL implements Driver
         return '';
     }
 
+    /**
+     * @param string $table
+     * @return array<array<string>>
+     * @throws \Exception
+     */
     public function getTableDetailsWithComments(string $table): array
     {
         global $msc;
@@ -295,6 +312,7 @@ class PostgreSQL implements Driver
     /**
      * This view usually only shows a single entry for the current database's encoding,
      * as PostgreSQL does not support multiple character sets within one database.
+     * @return array<array<string>>
      */
     public function getCharsets(): array
     {
@@ -305,12 +323,21 @@ class PostgreSQL implements Driver
         return [];
     }
 
+    /**
+     * @return array<array<string>>
+     * @throws \Exception
+     */
     public function getProcessList(): array
     {
         global $msc;
         return $msc->getData('SELECT * FROM pg_stat_activity');
     }
 
+    /**
+     * @param string $table
+     * @return TableInfo
+     * @throws \Exception
+     */
     public function getTableInfo(string $table): TableInfo
     {
         $data = [
@@ -324,11 +351,11 @@ class PostgreSQL implements Driver
     }
 
     /**
-     * @param $table
+     * @param string $table
      * @return string
      * @throws \Exception
      */
-    private function getComment($table): string
+    private function getComment(string $table): string
     {
         global $msc;
         $sql = "

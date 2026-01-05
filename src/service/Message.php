@@ -9,7 +9,9 @@ use enum\MessageType;
  */
 trait Message
 {
-    /* @var array<\dto\Message> */
+    /**
+     * @var \dto\Message[] $messages
+     */
     private array $messages = [];
 
     /**

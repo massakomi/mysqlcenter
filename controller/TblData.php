@@ -14,6 +14,10 @@ use service\UrlMaker;
  */
 class TblData extends Base
 {
+    /**
+     * @return array<string, mixed>
+     * @throws \Exception
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -139,9 +143,10 @@ class TblData extends Base
     }
 
     /**
-     *
+     * @param array<string> $fieldsNames
+     * @return ?string
      */
-    private function getWhere($fieldsNames)
+    private function getWhere(array $fieldsNames): ?string
     {
         // Собираем where условие если требуется, для выборки
         $whereCondition = null;
@@ -166,9 +171,12 @@ class TblData extends Base
     }
 
     /**
-     *
+     * @param int $count
+     * @param int $countSelected
+     * @param int $start
+     * @return void
      */
-    private function setPageTitle($count, $countSelected, $start): void
+    private function setPageTitle(int $count, int $countSelected, int $start): void
     {
         global $msc;
         if (!$count) {
@@ -187,8 +195,10 @@ class TblData extends Base
 
     /**
      * Возвращает порядок текущей сортировки
+     * @param string|null $default
+     * @return string
      */
-    private function mscGetOrder($default = null): string
+    private function mscGetOrder(?string $default = null): string
     {
         if (!config('sortDescDefault') && $default) {
             $default .= '-';

@@ -13,6 +13,9 @@ use service\UrlMaker;
  */
 class Actions extends Base
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -25,8 +28,9 @@ class Actions extends Base
 
     /**
      * Действия - БД
+     * @return array<string, mixed>
      */
-    public function databaseActions()
+    public function databaseActions(): array
     {
         global $msc;
 
@@ -42,6 +46,7 @@ class Actions extends Base
 
     /**
      * Действия - таблица
+     * @return array<string, mixed>
      */
     public function tableActions(): array
     {

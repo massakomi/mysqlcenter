@@ -138,8 +138,9 @@ function errorHandlerFile(int $errno, string $errstr, string $errfile, int $errl
     if (stristr($errstr, 'Unable to save result set')) {
         $log .= '(' . $pdo->errorInfo()[2] . ')';
     }
-    $errno = str_pad($errno, 4, ' ', STR_PAD_LEFT);
+    $errno = str_pad((string)$errno, 4, ' ', STR_PAD_LEFT);
     logError($errno . ' ' . $log);
+    return true;
 }
 
 /**
@@ -175,7 +176,7 @@ function isAjax(): bool
 }
 
 /**
- * @param array $data
+ * @param array<string, mixed> $data
  * @return never
  */
 function ajaxResult(array $data): never
@@ -185,7 +186,7 @@ function ajaxResult(array $data): never
 }
 
 /**
- * @param array $messages
+ * @param array<string> $messages
  * @return void
  */
 function ajaxError(array $messages): void

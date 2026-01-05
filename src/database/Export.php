@@ -4,55 +4,59 @@ declare(strict_types=1);
 
 namespace database;
 
+use dto\FieldInfo;
+use dto\TableInfo;
+
 /**
  * Библиотека общих функций по экспорту таблиц БД
  */
 class Export
 {
-    public $db;
-    public $table;
-    public $tableb;
-    public $data;
-    public $tableStructure = [];
-    public $comments = true;
-    public $fields = [];
-
-    public $addIfNot = false;
-    public $addAuto = true;
-    public $addKav = true;
-
-    public $insFull = false;
-    public $insExpand = false;
-    public $insZapazd = false;
-    public $insIgnor = false;
-
+    public ?string $db = null;
+    public ?string $table = null;
+    public ?string $tableb = null;
+    public ?string $data = null;
     /**
-     * Позволяет сразу установить опции экспорта
+     * @var array<TableInfo>
      */
-    public function __construct($db = null, $table = null, $header = null)
+    public array $tableStructure = [];
+    public bool $comments = true;
+    /**
+     * @var array<FieldInfo>
+     */
+    public array $fields = [];
+
+    public bool $addIfNot = false;
+    public bool $addAuto = true;
+    public bool $addKav = true;
+
+    public bool $insFull = false;
+    public bool $insExpand = false;
+    public bool $insZapazd = false;
+    public bool $insIgnor = false;
+
+    public function __construct()
     {
-        $this->table = $this->tableb = $table;
-        $this->db = $db;
-        $this->data = $header;
+
     }
 
     /**
      * Запускает комплексный процесс экспорта
-     *
-     * $isStruct
-     * $isData
-     * $addDelim
-     * $addDrop
-     * $type
-     * $where
+     * @param bool $isStruct
+     * @param bool $isData
+     * @param bool $addDelim
+     * @param bool $addDrop
+     * @param string $type
+     * @param String|null $where
+     * @return string
      */
     public function startFull(
-        $isStruct = true,
-        $isData = true,
-        $addDelim = true,
-        $addDrop = false,
-        $type = 'INSERT',
-        $where = null
+        bool $isStruct = true,
+        bool $isData = true,
+        bool $addDelim = true,
+        bool $addDrop = false,
+        string $type = 'INSERT',
+        ?String $where = null
     ) {
         if ($isStruct) {
             $this->exportStructure($addDelim, $addDrop);
@@ -63,8 +67,13 @@ class Export
         return $this->get();
     }
 
-    // Установить текущую базу данных
-    public function setDatabase($a)
+    /**
+     * Установить текущую базу данных
+     * @param string $a
+     * @return void
+     * @throws \Exception
+     */
+    public function setDatabase(string $a): void
     {
         global $msc;
         if ($this->db != $a) {
@@ -73,8 +82,12 @@ class Export
         }
     }
 
-    // Установить текущую таблицу
-    public function setTable($a)
+    /**
+     * Установить текущую таблицу
+     * @param string $a
+     * @return void
+     */
+    public function setTable(string $a): void
     {
         $this->table = $a;
         if ($this->addKav) {
@@ -84,24 +97,35 @@ class Export
         }
     }
 
-    // Установить шапку к дампу
-    public function setHeader($a)
+    /**
+     * @param string $a
+     * @return void
+     */
+    public function setHeader(string $a): void
     {
         if ($this->comments) {
             $this->data .= $a;
         }
     }
 
-    // Добавлять или нет комментарии
-    public function setComments($a)
+    /**
+     * Добавлять или нет комментарии
+     * @param bool $a
+     * @return void
+     */
+    public function setComments(bool $a): void
     {
-        $this->comments = (bool)$a;
+        $this->comments = $a;
     }
 
     /**
      * Установить некоторые опции экспорта структуры
+     * @param bool $addIfNot
+     * @param bool $addAuto
+     * @param bool $addKav
+     * @return void
      */
-    public function setOptionsStruct($addIfNot, $addAuto, $addKav)
+    public function setOptionsStruct(bool $addIfNot, bool $addAuto, bool $addKav): void
     {
         $this->addIfNot = $addIfNot;
         $this->addAuto = $addAuto;
@@ -109,9 +133,14 @@ class Export
     }
 
     /**
-     * УСтавноить некоорые опции экспорта данных
+     * Установить некоторые опции экспорта данных
+     * @param bool $insFull
+     * @param bool $insExpand
+     * @param bool $insZapazd
+     * @param bool $insIgnor
+     * @return void
      */
-    public function setOptionsData($insFull, $insExpand, $insZapazd, $insIgnor)
+    public function setOptionsData(bool $insFull, bool $insExpand, bool $insZapazd, bool $insIgnor): void
     {
         $this->insFull = $insFull;
         $this->insExpand = $insExpand;
@@ -121,22 +150,20 @@ class Export
 
     /**
      * Получить полный текст дампа
-     * @ $clear - очистить объект (экономия памяти)
+     * @return string
      */
-    public function get()
+    public function get(): string
     {
         return $this->data;
     }
 
     /**
      * Заворачивает дамп в нужный вид и отправляет
-     *
-     * @ $type - тип отправки, значения:
-     *   'textarea' - создаёт форму
-     *   'zip' - создаёт архив и отправляет
-     * @ $file - имя файла дампа для типа 'zip'
+     * @param string $type тип отправки, значения: 'textarea' - создаёт форму 'zip' - создаёт архив и отправляет
+     * @param string|null $file имя файла дампа для типа 'zip'
+     * @return string
      */
-    public function send($type = 'textarea', $file = null)
+    public function send(string $type = 'textarea', ?string $file = null): string
     {
         return $this->sendSQLDamp($type, $file);
     }
@@ -145,12 +172,12 @@ class Export
     // ниже - внутренние функции, реализация
 
     /**
-     * Возврвщает дамп структуры таблицы (sql запрос создания таблицы)
-     * @$this->table - имя таблицы
-     * @$addDrop - добавить к запросу удаление таблицы + форматировать через ;
-     * @$this->comments - добавить комментарий
+     * Возвращает дамп структуры таблицы (sql запрос создания таблицы)
+     * @param bool $addDelim
+     * @param bool $addDrop добавить к запросу удаление таблицы + форматировать через ;
+     * @return string|null
      */
-    public function exportStructure($addDelim = true, $addDrop = false)
+    public function exportStructure(bool $addDelim = true, bool $addDrop = false): ?string
     {
         global $msc;
         $delim = ";\r\n";
@@ -215,7 +242,7 @@ class Export
         $keys = [];
         $keys['PRI'] = $keys['UNI'] = $keys['MUL'] = $keys['FULL'] = [];
         $parts = [];
-        $result = $msc->driver->getKeys($this->table, true);
+        $result = $msc->driver->getKeysFull($this->table);
         $x = $this->addKav ? '`' : '';
         foreach ($result as $row) {
             $row->Column_name = $x . $row->Column_name . $x;
@@ -306,9 +333,11 @@ class Export
 
     /**
      * Возвращает дамп данных таблицы (sql запрос )
-     * @param string $type тип экспорта (INSERT-REPLACE-UPDATE)
+     * @param string $type
      * @param string|null $where SQL условие
-     * @param bool$skipAi пропускать ли поля с auto_increment
+     * @param bool $skipAi
+     * @return true|int|null
+     * @throws \Exception
      */
     public function exportData(string $type = 'INSERT', ?string $where = null, bool $skipAi = false): true|int|null
     {
@@ -439,11 +468,12 @@ class Export
     }
 
     /**
-     * @param $type
-     * @param $file
-     * @return mixed|string|void|null
+     * Заворачивает дамп в нужный вид и отправляет
+     * @param string $type тип отправки, значения: 'textarea' - создаёт форму 'zip' - создаёт архив и отправляет
+     * @param string|null $file имя файла дампа для типа 'zip'
+     * @return string
      */
-    public function sendSQLDamp($type = 'textarea', $file = null)
+    public function sendSQLDamp(string $type = 'textarea', ?string $file = null): string
     {
         if (is_null($file)) {
             $this->table != null ? $file = $this->table : $file = $this->db;
@@ -465,11 +495,8 @@ class Export
                 return 'https://' . $_SERVER['HTTP_HOST'] . '/' . MS_DIR_UPLOAD . '/download.sql.gz';
             }
         }
-        // текстовое поле
-        if ($type == 'textarea') {
-            return $this->get();
         // архив
-        } elseif ($type == 'zip') {
+        if ($type == 'zip') {
             if (headers_sent()) {
                 return '<h3>headers_sent...</h3>';
             }
@@ -486,5 +513,7 @@ class Export
             echo $gzipped_data;
             exit;
         }
+        // текстовое поле
+        return $this->get();
     }
 }

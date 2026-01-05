@@ -9,6 +9,9 @@ namespace controller;
  */
 class Login extends Base
 {
+    /**
+     * @return array<string>
+     */
     public function defaultAction(): array
     {
         global $msc;

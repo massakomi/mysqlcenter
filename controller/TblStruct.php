@@ -12,6 +12,10 @@ use service\UrlMaker;
  */
 class TblStruct extends Base
 {
+
+    /**
+     * @return array<string, mixed>
+     */
     public function defaultAction(): array
     {
         global $msc;
@@ -49,7 +53,7 @@ class TblStruct extends Base
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function addKeyAction(): array
     {
@@ -70,13 +74,17 @@ class TblStruct extends Base
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     private function getKeys(): array
     {
         global $msc;
         $constraints = $msc->driver->getConstraints($msc->table);
-        $dataKeys = $msc->driver->getKeys($msc->table, true);
+        $keys = [];
+        foreach ($constraints as $item) {
+            $keys[$item->CONSTRAINT_TYPE][] = $item;
+        }
+        $dataKeys = $msc->driver->getKeysFull($msc->table);
         $foreignKeys = $constraints['FOREIGN KEY'] ?? [];
         return [$dataKeys, $foreignKeys];
     }

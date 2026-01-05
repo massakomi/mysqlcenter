@@ -9,6 +9,9 @@ namespace controller;
  */
 final class Config extends Base
 {
+    /**
+     * @return array<string>
+     */
     #[\Override]
     public function defaultAction(): array
     {

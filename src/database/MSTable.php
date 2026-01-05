@@ -53,30 +53,30 @@ class MSTable
 
     /**
      * Возвращает все переменные сета
-     * @param $idSet
-     * @return array
+     * @param string $idSet
+     * @return array<string, array<string>>
      * @throws \Exception
      */
-    public static function getSetInfo($idSet): array
+    public static function getSetInfo(string $idSet): array
     {
         if ($idSet == null) {
             return [];
         }
         global $msc;
-        $result = $msc->fetchPdo('SELECT * FROM mysqlcenter.export_table WHERE id_set=' . $idSet);
+        $result = $msc->getData('SELECT * FROM mysqlcenter.export_table WHERE id_set=' . $idSet);
         if (!$result) {
             return [];
         }
         $a = [];
-        while ($o = $result->fetchObject()) {
-            $a [$o->table_name] = $o;
+        foreach ($result as $o) {
+            $a [$o['table_name']] = $o;
         }
         return $a;
     }
 
     /**
      * Возвращает массив сетов
-     * @return array
+     * @return array<string, string>
      * @throws \Exception
      */
     public static function getSetsArray(): array
@@ -87,7 +87,7 @@ class MSTable
 
     /**
      * Возвращает массив сетов
-     * @return array
+     * @return array<string>
      * @throws \Exception
      */
     public static function getHiddensArray(): array
@@ -98,11 +98,11 @@ class MSTable
 
     /**
      * Добавляет новый сет
-     * @param $name
+     * @param string $name
      * @return false|string
      * @throws \Exception
      */
-    public static function insertSet($name): false|string
+    public static function insertSet(string $name): false|string
     {
         global $msc, $pdo;
         if ($msc->execPdo('INSERT INTO mysqlcenter.export_set (`name`) VALUES ("' . $name . '")')) {

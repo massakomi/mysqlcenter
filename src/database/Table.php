@@ -151,7 +151,7 @@ class Table
                 $exp = new Export();
                 $exp->setDatabase($db);
                 $exp->setTable($table);
-                $sql = $exp->exportStructure(1, false);
+                $sql = $exp->exportStructure(true);
                 $sql = preg_replace(
                     '/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i',
                     'CREATE TABLE `' . $newName . '`',
@@ -397,7 +397,7 @@ class Table
     }
 
     /**
-     * @return array<TableInfo>>
+     * @return TableInfo[]
      */
     public static function getCashedTablesArray(): array
     {
