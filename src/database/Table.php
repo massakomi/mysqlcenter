@@ -266,10 +266,10 @@ class Table
         global $msc;
         $fields = self::getFields($tbl);
         $primaryKey = $definition = '';
-        foreach ($fields as $f) {
-            if ($f->Key == 'PRI') {
-                $definition = self::getFieldDefinition($f);
-                $primaryKey = $f->Field;
+        foreach ($fields as $field) {
+            if ($field->Key == 'PRI') {
+                $definition = self::getFieldDefinitionFromObject($field);
+                $primaryKey = $field->Field;
             }
         }
         if ($primaryKey) {
@@ -304,26 +304,7 @@ class Table
         ?string $default = null,
         ?string $extra = null,
         ?string $length = null
-    ): false|string {
-        // Копируем данные из объекта в переменные, если пришел объект
-        if (is_object($type)) {
-            $null = $type->Null;
-            $default = $type->Default;
-            $extra = $type->Extra;
-            $type = $type->Type;
-            if (stristr($type, 'UNSIGNED')) {
-                $extra .= ' UNSIGNED';
-                $type   = str_ireplace('UNSIGNED', '', $type);
-            }
-            if (stristr($type, 'ZEROFILL')) {
-                $extra .= ' ZEROFILL';
-                $type = str_ireplace('ZEROFILL', '', $type);
-            }
-            if (preg_match('~\((.*)\)~U', $type, $length)) {
-                $length = $length[1];
-                $type = trim(str_replace('(' . $length . ')', '', $type));
-            }
-        }
+    ): string {
         $type = strtoupper($type);
         // особый тип, без доп. параметров
         if ($type == 'SERIAL') {
@@ -337,12 +318,12 @@ class Table
             $type .= "($length)";
         } elseif ($type == 'SET' || $type == 'ENUM') {
             if (empty($length)) {
-                return false;
+                return '';
             }
             $type .= "($length)";
         } elseif ($type == 'FLOAT' || $type == 'DOUBLE') {
             if (empty($length)) {
-                return false;
+                return '';
             } else {
                 $length = str_replace('.', ',', $length);
             }
@@ -394,6 +375,32 @@ class Table
             }
         }
         return str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
+    }
+
+    /**
+     * @param FieldInfo $type
+     * @return string
+     */
+    public static function getFieldDefinitionFromObject(FieldInfo $type): string
+    {
+        $null = $type->Null;
+        $default = $type->Default;
+        $extra = $type->Extra;
+        $type = $type->Type;
+        $length = null;
+        if (stristr($type, 'UNSIGNED')) {
+            $extra .= ' UNSIGNED';
+            $type   = str_ireplace('UNSIGNED', '', $type);
+        }
+        if (stristr($type, 'ZEROFILL')) {
+            $extra .= ' ZEROFILL';
+            $type = str_ireplace('ZEROFILL', '', $type);
+        }
+        if (preg_match('~\((.*)\)~U', $type, $a)) {
+            $length = $a[1];
+            $type = trim(str_replace('(' . $length . ')', '', $type));
+        }
+        return self::getFieldDefinition($type, $null, $default, $extra, $length);
     }
 
     /**

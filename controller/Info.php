@@ -28,6 +28,6 @@ final class Info extends Base
     public function pgLoadSettingsAction(): array
     {
         $content = file_get_contents(DIR_MYSQL . 'config/pg-runtime-config.json');
-        return json_decode($content, true);
+        return json_decode($content ?: '', true);
     }
 }

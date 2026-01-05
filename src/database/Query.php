@@ -24,10 +24,10 @@ class Query
      * Единый для всех запрос в БД
      *
      * @param string $sql
-     * @return bool
+     * @return \PDOStatement|null|true
      * @throws \Exception
      */
-    public function execPdo(string $sql)
+    public function execPdo(string $sql): \PDOStatement|null|true
     {
         return $this->queryPdo(FetchType::Exec, $sql);
     }
@@ -39,22 +39,24 @@ class Query
      */
     public function fetchPdo(string $sql): \PDOStatement|null
     {
-        return $this->queryPdo(FetchType::Fetch, $sql);
+        $result = $this->queryPdo(FetchType::Fetch, $sql);
+        return $result === true ? null : $result;
     }
 
     /**
      * @param FetchType $mode
      * @param string $sql
-     * @return bool|int|\PDOStatement|null
+     * @return \PDOStatement|null|true
      * @throws \Exception
      */
-    private function queryPdo(FetchType $mode, string $sql): bool|int|\PDOStatement|null
+    private function queryPdo(FetchType $mode, string $sql): \PDOStatement|null|true
     {
         global $pdo;
         if (!$pdo) {
             echo '<pre>';
             throw new \Exception($sql);
         }
+        $result = null;
         try {
             if ($this->driverName == 'pgsql') {
                 $sql = str_replace('`', '"', $sql);
@@ -63,14 +65,15 @@ class Query
             $this->lastSql = $sql;
             $this->affectedRows = 0;
             if ($mode == FetchType::Exec) {
-                $this->affectedRows = $pdo->exec($sql);
-                $result = true;
+                $execResult = $pdo->exec($sql); // int false;
+                if ($execResult !== false) {
+                    $this->affectedRows = $execResult;
+                    $result = true;
+                }
             } else {
-                $result = $pdo->query($sql, \PDO::FETCH_ASSOC);
+                $result = $pdo->query($sql, \PDO::FETCH_ASSOC); // PDOStatement|false
             }
         } catch (\PDOException $e) {
-            $result = false;
-            // $pdo->errorInfo()[2]; последняя ошибка, не текущая
             $this->error = $e->getMessage();
             logError($this->error, $sql);
             if ($this->exceptionOnError && !isAjax()) {

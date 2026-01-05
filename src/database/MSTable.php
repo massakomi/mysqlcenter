@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace database;
 
+use service\MSCenter;
+
 /**
  * Класс для работы с собственной БД приложения
  */
@@ -15,6 +17,9 @@ class MSTable
      */
     public static function dbViewStat(): void
     {
+        /**
+         * @var MSCenter $msc
+         */
         global $msc;
         if (!$msc->connected()) {
             return;

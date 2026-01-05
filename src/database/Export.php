@@ -17,7 +17,7 @@ class Export
     public ?string $tableb = null;
     public ?string $data = null;
     /**
-     * @var array<TableInfo>
+     * @var array<string, TableInfo[]>
      */
     public array $tableStructure = [];
     public bool $comments = true;
@@ -302,9 +302,9 @@ class Export
             if ($row->Name == $this->table) {
                 $ai = $row->Auto_increment;
                 $charset = $row->Collation;
-                $comment = $row->Comment ?? null;
+                $comment = $row->Comment;
                 $engine = $row->Engine;
-                $pack = $row->Create_options ?? null;
+                $pack = $row->Create_options;
                 break;
             }
         }
@@ -313,10 +313,12 @@ class Export
         } else {
             $ai = ' AUTO_INCREMENT=' . $ai . ' ';
         }
+        $pack = strval($pack);
         if (!empty($pack)) {
             $pack = ' ' . $pack;
         }
-        if ($comment != null) {
+        $comment = strval($comment);
+        if (!empty($comment)) {
             $comment = ' COMMENT="' . $comment . '"';
         }
         if (strchr($charset, '_')) {
@@ -489,8 +491,10 @@ class Export
                 }
 
                 $fp = gzopen($dir . '/download.sql.gz', 'w9');
-                gzwrite($fp, $this->get());
-                gzclose($fp);
+                if ($fp) {
+                    gzwrite($fp, $this->get());
+                    gzclose($fp);
+                }
 
                 return 'https://' . $_SERVER['HTTP_HOST'] . '/' . MS_DIR_UPLOAD . '/download.sql.gz';
             }
@@ -504,7 +508,7 @@ class Export
             $gzipped_data = gzencode($this->get(), 9);
             header('Content-Type: application/x-gzip'); // Or 'application/octet-stream' for a generic download
             header('Content-Disposition: attachment; filename="' . $attachment_name . '"');
-            header('Content-Length: ' . strlen($gzipped_data));
+            header('Content-Length: ' . strlen($gzipped_data ?: ''));
 
             if (ob_get_level()) {
                 ob_end_clean();

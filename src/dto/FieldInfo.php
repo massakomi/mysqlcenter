@@ -18,10 +18,10 @@ final class FieldInfo
     }
 
     /**
-     * @param \stdClass|array<array<string>> $row
+     * @param Iterable<array<string>> $row
      * @return void
      */
-    public function fill(\stdClass|array $row): void
+    public function fill(Iterable $row): void
     {
         foreach ($row as $key => $value) {
             $this->{$key} = $value;

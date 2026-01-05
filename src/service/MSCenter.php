@@ -156,7 +156,8 @@ class MSCenter extends Query
      */
     public function getConfig(): ConnectConfig
     {
-        $settings = json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
+        $json = file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '';
+        $settings = json_decode($json, true);
         $current = $settings['current'];
         $config = $settings['config'][$current];
         if (!$config) {

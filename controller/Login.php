@@ -16,6 +16,6 @@ class Login extends Base
     {
         global $msc;
         $msc->pageTitle = 'Login';
-        return json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE), true);
+        return json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '', true);
     }
 }

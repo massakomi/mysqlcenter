@@ -43,10 +43,10 @@ final class TableInfo
     }
 
     /**
-     * @param \stdClass|array<string> $row
+     * @param Iterable<string> $row
      * @return void
      */
-    public function fill(\stdClass|array $row): void
+    public function fill(Iterable $row): void
     {
         foreach ($row as $key => $value) {
             $this->{$key} = $value;

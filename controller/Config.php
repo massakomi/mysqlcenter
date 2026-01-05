@@ -16,7 +16,7 @@ final class Config extends Base
     public function defaultAction(): array
     {
         global $msc;
-        $data = json_decode(file_get_contents(MS_CONFIG_FILE));
+        $data = json_decode(file_get_contents(MS_CONFIG_FILE) ?: '');
         $msc->pageTitle = 'Настройка MySQL Center';
         return compact('data');
     }

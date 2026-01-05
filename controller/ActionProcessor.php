@@ -58,7 +58,7 @@ class ActionProcessor
 
         switch ($action) {
             case 'configUpdate':
-                $json = json_decode(file_get_contents(MS_CONFIG_FILE));
+                $json = json_decode(file_get_contents(MS_CONFIG_FILE) ?: '');
                 $changed = false;
                 foreach ($json as $item) {
                     $newValue = POST($item->name);

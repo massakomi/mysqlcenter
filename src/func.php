@@ -155,7 +155,7 @@ function config(string $param, string $default = ''): string
     global $mscConfigCash;
     if (!isset($mscConfigCash)) {
         $mscConfigCash = [];
-        $json = json_decode(file_get_contents(MS_CONFIG_FILE));
+        $json = json_decode(file_get_contents(MS_CONFIG_FILE) ?: '');
         foreach ($json as $item) {
             $value = $item->value;
             if ($item->type === 'integer' || $item->type === 'boolean') {
@@ -165,6 +165,28 @@ function config(string $param, string $default = ''): string
         }
     }
     return $mscConfigCash[$param] ?? $default;
+}
+
+/**
+ * @param string $path
+ * @param int $size
+ * @return ?string
+ */
+function file_get_contents_bytes(string $path, int $size=0): ?string
+{
+    if ($size < 1) {
+        $size = filesize($path);
+        if ($size == 0) {
+            return null;
+        }
+    }
+    $file = fopen($path, 'rb');
+    if (!$file) {
+        return null;
+    }
+    $content = fread($file, $size);
+    fclose($file);
+    return $content ?: null;
 }
 
 /**

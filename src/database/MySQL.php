@@ -54,7 +54,7 @@ class MySQL implements Driver
         $tables = $msc->getData($sql, \PDO::FETCH_OBJ);
         foreach ($tables as $key => $value) {
             $tableInfo = new TableInfo();
-            $tableInfo->fill($value);
+            $tableInfo->fill((array)$value);
             $tables [$key] = $tableInfo;
         }
         return $tables;
@@ -74,7 +74,7 @@ class MySQL implements Driver
         $fields = $msc->getData('SHOW FIELDS FROM `' . $table . '`', \PDO::FETCH_OBJ);
         foreach ($fields as $key => $value) {
             $fieldInfo = new FieldInfo();
-            $fieldInfo->fill($value);
+            $fieldInfo->fill((array)$value);
             $fields [$key] = $fieldInfo;
         }
         return $fields;
@@ -241,7 +241,7 @@ class MySQL implements Driver
             $row->Charset = '';
         }
         $tableInfo = new TableInfo();
-        $tableInfo->fill($row);
+        $tableInfo->fill((array)$row);
         return $tableInfo;
     }
 }

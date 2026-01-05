@@ -154,10 +154,30 @@ class PostgreSQL implements Driver
      */
     public function getFields(string $table): array
     {
-        global $msc;
         if (empty($table)) {
             return [];
         }
+        $fields = $this->fetchFields($table);
+        $keys = $this->getKeys($table);
+        foreach ($fields as $field) {
+            if (array_key_exists($field->Field, $keys)) {
+                $fieldKeys = $keys[$field->Field];
+                foreach ($fieldKeys as $type) {
+                    $field->Key = $type;
+                }
+            }
+        }
+        return $fields;
+    }
+
+    /**
+     * @param string $table
+     * @return FieldInfo[]
+     * @throws \Exception
+     */
+    public function fetchFields(string $table): array
+    {
+        global $msc;
         $sql = '
                 SELECT 
                     column_name AS "Field",
@@ -171,21 +191,7 @@ class PostgreSQL implements Driver
                     END AS "Extra"
                 FROM INFORMATION_SCHEMA.COLUMNS 
                 WHERE table_name = \'' . $table . '\'';
-
-        $keys = $this->getKeys($table);
-        $fields = $msc->getData($sql, \PDO::FETCH_OBJ);
-        foreach ($fields as $key => $field) {
-            if (array_key_exists($field->Field, $keys)) {
-                $fieldKeys = $keys[$field->Field];
-                foreach ($fieldKeys as $type) {
-                    $field->Key = $type;
-                }
-            }
-            $fieldInfo = new FieldInfo();
-            $fieldInfo->fill($field);
-            $fields [$key] = $fieldInfo;
-        }
-        return $fields;
+        return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
 
     /**

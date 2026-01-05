@@ -35,10 +35,11 @@ class Sql extends Base
                     }
                     $sql = $this->readZipFile($_FILES['sqlFile']['tmp_name'], $mime);
                 }
+                $sql = strval($sql);
 
                 // Применяем кодировку если надо
                 if (POST('sqlFileCharset') != null && POST('sqlFileCharset') != 'utf-8') {
-                    $sql = mb_convert_encoding($sql, 'UTF-8', POST('sqlFileCharset'));
+                    $sql = mb_convert_encoding($sql, 'UTF-8', POST('sqlFileCharset')) ?: $sql;
                 }
                 $log = strlen($sql) < 10000;
                 $this->execSql($db, $sql, $log);
@@ -104,25 +105,21 @@ class Sql extends Base
      *
      * @param string $path Путь к файлу
      * @param string $mime MIME тип файла, иначе определяется автоматически
-     * @return  false|int|string    string контент файла либо boolean FALSE в случае ошибок
+     * @return string|null string контент файла либо boolean FALSE в случае ошибок
      * @package file
      */
-    private function readZipFile(string $path, string $mime = ''): false|int|string
+    private function readZipFile(string $path, string $mime = ''): ?string
     {
         global $msc;
         if (!file_exists($path)) {
-            return false;
+            return null;
         }
         $content = '';
         switch ($mime) {
             case '':
-                $file = @fopen($path, 'rb');
-                if (!$file) {
-                    return false;
-                }
-                $test = fread($file, 3);
-                fclose($file);
-                if ($test[0] == chr(31) && $test[1] == chr(139)) {
+                $test = file_get_contents_bytes($path, 3) ?: '';
+                if (mb_substr($test, 0, 1) == chr(31) &&
+                    mb_substr($test, 1, 1) == chr(139)) {
                     return $this->readZipFile($path, 'application/x-gzip');
                 }
                 if ($test == 'BZh') {
@@ -133,7 +130,6 @@ class Sql extends Base
                 $zip = new \ZipArchive();
 
                 if ($zip->open($path) === true) {
-                    $content = '';
                     for ($i = 0; $i < $zip->numFiles; $i++) {
                         $content .= $zip->getFromIndex($i) . ';';
                     }
@@ -144,43 +140,35 @@ class Sql extends Base
 
                 break;
             case 'text/plain':
-                $file = @fopen($path, 'rb');
-                if (!$file) {
-                    return false;
-                }
-                $content = fread($file, filesize($path));
-                fclose($file);
+                $content = file_get_contents($content);
                 break;
             case 'application/x-gzip':
                 if (function_exists('gzopen')) {
                     $file = @gzopen($path, 'rb');
                     if (!$file) {
-                        return false;
+                        return null;
                     }
-                    $content = '';
                     while (!gzeof($file)) {
                         $content .= gzgetc($file);
                     }
                     gzclose($file);
                 } else {
-                    return false;
+                    return null;
                 }
                 break;
             case 'application/x-bzip':
                 if (@function_exists('bzdecompress')) {
-                    $file = @fopen($path, 'rb');
-                    if (!$file) {
-                        return false;
-                    }
-                    $content = fread($file, filesize($path));
-                    fclose($file);
-                    $content = bzdecompress($content);
+                    $content = file_get_contents_bytes($path);
+                    $content = bzdecompress($content ?: '');
                 } else {
-                    return false;
+                    return null;
                 }
                 break;
             default:
-                return false;
+                return null;
+        }
+        if (!is_string($content)) {
+            return null;
         }
         return $content;
     }

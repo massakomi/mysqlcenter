@@ -73,7 +73,7 @@ class TblAdd extends Base
         if (POST('action') == 'tableAddEnd' && is_numeric(POST('primaryKey'))) {
             // при добавлении таблицы вместо имён полей у нас только индексы полей, которые создаются в таблице
             // поэтому приходится создавать массивы ключей самостоятельно
-            $primaryKey = $names[POST('primaryKey')];
+            $primaryKey = $names[strval(POST('primaryKey'))];
             $uniKeys    = [];
             $mulKeys    = [];
             foreach ($names as $k => $name) {
@@ -169,7 +169,7 @@ class TblAdd extends Base
             // определение полей
             $a = [];
             foreach ($fieldsDefEdit as $oldFieldName => $definition) {
-                $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinition($fields[$oldFieldName]);
+                $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinitionFromObject($fields[$oldFieldName]);
                 if ($oldDefinition == $definition) {
                     continue;
                 }

@@ -20,7 +20,7 @@ class PopularTables
         if (!file_exists(MS_POPULAR_TABLES_FILE) || !$db) {
             return [];
         }
-        $json = file_get_contents(MS_POPULAR_TABLES_FILE);
+        $json = file_get_contents(MS_POPULAR_TABLES_FILE) ?: '';
         $json = json_decode($json, true);
         if (!array_key_exists($db, $json)) {
             $json[$db] = [];

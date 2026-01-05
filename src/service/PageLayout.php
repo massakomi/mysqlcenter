@@ -106,8 +106,11 @@ class PageLayout
         foreach ($classNames as $className) {
             $class = '\controller\\' . $className;
             if (class_exists($class)) {
-                $this->controller = new $class();
-                break;
+                $object = new $class();
+                if ($object instanceof Base) {
+                    $this->controller = $object;
+                    break;
+                }
             }
         }
     }
