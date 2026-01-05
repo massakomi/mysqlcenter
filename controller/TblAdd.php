@@ -101,7 +101,9 @@ class TblAdd extends Base
                     $extra = 'AUTO_INCREMENT';
                 }
             }
-            $extra  .= $_POST['attr'][$k] != '' ? ' ' . $_POST['attr'][$k] : null;
+            if (POST('attr')) {
+                $extra  .= $_POST['attr'][$k] != '' ? ' ' . $_POST['attr'][$k] : null;
+            }
             $length  = $_POST['length'][$k];
             $define  = Table::getFieldDefinition($type, $null, $default, $extra, $length);
             if (empty($define)) {
@@ -110,7 +112,7 @@ class TblAdd extends Base
                 continue;
             }
             // after
-            if (POST('action') !== 'tableAddEnd') {
+            if (POST('action') !== 'tableAddEnd' && POST('after')) {
                 $after    = $_POST['after'][$k];
                 $afterold = $_POST['afterold'][$k];
                 if ($after != $afterold) {
@@ -134,7 +136,7 @@ class TblAdd extends Base
             }
         }
 
-        // создание запроса на сздание таблицы
+        // создание запроса на создание таблицы
         if (POST('action') == 'tableAddEnd') {
             $sql  = "CREATE TABLE `" . POST('table_name') . "` (\r\n  ";
             $sql .= implode(",\r\n  ", $fieldsDefFull);
@@ -159,12 +161,12 @@ class TblAdd extends Base
         if (POST('action') == 'fieldsEditEnd') {
             // определение полей
             $a = [];
-            foreach ($fieldsDefEdit as $oldFieldName => $def) {
+            foreach ($fieldsDefEdit as $oldFieldName => $definition) {
                 $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinition($fields[$oldFieldName]);
-                if ($oldDefinition == $def) {
+                if ($oldDefinition == $definition) {
                     continue;
                 }
-                $a [] = ' ALTER `' . $oldFieldName . '` ' . $def;
+                $a [] = ' ALTER `' . $oldFieldName . '` ' . $definition;
             }
             $sql  = count($a) == 0 ? '' : 'ALTER TABLE `' . GET('table') . "`\r\n" . implode(",\r\n", $a);
             // ключи
@@ -259,7 +261,7 @@ class TblAdd extends Base
             if ($msc->execPdo($sql)) {
                 $msc->success('Таблица изменена', $sql);
             } else {
-                $msc->error('Ошибка при добавлении полей');
+                $msc->error('Ошибка при добавлении полей', $sql);
             }
         }
         if (isAjax()) {

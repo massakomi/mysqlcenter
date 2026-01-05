@@ -147,7 +147,9 @@ function PrintFields(props) {
 }
 
 export function AfterFieldSelect(props) {
-
+    if (window.driver === 'pgsql') {
+        return null
+    }
     let fieldsAfter = ['FIRST']
     let previousFields = {}
     let prev = '';
@@ -194,42 +196,62 @@ export function AfterFieldSelect(props) {
 
 export function TypeSelect(props) {
     // создание селектора типов данных
-    let columnTypes = [
-        'VARCHAR', 'TINYINT', 'TEXT', 'DATE', 'JSON',
-        'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
-        'FLOAT', 'DOUBLE', 'DECIMAL',
-        'DATETIME', 'TIMESTAMP', 'TIME', 'YEAR',
-        'CHAR', 'TINYBLOB', 'TINYTEXT', 'BLOB', 'MEDIUMBLOB', 'MEDIUMTEXT', 'LONGBLOB', 'LONGTEXT',
-        'ENUM', 'SET', 'BOOLEAN', 'SERIAL'
-    ];
-    let pgTypes = {
-        'CHARACTER VARYING': 'VARCHAR'
+    let columnTypesByGroups
+    if (window.driver === 'pgsql') {
+        // https://metanit.com/sql/postgresql/2.3.php
+        columnTypesByGroups = {
+            'String': ['CHARACTER','CHARACTER VARYING','TEXT',],
+            'AutoIncrement': ['SERIAL','SMALLSERIAL','BIGSERIAL',],
+            'Numeric': ['SMALLINT','INTEGER','BIGINT',],
+            'Float': ['NUMERIC','DECIMAL','REAL','DOUBLE PRECISION',],
+            'DateTime': ['TIMESTAMP','DATE','TIME','INTERVAL',], // 'TIMESTAMP WITH TIME ZONE', 'TIME WITH TIME ZONE'
+            'Other': ['BOOLEAN','JSON','JSONB','UUID','XML','MONEY','BYTEA',],
+            'Ip': ['CIDR','INET','MACADDR','MACADDR8'],
+            //'SPATIAL': ['POINT', 'LINE', 'LSEG', 'BOX', 'PATH', 'POLYGON', 'CIRCLE', ],
+        };
+    } else {
+        columnTypesByGroups = {
+            'String': ['VARCHAR', 'TEXT','CHAR','TINYTEXT','MEDIUMTEXT','LONGTEXT',],
+            'Numeric': ['INT', 'SMALLINT', 'TINYINT', 'MEDIUMINT', 'BIGINT',],
+            'Float': ['FLOAT', 'DOUBLE', 'DECIMAL',],
+            'DateTime': ['DATE', 'DATETIME', 'TIMESTAMP', 'TIME', 'YEAR',],
+            'Blob': ['TINYBLOB',  'BLOB', 'MEDIUMBLOB', 'LONGBLOB', ],
+            //'Spatial': [],
+            'Other': ['ENUM', 'SET', 'JSON', 'BOOLEAN', 'SERIAL'],
+        };
+    }
+    let columnTypes = [];
+    for (let key in columnTypesByGroups) {
+        columnTypes = [...columnTypes, ...columnTypesByGroups[key]]
     }
     let value = ''
     if (props.type) {
         value = props.type.replace(/\((.*)\).*/i, '').toUpperCase()
         value = value.replace(/\s*(UNSIGNED)( ZEROFILL)?/, '')
         if (props.action === 'fieldsEditEnd') {
-            if (typeof pgTypes[value] !== 'undefined') {
-                value = pgTypes[value]
-            }
             if (!columnTypes.includes(value)) {
                 console.error(`Тип ${value} не найден в списке`)
                 Messages.show({'messages': `Тип ${value} не найден в списке`})
             }
         }
     }
-
     return (
       <select name="ftype[]" defaultValue={value}>
-          {columnTypes.map((type) =>
-            <option key={type}>{type}</option>
+          {Object.keys(columnTypesByGroups).map((label) =>
+            <optgroup label={label}>
+                {columnTypesByGroups[label].map((type) =>
+                  <option key={type}>{type}</option>
+                )}
+            </optgroup>
           )}
       </select>
     );
 }
 
 export function UnsignedSelect(props) {
+    if (window.driver === 'pgsql') {
+        return null
+    }
     let value = ''
     if (props.type) {
         const isUnsignedZero = props.type.match(/unsigned zerofill/i) !== null;

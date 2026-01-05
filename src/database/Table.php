@@ -77,7 +77,11 @@ class Table
                 $text = 'обработана';
                 break;
             case 'RENAME':
-                $sql = "ALTER TABLE `$table` RENAME `$param`";
+                if ($msc->driverName == 'pgsql') {
+                    $sql = "ALTER TABLE `$table` RENAME TO `$param`";
+                } else {
+                    $sql = "ALTER TABLE `$table` RENAME `$param`";
+                }
                 $text = 'переименована';
                 break;
             case 'CHARSET':
@@ -176,7 +180,7 @@ class Table
                 $add = ' OVERRIDING SYSTEM VALUE';
             }
             if ($database != $db) {
-                $sql = 'INSERT INTO ' . $database . '.' . $newName . ' '.$add.' SELECT * FROM ' . $db . '.' . $table;
+                $sql = 'INSERT INTO ' . $database . '.' . $newName . ' ' . $add . ' SELECT * FROM ' . $db . '.' . $table;
             } else {
                 $sql = "INSERT INTO $newName $add SELECT * FROM $table";
             }
@@ -295,13 +299,13 @@ class Table
      * @return string Определение поля (field definition)
      */
     public static function getFieldDefinition(
-         mixed  $type = null,
+        mixed $type = null,
         ?string $null = null,
         ?string $default = null,
         ?string $extra = null,
         ?string $length = null
-    ): false|string
-    {
+    ): false|string {
+        // Копируем данные из объекта в переменные, если пришел объект
         if (is_object($type)) {
             $null = $type->Null;
             $default = $type->Default;
@@ -325,6 +329,7 @@ class Table
         if ($type == 'SERIAL') {
             return 'SERIAL';
         }
+        // Добавляем length к типу
         if ($type == 'VARCHAR') {
             if (!is_numeric($length) || $length > 255 || $length < 1) {
                 $length = 255;
@@ -345,10 +350,14 @@ class Table
         } elseif (is_numeric($length) && !stristr($type, 'text')) {
             $type .= "($length)";
         }
+        // Начинаем собирать fieldInfo
         $field_info  = $type;
-        if ($null != 'YES') {
+        // Null
+        $isNull = $null == 'YES';
+        if (!$isNull) {
             $field_info .=  ' NOT NULL';
         }
+        // Unsigned
         if ($extra != null) {
             if (stristr($extra, 'UNSIGNED')) {
                 // это алиас
@@ -363,11 +372,25 @@ class Table
             }
             $field_info .= ' ' . $extra;
         }
+        // default
         if ($default != null) {
             if (is_numeric($default)) {
                 $field_info .=  ' DEFAULT ' . intval($default);
+            } elseif (strpos($default, '::')) {
+                $field_info .=  ' DEFAULT ' . $default ;
             } else {
                 $field_info .=  ' DEFAULT "' . $default . '"';
+            }
+        } elseif (!$isNull) {
+            // для pgsql, но может и для mysql сойдет
+            if ((str_contains($type, 'CHAR') || $type == 'TEXT')) {
+                $field_info .=  " DEFAULT ''";
+            }
+            if ($type == 'BOOLEAN') {
+                $field_info .=  " DEFAULT TRUE";
+            }
+            if (str_contains($type, 'INT') ) {
+                $field_info .=  " DEFAULT 0";
             }
         }
         return str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);

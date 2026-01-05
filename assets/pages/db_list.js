@@ -209,7 +209,7 @@ function ColumnRight(props) {
     if (GET('type')) {
         links.push(<a className="block" href={`?s=db_list&db=${props.dbname}`}>Показать обычную таблицу</a>)
     }
-    if (GET('type') !== 'full') {
+    if (GET('type') !== 'full' && window.driver === 'pgsql') {
         links.push(<a className="block" href={`?s=db_list&db=${props.dbname}&type=full`}>Показать полную таблицу</a>)
     }
 

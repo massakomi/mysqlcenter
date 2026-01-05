@@ -38,9 +38,11 @@ function ActionsTable(props) {
             }, 5000);
         }
         msQuery(mode, form, (data) => {
-            if (data.status === true && mode === 'tableRename') {
-                window.location = '?s=tbl_data&table=' + form.querySelector('[name="newName"]').value
-            }
+            setTimeout(function() {
+                if (data.status === true && mode === 'tableRename') {
+                    window.location = '?s=tbl_data&table=' + form.querySelector('[name="newName"]').value
+                }
+            }, 1000);
         })
     }
 

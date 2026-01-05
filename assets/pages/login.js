@@ -72,6 +72,8 @@ export function Login(props) {
                 location.href = '?s=db_list'
             }
             console.log(data)
+        }, function(data) {
+            console.log("error", data)
         })
     };
 

@@ -47,6 +47,24 @@ export function Table(props) {
         return value
     }
 
+    const getClass = (item) => {
+        if (typeof (item) == 'object' && item !== null) {
+            if (item.hasOwnProperty('class')) {
+                return item['class']
+            }
+        }
+        return null
+    }
+
+    const getTitle = (item) => {
+        if (typeof (item) == 'object' && item !== null) {
+            if (item.hasOwnProperty('title')) {
+                return item['title']
+            }
+        }
+        return null
+    }
+
     if (!Array.isArray(props.data)) {
         return <div>data не массив</div>
     }
@@ -71,14 +89,14 @@ export function Table(props) {
         const row = props.data[index]
         for (let key of headers) {
             let value = getValueTag(row, key)
-            tds.push(<td key={`td-${key}`}>{value}</td>)
+            tds.push(<td key={`td-${key}`} title={getTitle(row[key])} className={getClass(row[key])}>{value}</td>)
         }
         trs.push(<tr key={`tr-${index}`}>{tds}</tr>)
     }
 
     return (
       <div className="responsive">
-          <table className="contentTable wide">
+          <table className={`contentTable wide ${props.className}`}>
               <thead>
               <tr>{ths}</tr>
               </thead>

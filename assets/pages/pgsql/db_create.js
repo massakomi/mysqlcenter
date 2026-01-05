@@ -2,6 +2,9 @@ import React, {Fragment} from "react";
 import {PgRoles} from "./roles";
 
 export function PgDbCreate(props) {
+    if (window.driver !== 'pgsql') {
+        return null
+    }
     return (
       <Fragment>
           <span className="flex g0 center">

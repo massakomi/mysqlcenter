@@ -30,7 +30,7 @@ class Server
         static $array;
         if (!isset($array)) {
             global $msc;
-            $array = $msc->driver->getDatabaseNames();
+            $array = $msc->driver ? $msc->driver->getDatabaseNames() : [];
         }
         return $array;
     }

@@ -111,7 +111,7 @@ class ActionProcessor
 
             case 'connectSave':
             case 'connectOpen':
-            $config = json_decode($_POST['config'], true);
+                $config = json_decode($_POST['config'], true);
                 $config = [
                     'current' => $_POST['current'],
                     'config' => $config,
@@ -175,7 +175,7 @@ class ActionProcessor
             case 'querysql':
                 $sql = POST('sql');
                 $type = POST('type');
-                if (preg_match('~^\s*(update|delete|insert|drop)~i', $sql)) {
+                if (preg_match('~^\s*(update|delete|insert|drop|create)~i', $sql)) {
                     $type = 'exec';
                 }
                 if ($type == 'exec') {
@@ -193,7 +193,11 @@ class ActionProcessor
                         ajaxResult($data);
                     }
                 } else {
-                    $msc->success('Запрос выполнен, затронуто рядов: '.$msc->affectedRows, $msc->lastSql);
+                    if ($msc->error) {
+                        $msc->error('Ошибка запроса');
+                    } else {
+                        $msc->success('Запрос выполнен, затронуто рядов: ' . $msc->affectedRows, $msc->lastSql);
+                    }
                     ajaxResultWithMessages();
                 }
                 break;

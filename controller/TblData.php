@@ -44,7 +44,7 @@ class TblData extends Base
         // Собираем массив имён полей, и также массив имён только ключевых полей
         $pk = [];
         $fieldsNames = [];
-        foreach ($fields as$v) {
+        foreach ($fields as $v) {
             $fieldsNames [] = $v->Field;
             if (strchr($v->Key, 'PRI')) {
                 $pk [] = $v->Field;
@@ -80,8 +80,13 @@ class TblData extends Base
 
             // Сразу выход, если ничего не найдено
             if ($count == 0) {
-                $msc->pageTitle = "Таблица: $msc->table (пустая)";
-                $msc->notice("В таблице $msc->table нет данных");
+                if ($whereCondition) {
+                    $msc->pageTitle = "Таблица: $msc->table";
+                    $msc->notice("Ничего не найдено в таблице $msc->table по условию");
+                } else {
+                    $msc->pageTitle = "Таблица: $msc->table (пустая)";
+                    $msc->notice("В таблице $msc->table нет данных");
+                }
                 return [];
             }
 

@@ -60,7 +60,7 @@ export function PostgresSQLUsers() {
                       <input name="name" required type="text" className="mr-10"/> имя
                   </div>
                   <div className="mb-5">
-                      <input name="password" type="password" className="mr-10"/> пароль
+                      <input name="password" type="password" placeholder="Не обязательно" className="mr-10"/> пароль
                   </div>
                   <div className="mb-5">
                       <div>

@@ -54,7 +54,7 @@ class UrlMaker
      * @param string $value
      * @return string
      */
-    public static function edit(string $url, string $name, string $value) :string
+    public static function edit(string $url, string $name, string $value): string
     {
         $url = str_replace("&amp;", "&", $url);
         $first = strpos($url, ($name . "="));

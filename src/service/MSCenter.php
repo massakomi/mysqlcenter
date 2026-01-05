@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace service;
 
-use database\{Driver, MySQL, PostgreSQL, Query};
+use database\{Driver, MySQL, PostgreSQL, Query, Server};
 use dto\ConnectConfig;
 use dto\Message;
 
@@ -130,6 +130,9 @@ class MSCenter extends Query
         setcookie('mc_db', '', -1, '/');
         $_SESSION['db'] = '';
         $this->db = '';
+        if ($this->page !== 'login') {
+            $this->page = 'db_list';
+        }
     }
 
     /**
@@ -190,15 +193,18 @@ class MSCenter extends Query
             }
         } catch (\PDOException $e) {
             // Если подставленная база не сработала - берем базу из конфигурации
-            if (preg_match('~database .*? does not exist~', $e->getMessage())) {
+            if (preg_match('~(database .*? does not exist|Unknown database)~', $e->getMessage())) {
                 if ($config->database) {
                     if ($config->database != $this->db) {
+                        $this->notice("Ошибка подключения к базе $this->db, подключаемся к $config->database");
                         $this->clearCurrentDatabase();
                         $this->connect();
                         return;
                     }
                 } else {
+                    $this->notice("Ошибка подключения к базе $this->db, очищаю сохраненную базу");
                     $this->clearCurrentDatabase();
+                    return;
                 }
             }
             $msg = 'Unable to pdo-connect to database on "' . $config->host . '" as ' . $config->user . '<br />';
@@ -217,5 +223,4 @@ class MSCenter extends Query
         $this->db = '';
         $this->table = '';
     }
-
 }

@@ -5,9 +5,10 @@
  * @param  mode string  Режим запроса
  * @param  query string|object  Строка запроса urldecoded
  * @param callback
+ * @param errorCallback
  * @return boolean false
  */
-export async function msQuery(mode, query = '', callback = '') {
+export async function msQuery(mode, query = '', callback = '', errorCallback = '') {
     if ((mode.match(/delete/i) && confirm('Подтвердите...') === false) || arguments.length === 0) {
         return false
     }
@@ -16,16 +17,16 @@ export async function msQuery(mode, query = '', callback = '') {
     let response = await fetch('', getFetchOptions(mode, query))
     loader()
 
-    return await queryResponse(response, callback)
+    return await queryResponse(response, callback, errorCallback)
 }
 
 /**
  * @param response
  * @param callback
- * @param type
+ * @param errorCallback
  * @returns {Promise<{error: boolean, message: string}|*>}
  */
-async function queryResponse(response, callback, type = 'json') {
+async function queryResponse(response, callback, errorCallback) {
 
     if (!response.ok) {
         try {
@@ -33,51 +34,40 @@ async function queryResponse(response, callback, type = 'json') {
             showError(`${error.message} <span class="text-black-50">${error.file}</span>`)
             return error
         } catch (e) {
-            return onError(`${response.status} ${response.statusText}`)
+            return onError(`${response.status} ${response.statusText}`, '', errorCallback)
         }
     }
 
     let content = await response.text()
-    if (type === 'json') {
-        if (response.headers.get('Content-type') === 'application/json') {
-            try {
-                content = JSON.parse(content)
-                Messages.show(content)
-                if (content.status === false) {
-                    return onError('')
-                }
-            } catch (e) {
-                return onError('Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack)
+    if (response.headers.get('Content-type') === 'application/json') {
+        try {
+            content = JSON.parse(content)
+            Messages.show(content)
+            if (content.status === false) {
+                return onError('', content, errorCallback)
             }
-        } else {
-            return onError('Ошибка, вернулся не Json, см. консоль.', content)
+        } catch (e) {
+            return onError('Ошибка json parse: ' + e.name + ':' + e.message + '\n' + e.stack, content, errorCallback)
         }
+    } else {
+        return onError('Ошибка, вернулся не Json, см. консоль.', content, errorCallback)
     }
 
-    // Оставляю на всякий случай, хотя возвращается всегда Json
-    if (type === 'text') {
-        if (content.match(/(Parse|Fatal) error/i)) {
-            return onError('Ошибка на сервере, см. консоль.', content)
-        } else {
-            try {
-                eval(content)
-            } catch (e) {
-                return onError('JS код не выполнен: ' + content)
-            }
-        }
-    }
     if (callback && typeof callback == 'function') {
         callback(content)
     }
     return content
 }
 
-function onError(message, content) {
-    if (content || message) {
-        console.error(content ? content : message)
+function onError(message, content, callback) {
+    if (content) {
+        console.error(content)
     }
     if (message) {
         showError(message)
+    }
+    if (callback && typeof callback == 'function') {
+        callback(content)
     }
     return { error: true, message }
 }
@@ -231,10 +221,12 @@ export function sqlFormSubmit(event) {
     event.preventDefault()
     let form = event.target.closest('form');
     let sql = form.querySelector('textarea').value
-    if (sql.match(/^\s*(select|show)/i)) {
+    if (!sql || sql.match(/^\s*(select|show)/i)) {
         form.action = umaker({'s': 'tbl_data'})
+        form.submit()
+    } else {
+        msQuery('querysql', {sql})
     }
-    form.submit()
 }
 
 /**

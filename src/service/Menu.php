@@ -209,7 +209,7 @@ class Menu
     {
         global $msc;
         $tables = Table::getCashedTablesArray();
-        if (count($tables) < 50) {
+        if (count($tables) < config('ptMinTables')) {
             return '';
         }
         $tables = PopularTables::forDb($msc->db);
@@ -231,14 +231,13 @@ class Menu
             if (!array_key_exists('time', $info)) {
                 $info ['time'] = '';
             }
-            $lastTime = $lastTimeDays = '';
             if ($info['time']) {
                 $lastTime = time() - $info['time'];
                 $lastTimeDays = round($lastTime / 86400, 1);
                 if ($lastTimeDays < 1) {
                     $class = 't2';
                 }
-                if ($lastTimeDays > 7) {
+                if ($lastTimeDays > config('ptMaxDays')) {
                     continue;
                 }
             } else {

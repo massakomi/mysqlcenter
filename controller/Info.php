@@ -18,4 +18,13 @@ final class Info extends Base
             'processes' => $msc->driver->getProcessList(),
         ];
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function pgLoadSettingsAction(): array
+    {
+        $content = file_get_contents(DIR_MYSQL . 'config/pg-runtime-config.json');
+        return json_decode($content, true);
+    }
 }

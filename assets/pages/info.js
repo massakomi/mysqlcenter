@@ -5,7 +5,7 @@ import {PostgresSQLInfo} from "./pgsql/info";
 export function Info(props) {
     return (
       <Fragment>
-          {window.driver === 'mysql' ? <MysqlInfo {...props} /> : <PostgresSQLInfo /> }
+          {window.driver === 'mysql' ? <MysqlInfo {...props} /> : <PostgresSQLInfo {...props} /> }
       </Fragment>
     );
 }

@@ -275,9 +275,9 @@ class Export
             if ($row->Name == $this->table) {
                 $ai = $row->Auto_increment;
                 $charset = $row->Collation;
-                $comment = $row->Comment;
+                $comment = $row->Comment ?? null;
                 $engine = $row->Engine;
-                $pack = $row->Create_options;
+                $pack = $row->Create_options ?? null;
                 break;
             }
         }
@@ -328,11 +328,8 @@ class Export
         }
         $dump = null;
         // поля
-        $exportedFields = [];
-        if ($_POST['fields']) {
-            $exportedFields = $_POST['fields'];
-        }
-        $fields = $this->getFields($this->table);
+        $exportedFields = $_POST['fields'] ?? [];
+        $fields = $msc->driver->getFields($this->table);
         foreach ($fields as $k => $v) {
             if ($exportedFields && !in_array($v->Field, $exportedFields) && ($type != 'UPDATE' || $v->Key != 'PRI')) {
                 unset($fields[$k]);
@@ -489,23 +486,5 @@ class Export
             echo $gzipped_data;
             exit;
         }
-    }
-
-    public function getFields($table, $onlyNames = false)
-    {
-        global $msc;
-        $a = [];
-        $result = $msc->fetchPdo('SHOW FIELDS FROM ' . $table);
-        if (!$result) {
-            return false;
-        }
-        while ($row = $result->fetchObject()) {
-            if ($onlyNames) {
-                $a [] = $row->Field;
-            } else {
-                $a [] = $row;
-            }
-        }
-        return $a;
     }
 }

@@ -129,7 +129,7 @@ function SearchTableFormEvents() {
     })
     forElementsEvent('blur', '.search-top [name="query"]', function () {
         this.classList.remove('wide')
-        if (this.dataset['default']) {
+        if (!this.value && this.dataset['default']) {
             this.value = this.dataset['default']
         }
     })

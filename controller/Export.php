@@ -13,11 +13,10 @@ use database\Table;
  */
 class Export extends Base
 {
-
-    public function pgDumpConsole() {
+    public function pgDumpConsole()
+    {
         global $msc;
         try {
-
             header('Content-Type: text/html; charset=windows-866');
             $config = $msc->getConfig();
             $filename = 'backup_' . $config->database . '.sql';
@@ -41,9 +40,9 @@ class Export extends Base
                 echo "Error: pg_dump failed. Output: " . implode("\n", $output);
             }
             exit;
-
         } catch (\Exception $e) {
-            var_dump($e->getMessage()); exit;
+            var_dump($e->getMessage());
+            exit;
         }
     }
 
