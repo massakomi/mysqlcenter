@@ -217,7 +217,7 @@ function TableLinks(props) {
         form.submit()
     }
 
-    const collectPages = () => {
+    const collectPages = function* () {
         const countPages = Math.ceil(count / part)
         const currentPage = Math.ceil(getGo / part)
         const beginPage = Math.max(0, currentPage - Math.round(linksRange / 2))
@@ -233,7 +233,9 @@ function TableLinks(props) {
         if (countPages + 10 > endPage && countPages !== endPage) {
             pages.push(countPages - 1)
         }
-        return pages
+        for (let i of pages) {
+            yield i
+        }
     }
 
     let getPart = currentPart()
@@ -246,10 +248,8 @@ function TableLinks(props) {
         return false;
     }
 
-    const pages = collectPages()
-
     let links = []
-    for (let i of pages) {
+    for (let i of collectPages()) {
         let cls = null
         if (getGo === i * part) {
             cls = 'cur'

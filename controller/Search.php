@@ -20,50 +20,28 @@ class Search extends Base
     {
         global $msc;
 
-        $query = POST('query');
-        $queryField = POST('queryField');
-        $listTables = Table::getTables();
-
-        $pageProps = [
-            'query' => POST('query'),
-            'queryField' => POST('queryField'),
-            'search_for' => POST('search_for'),
-            'replace_in' => POST('replace_in'),
-            'tables' => $listTables
-        ];
-
-        // по таблице
+        // Форма поиска по таблице
         if ($msc->table != null) {
             $msc->pageTitle = 'Поиск по таблице ' . $msc->table;
-            $pageProps ['table'] = $msc->table;
-            $pageProps ['fields'] = Table::getFieldNames(GET('table'));
-            return $pageProps;
+            return [
+                'table' => $msc->table,
+                'fields' => Table::getFieldNames(GET('table'))
+            ];
         }
 
-        // по полям БД
-        $msc->pageTitle = 'Поиск по базе данных';
-        if ($queryField && strlen($queryField) > 0) {
-            $props = $this->searchFieldInDatabase($listTables, $queryField);
-            return $pageProps + $props;
-        }
-
-        // по БД
-        if ($query && strlen($query) > 0) {
-            $props = $this->searchInDatabase($query);
-            return $pageProps + $props;
-        }
-
-        return $pageProps;
+        return [
+            'tables' => Table::getTables()
+        ];
     }
 
     /**
-     * @param string $query
-     * @return array<string, int<0, max>|list<array<string, mixed>>>
+     * @return array<string, mixed>
      * @throws \Exception
      */
-    private function searchInDatabase(string $query): array
+    public function searchDbAction(): array
     {
         global $msc;
+        $query = POST('query');
         $array = POST('table');
         $msc->pageTitle = "Поиск: '$query'";
         if ($array == null || count($array) == 0) {
@@ -96,23 +74,24 @@ class Search extends Base
                 }
             }
         }
-
-        $msc->pageTitle = "Результаты поиска (найдено <b>$founded</b>)";
-        return compact('results', 'founded');
+        $tables = Table::getTables();
+        $msc->pageTitle = "Результаты поиска (найдено $founded)";
+        return compact('results', 'founded', 'tables');
     }
 
     /**
-     * @param array<string> $listTables
-     * @param string $queryField
-     * @return array<string, int<0, max>|list<array<string, array<string, string>|string>>>
+     * @return array<string, mixed>
+     * @throws \Exception
      */
-    private function searchFieldInDatabase(array $listTables, string $queryField): array
+    public function searchDbFieldAction(): array
     {
         global $msc;
+        $queryField = POST('queryField');
+        $array = POST('table');
         $results = [];
         $founded = 0;
         $foundedTotal = 0;
-        foreach ($listTables as $table) {
+        foreach ($array as $table) {
             $fields = Table::getFieldNames($table);
             $founds = [];
             foreach ($fields as $field) {
@@ -130,7 +109,8 @@ class Search extends Base
                 ];
             }
         }
+        $tables = Table::getTables();
         $msc->pageTitle = "Результаты поиска по полям (найдено таблиц $founded, полей $foundedTotal)";
-        return compact('results', 'founded', 'foundedTotal');
+        return compact('results', 'founded', 'foundedTotal', 'tables');
     }
 }

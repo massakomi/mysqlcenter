@@ -373,21 +373,6 @@ function trim(s) {
 }
 
 /**
- * Подтверждение перехода по ссылке
- * ! обязательно передавать this, т.к. без него нельзя передать message
- */
-export function check(obj, message) {
-    if (is_null(message)) {
-        message = 'текущее действие'
-    }
-    if (confirm('Подтвердите: ' + message)) {
-        window.location.href = obj.href
-    } else {
-        return false
-    }
-}
-
-/**
  * Групповые действия с чекбоксами
  */
 export function checkboxAction(form_name, action, mask = false) {
@@ -647,11 +632,11 @@ export function getComponentByPage(ComponentsMap) {
     if (mode) {
         componentName += '_' + mode
     }
-    if (typeof(ComponentsMap[componentName]) == 'undefined') {
+    if (!ComponentsMap.has(componentName)) {
         console.log(componentName)
         componentName = ''
     }
-    return ComponentsMap[componentName]
+    return ComponentsMap.get(componentName)
 }
 
 export function GET(param, defaultValue=null) {

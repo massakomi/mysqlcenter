@@ -14,7 +14,7 @@ Do
         'css - phpcs summary only'
         "`n"
         'stan - phpstan analyse, levels: '
-        'stan0 stan1 stan2 stan3 stan4'
+        'stan0 stan1..8'
         "`n"
         'nc - node current'
         'nl - node list'

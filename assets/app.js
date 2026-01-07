@@ -23,31 +23,30 @@ import {getComponentByPage} from "./functions";
 import {Users} from "./pages/users";
 import {Info} from "./pages/info";
 
-const ComponentsMap = {
-    'Actions': Actions,
-    'Config': Config,
-    'Login': Login,
-    'Db_compare': Db_compare,
-    'Db_list': Db_list,
-    'Export': Export,
-    'ExportSpecial': Export_special,
-    'Search': Search,
-    'Info': Info,
-    'SearchTable': SearchTable,
-    'Sql': App,
-    'Tbl_add': Tbl_add,
-    'Tbl_change': Tbl_change,
-    'Tbl_compare': Tbl_compare,
-    'Tbl_data': Tbl_data,
-    'Tbl_list': Tbl_list,
-    'Tbl_list_structure': Tbl_list_structure,
-    'Tbl_struct': Tbl_struct,
-    'Tbl_struct_add_key': Tbl_struct_add_key,
-    'Users': Users,
-    '': NotFound,
-}
+let map = new Map();
+map.set('Actions', Actions);
+map.set('Config', Config);
+map.set('Login', Login);
+map.set('Db_compare', Db_compare);
+map.set('Db_list', Db_list);
+map.set('Export', Export);
+map.set('ExportSpecial', Export_special);
+map.set('Search', Search);
+map.set('Info', Info);
+map.set('SearchTable', SearchTable);
+map.set('Sql', App);
+map.set('Tbl_add', Tbl_add);
+map.set('Tbl_change', Tbl_change);
+map.set('Tbl_compare', Tbl_compare);
+map.set('Tbl_data', Tbl_data);
+map.set('Tbl_list', Tbl_list);
+map.set('Tbl_list_structure', Tbl_list_structure);
+map.set('Tbl_struct', Tbl_struct);
+map.set('Tbl_struct_add_key', Tbl_struct_add_key);
+map.set('Users', Users);
+map.set('', NotFound);
 
-const Component = getComponentByPage(ComponentsMap)
+const Component = getComponentByPage(map)
 const domNode = document.getElementById('root')
 const root = createRoot(domNode)
 root.render(

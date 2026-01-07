@@ -5,11 +5,11 @@ export function Config(props) {
 
     const update = async (e) => {
         e.preventDefault()
-        await msQuery('configUpdate', e.target.parentNode)
+        await msQuery('update', e.target.parentNode)
     }
 
     const restore = async () => {
-        await msQuery('configRestore', '')
+        await msQuery('restore', '')
     }
 
     const trs = props.data.map((item) => {

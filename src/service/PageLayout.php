@@ -13,7 +13,7 @@ use database\Server;
  */
 class PageLayout
 {
-    private ?Base $controller = null;
+    private Base $controller;
 
     public function __construct()
     {
@@ -30,12 +30,6 @@ class PageLayout
         $this->returnInitIfAjax();
         MSTable::dbViewStat();
         $this->initController();
-
-        if ($this->controller == null) {
-            $msc->page = 'db_list';
-            $msc->error('Страница не найдена');
-            $this->initController();
-        }
 
         $method = $this->getMethod();
         $pageProps = $this->controller->$method();
@@ -109,9 +103,12 @@ class PageLayout
                 $object = new $class();
                 if ($object instanceof Base) {
                     $this->controller = $object;
-                    break;
+                    return;
                 }
             }
         }
+        $msc->page = 'db_list';
+        $msc->error('Страница не найдена');
+        $this->initController();
     }
 }

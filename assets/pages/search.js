@@ -5,8 +5,9 @@ import {Table} from "../components/Table";
 
 function SearchDatabase(props) {
 
-    const [query, setQuery] = useState('');
-    const [queryField, setQueryField] = useState('');
+    const [query, setQuery] = useState(window.post.query || '');
+    const [mode, setMode] = useState('');
+    const [queryField, setQueryField] = useState(window.post.queryField || '');
     const [disabled, setDisabled] = useState(true);
 
     const updateState = (event) => {
@@ -14,11 +15,15 @@ function SearchDatabase(props) {
         const value = event.target.value;
         if (name === 'query') {
             setQuery(event.target.value)
+            setQueryField('')
             setDisabled(!value && !queryField)
+            setMode('searchDb')
         }
         if (name === 'queryField') {
             setQueryField(event.target.value)
+            setQuery('')
             setDisabled(!value && !query)
+            setMode('searchDbField')
         }
     }
 
@@ -36,32 +41,36 @@ function SearchDatabase(props) {
     useEffect(() => {
         queryAll.current.focus()
     }, []);
- 
+
+    const size = Math.min(40, Math.max(10, props.tables.length))
+
     return (
-      <form action="/?s=search" method="post" name="formSearch">
-          <table className="tableExport">
-              <tbody><tr>
-                  <td valign="top">
-                      <select name="table[]" multiple className="sel" defaultValue={props.tables}>
-                          {Object.values(props.tables).map((table) =>
-                            <option key={table.toString()}>{table}</option>
-                          )}
-                      </select>   <br />
-                      <a href="#" onClick={msMultiSelect} className="hs select">все</a> &nbsp;
-                      <a href="#" onClick={msMultiSelect} className="hs unselect">очистить</a> &nbsp;
-                      <a href="#" onClick={msMultiSelect} className="hs invert">инверт</a>
-                  </td>
-                  <td valign="top">
-                      искать по всем полям    <br />
-                      <input name="query" ref={queryAll} type="text" size="50" onChange={updateState} defaultValue={query} /><br />
-                      искать имя поля    <br />
-                      <input name="queryField" type="text" size="50" onChange={updateState} defaultValue={queryField} /><br /> <br />
-                      <input type="submit" defaultValue="Искать!" className="submit" disabled={disabled} />
-                  </td>
-              </tr></tbody>
-          </table>
+      <form action="/?s=search" method="post" className="flex mt-10">
+          <input type="hidden" name="mode" defaultValue={mode}/>
+          <div>
+              <select name="table[]" multiple className="block mb-5" defaultValue={props.tables} size={size}>
+                  {Object.values(props.tables).map((table) =>
+                    <option key={table.toString()}>{table}</option>
+                  )}
+              </select>
+              <a href="#" onClick={msMultiSelect} className="hs select mr-10">все</a>
+              <a href="#" onClick={msMultiSelect} className="hs unselect mr-10">очистить</a>
+              <a href="#" onClick={msMultiSelect} className="hs invert">инверт</a>
+          </div>
+          <div>
+              <div className="mb-10">
+                  искать по всем полям <br/>
+                  <input name="query" ref={queryAll} type="text" size="50" onChange={updateState} value={query}/>
+              </div>
+              <div className="mb-10">
+                  искать имя поля <br/>
+                  <input name="queryField" type="text" size="50" onChange={updateState} value={queryField}/>
+              </div>
+
+              <input type="submit" defaultValue="Искать!" className="submit" disabled={disabled}/>
+          </div>
       </form>
-    ); 
+);
 }
 
 export function Search(props) {

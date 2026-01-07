@@ -14,7 +14,7 @@ global $msc;
 $pageProps = (new PageLayout())->execute();
 $time = round(round(array_sum(explode(" ", microtime())), 10) - $msc->timer, 5);
 $menu = new Menu();
-$fields = $msc->table ? Table::getFieldNames($msc->table) : [];
+$fields = $msc->table && $msc->db ? Table::getFieldNames($msc->table) : [];
 $databases = Server::getDatabases();
 $databasesVisible = Server::getDatabasesWithoutHidden();
 

@@ -1,10 +1,14 @@
 :root {
   --text-color: #000000;
-  --hidden-text-color: #CCCCCC;
   --light-text-color: #999999;
+  --aaa-color: #aaa;
+  --hidden-text-color: #CCCCCC;
+  --light-grey-color: #EEEEEE;
+  --bg-color: #FFFFFF;
   --head-text-color: #CC0000;
-  --bg-color: white;
+  --light-false-color: #faa;
   --cur-color: green;
+  --light-ok-color: #afa;
   --link-color: #0000FF;
 }
 
@@ -53,14 +57,14 @@ div.menuTables a:hover { text-decoration:underline}
 div.menuTables a.cur {color: var(--head-text-color)}
 div.menuTables .t1 { margin-left:5px; color: var(--text-color)}
 div.menuTables .t2 { color: var(--cur-color) }
-div.menuTables .freq0 {color: #ccc}
-div.menuTables .freq1 {color: #aaa}
-div.menuTables .freq2 {color: #888} /* fedcba9876543210 */
+div.menuTables .freq0 {color: var(--hidden-text-color)}
+div.menuTables .freq1 {color: var(--aaa-color)}
+div.menuTables .freq2 {color: var(--light-text-color)} /* fedcba9876543210 */
 
 /* Меню баз данных */
-div.menuDb { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid #aaa; color: var(--text-color)}
+div.menuDb { display:none; padding:5px; position:absolute; left:8px; top:8px; border:1px solid var(--aaa-color); color: var(--text-color)}
 div.menuDb a { line-height:120%; font-size:12px; text-decoration: none; display: block}
-div.menuDb a:hover {color:black; text-decoration:underline}
+div.menuDb a:hover {color: var(--text-color); text-decoration:underline}
 
 /* Форма SQL запроса всплывающая */
 .popupGeneralForm { display:none; padding:5px; position:absolute; left:20px; top:50px; background-color: var(--bg-color); text-align:right}
@@ -76,7 +80,7 @@ div.menuDb a:hover {color:black; text-decoration:underline}
 .globalMessage > div:last-child {border-top: none;}
 .globalMessage .sqlQuery { font-size:10px; font-weight:bold; margin:2px 10px; white-space:pre; max-width: 1024px; overflow: auto;}
 .globalMessage .mysqlError { font-size:10px; font-weight:bold; }
-.globalMessage .hiddenSmallLink {color: #fff; margin-left: 5px}
+.globalMessage .hiddenSmallLink {color: var(--bg-color); margin-left: 5px}
 #msAjaxQueryDiv {
   position: fixed; right: 0; top: 0; background: white; overflow: auto; max-height: 50vh; max-width: 500px; padding-right:20px;
   transition: opacity 0.5s ease-out, visibility 0.5s ease-out; opacity: 0; visibility: hidden;
@@ -92,7 +96,7 @@ table.contentTable:not(.wide) th:not(.wide) .br {overflow-wrap: anywhere; width:
 table.contentTable .cb { margin:0; width:18px; height:18px}
 table.contentTable th a { text-decoration:none; font-size:10px}
 table.contentTable th a:hover { text-decoration:underline}
-table.contentTable th a.current { color:red; font-weight: bold }
+table.contentTable th a.current { color: var(--head-text-color); font-weight: bold }
 table.contentTable .tbl { width:200px; font-size:14px}
 table.contentTable .num { width:80px; text-align:right;}
 table.contentTable .rig { text-align:right;}
@@ -101,10 +105,10 @@ table.contentTable + form {margin-top: 10px}
 /* db_compare tbl_compare */
 .contentTable .r {text-align:right}
 .contentTable .b { font-size:14px;}
-.contentTable .diff td{ background-color:#FF3333; color:#FFFFFF}
+.contentTable .diff td{ background-color: var(--head-text-color); color:var(--bg-color)}
 .contentTable.anone a { text-decoration:none}
-.contentTable .e { background-color: #afa}
-.contentTable .n { background-color: #faa}
+.contentTable .e { background-color: var(--light-ok-color)}
+.contentTable .n { background-color: var(--light-false-color)}
 .contentTable a + a {margin-left: 5px}
 
 /* Таблица с формой */
@@ -151,14 +155,14 @@ img.helpimg {cursor:pointer}
 
 /* Страницы-ссылки для tbl_data */
 div.contentPageLinks { margin:5px 0 0;}
-div.contentPageLinks a { text-decoration:none; font-size:10px; margin: 0; padding: 2px 5px; border:1px solid #eee; margin-right: 2px}
-div.contentPageLinks a.cur { background-color: var(--link-color); color:#FFFFFF}
+div.contentPageLinks a { text-decoration:none; font-size:10px; margin: 0 2px 0 0; padding: 2px 5px; border:1px solid var(--light-grey-color)}
+div.contentPageLinks a.cur { background-color: var(--link-color); color: var(--bg-color)}
 
 /* tbl_list */
 form.showTableUpdated select, form.showTableUpdated [type="submit"] {margin-left:3px}
 .links-block {padding:10px 0; margin-bottom:10px; font-size:14px;}
 .links-block a + a {margin-left: 10px}
-table.contentTable.interlaced tr:nth-child(odd) {background-color: #eee;}
+table.contentTable.interlaced tr:nth-child(odd) {background-color: var(--light-grey-color);}
 
 /* login page */
 .login .list {width: 50%}
@@ -180,8 +184,8 @@ a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
 
 /* Loader */
 .loader {
-  border: 15px solid #CCCCCC;
-  border-top: 15px solid #CC0000;
+  border: 15px solid var(--hidden-text-color);
+  border-top: 15px solid var(--head-text-color);
   border-radius: 50%;
   width: 52px;
   height: 52px;
@@ -196,12 +200,12 @@ a.hiddenSmallLink { text-decoration:none; font-size:10px; color: var(--hidden-te
 
 /* Colors */
 .warning {color: var(--head-text-color)}
-.warning-light {color: #fdbdbd}
-.success-light {color: #8ac971}
+.warning-light {color: var(--light-false-color)}
+.success-light {color: var(--light-ok-color)}
 a.truncate { color: var(--text-color)!important}
 a.delete { color: var(--head-text-color)!important}
 span.hiddenText { color: var(--hidden-text-color)}
-.grey { color:#aaa }
+.grey { color: var(--aaa-color) }
 
 /* Margins */
 .mb-5 {margin-bottom: 5px;}
@@ -236,31 +240,30 @@ div.menuDb A,
 div.globalMenu A       { color: var(--link-color) }
 div.formSet H2         { color: var(--bg-color) }
 
-.globalMessage .mysqlError { color:#FF0000 }
+.globalMessage .mysqlError { color: var(--head-text-color) }
 
 /* Фон */
 
-div.menuDb { background-color:#eee }
+div.menuDb { background-color: var(--light-grey-color) }
 
 .globalMessage > div:first-child,
 table.contentTable TH,
 form.tableFormEdit .editHeader TD,
-form.tableFormEdit TH  { background-color:#CCCCCC }
+form.tableFormEdit TH  { background-color:var(--hidden-text-color) }
 
-.interlace   { background-color:#eee}
-.selectedRow { background-color:#eea!important;}
+.interlace   { background-color: var(--light-grey-color)}
+.selectedRow { background-color: var(--light-grey-color)!important;}
 
 /* Рамка */
 
 form.popupGeneralForm,
 .globalMessage > div,
 table.contentTable TH,
-form.tableFormEdit TH  { border: 1px solid #000  }
+form.tableFormEdit TH  { border: 1px solid var(--text-color)  }
 
-form.formSearch INPUT,
-table.contentTable TD  { border: 1px solid #ccc  }
+table.contentTable TD  { border: 1px solid var(--hidden-text-color)  }
 
 div.pageBlock,
-form.tableFormEdit TD  { border: 1px solid #eee  }
+form.tableFormEdit TD  { border: 1px solid var(--light-grey-color)  }
 
-form.tableFormEdit .si { border: 1px solid #666  }
+form.tableFormEdit .si { border: 1px solid var(--light-text-color)  }

@@ -48,39 +48,29 @@ export function ExportOptions(props) {
 
               <label htmlFor="f7">
                   <input type="checkbox" value="1" className="l2" name="insFull" id="f7" defaultChecked/>
-                  Указать все поля <img src={image('i-help2.gif')}
-                                        title="В запросе будут перечислены все поля INSERT INTO table (fields...) VALUES (...), иначе перечисление полей пропускается. Используейте эту опцию, если вы не уверены, что порядок полей сохранится."
-                                        className="helpimg" alt=""/>
+                  Указать все поля
               </label>
 
               <label htmlFor="f8">
                   <input type="checkbox" value="1" className="l2" name="insExpand" id="f8"/>
-                  Одним запросом <img src={image('i-help2.gif')}
-                                      title="Все вставки будут осуществлены одним запросом вида INSERT INTO table VALUES (set1..), (set2...), (set3...) etc"
-                                      className="helpimg" alt=""/>
+                  Одним запросом
               </label>
 
               <label htmlFor="f9">
                   <input type="checkbox" value="1" className="l2" name="insZapazd" id="f9"/>
-                  DELAYED <img src={image('i-help2.gif')} title="DELAYED. Сервер сначала отправит запрос в буфер и если таблица используется, то вставку рядов приостановится. Когда таблица освободится, сервер начнёт выполнять запрос и вставлять строки, периодически проверяя, появились ли новые запросы к таблице. Если да, то вставка рядов будет снова приостановлена до того момента, как таблица снова освободится.
---- Эта опция полезна, когда немедленное обновление таблицы не требуется (например, при логах), а также если осуществляется множество запросов на вставку. Это даёт существенный прирост производительности при вставках и не задерживает обычную выборку. В то же время такие запросы медленнее обычных и вы должны быть уверенными, что они вам нужны."
-                               className="helpimg" alt=""/>
+                  DELAYED
               </label>
 
               <label htmlFor="f10">
                   <input type="checkbox" value="1" className="l2" name="insIgnor" id="f10"/>
-                  IGNORE <img src={image('i-help2.gif')}
-                              title="IGNORE. Ошибки, которые происходят при выполнении INSERT запроса игнорируются, то есть статус сообщения об ошибке меняется с ERROR на WARNING. С IGNORE, неправильные значения исправляются до ближайших валидных значений и вставляются, warning`и появляются, но выражение выполняется. Кроме этого в выражениях вида INSERT IGNORE INTO sdf (a,b) VALUES (6,6), (2,2), (7,7) будут вставлены все значения за исключением дублирующих. При отсутствии опции IGNORE будут вставлены все значения ДО дублирующих и выскочит ошибка."
-                              alt="" className="helpimg"/>
+                  IGNORE
               </label>
 
               Тип экспорта
               <select name="export_option">
                   <option>INSERT</option>
                   <option>UPDATE</option>
-                  <option
-                    title="REPLACE работает точно так же, как INSERT, за исключением тех случаев, когда старая строка в таблице имеет те же значения, что и новая строка для полей с индексами PRIMARY KEY или UNIQUE. В этом случае старый ряд будет удалён перед вставкой нового ряда. REPLACE это собственное расширение MySQL. Он либо вставляет, либо удаляет и вставляет. Заметьте, что если таблица не имеет ключей PRIMARY KEY либо UNIQUE, то использование REPLACE не даст ничего. В этом случае он становится аналогичным INSERT">REPLACE
-                  </option>
+                  <option>REPLACE</option>
               </select>
 
               {props.fields &&

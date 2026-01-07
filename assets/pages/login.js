@@ -68,7 +68,7 @@ export function Login(props) {
         e.preventDefault()
         const c = JSON.stringify(config);
         await msQuery(mode, { config: c, current: current }, function(data) {
-            if (mode === 'connectOpen') {
+            if (mode === 'open') {
                 location.href = '?s=db_list'
             }
             console.log(data)
@@ -102,9 +102,9 @@ export function Login(props) {
 
     checkCurrentSetting(true)
 
-    let options = []
+    let options = new Set()
     for (let key in config) {
-        options.push(<option key={"opt-"+key} value={key}>{config[key].name}</option>)
+        options.add(<option key={"opt-"+key} value={key}>{config[key].name}</option>)
     }
 
     return (
@@ -114,19 +114,16 @@ export function Login(props) {
                   <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host}/>
               </div>
               <div>
-                  <label>Пользователь</label><input name="user" type="text" onChange={update}
-                                                    value={config[current].user}/>
+                  <label>Пользователь</label><input name="user" type="text" onChange={update} value={config[current].user}/>
               </div>
               <div>
-                  <label>Пароль</label><input name="password" type="password" onChange={update}
-                                              value={config[current].password}/>
+                  <label>Пароль</label><input name="password" type="password" onChange={update} value={config[current].password}/>
               </div>
               <div>
                   <label>Порт</label><input name="port" type="number" onChange={update} value={config[current].port}/>
               </div>
               <div>
-                  <label>База данных</label><input name="database" type="text" onChange={update}
-                                                   value={config[current].database}/>
+                  <label>База данных</label><input name="database" type="text" onChange={update} value={config[current].database}/>
               </div>
               <div>
                   <label>Драйвер</label>
@@ -136,9 +133,9 @@ export function Login(props) {
                   </select>
               </div>
               <div>
-                  <input type="button" onClick={save.bind(this, 'connectOpen')} defaultValue="Открыть"/>
-                  <input type="button" onClick={save.bind(this, 'connectSave')} defaultValue="Сохранить"/>
-                  <input type="button" onClick={save.bind(this, 'connectCheck')} defaultValue="Проверить"/>
+                  <input type="button" onClick={save.bind(this, 'open')} defaultValue="Открыть"/>
+                  <input type="button" onClick={save.bind(this, 'save')} defaultValue="Сохранить"/>
+                  <input type="button" onClick={save.bind(this, 'check')} defaultValue="Проверить"/>
               </div>
           </form>
           <div className="list">

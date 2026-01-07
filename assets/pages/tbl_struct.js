@@ -1,5 +1,7 @@
 import React, {Fragment} from 'react';
 import {check, forElements, msFormQuery, msQuery, submitFormIfFieldNotEmpty} from "../functions";
+import {MysqlKeysInfo} from "./mysql/keys";
+import {PgKeysInfo} from "./pgsql/keys";
 
 function TableObject(props) {
     // нулевой элемент раскидвать по ключ-значение, бред редко нужно
@@ -102,71 +104,6 @@ function TableStruct(props) {
     )
 }
 
-
-function KeysInfo(props) {
-
-    const deleteKey = (query, e) => {
-        e.preventDefault();
-        if (!confirm('Подтвердите')) {
-            return false
-        }
-        msQuery('deleteKey', query, () => {
-            e.target.closest('tr').remove()
-        })
-    }
-
-    return (
-      <table className="contentTable">
-          <thead>
-          <tr>
-              <th></th>
-              <th><span title="Имя таблицы">Таблица</span></th>
-              <th><span title="0 - уникальные значения, 1 - не уникальные">Не уникальное</span></th>
-              <th><span title="Имя ключа">Ключ</span></th>
-              <th><span title="Порядковый номер ключа, начиная с 1">Номер</span></th>
-              <th><span title="Имя колонки (поля)">Колонка</span></th>
-              <th><span
-                title="Сортировка колонки в ключе. В MySQL, значение ‘A’ (по возрастанию) или NULL (без сортировки)">Сортировка</span>
-              </th>
-              <th><span
-                title="Приблизительное число уникальных значений в индексе. Это поле обновляется при запуске  ANALYZE TABLE или myisamchk -a. Cardinality расчитывается на основе цифровой статистики, поэтому его значение не обязательно будет точным даже для небольших таблиц. Чем выше cardinality, тем больше шансов, что MySQL будет применять индекс в операциях объединения (JOIN)">Cardinality</span>
-              </th>
-              <th><span
-                title="Количество индексированных символов, если колонка только частично индексирована, NULL если вся колонка индексирована">Sub_part</span>
-              </th>
-              <th><span
-                title="Как упакован ключ. NULL если не упакован. Хранение значений в сжатом (упакованном) виде используется, если в индексе присутствуют поля, у которых переменная длина">Packed</span>
-              </th>
-              <th><span
-                title="YES если колонка может содержать NULL. Если нет, то поле содержит NO после MySQL 5.0.3, и '' в предыдущих версиях">Null</span>
-              </th>
-              <th><span
-                title="Метод индексирования (BTREE - если длина полей индекса не превышает 10 байт, HASH - хранение значений как хэш кодов. Используется, если индекс составной, его длина больше одной восьмой от размера страницы БД или же больше, чем 256 байт, FULLTEXT, RTREE)">Тип индекса</span>
-              </th>
-              <th><span title="">Комментарий</span></th>
-              <th>Index_comment</th>
-              <th>Visible</th>
-              <th>Expression</th>
-          </tr>
-          </thead>
-          <tbody>
-          {props.dataKeys.map((v) => {
-              let query = `?key=${v.Key_name}&field=${v.Column_name}`
-              return (
-                <tr key={v.Key_name + v.Seq_in_index}>
-                    <td><a href="#" onClick={deleteKey.bind(this, query)}><img src={props.dirImage + "close.png"} alt="" border="0"/></a></td>
-                    {Object.values(v).map((value, key) =>
-                      <td key={key + "index"}>{value}</td>
-                    )}
-                </tr>
-              )
-          })}
-          </tbody>
-      </table>
-    )
-}
-
-
 export function Tbl_struct(props) {
 
     const checkboxAction = (opt, event) => {
@@ -189,8 +126,7 @@ export function Tbl_struct(props) {
       <Fragment>
           <div className="flex">
               <div>
-                  <form action={props.addTableUrl} method="post" name="formTableStructure"
-                        id="formTableStructure">
+                  <form action={props.addTableUrl} method="post" name="formTableStructure" id="formTableStructure">
                       <input type="hidden" name="action" value="fieldsEdit" />
 
                       <TableStruct {...props} />
@@ -205,8 +141,7 @@ export function Tbl_struct(props) {
                           <div className="imageAction">
                               <u>Выбранные</u>
                               <input type="image" src={props.dirImage + "edit.gif"} alt=""/>
-                              <input type="image" src={props.dirImage + "close.png"}
-                                     onClick={msFormQuery.bind(this, 'fieldsDelete')} alt=""/>
+                              <input type="image" src={props.dirImage + "close.png"} onClick={msFormQuery.bind(this, 'fieldsDelete')} alt=""/>
                           </div>
                       </div>
 
@@ -216,14 +151,10 @@ export function Tbl_struct(props) {
                       <legend>Изменить структуру</legend>
                       <form action={props.addTableUrl} method="post" onSubmit={onSubmit}>
                           <input type="hidden" name="action" value="fieldsAdd"/>
-                          Добавить полей &nbsp; <input name="fieldsNum" type="text" defaultValue="1"
-                                                       size="5"/> &nbsp;
-                          <input name="afterOption" type="radio" value="end" defaultChecked id="f1"/> <label
-                        htmlFor="f1">в конец </label>
-                          <input name="afterOption" type="radio" value="start" id="f2"/> <label htmlFor="f2">в
-                          начало</label>
-                          <input name="afterOption" type="radio" value="field" id="f3"/> <label
-                        htmlFor="f3">после </label>
+                          Добавить полей &nbsp; <input name="fieldsNum" type="text" defaultValue="1" size="5"/> &nbsp;
+                          <input name="afterOption" type="radio" value="end" defaultChecked id="f1"/> <label htmlFor="f1">в конец </label>
+                          <input name="afterOption" type="radio" value="start" id="f2"/> <label htmlFor="f2">в начало</label>
+                          <input name="afterOption" type="radio" value="field" id="f3"/> <label htmlFor="f3">после </label>
                           <select name="afterField" onFocus={selectOnFocus}>
                           {Object.values(props.data).map((table) =>
                                 <option key={table.Field}>{table.Field}</option>
@@ -242,10 +173,11 @@ export function Tbl_struct(props) {
               </div>
           </div>
 
-          <strong style={{marginRight: '10px'}}>Информация о ключах</strong>
-          <img src={props.dirImage + "i-help2.gif"} title="Индексы - это сбалансированные деревья значений указанных в индексе полей и ссылки на физические записи в таблице. Индексы позволяют ускорить работу выполнения запросов в сотни раз и сразу находить нужные данные, вместо того, чтобы последовательно читать всю таблицу." alt="" border="0" align="absmiddle" className="helpimg" /><br />
+          <h3>Информация о ключах</h3>
 
-          {props.showKeys ? <KeysInfo {...props} /> : <a href={props.showKeysUrl}>Показать информацию о ключах</a>}
+          {props.showKeys ?
+            (window.driver === 'pgsql' ? <PgKeysInfo {...props} /> : <MysqlKeysInfo {...props} />) :
+            <a href={props.showKeysUrl}>Показать информацию о ключах</a>}
 
           <p><a href={props.addKeyUrl}>Добавить ключ</a></p>
 

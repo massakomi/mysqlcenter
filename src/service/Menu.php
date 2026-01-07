@@ -142,30 +142,31 @@ class Menu
         // статистика префиксов
         $prefixes = [];
         foreach ($tables as $row) {
-            $t = $row->Name;
-            $end = strlen($t) > 2 && strpos($t, '_', 3) > 0 ? strpos($t, '_', 3) : 50;
-            $prefix = substr($t, 0, $end);
+            $table = $row->Name ?: '';
+            $end = strlen($table) > 2 && strpos($table, '_', 3) > 0 ? strpos($table, '_', 3) : 50;
+            $prefix = substr($table, 0, $end);
             $prefixes [$prefix] = !isset($prefixes [$prefix]) ? 1 : $prefixes [$prefix] + 1;
         }
         // создание меню и селектора
         $menuTables =  '<div class="menuTables">' . "\r\n";
         $menuTables .= $this->addPopularTables();
-        foreach ($tables as $t) {
-            if (strlen($t->Name) > 2 && strpos($t->Name, '_', 3) > 0) {
-                $end = strpos($t->Name, '_', 3);
+        foreach ($tables as $row) {
+            $table = $row->Name ?: '';
+            if (strlen($table) > 2 && strpos($table, '_', 3) > 0) {
+                $end = strpos($table, '_', 3);
             } else {
                 $end = 50;
             }
-            $p = substr($t->Name, 0, $end);
+            $p = substr($table, 0, $end);
             if (array_key_exists($p, $prefixes) && $prefixes[$p] > 1) {
                 $class = 't1';
             } else {
                 $class = 't2';
             }
-            if ($t->Rows == 0) {
+            if ($row->Rows == 0) {
                 $class .= ' empty';
             }
-            $menuTables .= $this->makeTableMenuItem(table: $t->Name, class: $class);
+            $menuTables .= $this->makeTableMenuItem(table: $table, class: $class);
         }
         $menuTables .= '</div>' . "\r\n";
         return $menuTables;

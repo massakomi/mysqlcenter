@@ -124,17 +124,6 @@ class MSCenter extends Query
         }
     }
 
-    public function clearCurrentDatabase(): void
-    {
-        unset($_COOKIE['mc_db']);
-        setcookie('mc_db', '', -1, '/');
-        $_SESSION['db'] = '';
-        $this->db = '';
-        if ($this->page !== 'login') {
-            $this->page = 'db_list';
-        }
-    }
-
     /**
      * @return bool
      */
@@ -175,6 +164,26 @@ class MSCenter extends Query
     }
 
     /**
+     * @param string $configJson
+     * @param string $current
+     * @return false|int
+     */
+    public function saveConfig(string $configJson, string $current): false|int
+    {
+        $config = json_decode($configJson, true);
+        $config = [
+            'current' => $current,
+            'config' => $config,
+        ];
+        $backupFile = MS_DIR_UPLOAD . '/backup_' . date('YmdHis') . '_' . basename(MS_CONNECT_CONFIG_FILE);
+        if (file_exists(MS_CONNECT_CONFIG_FILE)) {
+            copy(MS_CONNECT_CONFIG_FILE, $backupFile);
+        }
+        $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        return file_put_contents(MS_CONNECT_CONFIG_FILE, $content);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function connect(): void
@@ -203,8 +212,12 @@ class MSCenter extends Query
                         return;
                     }
                 } else {
-                    $this->notice("Ошибка подключения к базе $this->db, очищаю сохраненную базу");
                     $this->clearCurrentDatabase();
+                    if ($config->driver == 'mysql') {
+                        $this->connect();
+                    } else {
+                        $this->connectError("Ошибка подключения к базе $this->db, очищаю сохраненную базу");
+                    }
                     return;
                 }
             }
@@ -217,11 +230,22 @@ class MSCenter extends Query
      * Приходится тут все сбрасывать, т.к. к этому времени в init можно все заполнится
      * @param string $msg
      */
-    public function connectError(string $msg): void
+    private function connectError(string $msg): void
     {
         $this->error($msg, '');
         $this->page = 'login';
         $this->db = '';
         $this->table = '';
+    }
+
+    public function clearCurrentDatabase(): void
+    {
+        unset($_COOKIE['mc_db']);
+        setcookie('mc_db', '', -1, '/');
+        $_SESSION['db'] = '';
+        $this->db = '';
+        if ($this->page !== 'login') {
+            $this->page = 'db_list';
+        }
     }
 }

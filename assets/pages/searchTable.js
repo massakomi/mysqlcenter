@@ -15,10 +15,10 @@ export function SearchTable(props) {
 
     let fields = props.fields;
     fields.unshift('[поля]')
-    let opers = ['[операнды]', ' = ', ' != ', ' < ', ' > ', 'IS NULL',
+    let operations = ['[операнды]', ' = ', ' != ', ' < ', ' > ', 'IS NULL',
         ' LIKE "%%" ', ' LIKE "%" ', ' LIKE "" ', ' NOT LIKE "" ',
         ' REGEXP "^fo" '];
-    let funcs = ['[функции]', 'UPPER()', 'LOWER()', 'TRIM()', 'SUBSTRING()', 'REPLACE()', 'REPEAT()']
+    let functions = ['[функции]', 'UPPER()', 'LOWER()', 'TRIM()', 'SUBSTRING()', 'REPLACE()', 'REPEAT()']
 
     return (
       <div>
@@ -30,8 +30,8 @@ export function SearchTable(props) {
                   <span className="mr-10">вставить</span>
 
                   <HtmlSelector data={fields} onChange={onFunctionChange} />
-                  <HtmlSelector data={opers} onChange={onFunctionChange} />
-                  <HtmlSelector data={funcs} onChange={onFunctionChange} />
+                  <HtmlSelector data={operations} onChange={onFunctionChange} />
+                  <HtmlSelector data={functions} onChange={onFunctionChange} />
 
               </form>
           </fieldset>
@@ -43,11 +43,11 @@ export function SearchTable(props) {
                       <tbody>
                       <tr>
                           <td width="100">Найти</td>
-                          <td><input name="search_for" className="w-100" type="text" defaultValue={props.search_for}/></td>
+                          <td><input name="search_for" className="w-100" type="text" defaultValue={window.post.search_for || ''}/></td>
                       </tr>
                       <tr>
                           <td width="100">Заменить</td>
-                          <td><input name="replace_in" className="w-100" type="text" defaultValue={props.replace_in}/></td>
+                          <td><input name="replace_in" className="w-100" type="text" defaultValue={window.post.replace_in || ''}/></td>
                       </tr>
                       <tr>
                           <td width="100">Поле</td>

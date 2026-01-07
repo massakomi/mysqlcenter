@@ -8,11 +8,30 @@ export default function Sql (props) {
     const gzipId = useId();
     const zipId = useId();
 
-    const opts = Object.values(props.charsets).map((charset) =>
+    const opts = props.charsets.map((charset) =>
       <option key={charset.toString()}>
           {charset.toLowerCase()}
       </option>
     );
+
+
+    let test = [1, 2, 3, 4]
+    test.fill(100, 0, 2);
+    if (test.some((value) => value === 100)) {
+         console.log("Some values has 100")
+    }
+    if (test.every((value) => value === 100)) {
+         console.log("Some values has 100")
+    }
+    for (const n of Iterator.from(test).drop(1).take(2)) {
+        // Drops the first two elements, then takes the next five
+        console.log(n);
+    }
+    console.log('findLast', test.findLast((element) => element > 45))
+    console.log('findLastIndex', test.findLastIndex((element) => element > 45))
+    console.log(test.toReversed())
+    console.log(test.toSorted())
+    console.log(test.toSorted((a, b) => a - b))
 
     return (
       <Fragment>
@@ -25,7 +44,7 @@ export default function Sql (props) {
 
 
                   <div className="flex baseline">
-                      <input type="file" name="sqlFile" style={{'margin-right': '-40px'}} />
+                      <input type="file" name="sqlFile" className="mr-20" />
 
                       <div>
                           Сжатие:

@@ -84,26 +84,15 @@ function MSC_InsertInput(props) {
     let type = props.type
 
     if (type.match(/enum/i)) {
-        // todo доделать обработку enums set при вставке строк
-        /*
-          preg_match_all('~(\'|")(.*)(\'|")~iU', $type, $items);
-          if (isset($items[2])) {
-            array_unshift($items[2], '');
-            foreach ($items[2] as $k => $v) {
-              $items[2][$k] = preg_replace('~\s+~i', ' ', $v);
-            }
-            $value = preg_replace('~\s+~i', ' ', $value);
-            $attr = str_replace('onkeyup', 'onchange', $attr);
-            return plDrawSelector(
-                $items[2],
-                ' name="row['.$i.']['.$j.']"'.$attr,
-                array_search($value, $items[2]),
-                '',
-                false
-            );
-          }
-          */
-        return 'todo'
+        let all = []
+        const rx = new RegExp('[\'"]([^\'"]+)[\'"]', 'g')
+        let matches = type.matchAll(rx)
+        if (matches) {
+            all = Array.from(matches);
+            all = all.map((val) => val[1])
+            all.unshift('')
+            return <HtmlSelector name={`row[${j}][${i}]`} data={all} value={value} />
+        }
     }
 
     if (type.match(/(text|blob)/i)) {

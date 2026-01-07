@@ -201,16 +201,16 @@ function ColumnLeft(props) {
 
 
 function ColumnRight(props) {
-    let links = [];
+    let links = new Set();
     if (GET('type') !== 'stat') {
         let help = 'Сканирует все таблицы всех баз данных и выводит количество таблиц, размер, дату обновления и количество рядов'
-        links.push(<a className="block" href={`?s=db_list&db=${props.dbname}&type=stat`} title={help}>Показать кол-во строк, размеры и даты</a>)
+        links.add(<a className="block" href={`?s=db_list&db=${props.dbname}&type=stat`} title={help}>Показать кол-во строк, размеры и даты</a>)
     }
     if (GET('type')) {
-        links.push(<a className="block" href={`?s=db_list&db=${props.dbname}`}>Показать обычную таблицу</a>)
+        links.add(<a className="block" href={`?s=db_list&db=${props.dbname}`}>Показать обычную таблицу</a>)
     }
     if (GET('type') !== 'full' && window.driver === 'pgsql') {
-        links.push(<a className="block" href={`?s=db_list&db=${props.dbname}&type=full`}>Показать полную таблицу</a>)
+        links.add(<a className="block" href={`?s=db_list&db=${props.dbname}&type=full`}>Показать полную таблицу</a>)
     }
 
     return (

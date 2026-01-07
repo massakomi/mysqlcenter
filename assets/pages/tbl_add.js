@@ -309,7 +309,7 @@ export function Tbl_add(props) {
 
     const save = (e) => {
         e.preventDefault()
-        msQuery('', e.target, () => {
+        msQuery(action, e.target, () => {
             setTimeout(function() {
                 if (showTableName) {
                     location.href = umaker({s: 'tbl_struct', table: document.querySelector('[name="table_name"]').value})

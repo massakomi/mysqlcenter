@@ -29,12 +29,6 @@ class TblAdd extends Base
             }
         }
 
-        // Получаем массив имён полей из формы.
-        $names = POST('name');
-        if (is_array($names) && count($names) > 0 && POST('action') != '') {
-            return $this->process($names, $fields);
-        }
-
         // HTML форма
         // Создание таблицы или добавление полей
         $numFields = POST('fieldsNum', GET('fieldsNum', MS_FIELDS_COUNT));
@@ -59,14 +53,13 @@ class TblAdd extends Base
     }
 
     /**
-     * @param array<string> $names
-     * @param FieldInfo[] $fields
-     * @return array<string>
-     * @throws \Exception
+     * @return array<<array<mixed>>
      */
-    private function process(array $names, array $fields): array
+    private function prepareAction(): array
     {
         global $msc;
+        $fields = Table::getFields($msc->table);
+        $names = POST('name');
         // Ключи
         $uk = $_POST['uni'] ?? [];
         $mk = $_POST['mul'] ?? [];
@@ -142,139 +135,155 @@ class TblAdd extends Base
                 $newKeys [] = "$name MUL " . $mulKeys[$name];
             }
         }
+        return [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys];
+    }
 
-        // создание запроса на создание таблицы
-        if (POST('action') == 'tableAddEnd') {
-            $sql  = "CREATE TABLE `" . POST('table_name') . "` (\r\n  ";
-            $sql .= implode(",\r\n  ", $fieldsDefFull);
-            if ($primaryKey != '') {
-                $sql .= ",\r\n  PRIMARY KEY ($primaryKey)";
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function tableAddEndAction(): void
+    {
+        global $msc;
+        [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys] = $this->prepareAction();
+        $sql  = "CREATE TABLE `" . POST('table_name') . "` (\r\n  ";
+        $sql .= implode(",\r\n  ", $fieldsDefFull);
+        if ($primaryKey != '') {
+            $sql .= ",\r\n  PRIMARY KEY ($primaryKey)";
+        }
+        if (count($uniKeys) > 0) {
+            $sql .= ",\r\n  UNIQUE (" . implode(', ', $uniKeys) . ")";
+        }
+        if (count($mulKeys) > 0) {
+            $sql .= ",\r\n  INDEX (" . implode(', ', $mulKeys) . ")";
+        }
+        $sql .= "\r\n)";
+        if ($msc->execPdo($sql)) {
+            $msc->success('Таблица ' . POST('table_name') . ' создана', $sql);
+        } else {
+            $text = 'При создании таблицы возникли ошибки ' . POST('table_name');
+            $msc->error($text, $sql);
+        }
+    }
+
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function fieldsAddEndAction(): void
+    {
+        global $msc;
+        [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys] = $this->prepareAction();
+        $afterSql = '';
+        if (POST('afterOption') == 'start') {
+            $afterSql = 'FIRST';
+        } elseif (POST('afterOption') == 'field') {
+            $afterSql = 'AFTER `' . POST('afterField') . '`';
+        }
+        // определение полей
+        $a = [];
+        foreach ($fieldsDefFull as $def) {
+            $a [] = ' ADD COLUMN ' . $def . $afterSql;
+        }
+        $sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
+        // выполнение
+        if ($msc->execPdo($sql)) {
+            $msc->success('Таблица изменена', $sql);
+        } else {
+            $msc->error('Ошибка при добавлении полей', $sql);
+        }
+
+    }
+
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function fieldsEditEndAction(): void
+    {
+        global $msc;
+        [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys] = $this->prepareAction();
+        // определение полей
+        $a = [];
+        foreach ($fieldsDefEdit as $oldFieldName => $definition) {
+            $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinitionFromObject($fields[$oldFieldName]);
+            if ($oldDefinition == $definition) {
+                continue;
             }
-            if (count($uniKeys) > 0) {
-                $sql .= ",\r\n  UNIQUE (" . implode(', ', $uniKeys) . ")";
-            }
-            if (count($mulKeys) > 0) {
-                $sql .= ",\r\n  INDEX (" . implode(', ', $mulKeys) . ")";
-            }
-            $sql .= "\r\n)";
-            if ($msc->execPdo($sql)) {
-                $msc->success('Таблица ' . POST('table_name') . ' создана', $sql);
-            } else {
-                $text = 'При создании таблицы возникли ошибки ' . POST('table_name');
-                $msc->error($text, $sql);
+            $a [] = ' CHANGE `' . $oldFieldName . '` ' . $definition;
+        }
+        $sql  = count($a) == 0 ? '' : 'ALTER TABLE `' . GET('table') . "`\r\n" . implode(",\r\n", $a);
+        // ключи
+        $currentKeys = [];
+        $a = Table::getTableKeys($msc->table);
+        $currentPrimaryKey = '';
+        foreach ($a as $fieldName => $currentKeyNames) {
+            foreach ($currentKeyNames as $k => $currentKeyName) {
+                if ($currentKeyName != 'PRI') {
+                    if (!in_array($fieldName, $names)) {
+                        continue;
+                    }
+                    $currentKeys [] = "$fieldName $currentKeyName $k";
+                } else {
+                    $currentPrimaryKey = $fieldName;
+                }
             }
         }
-        // создание запроса на изменение полей
-        if (POST('action') == 'fieldsEditEnd') {
-            // определение полей
-            $a = [];
-            foreach ($fieldsDefEdit as $oldFieldName => $definition) {
-                $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinitionFromObject($fields[$oldFieldName]);
-                if ($oldDefinition == $definition) {
-                    continue;
-                }
-                $a [] = ' ALTER `' . $oldFieldName . '` ' . $definition;
+        // удаляем пересекающиеся ключи
+        foreach ($currentKeys as $currentKey) {
+            if (in_array($currentKey, $newKeys)) {
+                unset($newKeys[array_search($currentKey, $newKeys)]);
+                unset($currentKeys[array_search($currentKey, $currentKeys)]);
             }
-            $sql  = count($a) == 0 ? '' : 'ALTER TABLE `' . GET('table') . "`\r\n" . implode(",\r\n", $a);
-            // ключи
-            $currentKeys = [];
-            $a = Table::getTableKeys($msc->table);
-            $currentPrimaryKey = '';
-            foreach ($a as $fieldName => $currentKeyNames) {
-                foreach ($currentKeyNames as $k => $currentKeyName) {
-                    if ($currentKeyName != 'PRI') {
-                        if (!in_array($fieldName, $names)) {
-                            continue;
+        }
+        $sql2 = [];
+        foreach ($currentKeys as $k => $removeKey) {
+            list($fieldName, $removeKeyType, $removeKeyName) = explode(' ', $removeKey);
+            $sql2 [] = 'ALTER TABLE `' . GET('table') . '` DROP KEY `' . $removeKeyName . '`';
+        }
+        foreach ($newKeys as $k => $addKey) {
+            list($fieldName, $addKeyType, $addKeyName) = explode(' ', $addKey);
+            $str = $addKeyType == 'UNI' ? 'UNIQUE' : 'INDEX';
+            $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD ' . $str . ' (`' . $fieldName . '`)';
+        }
+        if ($currentPrimaryKey != $primaryKey) {
+            if ($currentPrimaryKey != '') {
+                if ($primaryKey == '') {
+                    $drop = false;
+                    // если в числе обновлённых полей нет текущего primary key, то не удалям ключ
+                    foreach ($names as $k => $name) {
+                        if ($currentPrimaryKey == $name) {
+                            $drop = true;
                         }
-                        $currentKeys [] = "$fieldName $currentKeyName $k";
-                    } else {
-                        $currentPrimaryKey = $fieldName;
                     }
-                }
-            }
-            // удаляем пересекающиеся ключи
-            foreach ($currentKeys as $currentKey) {
-                if (in_array($currentKey, $newKeys)) {
-                    unset($newKeys[array_search($currentKey, $newKeys)]);
-                    unset($currentKeys[array_search($currentKey, $currentKeys)]);
-                }
-            }
-            $sql2 = [];
-            foreach ($currentKeys as $k => $removeKey) {
-                list($fieldName, $removeKeyType, $removeKeyName) = explode(' ', $removeKey);
-                $sql2 [] = 'ALTER TABLE `' . GET('table') . '` DROP KEY `' . $removeKeyName . '`';
-            }
-            foreach ($newKeys as $k => $addKey) {
-                list($fieldName, $addKeyType, $addKeyName) = explode(' ', $addKey);
-                $str = $addKeyType == 'UNI' ? 'UNIQUE' : 'INDEX';
-                $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD ' . $str . ' (`' . $fieldName . '`)';
-            }
-            if ($currentPrimaryKey != $primaryKey) {
-                if ($currentPrimaryKey != '') {
-                    if ($primaryKey == '') {
-                        $drop = false;
-                        // если в числе обновлённых полей нет текущего primary key, то не удалям ключ
-                        foreach ($names as $k => $name) {
-                            if ($currentPrimaryKey == $name) {
-                                $drop = true;
-                            }
-                        }
-                        if ($drop) {
-                            Table::dropPrimaryKey(GET('table'));
-                        }
-                    } else {
+                    if ($drop) {
                         Table::dropPrimaryKey(GET('table'));
                     }
-                }
-                if ($primaryKey != '') {
-                    $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD PRIMARY KEY (`' . $primaryKey . '`)';
+                } else {
+                    Table::dropPrimaryKey(GET('table'));
                 }
             }
-
-            foreach ($sql2 as $s) {
-                if ($msc->execPdo($s)) {
-                    $msc->success('Ключи изменены', $s);
-                } else {
-                    $msc->error('Ошибка при изменении ключей', $s);
-                }
-            }
-            // выполнение
-            if ($sql != '') {
-                if ($msc->execPdo($sql)) {
-                    $msc->success('Таблица изменена', $sql);
-                } else {
-                    $msc->error('Ошибка при изменении полей', $sql);
-                }
-            } else {
-                $msc->notice('В definition ничего не изменилось', '');
+            if ($primaryKey != '') {
+                $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD PRIMARY KEY (`' . $primaryKey . '`)';
             }
         }
-        // создание запроса на добавление
-        if (POST('action') == 'fieldsAddEnd') {
-            $afterSql = '';
-            if (POST('afterOption') == 'start') {
-                $afterSql = 'FIRST';
-            } elseif (POST('afterOption') == 'field') {
-                $afterSql = 'AFTER `' . POST('afterField') . '`';
+
+        foreach ($sql2 as $s) {
+            if ($msc->execPdo($s)) {
+                $msc->success('Ключи изменены', $s);
+            } else {
+                $msc->error('Ошибка при изменении ключей', $s);
             }
-            // определение полей
-            $a = [];
-            foreach ($fieldsDefFull as $def) {
-                $a [] = ' ADD COLUMN ' . $def . $afterSql;
-            }
-            $sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
-            // ключи
-            $oldFields = Table::getFields(GET('table'));
-            // выполнение
+        }
+        // выполнение
+        if ($sql != '') {
             if ($msc->execPdo($sql)) {
                 $msc->success('Таблица изменена', $sql);
             } else {
-                $msc->error('Ошибка при добавлении полей', $sql);
+                $msc->error('Ошибка при изменении полей', $sql);
             }
+        } else {
+            $msc->notice('В definition ничего не изменилось', '');
         }
-        if (isAjax()) {
-            ajaxResultWithMessages();
-        }
-        return [];
     }
 }
