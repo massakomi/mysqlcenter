@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace service;
 
 use enum\MessageType;
 
-/**
- *
- */
 trait Message
 {
     /**
-     * @var \dto\Message[] $messages
+     * @var \dto\Message[]
      */
     private array $messages = [];
 
@@ -23,11 +22,7 @@ trait Message
     }
 
     /**
-     * Ошибка
-     *
-     * @param string $text
-     * @param string|null $sql
-     * @return bool
+     * Ошибка.
      */
     public function error(string $text, ?string $sql = null): bool
     {
@@ -35,11 +30,7 @@ trait Message
     }
 
     /**
-     * Успешная операция
-     *
-     * @param string $text
-     * @param string|null $sql
-     * @return bool
+     * Успешная операция.
      */
     public function success(string $text, ?string $sql = null): bool
     {
@@ -47,11 +38,7 @@ trait Message
     }
 
     /**
-     * Ошибка, но не вызывает status error при ajax запросах
-     *
-     * @param string $text
-     * @param string|null $sql
-     * @return bool
+     * Ошибка, но не вызывает status error при ajax запросах.
      */
     public function notice(string $text, ?string $sql = null): bool
     {
@@ -59,12 +46,11 @@ trait Message
     }
 
     /**
-     * Сохраняет важное сообщение о процессе выполнения, которое будет выведено пользователю
+     * Сохраняет важное сообщение о процессе выполнения, которое будет выведено пользователю.
      *
      * @param string $text текст сообщения
      * @param MessageType $type сообщения MS_MSG_[SIMPLE SUCCESS FAULT ERROR NOTICE]
      * @param string|null $sql sql запрос
-     * @return bool
      */
     private function addMessage(string $text, MessageType $type, ?string $sql): bool
     {
@@ -73,7 +59,7 @@ trait Message
                 return true;
             }
         }
-        $this->messages [] = new \dto\Message(
+        $this->messages[] = new \dto\Message(
             text: $text,
             type: $type->value,
             color: $type->getColor(),
@@ -84,6 +70,7 @@ trait Message
         if ($type == MessageType::Error) {
             return false;
         }
+
         return true;
     }
 }

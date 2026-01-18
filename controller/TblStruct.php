@@ -7,12 +7,8 @@ namespace controller;
 use database\Table;
 use service\UrlMaker;
 
-/**
- *
- */
 class TblStruct extends Base
 {
-
     /**
      * @return array<string, mixed>
      */
@@ -22,14 +18,16 @@ class TblStruct extends Base
 
         if ($msc->table == '') {
             $msc->error('Не указана таблица в запросе');
+
             return [];
         }
         $fields = Table::getFields($msc->table);
         if (!$fields) {
             $msc->error("Таблицы $msc->table не существует");
+
             return [];
         }
-        $msc->pageTitle = 'Структура таблицы ' . $msc->table;
+        $msc->pageTitle = 'Структура таблицы '.$msc->table;
 
         $dataKeys = $foreignKeys = [];
         if (GET('keys')) {
@@ -48,7 +46,7 @@ class TblStruct extends Base
             'foreignKeys' => $foreignKeys,
             'dataDetails' => $msc->driver->getTableDetailsWithComments($msc->table),
             'sqlCreateTable' => $msc->driver->sqlCreateTable($msc->table),
-            'dirImage' => MS_DIR_IMG
+            'dirImage' => MS_DIR_IMG,
         ];
     }
 
@@ -61,9 +59,9 @@ class TblStruct extends Base
         $fieldRows = ['' => ''];
         $fields = Table::getFields($msc->table);
         foreach ($fields as $field) {
-            $fieldRows [$field->Field] = "$field->Field [$field->Type]";
+            $fieldRows[$field->Field] = "$field->Field [$field->Type]";
         }
-        $msc->pageTitle = 'Добавить ключи к таблице "' . $msc->table . '"';
+        $msc->pageTitle = 'Добавить ключи к таблице "'.$msc->table.'"';
 
         return [
             'fieldRows' => $fieldRows,
@@ -86,6 +84,7 @@ class TblStruct extends Base
         }
         $dataKeys = $msc->driver->getKeysFull($msc->table);
         $foreignKeys = $constraints['FOREIGN KEY'] ?? [];
+
         return [$dataKeys, $foreignKeys];
     }
 }

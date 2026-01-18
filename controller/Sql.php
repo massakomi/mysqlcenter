@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace controller;
 
-/**
- *
- */
 class Sql extends Base
 {
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -49,9 +47,9 @@ class Sql extends Base
             } else {
                 $msc->error('Размер файла превышает максимально допустимый');
             }
-        // Запрос из ПОСТа
+            // Запрос из ПОСТа
         } elseif (isset($_POST['sql']) && $_POST['sql'] != '') {
-            $a = ini_get("magic_quotes_gpc");
+            $a = ini_get('magic_quotes_gpc');
             if (is_numeric($a)) {
                 $_POST['sql'] = stripslashes($_POST['sql']);
             }
@@ -64,7 +62,7 @@ class Sql extends Base
             'maxUploadSize' => MAX_UPLOAD_SIZE,
             'maxSize' => round(MAX_UPLOAD_SIZE / (1024 * 1024), 2),
             'charsets' => mb_list_encodings(),
-            //'sql' => POST('sql')
+            // 'sql' => POST('sql')
         ];
     }
 
@@ -73,17 +71,16 @@ class Sql extends Base
      *
      * @param string $db База данных
      * @param string $sql SQL запрос (передаётся по ссылке, чтобы снизить расход памяти)
-     * @param bool $log
-     * @return void
+     *
      * @throws \Exception
-     * @package msc
      */
     private function execSql(string $db, string &$sql, bool $log = true): void
     {
         global $msc;
-        $mysqlGenerationTime0 = round(array_sum(explode(" ", microtime())), 10);
+        $mysqlGenerationTime0 = round(array_sum(explode(' ', microtime())), 10);
         if (!$msc->selectDb($db)) {
             $msc->error('Не смог выбрать базу данных');
+
             return;
         }
         if ($log) {
@@ -95,18 +92,18 @@ class Sql extends Base
         } else {
             $msc->error('Запрос выполнен с ошибками');
         }
-        $mysqlGenerationTime = round(round(array_sum(explode(" ", microtime())), 10) - $mysqlGenerationTime0, 5);
+        $mysqlGenerationTime = round(round(array_sum(explode(' ', microtime())), 10) - $mysqlGenerationTime0, 5);
         $msc->success("Выполнено за $mysqlGenerationTime с.");
         $msc->success("Затронуто рядов: $msc->affectedRows");
     }
 
     /**
-     * Считывает (и распаковывает сжатый) файл в строку
+     * Считывает (и распаковывает сжатый) файл в строку.
      *
      * @param string $path Путь к файлу
      * @param string $mime MIME тип файла, иначе определяется автоматически
+     *
      * @return string|null string контент файла либо boolean FALSE в случае ошибок
-     * @package file
      */
     private function readZipFile(string $path, string $mime = ''): ?string
     {
@@ -118,24 +115,25 @@ class Sql extends Base
         switch ($mime) {
             case '':
                 $test = file_get_contents_bytes($path, 3) ?: '';
-                if (mb_substr($test, 0, 1) == chr(31) &&
-                    mb_substr($test, 1, 1) == chr(139)) {
+                if (mb_substr($test, 0, 1) == chr(31)
+                    && mb_substr($test, 1, 1) == chr(139)) {
                     return $this->readZipFile($path, 'application/x-gzip');
                 }
                 if ($test == 'BZh') {
                     return $this->readZipFile($path, 'application/x-bzip');
                 }
+
                 return $this->readZipFile($path, 'text/plain');
             case 'zip':
                 $zip = new \ZipArchive();
 
                 if ($zip->open($path) === true) {
-                    for ($i = 0; $i < $zip->numFiles; $i++) {
-                        $content .= $zip->getFromIndex($i) . ';';
+                    for ($i = 0; $i < $zip->numFiles; ++$i) {
+                        $content .= $zip->getFromIndex($i).';';
                     }
                     $zip->close(); // Close the archive
                 } else {
-                    $msc->error('Failed to open zip file, error code: ' . $zip->status);
+                    $msc->error('Failed to open zip file, error code: '.$zip->status);
                 }
 
                 break;
@@ -170,6 +168,7 @@ class Sql extends Base
         if (!is_string($content)) {
             return null;
         }
+
         return $content;
     }
 }

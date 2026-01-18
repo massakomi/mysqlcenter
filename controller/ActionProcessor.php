@@ -6,13 +6,12 @@ namespace controller;
 
 use database\Server;
 use database\Table;
-use dto\ConnectConfig;
 use service\UrlMaker;
 use service\Validate;
 
 /**
  * Управление запросами. Здесь должны быть централизованы все запросы на изменение данных
- * Это позволит все запросы совершать как через URL, так и через AJAX
+ * Это позволит все запросы совершать как через URL, так и через AJAX.
  */
 class ActionProcessor
 {
@@ -21,6 +20,7 @@ class ActionProcessor
 
     /**
      * @return false|void
+     *
      * @throws \Exception
      */
     public function __invoke()
@@ -37,31 +37,25 @@ class ActionProcessor
 
         if (!$this->generalActions($action)) {
             if (!$this->databaseActions($action)) {
-                return ;
+                return;
             }
         }
 
         if (isAjax()) {
             ajaxResultWithMessages();
         } elseif ($this->redirect) {
-            header('Location: ' . $this->redirect);
+            header('Location: '.$this->redirect);
         }
     }
 
-    /**
-     * @param string $action
-     * @return bool
-     */
     public function generalActions(string $action): bool
     {
         return false;
     }
 
-
     /**
-     * Действия с базой данных
-     * @param string $action
-     * @return bool
+     * Действия с базой данных.
+     *
      * @throws \Exception
      */
     public function databaseActions(string $action): bool
@@ -80,7 +74,7 @@ class ActionProcessor
         }
 
         /**
-         * Подгружаем и инициализируем функции для работы с БД
+         * Подгружаем и инициализируем функции для работы с БД.
          */
         $dbt = new Table();
         $server = new Server();
@@ -112,14 +106,14 @@ class ActionProcessor
                     if ($msc->error) {
                         $msc->error('Ошибка запроса');
                     } else {
-                        $msc->success('Запрос выполнен, затронуто рядов: ' . $msc->affectedRows, $msc->lastSql);
+                        $msc->success('Запрос выполнен, затронуто рядов: '.$msc->affectedRows, $msc->lastSql);
                     }
                     ajaxResultWithMessages();
                 }
                 break;
 
-            // операции с таблицами
-            // в запросе обязательно должна быть указана БД и таблица
+                // операции с таблицами
+                // в запросе обязательно должна быть указана БД и таблица
 
             case 'tableDelete':
                 $dbt->tableAction($db, $tables, 'DROP');
@@ -146,25 +140,35 @@ class ActionProcessor
                 }
                 break;
 
-            // Копирование в другую БД
+                // Копирование в другую БД
             case 'tableCopyTo':
                 $withData = !$this->param('tableCopyNoData');
                 $dbt->copyTable($db, $tables, true, $withData, $this->param('newName'), $this->param('newDB'));
                 break;
 
-            // Изменение кодировки
+                // Изменение кодировки
             case 'tableCharset':
                 $dbt->tableAction($db, $tables, 'CHARSET', $this->param('charset'));
                 break;
 
-            // Изменение опций
+                // Изменение опций
             case 'tableOptions':
                 if (count($_POST) == 0) {
                     break;
                 }
                 $table = $tables;
                 $ai = intval($this->param('auto_increment'));
-                $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
+                if ($msc->driverName === 'pgsql') {
+                    $info = $msc->driver->getIdentityInfo($table);
+                    if (empty($info['sequence_name'])) {
+                        $msc->error('Таблица не имеет sequence');
+                        break;
+                    }
+                    $sequenceName = $info['sequence_name'];
+                    $sql = "SELECT setval('$sequenceName', $ai);";
+                } else {
+                    $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
+                }
                 if ($msc->execPdo($sql)) {
                     $msc->success('Таблица изменена', $sql);
                 } else {
@@ -172,7 +176,7 @@ class ActionProcessor
                 }
                 break;
 
-            // Коммент
+                // Коммент
             case 'tableComment':
                 // !!! внимание, некоторые действия должны выполнятся только с POSTa
                 // если идёт пустой GET запрос, он всё перетирает!!!
@@ -182,18 +186,18 @@ class ActionProcessor
                 $dbt->tableAction($db, $tables, 'COMMENT', $this->param('comment'));
                 break;
 
-            // Найти и заменить
+                // Найти и заменить
             case 'tableReplace':
                 $field = POST('field');
                 $search_for = POST('search_for');
                 $replace_in = POST('replace_in');
                 if ($field && $search_for) {
-                    $sql = 'UPDATE `' . $tables . '` SET ' . $field . ' = REPLACE(`' . $field . '`, "' .
-                        $search_for . '", "' . $replace_in . '")';
+                    $sql = 'UPDATE `'.$tables.'` SET '.$field.' = REPLACE(`'.$field.'`, "'.
+                        $search_for.'", "'.$replace_in.'")';
                     if ($msc->execPdo($sql)) {
                         $c = $msc->affectedRows;
                         if ($c > 0) {
-                            $msc->success('Таблица изменена, затронуто рядов: ' . $c, $sql);
+                            $msc->success('Таблица изменена, затронуто рядов: '.$c, $sql);
                         } else {
                             $msc->error('Ничего не найдено и не заменено', $sql);
                         }
@@ -203,12 +207,12 @@ class ActionProcessor
                 }
                 break;
 
-            // Порядок
+                // Порядок
             case 'tableOrder':
                 if (count($_POST) == 0) {
                     break;
                 }
-                $dbt->tableAction($db, $tables, 'ORDER', '`' . $this->param('field') . '` ' . $this->param('order'));
+                $dbt->tableAction($db, $tables, 'ORDER', '`'.$this->param('field').'` '.$this->param('order'));
                 break;
 
             case 'tableCheck':
@@ -227,7 +231,7 @@ class ActionProcessor
                 $dbt->tableAction($db, $tables, 'FLUSH');
                 break;
 
-            // массовые действия с таблицами
+                // массовые действия с таблицами
             case 'delete_all':
             case 'truncate_all':
             case 'copy_all':
@@ -237,7 +241,7 @@ class ActionProcessor
                 }
                 if (!$validate->queryCheck($db)) {
                     break;
-                }                ;
+                }
                 $copyStruct = (POST('copy_struct') != '');
                 $copyData = (POST('copy_data') != '');
                 foreach ($tables as $table) {
@@ -252,9 +256,9 @@ class ActionProcessor
                 break;
 
 
-            // операции с БД
+                // операции с БД
 
-            // удаление баз данных (массово + единично)
+                // удаление баз данных (массово + единично)
             case 'dbDelete':
                 if ($this->param('dbMulty')) {
                     $databases = $this->param('databases');
@@ -279,10 +283,10 @@ class ActionProcessor
 
             case 'dbHide':
                 if ($this->param('act') == 'show') {
-                    $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 1)');
+                    $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("'.$db.'", 1)');
                     $msc->success("База $db открыта");
                 } else {
-                    $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("' . $db . '", 0)');
+                    $msc->execPdo('REPLACE INTO mysqlcenter.db_info (db_name, visible) VALUES("'.$db.'", 0)');
                     $msc->success("База $db скрыта");
                 }
                 break;
@@ -299,7 +303,7 @@ class ActionProcessor
             case 'dbCollate':
             case 'dbCharset':
                 if ($server->databaseAlterCharset($db, $this->param('charset'), $action == 'dbCharset')) {
-                    $msc->success("Успешно выполнено", $msc->lastSql);
+                    $msc->success('Успешно выполнено', $msc->lastSql);
                 } else {
                     $msc->error("Ошибка при выполнении операции с $db", $msc->lastSqlr);
                 }
@@ -309,7 +313,7 @@ class ActionProcessor
                 $act = POST('act');
                 foreach ($tables as $table) {
                     if (in_array($act, ['analyze', 'check', 'flush', 'repair', 'optimize'])) {
-                        $sql = strtoupper($act) . ' TABLE `' . $table . '`';
+                        $sql = strtoupper($act).' TABLE `'.$table.'`';
                         if ($msc->fetchPdo($sql)) {
                             $msc->success('Запрос выполнен', $sql);
                         } else {
@@ -320,7 +324,7 @@ class ActionProcessor
                 break;
 
 
-            // массово + единично
+                // массово + единично
             case 'dbRename':
             case 'dbCopy':
                 $isMove = ($action == 'dbRename');
@@ -328,9 +332,9 @@ class ActionProcessor
                     $databases = $this->param('databases');
                     $newName = [];
                     foreach ($databases as $db) {
-                        $new = $db . '_copy';
+                        $new = $db.'_copy';
                         if (in_array($new, $databases)) {
-                            $new = $db . '_copy' . rand(1, 100);
+                            $new = $db.'_copy'.rand(1, 100);
                         }
                         $newName[] = $new;
                     }
@@ -351,12 +355,12 @@ class ActionProcessor
                     }
                     if ($isMove || POST('switch') != null) {
                         $msc->db = $newName[$k]; // last
-                        //$msc->page = 'db_list';
+                        // $msc->page = 'db_list';
                     }
                 }
                 break;
 
-            // операции с рядами
+                // операции с рядами
 
             case 'deleteRows':
             case 'deleteRow':
@@ -367,10 +371,10 @@ class ActionProcessor
                 if (!is_array($row)) {
                     $row = [$row];
                 }
-                if ($dbt->rowDelete($db, $tables, implode(' OR ', $row))) {
+                if ($dbt->rowDelete($db, $tables, implode(' OR ', $row)) && $msc->affectedRows > 0) {
                     $msc->success("Рядов удалёно: $msc->affectedRows", $msc->lastSql);
                 } else {
-                    $msc->error("Ошибка удаления ряда", $msc->lastSql);
+                    $msc->error('Ошибка удаления ряда', $msc->lastSql);
                 }
                 break;
 
@@ -386,23 +390,23 @@ class ActionProcessor
                 if ($dbt->rowCopy($tables, $row)) {
                     $n = $msc->affectedRows;
                     if ($n > 0) {
-                        $msc->success('Добавлено ' . $n . ' рядов', $msc->lastSql);
+                        $msc->success('Добавлено '.$n.' рядов', $msc->lastSql);
                     } else {
                         $msc->success('Всё в порядке', $msc->lastSql);
                     }
                 } else {
-                    $text = 'Ошибка копирования ряда ' . $row;
+                    $text = 'Ошибка копирования ряда '.$row;
                     $msc->error($text, $msc->lastSql);
                 }
                 break;
 
-            // операции с полями
+                // операции с полями
 
             case 'deleteField':
                 if (!$validate->queryCheck($db, $tables, $this->param('field'))) {
                     break;
                 }
-                $sql = "ALTER TABLE `$tables` DROP " . $this->param('field');
+                $sql = "ALTER TABLE `$tables` DROP ".$this->param('field');
                 if ($msc->execPdo($sql, $db)) {
                     $msc->success('Поле удалено', $sql);
                 } else {
@@ -410,15 +414,15 @@ class ActionProcessor
                 }
                 break;
 
-            // Удаление множества полей через POST
+                // Удаление множества полей через POST
             case 'fieldsDelete':
                 $deleteFields = $this->param('field');
                 $fields = Table::getFields($tables);
                 // если в таблице осталось только 1 поле, то удаляем таблицу
                 if (count($fields) == 1) {
-                    $sql = 'DROP TABLE `' . $tables . '`';
+                    $sql = 'DROP TABLE `'.$tables.'`';
                 } else {
-                    $sql = 'ALTER table `' . $tables . '` DROP `' . implode('`, DROP `', $deleteFields) . '`';
+                    $sql = 'ALTER table `'.$tables.'` DROP `'.implode('`, DROP `', $deleteFields).'`';
                 }
                 if ($msc->execPdo($sql)) {
                     $msc->success('Таблица изменена', $sql);
@@ -427,7 +431,7 @@ class ActionProcessor
                 }
                 break;
 
-            // операции с ключами
+                // операции с ключами
 
             case 'deleteKey':
                 if (!$validate->queryCheck($db, $tables, $this->param('key'), $this->param('field'))) {
@@ -436,7 +440,7 @@ class ActionProcessor
                 if ($this->param('key') == 'PRIMARY') {
                     Table::dropPrimaryKey($tables);
                 } else {
-                    $sql = "ALTER TABLE `$tables` DROP KEY " . $this->param('key');
+                    $sql = "ALTER TABLE `$tables` DROP KEY ".$this->param('key');
                     if ($msc->execPdo($sql)) {
                         $msc->success('Ключ удален', $sql);
                     } else {
@@ -452,7 +456,7 @@ class ActionProcessor
                     break;
                 }
                 if ($keyName != '') {
-                    $keyDefinition .= ' `' . $keyName . '`';
+                    $keyDefinition .= ' `'.$keyName.'`';
                 }
                 $keyFields = [];
                 foreach ($_POST['field'] as $key => $fieldName) {
@@ -460,9 +464,9 @@ class ActionProcessor
                         continue;
                     }
                     $fieldSize = $_POST['length'][$key];
-                    $keyFields [] = '`' . $fieldName . '`' . ($fieldSize > 0 ? "($fieldSize)" : '');
+                    $keyFields[] = '`'.$fieldName.'`'.($fieldSize > 0 ? "($fieldSize)" : '');
                 }
-                $sql = 'ALTER TABLE ' . $tables . ' ADD ' . $keyDefinition . ' (' . implode(',', $keyFields) . ')';
+                $sql = 'ALTER TABLE '.$tables.' ADD '.$keyDefinition.' ('.implode(',', $keyFields).')';
                 if ($msc->execPdo($sql)) {
                     $msc->success('Ключ добавлен', $sql);
                 } else {
@@ -470,12 +474,12 @@ class ActionProcessor
                 }
                 break;
 
-            // разное
+                // разное
 
             case 'killProcess':
                 $kill = POST('id');
                 if (!empty($kill)) {
-                    if ($msc->execPdo($sql = 'KILL ' . $kill)) {
+                    if ($msc->execPdo($sql = 'KILL '.$kill)) {
                         $msc->success('Успешно удалено');
                     } else {
                         $msc->error('Ошибка остановки', $sql);
@@ -483,12 +487,12 @@ class ActionProcessor
                 }
                 break;
 
-            // PostgresSQL
+                // PostgresSQL
 
             case 'schemaAdd':
                 $name = POST('name');
                 if (!empty($name)) {
-                    if ($msc->execPdo($sql = 'CREATE SCHEMA  ' . $name)) {
+                    if ($msc->execPdo($sql = 'CREATE SCHEMA  '.$name)) {
                         $msc->success('Схема успешно создана');
                     } else {
                         $msc->error('Ошибка создания схемы', $sql);
@@ -499,14 +503,15 @@ class ActionProcessor
             default:
                 return false;
         }
+
         return true;
     }
 
-
     /**
-     * Возвращает параметр запроса
+     * Возвращает параметр запроса.
      *
      * @param string $name Имя параметра
+     *
      * @return mixed Возвращает null если параметра нет, иначе сам параметр
      */
     private function param(string $name): mixed
@@ -519,6 +524,7 @@ class ActionProcessor
         if (isset($_POST[$name])) {
             return $_POST[$name];
         }
+
         return null;
     }
 }

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace controller;
 
-/**
- *
- */
 class DbCompare extends Base
 {
     /**
@@ -25,16 +22,19 @@ class DbCompare extends Base
         }
         if (!$databases || count($databases) < 2) {
             $msc->error('Вы не выбрали базы данных для сравнения');
+
             return [];
         }
-        $msc->pageTitle = 'Сравнение баз данных ' . implode(', ', $databases);
+        $msc->pageTitle = 'Сравнение баз данных '.implode(', ', $databases);
 
         return $this->pageProps($databases);
     }
 
     /**
      * @param array<string> $databases
+     *
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function pageProps(array $databases): array
@@ -47,6 +47,7 @@ class DbCompare extends Base
             $data = $msc->driver->getTables($database);
             if (!$data) {
                 $msc->error("Не нашел таблиц в $database");
+
                 return [];
             }
             foreach ($data as $row) {
@@ -66,9 +67,10 @@ class DbCompare extends Base
                 $exportData = $export->exportStructure(false, false);
                 $exportData = str_replace(' PACK_KEYS=0', '', $exportData);
                 $exportData = preg_replace('~COMMENT=".*"~U', '', $exportData);
-                $exportArray [$db][$table] = $exportData;
+                $exportArray[$db][$table] = $exportData;
             }
         }
+
         return compact('databases', 'dbArray', 'exportArray');
     }
 }

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace service;
 
 /**
- * Общий класс для валидации
+ * Общий класс для валидации.
  */
 class Validate
 {
     /**
-     * Проверка наличия в запросе БД, таблицы или чего-то ещё. Ловит ошибку самого высокого уровня, поэтому exit()
+     * Проверка наличия в запросе БД, таблицы или чего-то ещё. Ловит ошибку самого высокого уровня, поэтому exit().
      *
      * @param string $database база данных
      * @param string $table таблица
@@ -35,14 +35,12 @@ class Validate
                 }
             }
         }
+
         return true;
     }
 
     /**
-     * Сообщение о серьезной ошибке выводится сразу на печать и exit
-     *
-     * @param string $message
-     * @return false
+     * Сообщение о серьезной ошибке выводится сразу на печать и exit.
      */
     private function error(string $message): false
     {
@@ -51,6 +49,7 @@ class Validate
             ajaxError([$message]);
         }
         $msc->error($message);
+
         return false;
     }
 }

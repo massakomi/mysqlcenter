@@ -9,9 +9,6 @@ use dto\FieldInfo;
 use dto\KeyInfo;
 use dto\TableInfo;
 
-/**
- *
- */
 interface Driver
 {
     /**
@@ -23,47 +20,37 @@ interface Driver
      * @return array<string>
      */
     public function getDatabaseNames(): array;
+
     /**
      * @return TableInfo[]
      */
     public function getTables(string $db = ''): array;
+
     /**
      * @return FieldInfo[]
      */
     public function getFields(string $table): array;
 
     /**
-     * @param string $table
      * @return array<string, array<string, string>>
      */
     public function getKeys(string $table): array;
 
     /**
-     * @param string $table
      * @return array<KeyInfo>
      */
     public function getKeysFull(string $table): array;
 
     /**
-     * @param string $table
      * @return array<Constraint>
      */
     public function getConstraints(string $table): array;
 
-    /**
-     * @param string $db
-     * @return void
-     */
     public function selectDb(string $db): void;
 
-    /**
-     * @param string $table
-     * @return string
-     */
     public function sqlCreateTable(string $table): string;
 
     /**
-     * @param string $table
      * @return array<array<string>>
      */
     public function getTableDetailsWithComments(string $table): array;
@@ -78,9 +65,10 @@ interface Driver
      */
     public function getProcessList(): array;
 
-    /**
-     * @param string $table
-     * @return TableInfo
-     */
     public function getTableInfo(string $table): TableInfo;
+
+    /**
+     * @return array<string>
+     */
+    public function getIdentityInfo(string $table): array;
 }

@@ -9,13 +9,11 @@ use database\Table;
 use service\PopularTables;
 use service\UrlMaker;
 
-/**
- *
- */
 class TblData extends Base
 {
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -25,15 +23,17 @@ class TblData extends Base
         $directSQL = POST('sql');
         // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
         if (isset($directSQL) && $msc->table == '') {
-            if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL . ' ', $t)) {
+            if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
                 $msc->table = str_replace('`', '', $t[1]);
             } else {
                 $text = 'SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе';
                 $msc->error($text);
+
                 return [];
             }
         } elseif ($msc->table == '') {
             $msc->error('Не указана таблица в запросе');
+
             return [];
         }
 
@@ -42,6 +42,7 @@ class TblData extends Base
         // Если полей нет, значит и таблицы нет
         if (!$fields) {
             $msc->error("Таблицы $msc->table не существует");
+
             return [];
         }
 
@@ -49,9 +50,9 @@ class TblData extends Base
         $pk = [];
         $fieldsNames = [];
         foreach ($fields as $v) {
-            $fieldsNames [] = $v->Field;
+            $fieldsNames[] = $v->Field;
             if (strchr($v->Key, 'PRI')) {
-                $pk [] = $v->Field;
+                $pk[] = $v->Field;
             }
         }
 
@@ -67,7 +68,7 @@ class TblData extends Base
 
             // Получаем кол-во рядов в таблице
             $count = 0;
-            $result = $msc->fetchPdo('SELECT COUNT(*) as c FROM ' . $msc->table . ' ' . $whereCondition);
+            $result = $msc->fetchPdo('SELECT COUNT(*) as c FROM '.$msc->table.' '.$whereCondition);
             if ($result && $row = $result->fetchObject()) {
                 $count = $row->c;
             }
@@ -91,17 +92,19 @@ class TblData extends Base
                     $msc->pageTitle = "Таблица: $msc->table (пустая)";
                     $msc->notice("В таблице $msc->table нет данных");
                 }
+
                 return [];
             }
 
-        // Прямой запрос
+            // Прямой запрос
         } else {
             // выборка общего кол-ва записей (пока такой вариант, нужно улучшать)
             // Внимание - тут возможно несколько вложенных таблиц или запросов
             if (str_contains($directSQL, 'select')) {
-                $result = $msc->fetchPdo('EXPLAIN ' . $directSQL);
+                $result = $msc->fetchPdo('EXPLAIN '.$directSQL);
                 if (!$result) {
-                    $msc->error('Не прошёл запрос', 'EXPLAIN ' . $directSQL);
+                    $msc->error('Не прошёл запрос', 'EXPLAIN '.$directSQL);
+
                     return [];
                 }
             }
@@ -116,6 +119,7 @@ class TblData extends Base
         $data = $msc->getData($sql);
         if (!$data) {
             $msc->error('Ничего не найдено в таблице по запросу');
+
             return [];
         }
 
@@ -123,10 +127,11 @@ class TblData extends Base
         $this->setPageTitle($count, $countSelected, $start);
 
         PopularTables::save(db: $msc->db, table: $msc->table);
+
         return [
             'dirImage' => MS_DIR_IMG,
             'textCut' => MS_TEXT_CUT,
-            'linksRange' => (int)MS_LIST_LINKS_RANGE,
+            'linksRange' => (int) MS_LIST_LINKS_RANGE,
             'db' => $msc->db,
             'table' => $msc->table,
             'count' => $count ?: $countSelected,
@@ -144,38 +149,36 @@ class TblData extends Base
 
     /**
      * @param array<string> $fieldsNames
-     * @return ?string
      */
     private function getWhere(array $fieldsNames): ?string
     {
+        global $msc;
         // Собираем where условие если требуется, для выборки
         $whereCondition = null;
         $query = POST('query', GET('query'));
         if ($query != '' && $query != 'Поиск или where') {
             if (preg_match('~([=<>]| (like|in|is) )~i', $query)) { // isWhere?
-                $whereCondition = ' WHERE ' . $query;
+                $whereCondition = ' WHERE '.$query;
             } else {
-                $where = implode('` LIKE "%' . $query . '%" OR `', $fieldsNames);
-                $whereCondition = ' WHERE `' . $where . '` LIKE "%' . $query . '%"';
+                $where = implode('` LIKE "%'.$query.'%" OR `', $fieldsNames);
+                $whereCondition = ' WHERE `'.$where.'` LIKE "%'.$query.'%"';
             }
         } elseif (GET('where') != null) {
-            $whereCondition = ' WHERE ' . urldecode(stripslashes(GET('where')));
+            $whereCondition = ' WHERE '.urldecode(stripslashes(GET('where')));
         } elseif (POST('byField') != null) {
             if (POST('like') == 'like') {
-                $whereCondition  = " WHERE `" . POST('field') . "` LIKE '%" . POST('byField') . "%'";
+                $whereCondition  = ' WHERE `'.POST('field')."` LIKE '%".POST('byField')."%'";
             } else {
-                $whereCondition  = " WHERE `" . POST('field') . "`='" . POST('byField') . "'";
+                $whereCondition  = ' WHERE `'.POST('field')."`='".POST('byField')."'";
             }
         }
+        if ($msc->driverName == 'pgsql' && $whereCondition) {
+            $whereCondition = str_replace('"', "'", $whereCondition);
+        }
+
         return $whereCondition;
     }
 
-    /**
-     * @param int $count
-     * @param int $countSelected
-     * @param int $start
-     * @return void
-     */
     private function setPageTitle(int $count, int $countSelected, int $start): void
     {
         global $msc;
@@ -194,9 +197,7 @@ class TblData extends Base
     }
 
     /**
-     * Возвращает порядок текущей сортировки
-     * @param string|null $default
-     * @return string
+     * Возвращает порядок текущей сортировки.
      */
     private function mscGetOrder(?string $default = null): string
     {
@@ -208,12 +209,13 @@ class TblData extends Base
             if (!strchr($order, '-')) {
                 $order .= ' DESC';
             } else {
-                $order = str_replace('-', '', $order) . ' ASC';
+                $order = str_replace('-', '', $order).' ASC';
             }
             $order = "ORDER BY $order";
         } else {
             $order = 'ORDER BY 1';
         }
+
         return $order;
     }
 }

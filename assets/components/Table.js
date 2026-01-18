@@ -65,15 +65,23 @@ export function Table(props) {
         return null
     }
 
-    if (!Array.isArray(props.data)) {
+    let data = props.data
+    if (!Array.isArray(data)) {
+      if (typeof data == 'object' && data !== null) {
+        data = []
+        for (let key in props.data) {
+          data.push([key, props.data[key]])
+        }
+      } else {
         return <div>data не массив</div>
+      }
     }
 
-    if (props.data[0] == null || typeof (props.data[0]) == 'undefined') {
+    if (data[0] == null || typeof (data[0]) == 'undefined') {
         return
     }
 
-    let headers = Object.keys(props.data[0])
+    let headers = Object.keys(data[0])
     if (props.onDelete || props.onEdit) {
         headers.unshift('act')
     }
@@ -84,9 +92,9 @@ export function Table(props) {
     }
 
     let trs = []
-    for (let index in props.data) {
+    for (let index in data) {
         let tds = []
-        const row = props.data[index]
+        const row = data[index]
         for (let key of headers) {
             let value = getValueTag(row, key)
             tds.push(<td key={`td-${key}`} title={getTitle(row[key])} className={getClass(row[key])}>{value}</td>)

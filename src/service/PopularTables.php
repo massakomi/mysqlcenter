@@ -7,12 +7,11 @@ namespace service;
 use database\Table;
 
 /**
- * Класс для сохранения, выборки и хранения массива популярных таблиц
+ * Класс для сохранения, выборки и хранения массива популярных таблиц.
  */
 class PopularTables
 {
     /**
-     * @param string $db
      * @return array<array<array<int>>>
      */
     private static function getPopularTables(string $db): array
@@ -35,12 +34,13 @@ class PopularTables
                 $json[$db][$table] = ['count' => $values];
             }
         }
+
         return $json;
     }
 
     /**
-     * Популярные таблицы для указанной БД
-     * @param string $db
+     * Популярные таблицы для указанной БД.
+     *
      * @return array<array<int>>
      */
     public static function forDb(string $db): array
@@ -54,10 +54,7 @@ class PopularTables
     }
 
     /**
-     * Сохраняет хит о просмотре таблицы в БД
-     * @param string $db
-     * @param string $table
-     * @return void
+     * Сохраняет хит о просмотре таблицы в БД.
      */
     public static function save(string $db, string $table): void
     {
@@ -69,11 +66,11 @@ class PopularTables
             $tables[$db] = [];
         }
         if (array_key_exists($table, $tables[$db])) {
-            $tables[$db] [$table]['count']++;
+            ++$tables[$db][$table]['count'];
         } else {
-            $tables[$db] [$table]['count'] = 1;
+            $tables[$db][$table]['count'] = 1;
         }
-        $tables[$db] [$table]['time'] = time();
+        $tables[$db][$table]['time'] = time();
         if (date('i') % 10 == 0) {
             $tablesAll = Table::getTables();
             $exists = array_intersect(array_keys($tables[$db]), $tablesAll);

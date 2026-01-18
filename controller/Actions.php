@@ -9,7 +9,7 @@ use database\Server;
 use service\UrlMaker;
 
 /**
- * Операции с БД и таблицами
+ * Операции с БД и таблицами.
  */
 class Actions extends Base
 {
@@ -27,14 +27,15 @@ class Actions extends Base
     }
 
     /**
-     * Действия - БД
+     * Действия - БД.
+     *
      * @return array<string, mixed>
      */
     public function databaseActions(): array
     {
         global $msc;
 
-        $msc->pageTitle = "Действия - БД";
+        $msc->pageTitle = 'Действия - БД';
         $DQuery = UrlMaker::make('db', $msc->db, 's', 'actions');
 
         return [
@@ -45,21 +46,24 @@ class Actions extends Base
     }
 
     /**
-     * Действия - таблица
+     * Действия - таблица.
+     *
      * @return array<string, mixed>
      */
     public function tableActions(): array
     {
-        global $msc;
+        global $msc, $pdo;
         $msc->pageTitle = "Действия - таблица $msc->table";
-
         $row = $msc->driver->getTableInfo($msc->table);
         if (!$row) {
             $msc->error('Таблица не найдена');
+
             return [];
         }
+        $identityInfo = $msc->driver->getIdentityInfo($msc->table);
+
         return [
-            'url' => MS_URL . "?s=$msc->page&db=$msc->db&table=$msc->table",
+            'url' => MS_URL."?s=$msc->page&db=$msc->db&table=$msc->table",
             'table' => $msc->table,
             'db' => $msc->db,
             'ai' => $row->Auto_increment ?: '',
@@ -68,6 +72,7 @@ class Actions extends Base
             'charsets' => Server::getCharsetArray(),
             'dbs' => Server::getDatabases(),
             'fields' => Table::getFieldNames($msc->table),
+            'identityInfo' => $identityInfo,
         ];
     }
 }

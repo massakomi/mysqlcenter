@@ -11,13 +11,20 @@ export function TblListPostgresSQL() {
     const loadAll = async () => {
         let data = await msQuery('querysql', {sql: 'SELECT schema_name FROM information_schema.schemata'})
         setSchemas(data)
+        data = await msQuery('querysql', {sql: 'SELECT * FROM pg_sequences'})
+        setSequences(data)
     }
 
-    const onDelete = (data) => {
+    const onDeleteSchema = (data) => {
         msQuery('querysql', {sql: `DROP SCHEMA ${data.schema_name}`})
     }
 
+    const onDeleteSequence = (data) => {
+        msQuery('querysql', {sql: `DROP SEQUENCE ${data.sequencename}`})
+    }
+
     const [schemas, setSchemas] = useState([]);
+    const [sequences, setSequences] = useState([]);
     useEffect(() => {
         loadAll()
     }, []);
@@ -36,7 +43,8 @@ export function TblListPostgresSQL() {
               </form>
           </fieldset>
 
-          <Table data={schemas} onDelete={onDelete} />
+          <Table data={schemas} onDelete={onDeleteSchema} />
+          <Table data={sequences} onDelete={onDeleteSequence} />
       </Fragment>
     );
 }

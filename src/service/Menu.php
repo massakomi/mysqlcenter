@@ -7,12 +7,12 @@ namespace service;
 use database\Table;
 
 /**
- * Класс генерирующий разные html блоки
+ * Класс генерирующий разные html блоки.
  */
 class Menu
 {
     /**
-     * Цепочка-меню
+     * Цепочка-меню.
      */
     public function getChainMenu(): string
     {
@@ -20,7 +20,7 @@ class Menu
         $chain = '<a href="?s=db_list">DB</a>';
         if ($msc->db != null) {
             $chain .= ' &nbsp; &#8250; &nbsp; ';
-            $chain .= '<a href="?s=tbl_list&db=' . $msc->db . '">' . $msc->db . '</a>';
+            $chain .= '<a href="?s=tbl_list&db='.$msc->db.'">'.$msc->db.'</a>';
         }
         if ($msc->table != null) {
             $chain .= ' &nbsp; &#8250; &nbsp; ';
@@ -30,20 +30,20 @@ class Menu
                 $chain .= "<a href='?s=$msc->page&db=$msc->db&table=$msc->table'>$msc->page</a>";
             }
         }
+
         return $chain;
     }
 
     /**
      * Общее меню менеджера
-     * массивы в формате (s, action)
-     * @return string
+     * массивы в формате (s, action).
      */
     public function getGlobalMenu(): string
     {
         global $msc;
         $dbMenu = $this->globalMenuItems();
         $url = UrlMaker::make();
-        $menu = '<div class="globalMenu" id="globalMenu">' . "\r\n";
+        $menu = '<div class="globalMenu" id="globalMenu">'."\r\n";
         foreach ($dbMenu as $title => $array) {
             if (stristr($title, '[delim]')) {
                 $menu .= ' <b class="delim">|</b> ';
@@ -67,12 +67,13 @@ class Menu
                 $curl = UrlMaker::edit(url: $curl, name: 'action', value: $action);
             }
             if ($msc->page == $page && $action == GET('action')) {
-                $menu .= '  <a href="' . $curl . '" class="cur"' . $extra . '>' . $title . '</a>' . "\r\n";
+                $menu .= '  <a href="'.$curl.'" class="cur"'.$extra.'>'.$title.'</a>'."\r\n";
             } else {
-                $menu .= '  <a href="' . $curl . '"' . $extra . '>' . $title . '</a>' . "\r\n";
+                $menu .= '  <a href="'.$curl.'"'.$extra.'>'.$title.'</a>'."\r\n";
             }
         }
-        $menu .= '</div>' . "\r\n";
+        $menu .= '</div>'."\r\n";
+
         return $menu;
     }
 
@@ -108,26 +109,27 @@ class Menu
             ], $dbMenuGlobal, [
                 '[delim]2' => ['', ''],
                 'очистить' => [$msc->page, 'dbTruncate'],
-                'удалить' => [$msc->page, 'dbDelete', $_SERVER['PHP_SELF'] . '?dbDelete=' . $msc->db],
-                'удалить таблицы' => [$msc->page, 'dbTablesDelete']
+                'удалить' => [$msc->page, 'dbDelete', $_SERVER['PHP_SELF'].'?dbDelete='.$msc->db],
+                'удалить таблицы' => [$msc->page, 'dbTablesDelete'],
             ]);
         } else {
             $dbMenu = array_merge([
                 'обзор' => ['tbl_data', ''],
                 'структура' => ['tbl_struct', ''],
                 'вставить' => ['tbl_change', ''],
-                'создать таблицу' => ['tbl_add', '', $_SERVER['PHP_SELF'] . '?db=' . $msc->db],
+                'создать таблицу' => ['tbl_add', '', $_SERVER['PHP_SELF'].'?db='.$msc->db],
             ], $dbMenuGlobal, [
                 '[delim]2' => ['', ''],
                 'очистить' => [$msc->page, 'tableTruncate'],
-                'удалить' => [$msc->page, 'tableDelete']
+                'удалить' => [$msc->page, 'tableDelete'],
             ]);
         }
+
         return $dbMenu;
     }
 
     /**
-     * Меню таблиц или селектор таблиц
+     * Меню таблиц или селектор таблиц.
      */
     public function getTableMenu(): string
     {
@@ -145,10 +147,10 @@ class Menu
             $table = $row->Name ?: '';
             $end = strlen($table) > 2 && strpos($table, '_', 3) > 0 ? strpos($table, '_', 3) : 50;
             $prefix = substr($table, 0, $end);
-            $prefixes [$prefix] = !isset($prefixes [$prefix]) ? 1 : $prefixes [$prefix] + 1;
+            $prefixes[$prefix] = !isset($prefixes[$prefix]) ? 1 : $prefixes[$prefix] + 1;
         }
         // создание меню и селектора
-        $menuTables =  '<div class="menuTables">' . "\r\n";
+        $menuTables =  '<div class="menuTables">'."\r\n";
         $menuTables .= $this->addPopularTables();
         foreach ($tables as $row) {
             $table = $row->Name ?: '';
@@ -168,16 +170,11 @@ class Menu
             }
             $menuTables .= $this->makeTableMenuItem(table: $table, class: $class);
         }
-        $menuTables .= '</div>' . "\r\n";
+        $menuTables .= '</div>'."\r\n";
+
         return $menuTables;
     }
 
-    /**
-     * @param string $table
-     * @param string $class
-     * @param string $title
-     * @return string
-     */
     private function makeTableMenuItem(string $table, string $class, string $title = ''): string
     {
         global $msc;
@@ -185,27 +182,22 @@ class Menu
             $class .= ' cur';
         }
         $href = $this->getMenuTableLink($table);
-        return '  <a class="' . $class . '" title="' . $title . '" href="' . $href . '">' . $table . '</a>' . "\r\n";
+
+        return '  <a class="'.$class.'" title="'.$title.'" href="'.$href.'">'.$table.'</a>'."\r\n";
     }
 
-    /**
-     * @param string $table
-     * @return string
-     */
     private function getMenuTableLink(string $table): string
     {
         global $msc;
         if (in_array($msc->page, ['tbl_struct', 'search', 'export', 'actions', 'tbl_change'])) {
-            $link = '?db=' . $msc->db . '&table=' . $table . '&s=' . $msc->page;
+            $link = '?db='.$msc->db.'&table='.$table.'&s='.$msc->page;
         } else {
-            $link = '?db=' . $msc->db . '&table=' . $table . '&s=tbl_data';
+            $link = '?db='.$msc->db.'&table='.$table.'&s=tbl_data';
         }
+
         return $link;
     }
 
-    /**
-     * @return string
-     */
     private function addPopularTables(): string
     {
         global $msc;
@@ -230,7 +222,7 @@ class Menu
                 $class = 'freq1';
             }
             if (!array_key_exists('time', $info)) {
-                $info ['time'] = '';
+                $info['time'] = '';
             }
             if ($info['time']) {
                 $lastTime = time() - $info['time'];
@@ -244,10 +236,11 @@ class Menu
             } else {
                 continue;
             }
-            $menu .= $this->makeTableMenuItem($table, $class, $info['count'] . ' ' . $lastTimeDays);
+            $menu .= $this->makeTableMenuItem($table, $class, $info['count'].' '.$lastTimeDays);
         }
         $url = UrlMaker::make('resetPopular', 1);
-        $menu .= '<a href="' . $url . '" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
+        $menu .= '<a href="'.$url.'" style="position: absolute; right: 0; top: 0">reset</a> <hr />';
+
         return $menu;
     }
 }

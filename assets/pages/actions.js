@@ -3,6 +3,7 @@ import React from 'react';
 import {CharsetSelector, HtmlSelector} from "../components";
 import {empty, msQuery} from "../functions";
 import {Actionsdb} from "./actionsdb";
+import {Table} from "../components/Table";
 
 export function Actions(props) {
 
@@ -12,6 +13,18 @@ export function Actions(props) {
       </Fragment>
     );
 }
+function PgIdentityInfo(props) {
+  if (window.driver !== 'pgsql' || empty(props.identityInfo)) {
+    return null
+  }
+  return (
+    <Fragment>
+      <h3>PostgresSQL identity info</h3>
+      <Table data={props.identityInfo} />
+    </Fragment>
+  );
+}
+
 
 function ActionsTable(props) {
     
@@ -119,6 +132,7 @@ function ActionsTable(props) {
                   <input type="submit" onClick={tableAction.bind(this, "tableOptions")} value="Выполнить!"
                          className="submit"/>
               </form>
+              <PgIdentityInfo identityInfo={props.identityInfo} />
           </fieldset>
 
           <div className="globalMenu mb-20">

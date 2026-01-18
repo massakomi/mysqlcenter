@@ -68,11 +68,18 @@ function TableStruct(props) {
     }
 
     const listItems = Object.values(props.data).map((field, k) => {
+        let matches = field.Type.match(/\((\d+)\)/)
+        if (matches) {
+          field.Type = field.Type.replace(matches[0], '')
+          field.Length = matches[1]
+        }
+
         return (
           <tr id={"f-"+field.Field} key={field.Field}>
               <td><input name="field[]" id={"field"+k} type="checkbox" value={field.Field} className="cb" /></td>
               <td>{field.Field}</td>
               <td>{field.Type}</td>
+              <td>{field.Length}</td>
               <td>{field.Null}</td>
               <td>{getDefault(field)}</td>
               <td>{getKey(props, field)}</td>
@@ -90,6 +97,7 @@ function TableStruct(props) {
               <th>&nbsp;</th>
               <th>Поле</th>
               <th>Тип</th>
+              <th>Length</th>
               <th>NULL</th>
               <th>По умолчанию</th>
               <th>Ключ</th>

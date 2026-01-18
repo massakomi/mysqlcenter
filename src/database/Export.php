@@ -8,7 +8,7 @@ use dto\FieldInfo;
 use dto\TableInfo;
 
 /**
- * Библиотека общих функций по экспорту таблиц БД
+ * Библиотека общих функций по экспорту таблиц БД.
  */
 class Export
 {
@@ -41,13 +41,8 @@ class Export
     }
 
     /**
-     * Запускает комплексный процесс экспорта
-     * @param bool $isStruct
-     * @param bool $isData
-     * @param bool $addDelim
-     * @param bool $addDrop
-     * @param string $type
-     * @param String|null $where
+     * Запускает комплексный процесс экспорта.
+     *
      * @return string
      */
     public function startFull(
@@ -56,7 +51,7 @@ class Export
         bool $addDelim = true,
         bool $addDrop = false,
         string $type = 'INSERT',
-        ?String $where = null
+        ?string $where = null
     ) {
         if ($isStruct) {
             $this->exportStructure($addDelim, $addDrop);
@@ -64,13 +59,13 @@ class Export
         if ($isData) {
             $this->exportData($type, $where);
         }
+
         return $this->get();
     }
 
     /**
-     * Установить текущую базу данных
-     * @param string $a
-     * @return void
+     * Установить текущую базу данных.
+     *
      * @throws \Exception
      */
     public function setDatabase(string $a): void
@@ -83,9 +78,7 @@ class Export
     }
 
     /**
-     * Установить текущую таблицу
-     * @param string $a
-     * @return void
+     * Установить текущую таблицу.
      */
     public function setTable(string $a): void
     {
@@ -97,10 +90,6 @@ class Export
         }
     }
 
-    /**
-     * @param string $a
-     * @return void
-     */
     public function setHeader(string $a): void
     {
         if ($this->comments) {
@@ -109,9 +98,7 @@ class Export
     }
 
     /**
-     * Добавлять или нет комментарии
-     * @param bool $a
-     * @return void
+     * Добавлять или нет комментарии.
      */
     public function setComments(bool $a): void
     {
@@ -119,11 +106,7 @@ class Export
     }
 
     /**
-     * Установить некоторые опции экспорта структуры
-     * @param bool $addIfNot
-     * @param bool $addAuto
-     * @param bool $addKav
-     * @return void
+     * Установить некоторые опции экспорта структуры.
      */
     public function setOptionsStruct(bool $addIfNot, bool $addAuto, bool $addKav): void
     {
@@ -133,12 +116,7 @@ class Export
     }
 
     /**
-     * Установить некоторые опции экспорта данных
-     * @param bool $insFull
-     * @param bool $insExpand
-     * @param bool $insZapazd
-     * @param bool $insIgnor
-     * @return void
+     * Установить некоторые опции экспорта данных.
      */
     public function setOptionsData(bool $insFull, bool $insExpand, bool $insZapazd, bool $insIgnor): void
     {
@@ -149,8 +127,7 @@ class Export
     }
 
     /**
-     * Получить полный текст дампа
-     * @return string
+     * Получить полный текст дампа.
      */
     public function get(): string
     {
@@ -159,9 +136,9 @@ class Export
 
     /**
      * Заворачивает дамп в нужный вид и отправляет
+     *
      * @param string $type тип отправки, значения: 'textarea' - создаёт форму 'zip' - создаёт архив и отправляет
      * @param string|null $file имя файла дампа для типа 'zip'
-     * @return string
      */
     public function send(string $type = 'textarea', ?string $file = null): string
     {
@@ -172,10 +149,9 @@ class Export
     // ниже - внутренние функции, реализация
 
     /**
-     * Возвращает дамп структуры таблицы (sql запрос создания таблицы)
-     * @param bool $addDelim
+     * Возвращает дамп структуры таблицы (sql запрос создания таблицы).
+     *
      * @param bool $addDrop добавить к запросу удаление таблицы + форматировать через ;
-     * @return string|null
      */
     public function exportStructure(bool $addDelim = true, bool $addDrop = false): ?string
     {
@@ -185,7 +161,7 @@ class Export
         $tab = '  ';
         $dump = null;
         if ($this->comments) {
-            $dump .= $wr . '--' . $wr . '-- Структура таблицы ' . $this->table . $wr . '--' . $wr;
+            $dump .= $wr.'--'.$wr.'-- Структура таблицы '.$this->table.$wr.'--'.$wr;
         }
         $ife = null;
         if ($addDrop) {
@@ -193,12 +169,12 @@ class Export
             if ($this->addIfNot) {
                 $if = 'IF EXISTS ';
             }
-            $dump .= 'DROP TABLE ' . $if . $this->tableb . $delim;
+            $dump .= 'DROP TABLE '.$if.$this->tableb.$delim;
         }
         if ($this->addIfNot) {
             $ife = 'IF NOT EXISTS ';
         }
-        $dump .= 'CREATE TABLE ' . $ife . $this->tableb . ' (' . $wr . $tab;
+        $dump .= 'CREATE TABLE '.$ife.$this->tableb.' ('.$wr.$tab;
 
         // дамп полей
         $result = $msc->driver->getFields($this->table);
@@ -208,11 +184,11 @@ class Export
         $fields = [];
         $this->fields = [];
         foreach ($result as $row) {
-            $this->fields [] = $row;
+            $this->fields[] = $row;
             if ($this->addKav) {
-                $field_info = '`' . $row->Field . '` ' . $row->Type;
+                $field_info = '`'.$row->Field.'` '.$row->Type;
             } else {
-                $field_info = $row->Field . ' ' . $row->Type;
+                $field_info = $row->Field.' '.$row->Type;
             }
             if ($row->Null != 'YES') {
                 $field_info .= ' NOT NULL';
@@ -220,23 +196,23 @@ class Export
 
             if ($row->Type == 'timestamp') {
                 if ($row->Default != '') {
-                    $row->Default = $row->Default == 'CURRENT_TIMESTAMP' ? $row->Default : '\'' . $row->Default . '\'';
-                    $field_info .= ' default ' . $row->Default;
+                    $row->Default = $row->Default == 'CURRENT_TIMESTAMP' ? $row->Default : '\''.$row->Default.'\'';
+                    $field_info .= ' default '.$row->Default;
                 }
             } elseif ($row->Default != null || ($row->Null != 'YES' && !strchr($row->Type, 'text'))) {
                 if ($row->Extra && !stristr($row->Extra, 'auto')) {
                     if ($row->Null != 'YES' && $row->Default == '') {
                     } else {
-                        $field_info .= ' default \'' . $row->Default . '\'';
+                        $field_info .= ' default \''.$row->Default.'\'';
                     }
                 }
             } elseif (!strchr($row->Type, 'text')) {
                 $field_info .= ' default NULL';
             }
             if ($row->Extra != '') {
-                $field_info .= ' ' . $row->Extra;
+                $field_info .= ' '.$row->Extra;
             }
-            $fields [] = $field_info;
+            $fields[] = $field_info;
         }
         // ключи
         $keys = [];
@@ -245,9 +221,9 @@ class Export
         $result = $msc->driver->getKeysFull($this->table);
         $x = $this->addKav ? '`' : '';
         foreach ($result as $row) {
-            $row->Column_name = $x . $row->Column_name . $x;
+            $row->Column_name = $x.$row->Column_name.$x;
             if ($row->Sub_part > 0) {
-                $row->Column_name .= '(' . $row->Sub_part . ')';
+                $row->Column_name .= '('.$row->Sub_part.')';
             }
             if (str_contains($row->Key_name, 'PRIMARY')) {
                 $keys['PRI'][] = $row->Column_name;
@@ -262,29 +238,29 @@ class Export
         // обработка ключей
         $a = [];
         if (count($keys['PRI']) > 0) {
-            $a [] = "PRIMARY KEY  (" . implode(",", $keys['PRI']) . ")";
+            $a[] = 'PRIMARY KEY  ('.implode(',', $keys['PRI']).')';
         }
         if (count($keys['UNI']) > 0) {
             foreach ($keys['UNI'] as $k => $c) {
-                $a [] = "UNIQUE KEY $x" . $k . "$x (" . implode(",", $c) . ")";
+                $a[] = "UNIQUE KEY $x".$k."$x (".implode(',', $c).')';
             }
         }
         if (count($keys['MUL']) > 0) {
             foreach ($keys['MUL'] as $k => $c) {
-                $a [] = "KEY $x" . $k . "$x (" . implode(",", $c) . ")";
+                $a[] = "KEY $x".$k."$x (".implode(',', $c).')';
             }
         }
         if (count($keys['FULL']) > 0) {
             foreach ($keys['FULL'] as $k => $c) {
-                $a [] = "FULLTEXT KEY $x" . $k . "$x (" . implode(",", $c) . ")";
+                $a[] = "FULLTEXT KEY $x".$k."$x (".implode(',', $c).')';
             }
         }
         // Загрузка
-        $dump .= implode(',' . $wr . $tab, $fields);
+        $dump .= implode(','.$wr.$tab, $fields);
         if (count($a) > 0) {
-            $dump .= ',' . $wr . $tab;
+            $dump .= ','.$wr.$tab;
         }
-        $dump .= implode(',' . $wr . $tab, $a) . $wr;
+        $dump .= implode(','.$wr.$tab, $a).$wr;
         // кодировка, тип, автоинкремент
         $ai = null;
         $comment = null;
@@ -295,7 +271,7 @@ class Export
             $result = $msc->driver->getTables();
             $this->tableStructure[$this->db] = [];
             foreach ($result as $row) {
-                $this->tableStructure [$this->db][] = $row;
+                $this->tableStructure[$this->db][] = $row;
             }
         }
         foreach ($this->tableStructure[$this->db] as $row) {
@@ -311,34 +287,33 @@ class Export
         if (!$this->addAuto || $ai == null) {
             $ai = null;
         } else {
-            $ai = ' AUTO_INCREMENT=' . $ai . ' ';
+            $ai = ' AUTO_INCREMENT='.$ai.' ';
         }
         $pack = strval($pack);
         if (!empty($pack)) {
-            $pack = ' ' . $pack;
+            $pack = ' '.$pack;
         }
         $comment = strval($comment);
         if (!empty($comment)) {
-            $comment = ' COMMENT="' . $comment . '"';
+            $comment = ' COMMENT="'.$comment.'"';
         }
         if (strchr($charset, '_')) {
             $charset = str_replace(strchr($charset, '_'), '', $charset);
         }
         if ($addDelim) {
-            $dump .= ") ENGINE=$engine DEFAULT CHARSET=$charset$pack$ai$comment" . $delim;
+            $dump .= ") ENGINE=$engine DEFAULT CHARSET=$charset$pack$ai$comment".$delim;
         } else {
-            $dump .= ") ENGINE=$engine DEFAULT CHARSET=$charset$pack$ai$comment" . $wr;
+            $dump .= ") ENGINE=$engine DEFAULT CHARSET=$charset$pack$ai$comment".$wr;
         }
+
         return $this->data .= $dump;
     }
 
-
     /**
-     * Возвращает дамп данных таблицы (sql запрос )
-     * @param string $type
+     * Возвращает дамп данных таблицы (sql запрос ).
+     *
      * @param string|null $where SQL условие
-     * @param bool $skipAi
-     * @return true|int|null
+     *
      * @throws \Exception
      */
     public function exportData(string $type = 'INSERT', ?string $where = null, bool $skipAi = false): true|int|null
@@ -376,18 +351,18 @@ class Export
         // подготовка для INSERT
         $typeName = substr($type, 0, 6);
         if ($this->insZapazd && $typeName != 'UPDATE') {
-            $type = $type . ' DELAYED';
+            $type = $type.' DELAYED';
         }
         if ($this->insIgnor && $typeName != 'REPLAC') {
-            $type = $type . ' IGNORE';
+            $type = $type.' IGNORE';
         }
         if ($this->insFull) {
-            $start = $type . ' INTO ' . $this->tableb . ' (`' . implode('`,`', $fieldNames) . '`) VALUES (';
+            $start = $type.' INTO '.$this->tableb.' (`'.implode('`,`', $fieldNames).'`) VALUES (';
         } else {
-            $start = $type . ' INTO ' . $this->tableb . ' VALUES (';
+            $start = $type.' INTO '.$this->tableb.' VALUES (';
         }
         if ($this->insExpand && $typeName != 'UPDATE') {
-            $dump .= $type . ' INTO ' . $this->tableb . ' (`' . implode('`,`', $fieldNames) . '`) VALUES ';
+            $dump .= $type.' INTO '.$this->tableb.' (`'.implode('`,`', $fieldNames).'`) VALUES ';
         }
         $count = 0;
         $isFullDump = true;
@@ -406,24 +381,24 @@ class Export
                         if (stristr($v->Type, 'int')) {
                             $val = $row[$i];
                         } else {
-                            $val = '\'' . $pdo->query(trim($row[$i])) . '\'';
+                            $val = '\''.$pdo->query(trim($row[$i])).'\'';
                         }
                     } else {
                         $val = 'NULL';
                     }
                     $b = $v->Field;
                     if ($this->addKav) {
-                        $b = '`' . $b . '`';
+                        $b = '`'.$b.'`';
                     }
 
                     if ($v->Key == 'PRI') {
-                        $primary [] = $b . '=' . $val;
+                        $primary[] = $b.'='.$val;
                     } else {
-                        $a[] = $b . '=' . $val;
+                        $a[] = $b.'='.$val;
                     }
                 }
-                $dump .= 'UPDATE ' . $this->tableb . ' SET ' . implode(', ', $a) .
-                    ' WHERE ' . implode(' AND ', $primary) . $delim;
+                $dump .= 'UPDATE '.$this->tableb.' SET '.implode(', ', $a).
+                    ' WHERE '.implode(' AND ', $primary).$delim;
             } elseif ($typeName == 'INSERT' || $typeName == 'REPLAC') {
                 // INSERT - REPLACE
                 $values = [];
@@ -435,45 +410,46 @@ class Export
                         if (stristr($v->Type, 'int')) {
                             $val = $row[$i];
                         } else {
-                            $val = '\'' . $pdo->quote($row[$i]) . '\'';
+                            $val = '\''.$pdo->quote($row[$i]).'\'';
                         }
                     } else {
                         $val = 'NULL';
                     }
-                    $values [] = $val;
+                    $values[] = $val;
                 }
                 if ($this->insExpand) {
                     if ($count == 50) {
                         $count = 0;
-                        $dump = substr($dump, 0, strlen($dump) - 3) . $delim;
-                        $dump .= $start . implode(',', $values) . ')' . $delim;
+                        $dump = substr($dump, 0, strlen($dump) - 3).$delim;
+                        $dump .= $start.implode(',', $values).')'.$delim;
                     } else {
-                        $dump .= '(' . implode(',', $values) . ')' . ",\r\n";
+                        $dump .= '('.implode(',', $values).')'.",\r\n";
                     }
                 } else {
-                    $dump .= $start . implode(',', $values) . ')' . $delim;
+                    $dump .= $start.implode(',', $values).')'.$delim;
                 }
             }
-            $count++;
+            ++$count;
         }
         if ($this->insExpand) {
-            $dump = substr($dump, 0, strlen($dump) - 3) . $delim;
+            $dump = substr($dump, 0, strlen($dump) - 3).$delim;
         }
         if ($dump != null) {
-            $dump = $dump . $wr;
+            $dump = $dump.$wr;
             if ($this->comments) {
-                $dump = $wr . '--' . $wr . '-- Дамп данных таблицы ' . $this->table . $wr . '--' . $wr . $wr . $dump;
+                $dump = $wr.'--'.$wr.'-- Дамп данных таблицы '.$this->table.$wr.'--'.$wr.$wr.$dump;
             }
         }
         $this->data .= $dump;
+
         return $isFullDump;
     }
 
     /**
      * Заворачивает дамп в нужный вид и отправляет
+     *
      * @param string $type тип отправки, значения: 'textarea' - создаёт форму 'zip' - создаёт архив и отправляет
      * @param string|null $file имя файла дампа для типа 'zip'
-     * @return string
      */
     public function sendSQLDamp(string $type = 'textarea', ?string $file = null): string
     {
@@ -485,18 +461,18 @@ class Export
                 return $this->get();
             }
             if ($type == 'zip') {
-                $dir = $_SERVER['DOCUMENT_ROOT'] . '/' . MS_DIR_UPLOAD;
+                $dir = $_SERVER['DOCUMENT_ROOT'].'/'.MS_DIR_UPLOAD;
                 if (!file_exists($dir)) {
                     mkdir($dir, 0777);
                 }
 
-                $fp = gzopen($dir . '/download.sql.gz', 'w9');
+                $fp = gzopen($dir.'/download.sql.gz', 'w9');
                 if ($fp) {
                     gzwrite($fp, $this->get());
                     gzclose($fp);
                 }
 
-                return 'https://' . $_SERVER['HTTP_HOST'] . '/' . MS_DIR_UPLOAD . '/download.sql.gz';
+                return 'https://'.$_SERVER['HTTP_HOST'].'/'.MS_DIR_UPLOAD.'/download.sql.gz';
             }
         }
         // архив
@@ -507,8 +483,8 @@ class Export
             $attachment_name = "$file.sql.gz";
             $gzipped_data = gzencode($this->get(), 9);
             header('Content-Type: application/x-gzip'); // Or 'application/octet-stream' for a generic download
-            header('Content-Disposition: attachment; filename="' . $attachment_name . '"');
-            header('Content-Length: ' . strlen($gzipped_data ?: ''));
+            header('Content-Disposition: attachment; filename="'.$attachment_name.'"');
+            header('Content-Length: '.strlen($gzipped_data ?: ''));
 
             if (ob_get_level()) {
                 ob_end_clean();
@@ -517,6 +493,7 @@ class Export
             echo $gzipped_data;
             exit;
         }
+
         // текстовое поле
         return $this->get();
     }

@@ -1,10 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace dto;
 
-/**
- *
- */
 final class FieldInfo
 {
     public function __construct(
@@ -14,14 +13,14 @@ final class FieldInfo
         public ?string $Key = null,
         public ?string $Default = null,
         public ?string $Extra = null,
+        public ?string $Length = null,
     ) {
     }
 
     /**
-     * @param Iterable<array<string>> $row
-     * @return void
+     * @param iterable<array<string>> $row
      */
-    public function fill(Iterable $row): void
+    public function fill(iterable $row): void
     {
         foreach ($row as $key => $value) {
             $this->{$key} = $value;

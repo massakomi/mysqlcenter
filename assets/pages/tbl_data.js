@@ -47,10 +47,11 @@ function TableHeader(props) {
         })
         return headers;
     };
+    let tableClass = Object.keys(props.fieldsEx).length < 15 ? 'wide' : ''
 
     const headers = getTableHeaders(props.fieldsEx, !props.directSQL);
     return (
-      <table className="contentTable interlaced">
+      <table className={`contentTable interlaced ${tableClass}`}>
           <thead>
           <tr valign="top">
               <th></th>
@@ -154,7 +155,7 @@ function Table(props) {
         // создание ссылок на действия
         let u1 = umaker({s: 'tbl_change', row: idRow});
         let values = [
-            <input name="cond[]" type="checkbox" value={idRow} className="cb" />,
+            <input name="row[]" type="checkbox" value={idRow} className="cb" />,
             <a href={u1} title="Редактировать ряд или ctrl + click по ячейке для редактирования на месте"><img src={`${props.dirImage}edit.gif`} alt="" /></a>,
             <a href="#" onClick={deleteRow.bind(this, idRow)} title="Удалить ряд"><img src={`${props.dirImage}close.png`} alt="" /></a>
         ]

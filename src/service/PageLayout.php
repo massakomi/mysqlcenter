@@ -9,7 +9,7 @@ use database\MSTable;
 use database\Server;
 
 /**
- * Класс для создания страницы
+ * Класс для создания страницы.
  */
 class PageLayout
 {
@@ -20,8 +20,10 @@ class PageLayout
     }
 
     /**
-     * Отображение страницы
+     * Отображение страницы.
+     *
      * @return array<string>
+     *
      * @throws \Exception
      */
     public function execute(): array
@@ -45,11 +47,12 @@ class PageLayout
             ];
             ajaxResult($data);
         }
+
         return $pageProps;
     }
 
     /**
-     * Текущий метод контроллера
+     * Текущий метод контроллера.
      */
     private function getMethod(): string
     {
@@ -59,16 +62,17 @@ class PageLayout
             $action = preg_replace_callback('~_([a-z])~i', function ($match) {
                 return strtoupper($match[1]);
             }, $action);
-            $actionMethod = $action . 'Action';
+            $actionMethod = $action.'Action';
             if (method_exists($this->controller, $actionMethod)) {
                 $method = $actionMethod;
             }
         }
+
         return $method;
     }
 
     /**
-     * Для обратной совместимости с mysqlcenter-next, где этот массив нужен
+     * Для обратной совместимости с mysqlcenter-next, где этот массив нужен.
      */
     private function returnInitIfAjax(): void
     {
@@ -85,7 +89,8 @@ class PageLayout
     }
 
     /**
-     * Определяем обработчик
+     * Определяем обработчик.
+     *
      * @static
      */
     private function initController(): void
@@ -98,11 +103,12 @@ class PageLayout
             }, $msc->page)),
         ];
         foreach ($classNames as $className) {
-            $class = '\controller\\' . $className;
+            $class = '\controller\\'.$className;
             if (class_exists($class)) {
                 $object = new $class();
                 if ($object instanceof Base) {
                     $this->controller = $object;
+
                     return;
                 }
             }

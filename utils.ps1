@@ -10,6 +10,7 @@ Do
         'esh - eslint help'
         "`n"
         'cbf - phpcbf'
+        'cf - php-cs-fixer'
         'cs - phpcs'
         'css - phpcs summary only'
         "`n"
@@ -32,9 +33,10 @@ Do
     "es"        { npx eslint }
     "esh"       { npx eslint -h }
 
-    "cbf"       { phpcbf .\controller .\src --standard=PSR12 -p }
-    "cs"        { phpcs .\controller .\src --standard=PSR12 }
-    "css"       { phpcs .\controller .\src --standard=PSR12  -p --report=summary }
+    "cbf"       { vendor/bin/phpcbf .\controller .\src --standard=PSR12 -p }
+    "cf"        { vendor/bin/php-cs-fixer fix }
+    "cs"        { vendor/bin/phpcs .\controller .\src --standard=PSR12 }
+    "css"       { vendor/bin/phpcs .\controller .\src --standard=PSR12  -p --report=summary }
 
     "stan"      { phpstan analyse }
     "stan0"     { phpstan analyse -l 0 }

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace controller;
 
-/**
- *
- */
 final class Config extends Base
 {
     /**
@@ -18,12 +15,10 @@ final class Config extends Base
         global $msc;
         $data = json_decode(file_get_contents(MS_CONFIG_FILE) ?: '');
         $msc->pageTitle = 'Настройка MySQL Center';
+
         return compact('data');
     }
 
-    /**
-     * @return void
-     */
     public function updateAction(): void
     {
         global $msc;
@@ -53,9 +48,6 @@ final class Config extends Base
         }
     }
 
-    /**
-     * @return void
-     */
     public function restoreAction(): void
     {
         global $msc;

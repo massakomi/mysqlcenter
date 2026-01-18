@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 use enum\MessageType;
 
 /**
- * Возвращает ключ $name массива $_GET
+ * Возвращает ключ $name массива $_GET.
  *
  * @param string $name Ключ
  * @param string|null $default Значение по умолчанию, если ключ не будет найден
+ *
  * @return mixed Значение параметра
  */
 function GET(string $name, ?string $default = ''): mixed
@@ -19,10 +22,11 @@ function GET(string $name, ?string $default = ''): mixed
 }
 
 /**
- * Возвращает ключ $name массива $_POST
+ * Возвращает ключ $name массива $_POST.
  *
  * @param string $name Ключ
  * @param string|null $default Значение по умолчанию, если ключ не будет найден
+ *
  * @return mixed Значение параметра
  */
 function POST(string $name, ?string $default = null): mixed
@@ -35,11 +39,7 @@ function POST(string $name, ?string $default = null): mixed
 }
 
 /**
- * Логи всех sql запросов в базы
- *
- * @param string $string
- * @param string $db
- * @return void
+ * Логи всех sql запросов в базы.
  */
 function logInFile(string $string, string $db): void
 {
@@ -47,11 +47,11 @@ function logInFile(string $string, string $db): void
         return;
     }
     $string .= ";\r\n";
-    writeLogFile($string, $db . '.sql');
+    writeLogFile($string, $db.'.sql');
 }
 
 /**
- * Логи ошибок + дата/время
+ * Логи ошибок + дата/время.
  *
  * @param string $message Сообщение
  * @param string|null $sql SQL запрос (добавляется к сообщению)
@@ -64,18 +64,15 @@ function logError(string $message, ?string $sql = null): void
         $sql = str_replace("\n", ' ', $sql);
     }
     $time = date('d.m.y H:i:s ');
-    $string = "\n" . $time . $message;
+    $string = "\n".$time.$message;
     if ($sql != null) {
-        $string .= '(' . $sql . ' ' . $pdo->errorInfo()[2] . ')';
+        $string .= '('.$sql.' '.$pdo->errorInfo()[2].')';
     }
     writeLogFile($string, 'error.log');
 }
 
 /**
- * Общий метод записи в файл
- * @param string $string
- * @param string $filename
- * @return void
+ * Общий метод записи в файл.
  */
 function writeLogFile(string $string, string $filename): void
 {
@@ -84,7 +81,7 @@ function writeLogFile(string $string, string $filename): void
             return;
         }
     }
-    $logFile = MS_DIR_LOGS . '/' . $filename;
+    $logFile = MS_DIR_LOGS.'/'.$filename;
     $file = fopen($logFile, file_exists($logFile) ? 'a+' : 'w+');
     if (!$file) {
         return;
@@ -96,39 +93,29 @@ function writeLogFile(string $string, string $filename): void
 
 /**
  * If the function returns false then the normal error handler continues.
- * @param int $errno
- * @param string $errstr
- * @param string $errfile
- * @param int $errline
- * @return bool
  */
 function errorHandlerNotice(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     global $msc;
-    $log = $errstr . ' [' . $errfile . ':' . $errline . ']';
+    $log = $errstr.' ['.$errfile.':'.$errline.']';
     if (isset($msc)) {
         $msc->error($log);
+
         return true;
     }
+
     return false;
 }
 
-/**
- * @param int $errno
- * @param string $errstr
- * @param string $errfile
- * @param int $errline
- * @return bool
- */
 function errorHandlerFile(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     global $mscGlobalErrorsCash, $pdo;
-    $log = $errstr . '[' . $errfile . ':' . $errline . ']';
+    $log = $errstr.'['.$errfile.':'.$errline.']';
     if (!isset($mscGlobalErrorsCash)) {
         $mscGlobalErrorsCash = [];
     }
     if (!in_array($log, $mscGlobalErrorsCash)) {
-        $mscGlobalErrorsCash [] = $log;
+        $mscGlobalErrorsCash[] = $log;
     } else {
         return false;
     }
@@ -136,18 +123,20 @@ function errorHandlerFile(int $errno, string $errstr, string $errfile, int $errl
         return false;
     }
     if (stristr($errstr, 'Unable to save result set')) {
-        $log .= '(' . $pdo->errorInfo()[2] . ')';
+        $log .= '('.$pdo->errorInfo()[2].')';
     }
-    $errno = str_pad((string)$errno, 4, ' ', STR_PAD_LEFT);
-    logError($errno . ' ' . $log);
+    $errno = str_pad((string) $errno, 4, ' ', STR_PAD_LEFT);
+    logError($errno.' '.$log);
+
     return true;
 }
 
 /**
- * Возвращает значение указанного параметра конфигурации
+ * Возвращает значение указанного параметра конфигурации.
  *
  * @param string $param Параметр
  * @param string $default Значение по умолчанию, если параметра нет
+ *
  * @return string Значение
  */
 function config(string $param, string $default = ''): string
@@ -159,20 +148,16 @@ function config(string $param, string $default = ''): string
         foreach ($json as $item) {
             $value = $item->value;
             if ($item->type === 'integer' || $item->type === 'boolean') {
-                $value = (int)$value;
+                $value = (int) $value;
             }
-            $mscConfigCash [$item->name] = $value;
+            $mscConfigCash[$item->name] = $value;
         }
     }
-    return $mscConfigCash[$param] ?? $default;
+
+    return (string)$mscConfigCash[$param] ?? $default;
 }
 
-/**
- * @param string $path
- * @param int $size
- * @return ?string
- */
-function file_get_contents_bytes(string $path, int $size=0): ?string
+function file_get_contents_bytes(string $path, int $size = 0): ?string
 {
     if ($size < 1) {
         $size = filesize($path);
@@ -186,12 +171,10 @@ function file_get_contents_bytes(string $path, int $size=0): ?string
     }
     $content = fread($file, $size);
     fclose($file);
+
     return $content ?: null;
 }
 
-/**
- * @return bool
- */
 function isAjax(): bool
 {
     return POST('ajax') || GET('ajax');
@@ -199,7 +182,6 @@ function isAjax(): bool
 
 /**
  * @param array<string, mixed> $data
- * @return never
  */
 function ajaxResult(array $data): never
 {
@@ -209,13 +191,12 @@ function ajaxResult(array $data): never
 
 /**
  * @param array<string> $messages
- * @return void
  */
 function ajaxError(array $messages): void
 {
     ajaxResult([
         'status' => false,
-        'messages' => $messages
+        'messages' => $messages,
     ]);
 }
 
@@ -230,6 +211,6 @@ function ajaxResultWithMessages(): void
     }
     ajaxResult([
         'status' => true,
-        'messages' => $data
+        'messages' => $data,
     ]);
 }

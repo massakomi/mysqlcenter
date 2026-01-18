@@ -7,13 +7,11 @@ namespace controller;
 use database\MSTable;
 use database\Server;
 
-/**
- *
- */
 class DbList extends Base
 {
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -33,18 +31,18 @@ class DbList extends Base
                 foreach ($dbs as $j => $db) {
                     $dbItem = [
                         'name' => $db,
-                        'extra' => []
+                        'extra' => [],
                     ];
                     $result = $msc->driver->getTables($db);
                     foreach ($result as $row) {
-                        $dbItem ['extra'][] = $row;
+                        $dbItem['extra'][] = $row;
                     }
-                    $dbs [$j] = $dbItem;
+                    $dbs[$j] = $dbItem;
                 }
             }
         }
 
-        $msc->pageTitle = 'Список баз данных сервера ' . $msc->host . ' (всего: ' . count($dbs) . ')';
+        $msc->pageTitle = 'Список баз данных сервера '.$msc->host.' (всего: '.count($dbs).')';
 
         $hidden = [];
         if (in_array('mysqlcenter', $dbs)) {

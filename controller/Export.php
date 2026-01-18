@@ -8,9 +8,6 @@ use database\MSTable;
 use database\Server;
 use database\Table;
 
-/**
- *
- */
 class Export extends Base
 {
     public function pgDumpConsole(): never
@@ -19,7 +16,7 @@ class Export extends Base
         try {
             header('Content-Type: text/html; charset=windows-866');
             $config = $msc->getConfig();
-            $filename = 'backup_' . $config->database . '.sql';
+            $filename = 'backup_'.$config->database.'.sql';
 
             $file = 'G:/os/modules/PostgreSQL-18/bin/pg_dump.exe';
             // Command to run pg_dump (ensure pg_dump is in your system's PATH)
@@ -32,12 +29,12 @@ class Export extends Base
             exec($command, $output, $return_var);
 
             // Unset PGPASSWORD for security
-            putenv("PGPASSWORD=");
+            putenv('PGPASSWORD=');
 
             if ($return_var === 0) {
                 echo "Database structure and data exported to $filename successfully.";
             } else {
-                echo "Error: pg_dump failed. Output: " . implode("\n", $output);
+                echo 'Error: pg_dump failed. Output: '.implode("\n", $output);
             }
             exit;
         } catch (\Exception $e) {
@@ -48,6 +45,7 @@ class Export extends Base
 
     /**
      * @return array<string>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -72,7 +70,7 @@ class Export extends Base
         if (GET('mode') == 'special') {
             return $this->specialExport();
 
-        // 3. ОБЫЧНЫЙ ЭКСПОРТ
+            // 3. ОБЫЧНЫЙ ЭКСПОРТ
         } else {
             $msc->pageTitle = 'Экспорт данных';
 
@@ -90,9 +88,9 @@ class Export extends Base
                 // Экспорт БД
                 if ($exportDb && count($exportDb) > 0) {
                     foreach ($exportDb as $db) {
-                        $exp->data .= "\r\n" . 'CREATE DATABASE `' . $db . '` DEFAULT CHARACTER SET ' .
-                            MS_CHARACTER_SET . ' COLLATE ' . MS_COLLATION . ';' . "\r\n" . ' USE `' . $db . '`;' .
-                            "\r\n" . "\r\n";
+                        $exp->data .= "\r\n".'CREATE DATABASE `'.$db.'` DEFAULT CHARACTER SET '.
+                            MS_CHARACTER_SET.' COLLATE '.MS_COLLATION.';'."\r\n".' USE `'.$db.'`;'.
+                            "\r\n\r\n";
                         $exp->setDatabase($db);
                         $array = Table::getTables($db);
                         foreach ($array as $t) {
@@ -114,8 +112,9 @@ class Export extends Base
                     echo $exp->send('zip', $file);
                     exit;
                 }
+
                 return [
-                    'content' => $exp->send()
+                    'content' => $exp->send(),
                 ];
             } else {
                 return $this->exportForm();
@@ -124,8 +123,10 @@ class Export extends Base
     }
 
     /**
-     * HTML форма экспорта
+     * HTML форма экспорта.
+     *
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     private function exportForm(): array
@@ -150,7 +151,7 @@ class Export extends Base
             // массив рядов из обзора таблицы
             if (POST('rowMulty') != '') {
                 $_POST['row'] = array_map('urldecode', array_map('stripslashes', $_POST['row']));
-                $whereCondition = '(' . implode(') OR (', $_POST['row']) . ')';
+                $whereCondition = '('.implode(') OR (', $_POST['row']).')';
             }
             // селектор таблиц мульти
             $selectMultName  = 'export_table[]';
@@ -168,6 +169,7 @@ class Export extends Base
             }
             $optionsData = $dbAll;
         }
+
         return [
             'dirImage' => MS_DIR_IMG,
             'structChecked' => $structChecked,
@@ -181,6 +183,7 @@ class Export extends Base
 
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     private function specialExport(): array
@@ -207,6 +210,7 @@ class Export extends Base
             if (POST('new') != null) {
                 if (!$id_set = $msct->insertSet(POST('new'))) {
                     $msc->error('Не смог добавить сет');
+
                     return [];
                 }
                 foreach ($_POST['table'] as $key => $t) {
@@ -221,6 +225,7 @@ class Export extends Base
                     $msct::insertOption($id_set, $t, $struct, $data, $where_sql, $pk_top);
                 }
                 $msc->success('Сет добавлен');
+
                 return [];
 
                 // Send
@@ -246,11 +251,12 @@ class Export extends Base
                 }
                 // Send
                 if (intval(POST('export_to')) == 1) {
-                    echo $exp->send('zip',);
+                    echo $exp->send('zip');
                     exit;
                 }
+
                 return [
-                    'content' => $exp->send()
+                    'content' => $exp->send(),
                 ];
             }
         }
@@ -259,12 +265,13 @@ class Export extends Base
         $cSet = $msct::getSetInfo(GET('set'));
         $data = [];
         if ($msc->db) {
-            $result = $msc->getData('SHOW TABLE STATUS FROM ' . $msc->db);
+            $result = $msc->getData('SHOW TABLE STATUS FROM '.$msc->db);
             foreach ($result as $o) {
                 $o['Fields'] = Table::getFields($o['Name']);
-                $data [] = $o;
+                $data[] = $o;
             }
         }
+
         return [
             'dirImage' => MS_DIR_IMG,
             'structChecked' => true,
@@ -275,23 +282,23 @@ class Export extends Base
         ];
     }
 
-
     /**
-     * шапка дампа
-     * @return string
+     * шапка дампа.
+     *
      * @throws \Exception
      */
     private function dumpHeader(): string
     {
         global $msc;
+
         return '-- SQL Экспорт
 --
--- Хост: ' . $msc->host . '
--- Время создания: ' . date('j.m.Y, H-i') . '
--- Версия сервера: ' . Server::getServerVersion() . '
--- Версия PHP: ' . phpversion() . '
+-- Хост: '.$msc->host.'
+-- Время создания: '.date('j.m.Y, H-i').'
+-- Версия сервера: '.Server::getServerVersion().'
+-- Версия PHP: '.phpversion().'
 -- 
--- БД: `' . $msc->db . '`
+-- БД: `'.$msc->db.'`
 -- 
 
 -- --------------------------------------------------------
@@ -299,8 +306,6 @@ class Export extends Base
     }
 
     /**
-     * @param int|string $key
-     * @param mixed $where_sql
      * @return array<string>
      */
     private function getWhere(int|string $key, mixed $where_sql): array
@@ -310,14 +315,15 @@ class Export extends Base
         $from = intval($_POST['from'][$key]);
         $to = intval($_POST['to'][$key]);
         if ($from < 1) {
-            $where [] = "$pri >= $from";
+            $where[] = "$pri >= $from";
         }
         if ($to > 0) {
-            $where [] = "$pri <= $to";
+            $where[] = "$pri <= $to";
         }
         if ($where_sql != '') {
-            $where [] = $where_sql;
+            $where[] = $where_sql;
         }
+
         return $where;
     }
 }

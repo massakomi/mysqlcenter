@@ -6,13 +6,11 @@ namespace controller;
 
 use database\Table;
 
-/**
- *
- */
 class TblList extends Base
 {
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -22,31 +20,34 @@ class TblList extends Base
         if (count($tables) == 0) {
             $msc->error('В базе данных нет таблиц');
         }
-        $msc->pageTitle = 'Список таблиц базы данных "' . $msc->db . '" ';
+        $msc->pageTitle = 'Список таблиц базы данных "'.$msc->db.'" ';
+
         return [
             'showTableUpdated' => config('showTableUpdated') == '1',
             'full' => GET('mode') == 'full',
             'tables' => $tables,
             'dirImage' => MS_DIR_IMG,
-            'db' => $msc->db
+            'db' => $msc->db,
         ];
     }
 
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function structureAction(): array
     {
         global $msc;
         $tables = Table::getCashedTablesArray();
-        $msc->pageTitle = 'Структура таблиц базы данных "' . $msc->db . '" ';
+        $msc->pageTitle = 'Структура таблиц базы данных "'.$msc->db.'" ';
         foreach ($tables as $table) {
             $table->fields = Table::getFields($table->Name);
-            $table->data = $msc->getData('SELECT * FROM ' . $table->Name . ' LIMIT 3');
+            $table->data = $msc->getData('SELECT * FROM '.$table->Name.' LIMIT 3');
         }
+
         return [
-            'tables' => $tables
+            'tables' => $tables,
         ];
     }
 }

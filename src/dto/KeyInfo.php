@@ -1,10 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace dto;
 
-/**
- *
- */
 final class KeyInfo
 {
     public function __construct(

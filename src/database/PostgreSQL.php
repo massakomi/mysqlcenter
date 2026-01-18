@@ -8,11 +8,7 @@ use dto\Constraint;
 use dto\FieldInfo;
 use dto\KeyInfo;
 use dto\TableInfo;
-use stdClass;
 
-/**
- *
- */
 class PostgreSQL implements Driver
 {
     public function __construct()
@@ -21,26 +17,29 @@ class PostgreSQL implements Driver
 
     /**
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getDatabases(): array
     {
         global $msc;
+
         return $msc->getData('SELECT * FROM pg_database');
     }
 
     /**
      * @return array<string>
+     *
      * @throws \Exception
      */
     public function getDatabaseNames(): array
     {
         global $msc;
+
         return $msc->getData('SELECT datname FROM pg_database WHERE datistemplate = false', \PDO::FETCH_COLUMN);
     }
 
     /**
-     * @param string $db
      * @return TableInfo[]
      */
     public function getTables(string $db = ''): array
@@ -56,6 +55,7 @@ class PostgreSQL implements Driver
                 $msc->connectPdo($config, $db);
             } catch (\PDOException $e) {
                 $msc->error("Не смог соединиться с БД $db, чтобы получить инфо таблиц");
+
                 return [];
             }
         }
@@ -82,9 +82,10 @@ class PostgreSQL implements Driver
     }
 
     /**
-     * Непосредственно запрос на выборку таблиц без лишнего кода
-     * @param string $db
+     * Непосредственно запрос на выборку таблиц без лишнего кода.
+     *
      * @return array<TableInfo>
+     *
      * @throws \Exception
      */
     private function fetchTables(string $db): array
@@ -101,19 +102,21 @@ class PostgreSQL implements Driver
                 0 as "Auto_increment",
                 0 as "Create_time",
                 0 as "Update_time",
-                \'' . $charset . '\' as "Collation",
+                \''.$charset.'\' as "Collation",
                 table_schema as "Schema"
             FROM information_schema.tables ist 
                 LEFT JOIN pg_class c ON c.relname = ist.table_name
                 LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\' 
+            WHERE table_schema=\'public\' OR table_schema=\''.$db.'\' 
                 AND nspname NOT IN (\'pg_catalog\', \'information_schema\') AND relkind = \'r\'
             ORDER BY table_name';
+
         return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
 
     /**
-     * Статистика по autoIncrements
+     * Статистика по autoIncrements.
+     *
      * @return array<string, string>
      */
     private function getAutoIncrements(): array
@@ -126,13 +129,14 @@ class PostgreSQL implements Driver
         $data = $msc->getData($sql);
         $autoIncrementsByTables = [];
         foreach ($data as $value) {
-            $autoIncrementsByTables [$value['table_name']] = $value['identity_start'];
+            $autoIncrementsByTables[$value['table_name']] = $value['identity_start'];
         }
+
         return $autoIncrementsByTables;
     }
 
     /**
-     * Выполнить analyze, чтобы обновить статистику количества строк
+     * Выполнить analyze, чтобы обновить статистику количества строк.
      */
     private function updateStatistics(string $db): void
     {
@@ -140,16 +144,16 @@ class PostgreSQL implements Driver
         $sql = '
             SELECT *
             FROM information_schema.tables 
-            WHERE table_schema=\'public\' OR table_schema=\'' . $db . '\'';
+            WHERE table_schema=\'public\' OR table_schema=\''.$db.'\'';
         $data = $msc->getData($sql, \PDO::FETCH_OBJ);
         foreach ($data as $key => $value) {
-            $msc->execPdo('ANALYZE "' . $value->table_name . '"');
+            $msc->execPdo('ANALYZE "'.$value->table_name.'"');
         }
     }
 
     /**
-     * @param string $table
      * @return FieldInfo[]
+     *
      * @throws \Exception
      */
     public function getFields(string $table): array
@@ -167,12 +171,13 @@ class PostgreSQL implements Driver
                 }
             }
         }
+
         return $fields;
     }
 
     /**
-     * @param string $table
      * @return FieldInfo[]
+     *
      * @throws \Exception
      */
     public function fetchFields(string $table): array
@@ -187,15 +192,18 @@ class PostgreSQL implements Driver
                     \'\' AS "Key",
                     CASE
                         WHEN is_identity = \'YES\' THEN \'AUTO_INCREMENT\'
+                        WHEN column_default LIKE \'%nextval%\' THEN \'AUTO_INCREMENT\'
                         ELSE null
-                    END AS "Extra"
+                    END AS "Extra",
+                    character_maximum_length AS "Length"
                 FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE table_name = \'' . $table . '\'';
+                WHERE table_name = \''.$table.'\'
+                ORDER BY ordinal_position';
+
         return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
 
     /**
-     * @param string $table
      * @return array<string, array<string, string>>
      */
     public function getKeys(string $table): array
@@ -204,16 +212,16 @@ class PostgreSQL implements Driver
         $keys = [];
         foreach ($result as $row) {
             if ($row->Key_name == 'PRIMARY KEY') {
-                $keys [$row->Column_name][$row->Key_name] = 'PRI';
+                $keys[$row->Column_name][$row->Key_name] = 'PRI';
             } else {
-                $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
+                $keys[$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
             }
         }
+
         return $keys;
     }
 
     /**
-     * @param $table
      * @return array<KeyInfo>
      */
     public function getKeysFull($table): array
@@ -238,14 +246,15 @@ class PostgreSQL implements Driver
             $key->Index_type = ''; // BTREE
             $key->Comment = '';
             $key->Index_comment = '';
-            $result [] = $key;
+            $result[] = $key;
         }
+
         return $result;
     }
 
     /**
-     * @param string $table
      * @return array<Constraint>
+     *
      * @throws \Exception
      */
     public function getConstraints(string $table): array
@@ -267,6 +276,7 @@ class PostgreSQL implements Driver
             ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
             WHERE tc.table_name = '$table' AND (tc.table_schema = 'public' OR tc.table_schema = '$msc->db')
             ORDER BY kcu.ordinal_position; ";
+
         return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
 
@@ -285,8 +295,8 @@ class PostgreSQL implements Driver
     }
 
     /**
-     * @param string $table
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getTableDetailsWithComments(string $table): array
@@ -309,56 +319,59 @@ class PostgreSQL implements Driver
         $sql = '
             SELECT *
             FROM information_schema.tables 
-            WHERE table_name=\'' . $table . '\' and (table_schema=\'public\' OR table_schema=\'' . $msc->db . '\')
+            WHERE table_name=\''.$table.'\' and (table_schema=\'public\' OR table_schema=\''.$msc->db.'\')
             ORDER BY table_name';
         $result = $msc->getData($sql, \PDO::FETCH_OBJ);
 
         return [$comments, $result];
     }
+
     /**
      * This view usually only shows a single entry for the current database's encoding,
      * as PostgreSQL does not support multiple character sets within one database.
+     *
      * @return array<array<string>>
      */
     public function getCharsets(): array
     {
         global $msc;
-        //$data = $msc->getData('SHOW SERVER_ENCODING;');
-        //$data = $msc->getData('SHOW CLIENT_ENCODING;');
-        //return $msc->getData('SELECT character_set_name as "Charset" FROM information_schema.character_sets;');
+
+        // $data = $msc->getData('SHOW SERVER_ENCODING;');
+        // $data = $msc->getData('SHOW CLIENT_ENCODING;');
+        // return $msc->getData('SELECT character_set_name as "Charset" FROM information_schema.character_sets;');
         return [];
     }
 
     /**
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getProcessList(): array
     {
         global $msc;
+
         return $msc->getData('SELECT * FROM pg_stat_activity');
     }
 
     /**
-     * @param string $table
-     * @return TableInfo
      * @throws \Exception
      */
     public function getTableInfo(string $table): TableInfo
     {
+        $identity = $this->getIdentityInfo($table);
         $data = [
-            'Auto_increment' => $this->getAutoIncrement($table),
+            'Auto_increment' => $identity['last_value'] ?? $identity['identity_start'] ?? '0',
             'Charset' => $this->getCharset(),
             'Comment' => $this->getComment($table),
         ];
         $tableInfo = new TableInfo();
         $tableInfo->fill($data);
+
         return $tableInfo;
     }
 
     /**
-     * @param string $table
-     * @return string
      * @throws \Exception
      */
     private function getComment(string $table): string
@@ -374,6 +387,7 @@ class PostgreSQL implements Driver
         if (!$data) {
             return '';
         }
+
         return $data[0]['description'] ?? '';
     }
 
@@ -389,20 +403,55 @@ class PostgreSQL implements Driver
         if (!$data) {
             return '';
         }
+
         return $data[0]['charset'];
     }
 
-    private function getAutoIncrement(string $table): string
+    /**
+     * todo переделать на dto.
+     *
+     * @return array<string>
+     */
+    public function getIdentityInfo(string $table): array
     {
         global $msc;
         $sql = '
-            SELECT identity_start
+            SELECT 
+                column_name,
+                is_identity,
+                identity_generation,
+                identity_start,
+                identity_increment,
+                identity_maximum,
+                identity_minimum,
+                identity_cycle,
+                is_generated,
+                generation_expression,
+                null AS sequence_name,
+                null AS last_value
             FROM INFORMATION_SCHEMA.COLUMNS 
-            WHERE table_name = \'' . $table . '\' AND is_identity = \'YES\'';
-        $autoIncrement = $msc->getData($sql);
-        if ($autoIncrement) {
-            return $autoIncrement[0]['identity_start'];
+            WHERE table_name = \''.$table.'\' AND is_identity = \'YES\'';
+
+        $info = $msc->getData($sql);
+        if (!count($info)) {
+            return $info;
         }
-        return '';
+        $info = $info[0];
+
+        $column = $info['column_name'];
+        $sequence = $msc->getData("SELECT pg_get_serial_sequence('$table', '$column')"); // [0]['pg_get_serial_sequence']
+        if (!count($sequence)) {
+            return $info;
+        }
+        $sequenceName = $sequence[0]['pg_get_serial_sequence'];
+        $info['sequence_name'] = $sequenceName;
+
+        $lastVal = $msc->getData("SELECT last_value FROM $sequenceName");
+        if (!count($lastVal)) {
+            return $info;
+        }
+        $info['last_value'] = $lastVal[0]['last_value'];
+
+        return $info;
     }
 }

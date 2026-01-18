@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace controller;
 
-use database\Server;
 use database\Table;
 
-/**
- *
- */
 class Search extends Base
 {
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -22,20 +19,23 @@ class Search extends Base
 
         // Форма поиска по таблице
         if ($msc->table != null) {
-            $msc->pageTitle = 'Поиск по таблице ' . $msc->table;
+            $msc->pageTitle = 'Поиск по таблице '.$msc->table;
+
             return [
+                'tables' => Table::getTables(),
                 'table' => $msc->table,
-                'fields' => Table::getFieldNames(GET('table'))
+                'fields' => Table::getFieldNames(GET('table')),
             ];
         }
 
         return [
-            'tables' => Table::getTables()
+            'tables' => Table::getTables(),
         ];
     }
 
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function searchDbAction(): array
@@ -53,8 +53,8 @@ class Search extends Base
         $founded = 0;
         foreach ($array as $table) {
             $fields = Table::getFieldNames($table);
-            $whereCondition = " WHERE " . implode(' LIKE "%' . $query . '%" OR ', $fields) . ' LIKE "%'
-                . $query . '%"';
+            $whereCondition = ' WHERE '.implode(' LIKE "%'.$query.'%" OR ', $fields).' LIKE "%'
+                .$query.'%"';
             $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
             $result = $msc->fetchPdo($sql);
             if (!$result) {
@@ -63,24 +63,26 @@ class Search extends Base
             // найдено что-то
             if ($row = $result->fetchObject()) {
                 if ($row->c > 0) {
-                    $founded++;
-                    $results [] = [
+                    ++$founded;
+                    $results[] = [
                         'table' => $table,
                         'rows' => [
                             'href' => "/?s=tbl_data&db=$msc->db&table=$table&query=$query",
-                            'text' => $row->c
-                        ]
+                            'text' => $row->c,
+                        ],
                     ];
                 }
             }
         }
         $tables = Table::getTables();
         $msc->pageTitle = "Результаты поиска (найдено $founded)";
+
         return compact('results', 'founded', 'tables');
     }
 
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function searchDbFieldAction(): array
@@ -96,14 +98,14 @@ class Search extends Base
             $founds = [];
             foreach ($fields as $field) {
                 if (stristr($field, $queryField)) {
-                    $founds [] = $field;
-                    $foundedTotal++;
+                    $founds[] = $field;
+                    ++$foundedTotal;
                 }
             }
             // найдено что-то
             if (count($founds) > 0) {
-                $founded++;
-                $results [] = [
+                ++$founded;
+                $results[] = [
                     'table' => ['href' => "/?s=tbl_data&db=$msc->db&table=$table", 'text' => $table],
                     'fields' => implode(', ', $founds),
                 ];
@@ -111,6 +113,7 @@ class Search extends Base
         }
         $tables = Table::getTables();
         $msc->pageTitle = "Результаты поиска по полям (найдено таблиц $founded, полей $foundedTotal)";
+
         return compact('results', 'founded', 'foundedTotal', 'tables');
     }
 }

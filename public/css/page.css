@@ -151,7 +151,7 @@ fieldset.msGeneralForm input.submit { display:block; margin-top:5px;}
 div.imageAction img, div.imageAction input{ margin:0 0 0 20px; vertical-align:text-top }
 div.imageAction img {cursor:pointer}
 div.imageAction u { font-weight:bold; font-size:14px}
-img.helpimg {cursor:pointer}
+img.helpimg, [role="button"] {cursor:pointer}
 
 /* Страницы-ссылки для tbl_data */
 div.contentPageLinks { margin:5px 0 0;}

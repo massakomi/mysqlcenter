@@ -6,22 +6,23 @@ use service\MSCenter;
 use service\Utils;
 
 if (!defined('DIR_MYSQL')) {
-    define("DIR_MYSQL", './');
+    define('DIR_MYSQL', './');
 }
 
 spl_autoload_register(function (string $class): void {
     $path = [
-        DIR_MYSQL . 'src/' . $class . '.php',
-        DIR_MYSQL . 'controller/' . $class . '.php',
-        DIR_MYSQL . $class . '.php',
+        DIR_MYSQL.'src/'.$class.'.php',
+        DIR_MYSQL.'controller/'.$class.'.php',
+        DIR_MYSQL.$class.'.php',
     ];
     foreach ($path as $value) {
         if (file_exists($value)) {
             include_once $value;
+
             return;
         }
     }
-    //throw new Exception("Autoload error $class");
+    // throw new Exception("Autoload error $class");
 });
 
 // CORE
@@ -34,19 +35,19 @@ if (function_exists('date_default_timezone_set')) {
     date_default_timezone_set('Europe/Moscow');
 }
 
-require_once DIR_MYSQL . 'src/func.php';
+require_once DIR_MYSQL.'src/func.php';
 set_error_handler('errorHandlerNotice');
 
 // Все константы
 const MS_URL = '';
 const MS_DIR_IMG = 'images/';
-const MS_DIR_UPLOAD = DIR_MYSQL . 'logs';
-const MS_DIR_LOGS = DIR_MYSQL . 'logs';
+const MS_DIR_UPLOAD = DIR_MYSQL.'logs';
+const MS_DIR_LOGS = DIR_MYSQL.'logs';
 
-const MS_CONNECT_CONFIG_FILE = DIR_MYSQL . 'config/connect.json';
-const MS_CONFIG_FILE = DIR_MYSQL . 'config/config.json';
-const MS_CONFIG_DEFAULT_FILE = DIR_MYSQL . 'config/config_default.json';
-const MS_POPULAR_TABLES_FILE = DIR_MYSQL . 'config/popular.json';
+const MS_CONNECT_CONFIG_FILE = DIR_MYSQL.'config/connect.json';
+const MS_CONFIG_FILE = DIR_MYSQL.'config/config.json';
+const MS_CONFIG_DEFAULT_FILE = DIR_MYSQL.'config/config_default.json';
+const MS_POPULAR_TABLES_FILE = DIR_MYSQL.'config/popular.json';
 const MS_CHARACTER_SET = 'utf8';
 const MS_COLLATION = 'utf8_general_ci';
 
@@ -70,6 +71,6 @@ $msc->init();
 $msc->connect();
 
 // Выбираем базу и делаем первые запросы только после определения базы
-;if (!$msc->selectDb($msc->db)) {
+if (!$msc->selectDb($msc->db)) {
     $msc->clearCurrentDatabase();
 }

@@ -6,9 +6,6 @@ namespace controller;
 
 use dto\ConnectConfig;
 
-/**
- *
- */
 class Login extends Base
 {
     /**
@@ -18,12 +15,10 @@ class Login extends Base
     {
         global $msc;
         $msc->pageTitle = 'Login';
+
         return json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '', true);
     }
 
-    /**
-     * @return void
-     */
     public function checkAction(): void
     {
         global $msc;
@@ -45,9 +40,6 @@ class Login extends Base
         }
     }
 
-    /**
-     * @return void
-     */
     public function saveAction(): void
     {
         global $msc;
@@ -59,9 +51,6 @@ class Login extends Base
         }
     }
 
-    /**
-     * @return void
-     */
     public function openAction(): void
     {
         global $msc;

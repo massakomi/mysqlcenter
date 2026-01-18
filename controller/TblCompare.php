@@ -7,13 +7,11 @@ namespace controller;
 use database\Table;
 use dto\FieldInfo;
 
-/**
- *
- */
 class TblCompare extends Base
 {
     /**
      * @return array<string, mixed>
+     *
      * @throws \Exception
      */
     public function defaultAction(): array
@@ -25,6 +23,7 @@ class TblCompare extends Base
         $tables = POST('table') ?: [GET('table')];
         if (count($tables) < 1) {
             $msc->error('Вы не выбрали таблиц для сравнения');
+
             return [];
         }
         // Получение массив баз данных
@@ -40,14 +39,14 @@ class TblCompare extends Base
 
         $pageProps = [
             'databases' => $databases,
-            'tables' => []
+            'tables' => [],
         ];
         foreach ($tables as $table) {
             $fields = Table::getFields($table);
             $pk = $this->getPrimaryKeys($fields);
             [$data1, $data2] = $this->selectDataFromDatabase($databases, $table, $pk);
             $tableData = compact('fields', 'pk', 'data1', 'data2');
-            $pageProps ['tables'][$table] = $tableData;
+            $pageProps['tables'][$table] = $tableData;
         }
 
         return $pageProps;
@@ -55,6 +54,7 @@ class TblCompare extends Base
 
     /**
      * @param FieldInfo[] $fields
+     *
      * @return array<string>
      */
     private function getPrimaryKeys(array $fields): array
@@ -62,17 +62,19 @@ class TblCompare extends Base
         $pk = [];
         foreach ($fields as $v) {
             if (strchr($v->Key, 'PRI')) {
-                $pk [] = $v->Field;
+                $pk[] = $v->Field;
             }
         }
+
         return $pk;
     }
 
     /**
      * @param array<string> $databases
-     * @param string $table
      * @param array<string> $pk
+     *
      * @return array<int, list<mixed>>
+     *
      * @throws \Exception
      */
     private function selectDataFromDatabase(array $databases, string $table, array $pk): array
@@ -82,27 +84,28 @@ class TblCompare extends Base
         // Порядок
         $orderBy = null;
         if (count($pk) > 0) {
-            $orderBy = ' ORDER BY ' . implode(',', $pk); // . ' DESC';
+            $orderBy = ' ORDER BY '.implode(',', $pk); // . ' DESC';
         }
         // Первая  БД
         $sql = "SELECT * FROM $databases[0].$table";
-        $result = $msc->fetchPdo($sql . $orderBy);
+        $result = $msc->fetchPdo($sql.$orderBy);
         $data1 = [];
         if (!$result) {
             $msc->error("Таблица $table не найдена в базе $databases[0]");
+
             return [];
         }
         while ($row = $result->fetch(\PDO::FETCH_OBJ)) {
-            $data1 [] = $row;
+            $data1[] = $row;
         }
 
         // Вторая БД
         $data2 = [];
         $msc->selectDb($databases[1]);
         $sql = "SELECT * FROM $table";
-        $result = $msc->fetchPdo($sql . $orderBy);
+        $result = $msc->fetchPdo($sql.$orderBy);
         while ($row = $result->fetch(\PDO::FETCH_OBJ)) {
-            $data2 [] = $row;
+            $data2[] = $row;
         }
 
         return [$data1, $data2];

@@ -8,11 +8,7 @@ use dto\Constraint;
 use dto\FieldInfo;
 use dto\KeyInfo;
 use dto\TableInfo;
-use stdClass;
 
-/**
- *
- */
 class MySQL implements Driver
 {
     public function __construct()
@@ -21,27 +17,31 @@ class MySQL implements Driver
 
     /**
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getDatabases(): array
     {
         global $msc;
+
         return $msc->getData('SHOW DATABASES');
     }
 
     /**
      * @return array<string>
+     *
      * @throws \Exception
      */
     public function getDatabaseNames(): array
     {
         global $msc;
+
         return $msc->getData('SHOW DATABASES', \PDO::FETCH_COLUMN);
     }
 
     /**
-     * @param string $db
      * @return TableInfo[]
+     *
      * @throws \Exception
      */
     public function getTables(string $db = ''): array
@@ -54,15 +54,16 @@ class MySQL implements Driver
         $tables = $msc->getData($sql, \PDO::FETCH_OBJ);
         foreach ($tables as $key => $value) {
             $tableInfo = new TableInfo();
-            $tableInfo->fill((array)$value);
-            $tables [$key] = $tableInfo;
+            $tableInfo->fill((array) $value);
+            $tables[$key] = $tableInfo;
         }
+
         return $tables;
     }
 
     /**
-     * @param string $table
      * @return FieldInfo[]
+     *
      * @throws \Exception
      */
     public function getFields(string $table): array
@@ -71,18 +72,19 @@ class MySQL implements Driver
         if (empty($table)) {
             return [];
         }
-        $fields = $msc->getData('SHOW FIELDS FROM `' . $table . '`', \PDO::FETCH_OBJ);
+        $fields = $msc->getData('SHOW FIELDS FROM `'.$table.'`', \PDO::FETCH_OBJ);
         foreach ($fields as $key => $value) {
             $fieldInfo = new FieldInfo();
-            $fieldInfo->fill((array)$value);
-            $fields [$key] = $fieldInfo;
+            $fieldInfo->fill((array) $value);
+            $fields[$key] = $fieldInfo;
         }
+
         return $fields;
     }
 
     /**
-     * @param string $table
      * @return array<string, array<string, string>>
+     *
      * @throws \Exception
      */
     public function getKeys(string $table): array
@@ -91,16 +93,16 @@ class MySQL implements Driver
         $keys = [];
         foreach ($result as $row) {
             if ($row->Key_name == 'PRIMARY') {
-                $keys [$row->Column_name][$row->Key_name] = 'PRI';
+                $keys[$row->Column_name][$row->Key_name] = 'PRI';
             } else {
-                $keys [$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
+                $keys[$row->Column_name][$row->Key_name] = $row->Non_unique == 0 ? 'UNI' : 'MUL';
             }
         }
+
         return $keys;
     }
 
     /**
-     * @param string $table
      * @return array<KeyInfo>
      */
     public function getKeysFull(string $table): array
@@ -109,12 +111,13 @@ class MySQL implements Driver
         if (empty($table)) {
             return [];
         }
-        return $msc->getData('SHOW KEYS FROM `' . $table . '`', \PDO::FETCH_OBJ);
+
+        return $msc->getData('SHOW KEYS FROM `'.$table.'`', \PDO::FETCH_OBJ);
     }
 
     /**
-     * @param string $table
      * @return array<Constraint>
+     *
      * @throws \Exception
      */
     public function getConstraints(string $table): array
@@ -124,14 +127,13 @@ class MySQL implements Driver
                 SELECT i.*, k.*  
                 FROM information_schema.TABLE_CONSTRAINTS i
                 LEFT JOIN information_schema.KEY_COLUMN_USAGE k ON i.CONSTRAINT_NAME = k.CONSTRAINT_NAME 
-                WHERE i.TABLE_SCHEMA = \'' . $msc->db . '\' AND i.TABLE_NAME = \'' . $table . '\'
+                WHERE i.TABLE_SCHEMA = \''.$msc->db.'\' AND i.TABLE_NAME = \''.$table.'\'
                 GROUP BY k.CONSTRAINT_NAME';
+
         return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
 
     /**
-     * @param string $db
-     * @return void
      * @throws \Exception
      */
     public function selectDb(string $db): void
@@ -141,25 +143,24 @@ class MySQL implements Driver
     }
 
     /**
-     * @param string $table
-     * @return string
      * @throws \Exception
      */
     public function sqlCreateTable(string $table): string
     {
         global $msc;
-        $res = $msc->fetchPdo('SHOW CREATE TABLE ' . $msc->table);
+        $res = $msc->fetchPdo('SHOW CREATE TABLE '.$msc->table);
         if (!$res) {
             return '';
         }
+
         return $res->fetch()['Create Table'];
     }
 
     /**
-     * Возвращает таблицу с полной информацией о таблице $this->table
+     * Возвращает таблицу с полной информацией о таблице $this->table.
      *
-     * @param string $table
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getTableDetailsWithComments(string $table): array
@@ -191,46 +192,49 @@ class MySQL implements Driver
             'Checksum' => 'The live checksum value (if any).',
             'Create_options' => 'Дополнительные опции, заданные при создании таблицы через CREATE TABLE.',
             'Comment' => 'Комментарий, заданный при создании таблицы (либо информация о том, почему MySQL 
-                не может получить доступ к информации о таблице'
+                не может получить доступ к информации о таблице',
         ];
-        $sql = 'SHOW TABLE STATUS LIKE "' . $table . '"';
+        $sql = 'SHOW TABLE STATUS LIKE "'.$table.'"';
         $result = $msc->getData($sql);
         foreach ($comments as $k => &$v) {
             $v = str_replace('', '', $v);
             $v = str_replace(' title=', '', $v);
         }
+
         return [$comments, $result];
     }
 
     /**
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getCharsets(): array
     {
         global $msc;
+
         return $msc->getData('SHOW CHARACTER SET');
     }
 
     /**
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getProcessList(): array
     {
         global $msc;
+
         return $msc->getData('SHOW FULL PROCESSLIST');
     }
 
     /**
-     * @param string $table
-     * @return TableInfo
      * @throws \Exception
      */
     public function getTableInfo(string $table): TableInfo
     {
         global $msc;
-        $result = $msc->fetchPdo('SHOW TABLE STATUS FROM ' . $msc->db . ' LIKE "' . $table . '"');
+        $result = $msc->fetchPdo('SHOW TABLE STATUS FROM '.$msc->db.' LIKE "'.$table.'"');
         if (!$result) {
             return new TableInfo();
         }
@@ -241,7 +245,16 @@ class MySQL implements Driver
             $row->Charset = '';
         }
         $tableInfo = new TableInfo();
-        $tableInfo->fill((array)$row);
+        $tableInfo->fill((array) $row);
+
         return $tableInfo;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getIdentityInfo(string $table): array
+    {
+        return [];
     }
 }

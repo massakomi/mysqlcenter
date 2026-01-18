@@ -78,7 +78,8 @@ export function Search(props) {
     return (
       <Fragment>
           {props.results ? <Table data={props.results} /> : null}
-          {empty(props.table) ? <SearchDatabase {...props} /> : <SearchTable {...props} /> }
+          {!empty(props.table) ? <SearchTable {...props} /> : null }
+          <SearchDatabase {...props} />
       </Fragment>
     )
 }

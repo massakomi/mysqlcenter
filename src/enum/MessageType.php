@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace enum;
 
 /**
- * Тип сообщения
+ * Тип сообщения.
  */
 enum MessageType: string
 {
@@ -14,9 +16,6 @@ enum MessageType: string
     // непонятная ситуация, замечание
     case Notice = 'notice';
 
-    /**
-     * @return string
-     */
     public function getColor(): string
     {
         return match ($this) {

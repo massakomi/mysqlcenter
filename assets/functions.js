@@ -238,7 +238,7 @@ export function sqlFormToggle() {
         form.style.display = 'none'
     } else {
         form.style.display = 'block'
-        form.querySelector('textarea').focus()
+        form.querySelector('textarea').select()
     }
 }
 
@@ -253,12 +253,12 @@ export function sqlFormEvents() {
     let openLink = document.querySelector('.sqlFormToggle')
     list(openLink, 'click', sqlFormToggle);
     // Вставить значение по умолчанию
-    let table = new GET('table')
+    let table = GET('table')
     let textarea = form.querySelector('textarea')
     if (!table || textarea.value) {
         return;
     }
-    textarea.value = `SELECT * FROM ${table} WHERE`
+    textarea.value = `SELECT DISTINCT * FROM ${table} WHERE`
     form.querySelector('span').innerHTML = window.fields.join(', ')
 }
 
@@ -518,6 +518,8 @@ function loader() {
 export function processRowValue(v, type, textCut) {
     if (v === null) {
         v = 'null'
+    } else if (typeof v === 'boolean') {
+        v = v === true ? v.toString() : 'f'
     } else {
         // Тексты
         if (type.match(/(blob|text|char)/i)) {

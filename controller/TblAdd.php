@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace controller;
 
 use database\Table;
-use dto\FieldInfo;
 
-/**
- *
- */
 class TblAdd extends Base
 {
     /**
@@ -25,6 +21,7 @@ class TblAdd extends Base
             $fields = Table::getFields($msc->table);
             if (!$fields) {
                 $msc->error('Таблица не найдена');
+
                 return [];
             }
         }
@@ -38,7 +35,7 @@ class TblAdd extends Base
             if (POST('action') == 'fieldsAdd') {
                 $msc->pageTitle = 'Добавить поля';
             }
-        // Редактирование полей или таблицы
+            // Редактирование полей или таблицы
         } else {
             $msc->pageTitle = 'Редактировать структуру';
         }
@@ -48,7 +45,7 @@ class TblAdd extends Base
             'tableName' => POST('tableName') ?: $msc->table,
             'fields' => array_values($fields),
             'fieldsCount' => $fieldsCount,
-            'keys' => Table::getTableKeys($msc->table)
+            'keys' => Table::getTableKeys($msc->table),
         ];
     }
 
@@ -71,10 +68,10 @@ class TblAdd extends Base
             $mulKeys    = [];
             foreach ($names as $k => $name) {
                 if (array_key_exists($k, $uk)) {
-                    $uniKeys [] = $name;
+                    $uniKeys[] = $name;
                 }
                 if (array_key_exists($k, $mk)) {
-                    $mulKeys [] = $name;
+                    $mulKeys[] = $name;
                 }
             }
         } else {
@@ -86,7 +83,7 @@ class TblAdd extends Base
         $fieldsDefEdit  = []; // oldfield definition
         $newKeys        = [];
         foreach ($_POST as $k => $v) {
-            $_POST [$k] = POST($k);
+            $_POST[$k] = POST($k);
         }
         foreach ($names as $k => $name) {
             if (empty($name)) {
@@ -102,12 +99,12 @@ class TblAdd extends Base
                 }
             }
             if (POST('attr')) {
-                $extra  .= $_POST['attr'][$k] != '' ? ' ' . $_POST['attr'][$k] : null;
+                $extra  .= $_POST['attr'][$k] != '' ? ' '.$_POST['attr'][$k] : null;
             }
             $length  = $_POST['length'][$k];
             $define  = Table::getFieldDefinition($type, $null, $default, $extra, $length);
             if (empty($define)) {
-                $msc->error('Не удалось создать поле "' . $name . '". Не указаны дополнительные параметры поля');
+                $msc->error('Не удалось создать поле "'.$name.'". Не указаны дополнительные параметры поля');
                 unset($names[$k]);
                 continue;
             }
@@ -119,55 +116,54 @@ class TblAdd extends Base
                     if ($after == 'FIRST') {
                         $define .= ' FIRST';
                     } else {
-                        $define .= ' AFTER `' . $after . '`';
+                        $define .= ' AFTER `'.$after.'`';
                     }
                 }
             }
-            $fieldsDefFull [] = "`$name` $define";
+            $fieldsDefFull[] = "`$name` $define";
             if (POST('action') == 'fieldsEditEnd') {
-                $fieldsDefEdit [$_POST['oldname'][$k]] = '`' . $name . '` ' . $define;
+                $fieldsDefEdit[$_POST['oldname'][$k]] = '`'.$name.'` '.$define;
             }
             // ключи
             if (array_key_exists($name, $uniKeys)) {
-                $newKeys [] = "$name UNI " . $uniKeys[$name];
+                $newKeys[] = "$name UNI ".$uniKeys[$name];
             }
             if (array_key_exists($name, $mulKeys)) {
-                $newKeys [] = "$name MUL " . $mulKeys[$name];
+                $newKeys[] = "$name MUL ".$mulKeys[$name];
             }
         }
+
         return [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys];
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     public function tableAddEndAction(): void
     {
         global $msc;
         [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys] = $this->prepareAction();
-        $sql  = "CREATE TABLE `" . POST('table_name') . "` (\r\n  ";
+        $sql  = 'CREATE TABLE `'.POST('table_name')."` (\r\n  ";
         $sql .= implode(",\r\n  ", $fieldsDefFull);
         if ($primaryKey != '') {
             $sql .= ",\r\n  PRIMARY KEY ($primaryKey)";
         }
         if (count($uniKeys) > 0) {
-            $sql .= ",\r\n  UNIQUE (" . implode(', ', $uniKeys) . ")";
+            $sql .= ",\r\n  UNIQUE (".implode(', ', $uniKeys).')';
         }
         if (count($mulKeys) > 0) {
-            $sql .= ",\r\n  INDEX (" . implode(', ', $mulKeys) . ")";
+            $sql .= ",\r\n  INDEX (".implode(', ', $mulKeys).')';
         }
         $sql .= "\r\n)";
         if ($msc->execPdo($sql)) {
-            $msc->success('Таблица ' . POST('table_name') . ' создана', $sql);
+            $msc->success('Таблица '.POST('table_name').' создана', $sql);
         } else {
-            $text = 'При создании таблицы возникли ошибки ' . POST('table_name');
+            $text = 'При создании таблицы возникли ошибки '.POST('table_name');
             $msc->error($text, $sql);
         }
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     public function fieldsAddEndAction(): void
@@ -178,14 +174,14 @@ class TblAdd extends Base
         if (POST('afterOption') == 'start') {
             $afterSql = 'FIRST';
         } elseif (POST('afterOption') == 'field') {
-            $afterSql = 'AFTER `' . POST('afterField') . '`';
+            $afterSql = 'AFTER `'.POST('afterField').'`';
         }
         // определение полей
         $a = [];
         foreach ($fieldsDefFull as $def) {
-            $a [] = ' ADD COLUMN ' . $def . $afterSql;
+            $a[] = ' ADD COLUMN '.$def.$afterSql;
         }
-        $sql  = 'ALTER TABLE `' . GET('table')  . "`\r\n" . implode(",\r\n", $a);
+        $sql  = 'ALTER TABLE `'.GET('table')."`\r\n".implode(",\r\n", $a);
         // выполнение
         if ($msc->execPdo($sql)) {
             $msc->success('Таблица изменена', $sql);
@@ -196,7 +192,6 @@ class TblAdd extends Base
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     public function fieldsEditEndAction(): void
@@ -206,13 +201,13 @@ class TblAdd extends Base
         // определение полей
         $a = [];
         foreach ($fieldsDefEdit as $oldFieldName => $definition) {
-            $oldDefinition = "`$oldFieldName` " . Table::getFieldDefinitionFromObject($fields[$oldFieldName]);
+            $oldDefinition = "`$oldFieldName` ".Table::getFieldDefinitionFromObject($fields[$oldFieldName]);
             if ($oldDefinition == $definition) {
                 continue;
             }
-            $a [] = ' CHANGE `' . $oldFieldName . '` ' . $definition;
+            $a[] = ' CHANGE `'.$oldFieldName.'` '.$definition;
         }
-        $sql  = count($a) == 0 ? '' : 'ALTER TABLE `' . GET('table') . "`\r\n" . implode(",\r\n", $a);
+        $sql  = count($a) == 0 ? '' : 'ALTER TABLE `'.GET('table')."`\r\n".implode(",\r\n", $a);
         // ключи
         $currentKeys = [];
         $a = Table::getTableKeys($msc->table);
@@ -223,7 +218,7 @@ class TblAdd extends Base
                     if (!in_array($fieldName, $names)) {
                         continue;
                     }
-                    $currentKeys [] = "$fieldName $currentKeyName $k";
+                    $currentKeys[] = "$fieldName $currentKeyName $k";
                 } else {
                     $currentPrimaryKey = $fieldName;
                 }
@@ -239,12 +234,12 @@ class TblAdd extends Base
         $sql2 = [];
         foreach ($currentKeys as $k => $removeKey) {
             list($fieldName, $removeKeyType, $removeKeyName) = explode(' ', $removeKey);
-            $sql2 [] = 'ALTER TABLE `' . GET('table') . '` DROP KEY `' . $removeKeyName . '`';
+            $sql2[] = 'ALTER TABLE `'.GET('table').'` DROP KEY `'.$removeKeyName.'`';
         }
         foreach ($newKeys as $k => $addKey) {
             list($fieldName, $addKeyType, $addKeyName) = explode(' ', $addKey);
             $str = $addKeyType == 'UNI' ? 'UNIQUE' : 'INDEX';
-            $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD ' . $str . ' (`' . $fieldName . '`)';
+            $sql2[] = 'ALTER TABLE `'.GET('table').'` ADD '.$str.' (`'.$fieldName.'`)';
         }
         if ($currentPrimaryKey != $primaryKey) {
             if ($currentPrimaryKey != '') {
@@ -264,7 +259,7 @@ class TblAdd extends Base
                 }
             }
             if ($primaryKey != '') {
-                $sql2 [] = 'ALTER TABLE `' . GET('table') . '` ADD PRIMARY KEY (`' . $primaryKey . '`)';
+                $sql2[] = 'ALTER TABLE `'.GET('table').'` ADD PRIMARY KEY (`'.$primaryKey.'`)';
             }
         }
 

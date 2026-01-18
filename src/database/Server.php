@@ -7,22 +7,20 @@ namespace database;
 use service\Validate;
 
 /**
- * Класс Server - сервер, где расположены базы данных
+ * Класс Server - сервер, где расположены базы данных.
  */
 class Server
 {
     private Validate $validate;
 
-    /**
-     *
-     */
     public function __construct()
     {
         $this->validate = new Validate();
     }
 
     /**
-     * Возвращает массив баз данных
+     * Возвращает массив баз данных.
+     *
      * @return array<string>
      */
     public static function getDatabases(): array
@@ -32,6 +30,7 @@ class Server
             global $msc;
             $array = $msc->driver ? $msc->driver->getDatabaseNames() : [];
         }
+
         return $array;
     }
 
@@ -54,13 +53,13 @@ class Server
                 unset($dbs[$key]);
             }
         }
+
         return array_values($dbs);
     }
 
     /**
-     * Определение версии сервера в виде числа и строки
+     * Определение версии сервера в виде числа и строки.
      *
-     * @return string
      * @throws \Exception
      */
     public static function getServerVersion(): string
@@ -73,6 +72,7 @@ class Server
         $row   = $result->fetch();
         $match = explode(' ', $row['version']);
         $match = array_slice($match, 0, 2);
+
         return implode(' ', $match);
     }
 
@@ -80,6 +80,7 @@ class Server
      * Возвращает массив кодировок сервера.
      *
      * @param bool $extended Возвратить полную инфорамцию в виде массива объектов, либо только массив кодировок
+     *
      * @return array<string>
      */
     public static function getCharsetArray(bool $extended = false): array
@@ -88,21 +89,20 @@ class Server
         $charsetList = [];
         $data = $msc->driver->getCharsets();
         foreach ($data as $row) {
-            $charsetList [$row['Charset']] = $extended ? $row : $row['Charset'];
+            $charsetList[$row['Charset']] = $extended ? $row : $row['Charset'];
         }
         ksort($charsetList);
+
         return $charsetList;
     }
 
-
     /**
-     * Удаляет / создаёт БД
+     * Удаляет / создаёт БД.
      *
-     * @param string $db
      * @param string $type DROP|CREATE
      * @param string|null $user Для постгрес роль
      * @param string|null $option Для постгрес template
-     * @return bool
+     *
      * @throws \Exception
      */
     public function databaseAction(string $db, string $type, ?string $user = '', ?string $option = ''): bool
@@ -117,7 +117,7 @@ class Server
                 if ($msc->driverName == 'pgsql' && $db === $msc->db) {
                     // В постгрес нельзя удалить текущую бд, поэтому нужно поменять на другую
                     $dbs = Server::getDatabases();
-                    $dbs = array_filter($dbs, fn($value) => $value !== $db);
+                    $dbs = array_filter($dbs, fn ($value) => $value !== $db);
                     if (!count($dbs)) {
                         return $msc->error('Невозможно удалить единственную БД');
                     }
@@ -148,10 +148,11 @@ class Server
     }
 
     /**
-     * Удаляет / очищает все таблицы БД
+     * Удаляет / очищает все таблицы БД.
      *
      * @param string $db База данных
-     * @param boolean $delete Если true - удалить таблицы, иначе очистить
+     * @param bool $delete Если true - удалить таблицы, иначе очистить
+     *
      * @return bool true только если ошибок нет, false - если хотя бы одна таблица не обработана
      */
     public function databaseTruncate(string $db, bool $delete = false): bool
@@ -169,24 +170,25 @@ class Server
         foreach ($a as $t) {
             if ($delete) {
                 if (!$dbt->tableAction($db, $t, 'DROP')) {
-                    $errors++;
+                    ++$errors;
                 }
             } elseif ($dbt->tableAction($db, $t, 'TRUNCATE')) {
-                $errors++;
+                ++$errors;
             }
         }
-        return ($errors == 0);
+
+        return $errors == 0;
     }
 
     /**
-     * Копирует / переименовывает БД
+     * Копирует / переименовывает БД.
      *
      * @param string $dbFrom БД-источник
      * @param string $dbTo БД, куда копируется/перемещается
-     * @param boolean $isMove Если true, то перемещает, иначе копирует
-     * @param boolean $struct Если true, копирует структуру (CREATE TABLE...), иначе нет
-     * @param boolean $data Если true, копирует данные, иначе нет
-     * @return bool
+     * @param bool $isMove Если true, то перемещает, иначе копирует
+     * @param bool $struct Если true, копирует структуру (CREATE TABLE...), иначе нет
+     * @param bool $data Если true, копирует данные, иначе нет
+     *
      * @throws \Exception
      */
     public function databaseCopy(string $dbFrom, string $dbTo, bool $isMove = false, bool $struct = true, bool $data = true): bool
@@ -196,6 +198,7 @@ class Server
             if ($this->databaseAction($dbTo, 'CREATE', '', $dbFrom)) {
                 return true;
             }
+
             return false;
         }
         if ($this->databaseAction($dbTo, 'CREATE')) {
@@ -209,18 +212,20 @@ class Server
             if ($isMove) {
                 return $this->databaseAction($dbFrom, 'DROP');
             }
+
             return true;
         }
+
         return false;
     }
 
     /**
-     * Изменяет кодировку или сравнение БД
+     * Изменяет кодировку или сравнение БД.
      *
      * @param string $db БД
      * @param string $charset Кодировка
      * @param bool $isCharset Если true, то меняется кодировка, иначе сравнение
-     * @return bool
+     *
      * @throws \Exception
      */
     public function databaseAlterCharset(string $db, string $charset, bool $isCharset = true): bool
@@ -228,12 +233,13 @@ class Server
         global $msc;
         if (!$this->validate->queryCheck($db, 'table', $charset)) {
             return false;
-        };
+        }
         if (!$isCharset) {
             $sql = "ALTER DATABASE $db COLLATE `$charset`";
         } else {
             $sql = "ALTER DATABASE $db CHARACTER SET `$charset`";
         }
+
         return $msc->execPdo($sql);
     }
 }

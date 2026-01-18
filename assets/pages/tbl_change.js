@@ -78,6 +78,20 @@ function getInputSize(props) {
 
 function MSC_InsertInput(props) {
 
+    const jsonDecode = (event) => {
+      let textarea = event.target.previousElementSibling
+      let json = JSON.parse(textarea.value)
+      if (typeof textarea.decoded == 'undefined' || !textarea.decoded) {
+        let decoded = JSON.stringify(json, null, 2)
+        textarea.decoded = true
+        textarea.value = decoded
+      } else {
+        let decoded = JSON.stringify(json)
+        textarea.decoded = false
+        textarea.value = decoded
+      }
+    }
+
     let i = props.i;
     let j = props.j;
     let value = props.value
@@ -95,6 +109,11 @@ function MSC_InsertInput(props) {
         }
     }
 
+    if (type.match(/boolean/i)) {
+      let all = ['', 'true', 'false']
+        return <HtmlSelector name={`row[${j}][${i}]`} data={all} value={value} />
+    }
+
     if (type.match(/(text|blob)/i)) {
         let rows = 10
         if (value != null && value.length > 0) {
@@ -103,11 +122,14 @@ function MSC_InsertInput(props) {
                 rows = 10
             }
         }
-        return <textarea name={`row[${j}][${i}]`} cols="70" rows={rows} defaultValue={value}></textarea>
+        return <div>
+          <textarea name={`row[${j}][${i}]`} cols="70" rows={rows} defaultValue={value} className="block mb-5"></textarea>
+          {value && value.match(/^[\[{]/) ? <span role="button" onClick={jsonDecode}>json decode</span> : null}
+        </div>
     }
 
-    let size = getInputSize(props)
-    return <input name={`row[${j}][${i}]`} type="text" size={size} defaultValue={value} className="si" />
+  let size = getInputSize(props)
+  return <input name={`row[${j}][${i}]`} type="text" size={size} defaultValue={value} className="si" />
 }
 
 
@@ -156,9 +178,18 @@ function AddRows(props) {
 
     let outerRows = []
     for (let j = 0; j < msRowsInsert; j++) {
-        let tableInnerRows = Object.values(props.fields).map((field, i) =>
-          <AddRow key={field.Field} name={field.Field} i={i} j={j} fields={props.fields} />
-        );
+        let tableInnerRows = []
+        let i = 0;
+        for (const key in props.fields) {
+          const field = props.fields[key]
+          let value = null
+          if (field.Type.match(/boolean/i)) {
+            value = field.Default
+          }
+          tableInnerRows.push(<AddRow key={field.Field} name={field.Field} value={value} i={i} j={j} fields={props.fields} />)
+          i ++
+        }
+
         let tableInner = (
           <table style={{marginBottom: '10px'}}>
               <tbody>
@@ -254,7 +285,7 @@ function refreshActions() {
     const inputs = document.getElementById('rowsForm').getElementsByTagName('INPUT')
     for (let i = 0; i < inputs.length; i++) {
         if (inputs[i].type === 'checkbox') {
-            let textInput = inputs[i].closest('tr').querySelector('[type="text"], textarea')
+            let textInput = inputs[i].closest('tr').querySelector('[type="text"], textarea, select')
             if (!textInput) {
                 console.log('textInput not found')
                 continue

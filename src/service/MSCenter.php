@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace service;
 
-use database\{Driver, MySQL, PostgreSQL, Query, Server};
+use database\{Driver, MySQL, PostgreSQL, Query};
 use dto\ConnectConfig;
-use dto\Message;
 
 /**
  * Управляющий класс
  * Он отвечает за следующие действия:
  * - сообщения
  * - заголовок раздела h1 и страницы title
- * - текущая страница, БД, таблица
+ * - текущая страница, БД, таблица.
  */
 class MSCenter extends Query
 {
@@ -32,15 +31,15 @@ class MSCenter extends Query
     public float $timer;
 
     /**
-     * Конструктор, для начала анализа скорости
+     * Конструктор, для начала анализа скорости.
      */
     public function __construct()
     {
-        $this->timer = round(array_sum(explode(" ", microtime())), 10);
+        $this->timer = round(array_sum(explode(' ', microtime())), 10);
     }
 
     /**
-     * Инициализация - отдельно от конструктора, чтобы тот раньше запустился
+     * Инициализация - отдельно от конструктора, чтобы тот раньше запустился.
      */
     public function init(): void
     {
@@ -52,35 +51,37 @@ class MSCenter extends Query
     }
 
     /**
-     * Возвращает заголовок страницы, вызывается только в основном шаблоне
-     * @return string
+     * Возвращает заголовок страницы, вызывается только в основном шаблоне.
      */
     public function getPageTitle(): string
     {
         if ($this->pageTitle == null) {
             $this->pageTitle = $this->getWindowTitle();
         }
+
         return $this->pageTitle;
     }
 
     /**
-     * Возвращает заголовок окна, относится только к основному шаблону
+     * Возвращает заголовок окна, относится только к основному шаблону.
      */
     public function getWindowTitle(): string
     {
         $mainTitle = null;
         $mainTitle .= $this->table != null ? "$this->table < " : null;
         $mainTitle .= $this->db != null ? $this->db : $this->page;
+
         return $mainTitle;
     }
 
     /**
-     * Возвращает алиас текущего раздела, вызывается при инициализации
+     * Возвращает алиас текущего раздела, вызывается при инициализации.
      */
     private function initCurrentPage(): void
     {
         if (!$this->connectConfigExists()) {
             $this->page = 'login';
+
             return;
         }
         $defaultPage = $this->db ? 'tbl_list' : 'db_list';
@@ -104,7 +105,7 @@ class MSCenter extends Query
     }
 
     /**
-     * Возвращает текущую отображаемую базу данных (которую мы видим), вызывается при инициализации
+     * Возвращает текущую отображаемую базу данных (которую мы видим), вызывается при инициализации.
      */
     private function initCurrentDatabase(): void
     {
@@ -124,25 +125,16 @@ class MSCenter extends Query
         }
     }
 
-    /**
-     * @return bool
-     */
     public function connected(): bool
     {
         return $this->host !== '';
     }
 
-    /**
-     * @return bool
-     */
     public function connectConfigExists(): bool
     {
         return file_exists(MS_CONNECT_CONFIG_FILE);
     }
 
-    /**
-     *
-     */
     public function getConfig(): ConnectConfig
     {
         $json = file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '';
@@ -151,8 +143,10 @@ class MSCenter extends Query
         $config = $settings['config'][$current];
         if (!$config) {
             $this->connectError("Конфиг существует, но настройка current($current) в нем не найдена");
+
             return new ConnectConfig();
         }
+
         return new ConnectConfig(
             $config['host'],
             $config['port'],
@@ -163,11 +157,6 @@ class MSCenter extends Query
         );
     }
 
-    /**
-     * @param string $configJson
-     * @param string $current
-     * @return false|int
-     */
     public function saveConfig(string $configJson, string $current): false|int
     {
         $config = json_decode($configJson, true);
@@ -175,11 +164,12 @@ class MSCenter extends Query
             'current' => $current,
             'config' => $config,
         ];
-        $backupFile = MS_DIR_UPLOAD . '/backup_' . date('YmdHis') . '_' . basename(MS_CONNECT_CONFIG_FILE);
+        $backupFile = MS_DIR_UPLOAD.'/backup_'.date('YmdHis').'_'.basename(MS_CONNECT_CONFIG_FILE);
         if (file_exists(MS_CONNECT_CONFIG_FILE)) {
             copy(MS_CONNECT_CONFIG_FILE, $backupFile);
         }
         $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
         return file_put_contents(MS_CONNECT_CONFIG_FILE, $content);
     }
 
@@ -209,6 +199,7 @@ class MSCenter extends Query
                         $this->notice("Ошибка подключения к базе $this->db, подключаемся к $config->database");
                         $this->clearCurrentDatabase();
                         $this->connect();
+
                         return;
                     }
                 } else {
@@ -218,17 +209,17 @@ class MSCenter extends Query
                     } else {
                         $this->connectError("Ошибка подключения к базе $this->db, очищаю сохраненную базу");
                     }
+
                     return;
                 }
             }
-            $msg = 'Unable to pdo-connect to database on "' . $config->host . '" as ' . $config->user . '<br />';
-            $this->connectError($msg . $e->getMessage());
+            $msg = 'Unable to pdo-connect to database on "'.$config->host.'" as '.$config->user.'<br />';
+            $this->connectError($msg.$e->getMessage());
         }
     }
 
     /**
-     * Приходится тут все сбрасывать, т.к. к этому времени в init можно все заполнится
-     * @param string $msg
+     * Приходится тут все сбрасывать, т.к. к этому времени в init можно все заполнится.
      */
     private function connectError(string $msg): void
     {
@@ -244,6 +235,7 @@ class MSCenter extends Query
         setcookie('mc_db', '', -1, '/');
         $_SESSION['db'] = '';
         $this->db = '';
+        $this->table = '';
         if ($this->page !== 'login') {
             $this->page = 'db_list';
         }

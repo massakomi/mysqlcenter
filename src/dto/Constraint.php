@@ -1,10 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace dto;
 
-/**
- *
- */
 final class Constraint
 {
     public function __construct(

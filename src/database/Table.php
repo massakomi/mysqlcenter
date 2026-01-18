@@ -9,7 +9,7 @@ use dto\TableInfo;
 use service\Validate;
 
 /**
- * Класс, отвечающий за работу с таблицами базы данных
+ * Класс, отвечающий за работу с таблицами базы данных.
  */
 class Table
 {
@@ -17,25 +17,21 @@ class Table
     public ?string $table;
     private Validate $validate;
 
-    /**
-     * @param string|null $db
-     * @param string|null $table
-     */
     public function __construct(?string $db = null, ?string $table = null)
     {
         $this->database = $db;
-        $this->table = $table ? '`' . str_replace('`', '``', $table) . '`' : '';
+        $this->table = $table ? '`'.str_replace('`', '``', $table).'`' : '';
         $this->validate = new Validate();
     }
 
     /**
-     * Совершает действие типа $type с $table, используя если надо параметр $param
+     * Совершает действие типа $type с $table, используя если надо параметр $param.
      *
      * @param string $db
      * @param string $table
      * @param string $type DROP | TRUNCATE | ANALISE | OPTIMIZE | CHECK | REPAIR | FLUSH
      * @param string $param
-     * @return bool
+     *
      * @throws \Exception
      */
     public function tableAction($db, $table, $type = 'DROP', $param = null): bool
@@ -43,7 +39,7 @@ class Table
         global $msc;
         if (!$this->validate->queryCheck($db, $table)) {
             return false;
-        };
+        }
         if (($type == 'RENAME' || $type == 'CHARSET' || $type == 'ORDER') && $param == null) {
             return $msc->error('Не указан требуемый параметр');
         }
@@ -109,9 +105,11 @@ class Table
             if (in_array($type, ['TRUNCATE'])) {
                 $msc->fetchPdo("ANALYZE TABLE `$table`;");
             }
+
             return $msc->success("Таблица $table $text", $sql);
         } else {
             $text = "Ошибка при выполнении операции с таблицей $table";
+
             return $msc->error($text, $sql);
         }
     }
@@ -125,7 +123,7 @@ class Table
      * @param bool $data надо ли копировать данные
      * @param string|null $newName новое имя, если таблица переименовывается
      * @param string|null $database База данных, куда надо копировать
-     * @return bool
+     *
      * @throws \Exception
      */
     public function copyTable(string $db, string $table, bool $struct = true, bool $data = false, ?string $newName = null, ?string $database = null): bool
@@ -133,10 +131,10 @@ class Table
         global $msc;
         if (!$this->validate->queryCheck($db, $table)) {
             return false;
-        };
+        }
         // дамп структуры
         if ($newName == null) {
-            $newName = $table . '_copy';
+            $newName = $table.'_copy';
         }
         if ($database == null) {
             $database = $db;
@@ -154,7 +152,7 @@ class Table
                 $sql = $exp->exportStructure(true);
                 $sql = preg_replace(
                     '/CREATE TABLE ([a-zA-Z0-9_`\-]+)/i',
-                    'CREATE TABLE `' . $newName . '`',
+                    'CREATE TABLE `'.$newName.'`',
                     $sql,
                     1
                 );
@@ -165,6 +163,7 @@ class Table
                 $msc->success("Таблица $table скопирована", $sql);
             } else {
                 $msc->error("Ошибка копирования $table", $sql);
+
                 return false;
             }
             // переход в старую БД после запроса
@@ -180,7 +179,7 @@ class Table
                 $add = ' OVERRIDING SYSTEM VALUE';
             }
             if ($database != $db) {
-                $sql = 'INSERT INTO ' . $database . '.' . $newName . ' ' . $add . ' SELECT * FROM ' . $db . '.' . $table;
+                $sql = 'INSERT INTO '.$database.'.'.$newName.' '.$add.' SELECT * FROM '.$db.'.'.$table;
             } else {
                 $sql = "INSERT INTO $newName $add SELECT * FROM $table";
             }
@@ -188,16 +187,19 @@ class Table
                 $msc->success('Данные скопированы', $sql);
             } else {
                 $msc->error('Ошибка копирования данных', $sql);
+
                 return false;
             }
         }
+
         return true;
     }
 
     /**
-     * Возвращает массив SQL объектов-полей таблицы $table
+     * Возвращает массив SQL объектов-полей таблицы $table.
      *
      * @param string $table таблица
+     *
      * @return FieldInfo[] Массив полей
      */
     public static function getFields(string $table): array
@@ -214,51 +216,59 @@ class Table
                 return [];
             }
             foreach ($result as $row) {
-                $cache[$cacheId] [$row->Field] = $row;
+                $cache[$cacheId][$row->Field] = $row;
             }
         }
+
         return $cache[$cacheId];
     }
 
     /**
-     * Только массив имен полей
-     * @param string $table
+     * Только массив имен полей.
+     *
      * @return array<string>
      */
     public static function getFieldNames(string $table): array
     {
         $fields = self::getFields($table);
+
         return array_keys($fields);
     }
 
     /**
-     * Массив полей
+     * Массив полей.
+     *
      * @return FieldInfo[]
      */
     private static function fetchFields(string $table): array
     {
         global $msc;
         $table = str_replace('`', '``', $table);
+
         return $msc->driver->getFields($table);
     }
 
     /**
-     * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа]
+     * Возвращает массив ключей таблицы в виде двумерного массива ([Поле][Имя ключа].
      *
      * @param string $table Имя таблицы
+     *
      * @return array<array<string>>
      */
     public static function getTableKeys(string $table): array
     {
         global $msc;
+
         return $msc->driver->getKeys($table);
     }
 
     /**
-     * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть
+     * Удаляет ключевое поле из таблицы, предварительно удаляя параметр auto_increment если есть.
      *
      * @param string $tbl Имя таблицы
+     *
      * @return bool Удачно или нет. Если PRIMARY KEY нет, возвращает пустую строку
+     *
      * @throws \Exception
      */
     public static function dropPrimaryKey(string $tbl): bool
@@ -275,7 +285,7 @@ class Table
         if ($primaryKey) {
             if (stristr($definition, 'auto_increment')) {
                 $definition = str_ireplace('auto_increment', '', $definition);
-                $sql = 'ALTER TABLE `' . $tbl . '` CHANGE ' . $primaryKey . ' ' . $primaryKey . ' ' . $definition;
+                $sql = 'ALTER TABLE `'.$tbl.'` CHANGE '.$primaryKey.' '.$primaryKey.' '.$definition;
                 $msc->execPdo($sql);
             }
             $sql = "ALTER TABLE `$tbl` DROP PRIMARY KEY";
@@ -285,17 +295,19 @@ class Table
                 return $msc->error('Ошибка удаления ключа', $sql);
             }
         }
+
         return false;
     }
 
     /**
-     * Создаёт определение поля из объекта или на основе параметров, со свойствами поля (field, type...)
+     * Создаёт определение поля из объекта или на основе параметров, со свойствами поля (field, type...).
      *
      * @param mixed|null $type Либо field-объект, либо тип поля (в случае указания параметров по отдельности)
      * @param string|null $null Значение Null field-объекта (YES|NO - строка, определяющая, является ли поле NULL)
      * @param string|null $default Значение по умолчанию
      * @param string|null $extra Значение Extra field-объекта
      * @param string|null $length Длина поля, если необходимо
+     *
      * @return string Определение поля (field definition)
      */
     public static function getFieldDefinition(
@@ -351,36 +363,33 @@ class Table
                 $field_info .= ' ZEROFILL';
                 $extra = str_replace('ZEROFILL', '', $extra);
             }
-            $field_info .= ' ' . $extra;
+            $field_info .= ' '.$extra;
         }
         // default
         if ($default != null) {
             if (is_numeric($default)) {
-                $field_info .=  ' DEFAULT ' . intval($default);
+                $field_info .=  ' DEFAULT '.intval($default);
             } elseif (strpos($default, '::')) {
-                $field_info .=  ' DEFAULT ' . $default ;
+                $field_info .=  ' DEFAULT '.$default;
             } else {
-                $field_info .=  ' DEFAULT "' . $default . '"';
+                $field_info .=  ' DEFAULT "'.$default.'"';
             }
         } elseif (!$isNull) {
             // для pgsql, но может и для mysql сойдет
-            if ((str_contains($type, 'CHAR') || $type == 'TEXT')) {
+            if (str_contains($type, 'CHAR') || $type == 'TEXT') {
                 $field_info .=  " DEFAULT ''";
             }
             if ($type == 'BOOLEAN') {
-                $field_info .=  " DEFAULT TRUE";
+                $field_info .=  ' DEFAULT TRUE';
             }
-            if (str_contains($type, 'INT') ) {
-                $field_info .=  " DEFAULT 0";
+            if (str_contains($type, 'INT')) {
+                $field_info .=  ' DEFAULT 0';
             }
         }
+
         return str_ireplace('auto_increment', 'AUTO_INCREMENT', $field_info);
     }
 
-    /**
-     * @param FieldInfo $type
-     * @return string
-     */
     public static function getFieldDefinitionFromObject(FieldInfo $type): string
     {
         $null = $type->Null;
@@ -398,8 +407,9 @@ class Table
         }
         if (preg_match('~\((.*)\)~U', $type, $a)) {
             $length = $a[1];
-            $type = trim(str_replace('(' . $length . ')', '', $type));
+            $type = trim(str_replace('('.$length.')', '', $type));
         }
+
         return self::getFieldDefinition($type, $null, $default, $extra, $length);
     }
 
@@ -413,14 +423,17 @@ class Table
             global $msc;
             $array = $msc->driver->getTables();
         }
+
         return $array;
     }
 
     /**
-     * Возвращает массив таблиц базы данных
+     * Возвращает массив таблиц базы данных.
      *
      * @param string|null $database База данных
+     *
      * @return array<string>
+     *
      * @throws \Exception
      */
     public static function getTables(?string $database = null): array
@@ -435,16 +448,13 @@ class Table
         foreach ($tables as $o) {
             $array[] = $o->Name;
         }
+
         return $array;
     }
 
     /**
-     * Удаляет $limit строк из $table по условию $row
+     * Удаляет $limit строк из $table по условию $row.
      *
-     * @param string $db
-     * @param string $table
-     * @param string $row
-     * @return bool
      * @throws \Exception
      */
     public function rowDelete(string $db, string $table, string $row): bool
@@ -452,18 +462,16 @@ class Table
         global $msc;
         if (!$this->validate->queryCheck($db, $table, $row)) {
             return false;
-        };
-        $row = stripslashes(urldecode($row));
-        $sql = 'DELETE FROM ' . $table . ' WHERE ' . $row;
+        }
+        $row = urldecode($row);
+        $sql = 'DELETE FROM '.$table.' WHERE '.$row;
+
         return $msc->execPdo($sql);
     }
 
     /**
-     * Копирует строки $table по условию $row
+     * Копирует строки $table по условию $row.
      *
-     * @param string $table
-     * @param string $row
-     * @return bool
      * @throws \Exception
      */
     public function rowCopy(string $table, string $row): bool
@@ -474,7 +482,7 @@ class Table
         $ai = null;
         foreach ($fields as $field) {
             if (!strchr($field->Key, 'PRI')) {
-                $fieldsWithoutKey [] = $field->Field;
+                $fieldsWithoutKey[] = $field->Field;
             }
             if ($field->Extra != null) {
                 $ai = $field->Field;
@@ -486,6 +494,7 @@ class Table
         $fields = implode(',', $fieldsWithoutKey);
         $row = stripslashes(urldecode($row));
         $sql = "INSERT INTO $table ($fields) SELECT $fields FROM $table WHERE $row";
+
         return $msc->execPdo($sql);
     }
 }

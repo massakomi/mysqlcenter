@@ -1,6 +1,7 @@
 /logs
 /.idea
 /.osp
+/vendor
 /config/popular.json
 /config/todo.md
 /config/connect.txt

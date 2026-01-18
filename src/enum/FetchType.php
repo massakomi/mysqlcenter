@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace enum;
 
 /**
- * Тип выполняемого запроса
+ * Тип выполняемого запроса.
  */
 enum FetchType
 {

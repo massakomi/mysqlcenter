@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace dto;
 
-/**
- *
- */
 final class TableInfo
 {
     /**
-     * Сюда загружаются поля в TblList
+     * Сюда загружаются поля в TblList.
+     *
      * @var array<FieldInfo>
      */
     public array $fields = [];
     /**
-     * Сюда загружаются данные частично в TblList
+     * Сюда загружаются данные частично в TblList.
+     *
      * @var array<array<string>>
      */
     public array $data = [];
@@ -43,13 +44,12 @@ final class TableInfo
     }
 
     /**
-     * @param Iterable<string> $row
-     * @return void
+     * @param iterable<string> $row
      */
-    public function fill(Iterable $row): void
+    public function fill(iterable $row): void
     {
         foreach ($row as $key => $value) {
-            $this->{$key} = $value;
+            $this->{$key} = (string)$value;
         }
     }
 }

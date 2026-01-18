@@ -7,9 +7,6 @@ namespace database;
 use dto\ConnectConfig;
 use enum\FetchType;
 
-/**
- *
- */
 class Query
 {
     public int $affectedRows = 0;
@@ -21,35 +18,29 @@ class Query
     public string $driverName = '';
 
     /**
-     * Единый для всех запрос в БД
+     * Единый для всех запрос в БД.
      *
-     * @param string $sql
-     * @return \PDOStatement|null|true
      * @throws \Exception
      */
-    public function execPdo(string $sql): \PDOStatement|null|true
+    public function execPdo(string $sql): \PDOStatement|true|null
     {
         return $this->queryPdo(FetchType::Exec, $sql);
     }
 
     /**
-     * @param string $sql
-     * @return \PDOStatement|null
      * @throws \Exception
      */
-    public function fetchPdo(string $sql): \PDOStatement|null
+    public function fetchPdo(string $sql): ?\PDOStatement
     {
         $result = $this->queryPdo(FetchType::Fetch, $sql);
+
         return $result === true ? null : $result;
     }
 
     /**
-     * @param FetchType $mode
-     * @param string $sql
-     * @return \PDOStatement|null|true
      * @throws \Exception
      */
-    private function queryPdo(FetchType $mode, string $sql): \PDOStatement|null|true
+    private function queryPdo(FetchType $mode, string $sql): \PDOStatement|true|null
     {
         global $pdo;
         if (!$pdo) {
@@ -89,13 +80,13 @@ class Query
         if ($this->logEnabled && $result) {
             $this->loqQuery($sql);
         }
+
         return $result === false ? null : $result;
     }
 
     /**
-     * @param string $sql
-     * @param int $type
      * @return array<array<string>>
+     *
      * @throws \Exception
      */
     public function getData(string $sql, int $type = \PDO::FETCH_ASSOC): array
@@ -104,9 +95,8 @@ class Query
     }
 
     /**
-     * Выполняет выбор БД (select_db) на сервера
-     * @param string $db
-     * @return bool
+     * Выполняет выбор БД (select_db) на сервера.
+     *
      * @throws \Exception
      */
     public function selectDb(string $db): bool
@@ -117,37 +107,34 @@ class Query
         try {
             $this->driver->selectDb($db);
         } catch (\Exception $e) {
-            $this->fatalError('Ошибка при выборе базы данных "' . $db . '": ' . $e->getMessage());
+            $this->fatalError('Ошибка при выборе базы данных "'.$db.'": '.$e->getMessage());
         }
+
         return true;
     }
 
     /**
      * Закрывать соединение не нужно, оно автоматически закрывается при завершении скрипта или при обнулении
-     * переменной $pdo
-     * @param ConnectConfig $config
+     * переменной $pdo.
+     *
      * @param string|null $database опционально другая бд для подключения
-     * @return void
      */
     public function connectPdo(ConnectConfig $config, ?string $database = null): void
     {
         global $pdo;
         $options = [
             \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=" . MS_COLLATION .
-                ', character_set_server=' . MS_CHARACTER_SET . ', sql_mode=""'
+            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8', collation_connection=".MS_COLLATION.
+                ', character_set_server='.MS_CHARACTER_SET.', sql_mode=""',
         ];
         $database = $database ?: $config->database;
-        $dsn = $config->driver . ':host=' . $config->host . ';port=' . $config->port . ';dbname=' . $database;
+        $dsn = $config->driver.':host='.$config->host.';port='.$config->port.';dbname='.$database;
         $pdo = new \PDO($dsn, $config->user, $config->password, $options);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 
     /**
-     * Перехватывает запрос и сохраняет его в файле
-     *
-     * @param string $sql
-     * @return bool
+     * Перехватывает запрос и сохраняет его в файле.
      */
     protected function loqQuery(string $sql): bool
     {
@@ -158,14 +145,17 @@ class Query
         $string = preg_replace('/[\r\n\t]+/', ' ', $sql);
         $string = str_replace('  ', ' ', $string);
         logInFile($string, $this->db);
+
         return true;
     }
 
     private bool $logEnabled = true;
+
     public function disableLog(): void
     {
         $this->logEnabled = false;
     }
+
     public function enableLog(): void
     {
         $this->logEnabled = true;
