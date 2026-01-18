@@ -85,7 +85,7 @@ class ActionProcessor
             case 'querysql':
                 $sql = POST('sql');
                 $type = POST('type');
-                if (preg_match('~^\s*(update|delete|insert|drop|create)~i', $sql)) {
+                if (preg_match('~^\s*(update|delete|insert|drop|create|alter)~i', $sql)) {
                     $type = 'exec';
                 }
                 if ($type == 'exec') {
@@ -153,26 +153,11 @@ class ActionProcessor
 
                 // Изменение опций
             case 'tableOptions':
-                if (count($_POST) == 0) {
-                    break;
-                }
-                $table = $tables;
                 $ai = intval($this->param('auto_increment'));
-                if ($msc->driverName === 'pgsql') {
-                    $info = $msc->driver->getIdentityInfo($table);
-                    if (empty($info['sequence_name'])) {
-                        $msc->error('Таблица не имеет sequence');
-                        break;
-                    }
-                    $sequenceName = $info['sequence_name'];
-                    $sql = "SELECT setval('$sequenceName', $ai);";
+                if ($msc->driver->setAutoIncrement($tables, $ai)) {
+                    $msc->success('Таблица изменена', $msc->lastSql);
                 } else {
-                    $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
-                }
-                if ($msc->execPdo($sql)) {
-                    $msc->success('Таблица изменена', $sql);
-                } else {
-                    $msc->error('Ошибка изменения таблицы', $sql);
+                    $msc->error('Ошибка изменения таблицы', $msc->lastSql);
                 }
                 break;
 

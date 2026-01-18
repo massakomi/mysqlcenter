@@ -131,10 +131,6 @@ class TblChange extends Base
                     ++$countEmpty;
                 }
                 $type = $fields[$key]->Type;
-                if ($_POST['func'][$numRow][$key] != '') {
-                    $value = call_user_func($_POST['func'][$numRow][$key], $value);
-                    $type = 'varchar';
-                }
                 $isNull = isset($_POST['isNull'][$numRow][$key]);
                 if ($isNull) {
                     $value = null;
@@ -191,7 +187,9 @@ class TblChange extends Base
         global $pdo;
         if (is_null($value) && $isNull) {
             return 'NULL';
-        } elseif (stripos($type, 'int') > -1 && !empty($value) && is_numeric($value)) {
+        } elseif (stripos($type, 'int') > -1) {
+            return (int)$value;
+        } elseif (in_array($value, ['CURRENT_TIMESTAMP'])) {
             return $value;
         } else {
             return $pdo->quote($value);

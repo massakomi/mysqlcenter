@@ -109,7 +109,7 @@ table.contentTable + form {margin-top: 10px}
 .contentTable.anone a { text-decoration:none}
 .contentTable .e { background-color: var(--light-ok-color)}
 .contentTable .n { background-color: var(--light-false-color)}
-.contentTable a + a {margin-left: 5px}
+.contentTable a + a, .contentTable [role="button"] + [role="button"] {margin-left: 5px}
 
 /* Таблица с формой */
 form.tableFormEdit { margin:10px 0}
@@ -176,6 +176,7 @@ table.contentTable.interlaced tr:nth-child(odd) {background-color: var(--light-g
 textarea.wide {width: 100%; height: 100px}
 [type="checkbox"].aligned { vertical-align: -2px; margin: 0;}
 .responsive {overflow-x: auto; overflow-y: hidden}
+.pre {white-space: pre-line;}
 /* Кнопки */
 input[type="submit"], input[type="button"] {border-radius: 3px; border: 1px solid var(--light-text-color); cursor: pointer;/* padding: 5px 10px*/}
 input[type="submit"]:hover, input[type="button"]:hover {border-color: var(--head-text-color); background-color: var(--hidden-text-color)}

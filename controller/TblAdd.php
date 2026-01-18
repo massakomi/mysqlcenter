@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace controller;
 
 use database\Table;
+use dto\FieldInfo;
 
 class TblAdd extends Base
 {
@@ -201,11 +202,18 @@ class TblAdd extends Base
         // определение полей
         $a = [];
         foreach ($fieldsDefEdit as $oldFieldName => $definition) {
-            $oldDefinition = "`$oldFieldName` ".Table::getFieldDefinitionFromObject($fields[$oldFieldName]);
+            $fieldInfo = new FieldInfo();
+            $fieldInfo->fill((array)$fields[$oldFieldName]);
+            $oldDefinition = "`$oldFieldName` ".Table::getFieldDefinitionFromObject($fieldInfo);
             if ($oldDefinition == $definition) {
                 continue;
             }
-            $a[] = ' CHANGE `'.$oldFieldName.'` '.$definition;
+            if ($msc->driverName == 'pgsql') {
+                $alter = ' ALTER ';
+            } else {
+                $alter = ' CHANGE ';
+            }
+            $a[] = $alter.'`'.$oldFieldName.'` '.$definition;
         }
         $sql  = count($a) == 0 ? '' : 'ALTER TABLE `'.GET('table')."`\r\n".implode(",\r\n", $a);
         // ключи

@@ -23,6 +23,13 @@ export function TblListPostgresSQL() {
         msQuery('querysql', {sql: `DROP SEQUENCE ${data.sequencename}`})
     }
 
+    const onEditSequence = (data) => {
+      let nextVal = prompt('Изменение nextval sequence:', data.start_value)
+      if (nextVal > 0) {
+        msQuery('querysql', {type:'exec', sql: `SELECT setval('${data.sequencename}', ${nextVal});`})
+      }
+    }
+
     const [schemas, setSchemas] = useState([]);
     const [sequences, setSequences] = useState([]);
     useEffect(() => {
@@ -44,7 +51,7 @@ export function TblListPostgresSQL() {
           </fieldset>
 
           <Table data={schemas} onDelete={onDeleteSchema} />
-          <Table data={sequences} onDelete={onDeleteSequence} />
+          <Table data={sequences} onDelete={onDeleteSequence} onEdit={onEditSequence} />
       </Fragment>
     );
 }

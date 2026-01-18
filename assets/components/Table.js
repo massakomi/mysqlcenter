@@ -36,10 +36,10 @@ export function Table(props) {
         let value = []
         if (key === 'act') {
             if (props.onDelete) {
-                value.push(<a href="#" onClick={props.onDelete.bind(this, row)} title="Удалить"><img alt="" border="0" src="/images/close.png"/></a>)
+                value.push(<span role="button" onClick={props.onDelete.bind(this, row)} title="Удалить"><img alt="" border="0" src="/images/close.png"/></span>)
             }
             if (props.onEdit) {
-                value.push(<a href="#" onClick={props.onEdit.bind(this, row)} title="Редактировать"><img alt="" border="0" src="/images/edit.gif"/></a>)
+                value.push(<span role="button" onClick={props.onEdit.bind(this, row)} title="Редактировать"><img alt="" border="0" src="/images/edit.gif"/></span>)
             }
         } else {
             value = getValue(row[key])

@@ -71,4 +71,6 @@ interface Driver
      * @return array<string>
      */
     public function getIdentityInfo(string $table): array;
+
+    public function setAutoIncrement(string $table, int $ai): bool;
 }

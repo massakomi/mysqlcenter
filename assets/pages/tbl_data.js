@@ -9,6 +9,7 @@ import {
     processRowValue,
     umaker
 } from "../functions";
+import {Table} from "../components/Table";
 
 function TableHeader(props) {
 
@@ -69,7 +70,7 @@ function TableHeader(props) {
     );
 }
 
-function Table(props) {
+function TableData(props) {
 
     const deleteRow = (idRow, e) => {
         e.preventDefault()
@@ -98,8 +99,8 @@ function Table(props) {
         let pkValues = []
         if (pk.length > 0) {
             for (let pkCurrent of pk) {
-                if (!row[pkCurrent]) {
-                    console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`)
+                if (!row.hasOwnProperty(pkCurrent)) {
+                    console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`, row)
                     continue;
                 }
                 pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
@@ -107,8 +108,8 @@ function Table(props) {
             // если нет pk ключей, берем простые ключи
         } else if (mul.length > 0) {
             for (let pkCurrent of mul) {
-                if (!row[pkCurrent]) {
-                    console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`)
+                if (!row.hasOwnProperty(pkCurrent)) {
+                    console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`, row)
                     continue;
                 }
                 pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
@@ -281,6 +282,13 @@ export function Tbl_data(props) {
         form.submit()
     }
 
+    if (empty(props)) {
+      return ''
+    }
+    if (props.onlyData) {
+      return <Table data={props.data} />
+    }
+
     useEffect(() => {
 
         contentTableEvents()
@@ -323,10 +331,6 @@ export function Tbl_data(props) {
         })
     }, []);
 
-    if (empty(props)) {
-        return ''
-    }
-
     const image = src => props.dirImage + src;
 
     let links = <TableLinks count={props.count} go={props.go} linksRange={props.linksRange} part={props.part} />
@@ -338,7 +342,7 @@ export function Tbl_data(props) {
               <input type="hidden" name="action" value="" />
 
               {links}
-              <Table {...props} />
+              <TableData {...props} />
               {links}
 
               <div className="flex baseline">

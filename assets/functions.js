@@ -27,7 +27,6 @@ export async function msQuery(mode, query = '', callback = '', errorCallback = '
  * @returns {Promise<{error: boolean, message: string}|*>}
  */
 async function queryResponse(response, callback, errorCallback) {
-
     if (!response.ok) {
         try {
             let error = await response.json()
@@ -77,6 +76,7 @@ export const Messages = {
 
     show(json) {
         if (!json.messages || !json.messages.length) {
+          console.log('Не могу показать сообщения из массива - нет ключа messaages', json)
             return
         }
 

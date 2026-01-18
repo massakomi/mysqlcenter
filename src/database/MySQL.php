@@ -257,4 +257,11 @@ class MySQL implements Driver
     {
         return [];
     }
+
+    public function setAutoIncrement(string $table, int $ai): bool
+    {
+        global $msc;
+        $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
+        return (bool)$msc->execPdo($sql);
+    }
 }

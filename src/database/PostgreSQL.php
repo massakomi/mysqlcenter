@@ -454,4 +454,17 @@ class PostgreSQL implements Driver
 
         return $info;
     }
+
+    public function setAutoIncrement(string $table, int $ai): bool
+    {
+        global $msc;
+        $info = $this->getIdentityInfo($table);
+        if (empty($info['sequence_name'])) {
+            $msc->error('Таблица не имеет sequence');
+            return false;
+        }
+        $sequenceName = $info['sequence_name'];
+        $sql = "SELECT setval('$sequenceName', $ai);";
+        return (bool)$msc->execPdo($sql);
+    }
 }

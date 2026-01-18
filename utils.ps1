@@ -9,10 +9,8 @@ Do
         'es - eslint check all'
         'esh - eslint help'
         "`n"
-        'cbf - phpcbf'
-        'cf - php-cs-fixer'
-        'cs - phpcs'
-        'css - phpcs summary only'
+        'cf - fixer'
+        'cs - fixer check'
         "`n"
         'stan - phpstan analyse, levels: '
         'stan0 stan1..8'
@@ -33,10 +31,8 @@ Do
     "es"        { npx eslint }
     "esh"       { npx eslint -h }
 
-    "cbf"       { vendor/bin/phpcbf .\controller .\src --standard=PSR12 -p }
     "cf"        { vendor/bin/php-cs-fixer fix }
-    "cs"        { vendor/bin/phpcs .\controller .\src --standard=PSR12 }
-    "css"       { vendor/bin/phpcs .\controller .\src --standard=PSR12  -p --report=summary }
+    "cs"        { vendor/bin/php-cs-fixer check }
 
     "stan"      { phpstan analyse }
     "stan0"     { phpstan analyse -l 0 }

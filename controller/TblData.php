@@ -26,10 +26,12 @@ class TblData extends Base
             if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
                 $msc->table = str_replace('`', '', $t[1]);
             } else {
-                $text = 'SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе';
-                $msc->error($text);
-
-                return [];
+                //$text = 'SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе';
+                //$msc->error($text);
+                return [
+                    'data' => $msc->getData($directSQL),
+                    'onlyData' => true
+                ];
             }
         } elseif ($msc->table == '') {
             $msc->error('Не указана таблица в запросе');

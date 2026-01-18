@@ -73,7 +73,15 @@ export function Messages(props) {
         if (item.type === 'error' && item.error !== '' && item.error != null) {
             extra.push(<div key="v3" className="mysqlError"><b>Ошибка:</b> {item.error}</div>)
         }
-        return (<div style={{ color: item.color }}>{item.text}{extra}</div>)
+        let textClass = null
+        if (item.text.startsWith('#0')) {
+          textClass = 'pre'
+        }
+        return (
+          <div style={{ color: item.color }}>
+            <span className={textClass}>{item.text}</span>
+            {extra}
+        </div>)
     }
 
     const CloseMessage = (e) => {

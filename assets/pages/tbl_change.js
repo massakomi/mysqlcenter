@@ -153,14 +153,11 @@ function AddRow(props) {
         nullCheckbox = <input name={`isNull[${j}][${i}]`} type="checkbox" value="1" defaultChecked={checked} />
     }
 
-    let funcs = ['', 'md5']
-
     return (
       <tr>
           <td><b className="field">{name}</b><br />{type}</td>
           <td>{nullCheckbox}</td>
           <td><MSC_InsertInput {...props} type={type} /></td>
-          <td><HtmlSelector data={funcs} name={`func[${j}][${i}]`} /></td>
       </tr>
     )
 }
@@ -182,11 +179,18 @@ function AddRows(props) {
         let i = 0;
         for (const key in props.fields) {
           const field = props.fields[key]
-          let value = null
+          /*let value = null
           if (field.Type.match(/boolean/i)) {
             value = field.Default
+          }*/
+          // здесь не нужно не только для boolean, но и для int, для double presitions и мало ли еще где?
+          let value = field.Default
+          if (value) {
+            if (value.startsWith('NULL::')) {
+              value = null
+            }
           }
-          tableInnerRows.push(<AddRow key={field.Field} name={field.Field} value={value} i={i} j={j} fields={props.fields} />)
+          tableInnerRows.push(<AddRow key={field.Field} name={field.Field} value={value} default={field.Default} i={i} j={j} fields={props.fields} />)
           i ++
         }
 
@@ -197,7 +201,6 @@ function AddRows(props) {
                   <td>Поле</td>
                   <td>Ноль</td>
                   <td>Ряд #<span>{j + 1}</span></td>
-                  <td>Функция</td>
               </tr>
               {tableInnerRows}
               </tbody>
@@ -237,7 +240,7 @@ function EditRows(props) {
             if (key.indexOf('MUL') > -1) {
                 mul.push(`${field}='${value}'`)
             }
-            return <AddRow key={'row'+i} name={field} fields={props.fields} value={value} i={i} j={j} />
+            return <AddRow key={'row'+i} name={field} fields={props.fields} value={value} default={field.Default} i={i} j={j} />
         });
 
         let cond = '';
