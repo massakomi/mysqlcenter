@@ -4,45 +4,13 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\ExportCli;
 use database\MSTable;
 use database\Server;
 use database\Table;
 
 class Export extends Base
 {
-    public function pgDumpConsole(): never
-    {
-        global $msc;
-        try {
-            header('Content-Type: text/html; charset=windows-866');
-            $config = $msc->getConfig();
-            $filename = 'backup_'.$config->database.'.sql';
-
-            $file = 'G:/os/modules/PostgreSQL-18/bin/pg_dump.exe';
-            // Command to run pg_dump (ensure pg_dump is in your system's PATH)
-            $command = "$file -h $config->host -p $config->port -U $config->user --format=plain --inserts --file=$filename $config->database 2>&1";
-
-            // Set PGPASSWORD environment variable securely
-            putenv("PGPASSWORD=$config->password");
-
-            // Execute the command
-            exec($command, $output, $return_var);
-
-            // Unset PGPASSWORD for security
-            putenv('PGPASSWORD=');
-
-            if ($return_var === 0) {
-                echo "Database structure and data exported to $filename successfully.";
-            } else {
-                echo 'Error: pg_dump failed. Output: '.implode("\n", $output);
-            }
-            exit;
-        } catch (\Exception $e) {
-            var_dump($e->getMessage());
-            exit;
-        }
-    }
-
     /**
      * @return array<string>
      *
@@ -80,7 +48,8 @@ class Export extends Base
             // 3.2.1. Создание
             if (is_array($array) && count($array) > 0 || is_array($exportDb) && count($exportDb) > 0) {
                 // создание дампа
-                $exp = new \database\Export();
+                $config = (new \service\Config())->getConfig();
+                $exp = new ExportCli($config);
                 $exp->setComments(POST('addComment') != '');
                 $exp->setHeader($this->dumpHeader());
                 $exp->setOptionsStruct($addIfNot, $addAuto, $addKav);

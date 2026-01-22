@@ -154,7 +154,7 @@ function config(string $param, string $default = ''): string
         }
     }
 
-    return (string)$mscConfigCash[$param] ?? $default;
+    return (string) $mscConfigCash[$param] ?? $default;
 }
 
 function file_get_contents_bytes(string $path, int $size = 0): ?string

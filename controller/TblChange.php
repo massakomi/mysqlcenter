@@ -188,7 +188,7 @@ class TblChange extends Base
         if (is_null($value) && $isNull) {
             return 'NULL';
         } elseif (stripos($type, 'int') > -1) {
-            return (int)$value;
+            return (int) $value;
         } elseif (in_array($value, ['CURRENT_TIMESTAMP'])) {
             return $value;
         } else {

@@ -45,6 +45,7 @@ export function Login(props) {
         password: "",
         port: "3306",
         database: "",
+        binPath: "",
     });
 
     const rename = () => {
@@ -109,39 +110,42 @@ export function Login(props) {
 
     return (
       <div className="login flex">
-          <form>
-              <div>
-                  <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host}/>
-              </div>
-              <div>
-                  <label>Пользователь</label><input name="user" type="text" onChange={update} value={config[current].user}/>
-              </div>
-              <div>
-                  <label>Пароль</label><input name="password" type="password" onChange={update} value={config[current].password}/>
-              </div>
-              <div>
-                  <label>Порт</label><input name="port" type="number" onChange={update} value={config[current].port}/>
-              </div>
-              <div>
-                  <label>База данных</label><input name="database" type="text" onChange={update} value={config[current].database}/>
-              </div>
-              <div>
-                  <label>Драйвер</label>
-                  <select name="driver"  onChange={update} value={config[current].driver}>
-                      <option>mysql</option>
-                      <option>pgsql</option>
-                  </select>
-              </div>
-              <div>
-                  <input type="button" onClick={save.bind(this, 'open')} defaultValue="Открыть"/>
-                  <input type="button" onClick={save.bind(this, 'save')} defaultValue="Сохранить"/>
-                  <input type="button" onClick={save.bind(this, 'check')} defaultValue="Проверить"/>
-              </div>
-          </form>
-          <div className="list">
-              <select multiple defaultValue={[current]} onChange={changeCurrentSetting}>
-                  {options}
-              </select>
+        <form>
+          <div>
+            <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host}/>
+          </div>
+          <div>
+            <label>Пользователь</label><input name="user" type="text" onChange={update} value={config[current].user}/>
+          </div>
+          <div>
+            <label>Пароль</label><input name="password" type="password" onChange={update} value={config[current].password}/>
+          </div>
+          <div>
+            <label>Порт</label><input name="port" type="number" onChange={update} value={config[current].port}/>
+          </div>
+          <div>
+            <label>База данных</label><input name="database" type="text" onChange={update} value={config[current].database}/>
+          </div>
+          <div>
+            <label>Драйвер</label>
+            <select name="driver" onChange={update} value={config[current].driver}>
+              <option>mysql</option>
+              <option>pgsql</option>
+            </select>
+          </div>
+          <div>
+            <label>Путь к bin папке</label><input name="binPath" type="binPath" onChange={update} value={config[current].binPath}/>
+          </div>
+          <div>
+            <input type="button" onClick={save.bind(this, 'open')} defaultValue="Открыть"/>
+            <input type="button" onClick={save.bind(this, 'save')} defaultValue="Сохранить"/>
+            <input type="button" onClick={save.bind(this, 'check')} defaultValue="Проверить"/>
+          </div>
+        </form>
+        <div className="list">
+          <select multiple defaultValue={[current]} onChange={changeCurrentSetting}>
+            {options}
+          </select>
               <input type="button" onClick={add} defaultValue="Добавить"/>
               <input type="button" onClick={rename.bind(this)} defaultValue="Переименовать"/>
           </div>

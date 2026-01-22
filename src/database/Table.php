@@ -27,14 +27,11 @@ class Table
     /**
      * Совершает действие типа $type с $table, используя если надо параметр $param.
      *
-     * @param string $db
-     * @param string $table
      * @param string $type DROP | TRUNCATE | ANALISE | OPTIMIZE | CHECK | REPAIR | FLUSH
-     * @param string $param
      *
      * @throws \Exception
      */
-    public function tableAction($db, $table, $type = 'DROP', $param = null): bool
+    public function tableAction(string $db, string $table, string $type, ?string $param = null): bool
     {
         global $msc;
         if (!$this->validate->queryCheck($db, $table)) {
@@ -49,7 +46,7 @@ class Table
                 $text = 'удалена';
                 break;
             case 'TRUNCATE':
-                $sql = "TRUNCATE TABLE `$table`";
+                $sql = "TRUNCATE TABLE `$table`".($msc->driverName == 'pgsql' ? ' CASCADE' : '');
                 $text = 'очищена';
                 break;
             case 'CHECK':
@@ -496,5 +493,32 @@ class Table
         $sql = "INSERT INTO $table ($fields) SELECT $fields FROM $table WHERE $row";
 
         return $msc->execPdo($sql);
+    }
+
+    /**
+     * @param FieldInfo[] $fields
+     */
+    public static function whereCondition(array $fields, string $query): string
+    {
+        global $msc;
+        $parts = [];
+        foreach ($fields as $field) {
+            $fieldName = $field->Field;
+            $fieldType = strtolower($field->Type);
+            if (preg_match('~(boolean|timestamp|json)~i', $fieldType)) {
+                continue;
+            }
+            // Check if field is numeric type (int, decimal, float, double, numeric)
+            $isNumeric = preg_match('~^(int|decimal|float|double|numeric|real|smallint|bigint)~', $fieldType);
+            if ($msc->driverName == 'pgsql' && $isNumeric) {
+                // Cast numeric to text for LIKE
+                $parts[] = "\"$fieldName\"::text LIKE '%$query%'";
+            } else {
+                // For MySQL or text fields
+                $parts[] = "`$fieldName` LIKE '%$query%'";
+            }
+        }
+
+        return ' WHERE '.implode(' OR ', $parts);
     }
 }

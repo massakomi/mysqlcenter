@@ -35,6 +35,7 @@ if (function_exists('date_default_timezone_set')) {
     date_default_timezone_set('Europe/Moscow');
 }
 
+require_once DIR_MYSQL.'vendor/autoload.php';
 require_once DIR_MYSQL.'src/func.php';
 set_error_handler('errorHandlerNotice');
 

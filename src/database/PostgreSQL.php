@@ -51,7 +51,7 @@ class PostgreSQL implements Driver
         } elseif ($db != $msc->db) {
             $oldDatabase = $msc->db;
             try {
-                $config = $msc->getConfig();
+                $config = $msc->config->getConfig();
                 $msc->connectPdo($config, $db);
             } catch (\PDOException $e) {
                 $msc->error("Не смог соединиться с БД $db, чтобы получить инфо таблиц");
@@ -74,7 +74,7 @@ class PostgreSQL implements Driver
         }
 
         if ($oldDatabase) {
-            $config = $msc->getConfig();
+            $config = $msc->config->getConfig();
             $msc->connectPdo($config, $oldDatabase);
         }
 
@@ -103,7 +103,9 @@ class PostgreSQL implements Driver
                 0 as "Create_time",
                 0 as "Update_time",
                 \''.$charset.'\' as "Collation",
-                table_schema as "Schema"
+                table_schema as "Schema",
+                \'\' as "Comment",
+                \'\' as "Create_options"
             FROM information_schema.tables ist 
                 LEFT JOIN pg_class c ON c.relname = ist.table_name
                 LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -461,10 +463,44 @@ class PostgreSQL implements Driver
         $info = $this->getIdentityInfo($table);
         if (empty($info['sequence_name'])) {
             $msc->error('Таблица не имеет sequence');
+
             return false;
         }
         $sequenceName = $info['sequence_name'];
         $sql = "SELECT setval('$sequenceName', $ai);";
-        return (bool)$msc->execPdo($sql);
+
+        return (bool) $msc->execPdo($sql);
+    }
+
+    public function getSequences(string $table): false|array
+    {
+        global $pdo;
+        $sqlSeq = "
+        SELECT
+            n.nspname AS sequence_schema,
+            c.relname AS sequence_name,
+            s.seqstart AS start_value,
+            s.seqincrement AS increment,
+            s.seqmax AS maximum_value,
+            s.seqmin AS minimum_value,
+            s.seqcache AS cache_size,
+            CASE WHEN s.seqcycle THEN 'YES' ELSE 'NO' END AS cycle_option
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        JOIN pg_sequence s ON s.seqrelid = c.oid
+        WHERE c.relkind = 'S'
+          AND n.nspname = current_schema()
+          AND c.relname IN (
+            SELECT substring(pg_get_serial_sequence(quote_ident(table_schema) || '.' || quote_ident(table_name), column_name) from '[^.]+$')
+            FROM information_schema.columns
+            WHERE table_name = :table
+              AND table_schema = current_schema()
+              AND pg_get_serial_sequence(quote_ident(table_schema) || '.' || quote_ident(table_name), column_name) IS NOT NULL
+          ) ";
+
+        $stmtSeq = $pdo->prepare($sqlSeq);
+        $stmtSeq->execute(['table' => $table]);
+
+        return $stmtSeq->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

@@ -64,7 +64,7 @@ function SearchDatabase(props) {
               </div>
               <div className="mb-10">
                   искать имя поля <br/>
-                  <input name="queryField" type="text" size="50" onChange={updateState} value={queryField}/>
+                  <input name="queryField" type="text" size="50" onChange={updateState} value={queryField} placeholder="name or regexp" />
               </div>
 
               <input type="submit" defaultValue="Искать!" className="submit" disabled={disabled}/>
@@ -77,9 +77,17 @@ export function Search(props) {
 
     return (
       <Fragment>
-          {props.results ? <Table data={props.results} /> : null}
-          {!empty(props.table) ? <SearchTable {...props} /> : null }
-          <SearchDatabase {...props} />
+        <div className="flex justify-between items-center">
+          <div>
+            {!empty(props.table) ? <SearchTable {...props} /> : null }
+            <SearchDatabase {...props} />
+          </div>
+          <div>
+            {props.results ? <Table data={props.results} /> : null}
+          </div>
+        </div>
+
+
       </Fragment>
     )
 }

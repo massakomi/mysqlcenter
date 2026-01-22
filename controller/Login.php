@@ -16,7 +16,12 @@ class Login extends Base
         global $msc;
         $msc->pageTitle = 'Login';
 
-        return json_decode(file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '', true);
+        $data = $msc->config->getAllConfig();
+        if (count($data) === 0) {
+            $msc->error('No connection configurations found in the config file: '.MS_CONNECT_CONFIG_FILE);
+        }
+
+        return $data;
     }
 
     public function checkAction(): void
@@ -43,7 +48,7 @@ class Login extends Base
     public function saveAction(): void
     {
         global $msc;
-        $res = $msc->saveConfig($_POST['config'], $_POST['current']);
+        $res = $msc->config->saveConfig($_POST['config'], $_POST['current']);
         if ($res) {
             $msc->success('Конфиг сохранен');
         } else {

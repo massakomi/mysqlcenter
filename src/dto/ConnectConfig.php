@@ -13,6 +13,7 @@ final class ConnectConfig
         public ?string $user = null,
         public ?string $password = null,
         public ?string $driver = null,
+        public ?string $binPath = null,
     ) {
     }
 }

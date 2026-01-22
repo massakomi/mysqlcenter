@@ -203,7 +203,7 @@ class TblAdd extends Base
         $a = [];
         foreach ($fieldsDefEdit as $oldFieldName => $definition) {
             $fieldInfo = new FieldInfo();
-            $fieldInfo->fill((array)$fields[$oldFieldName]);
+            $fieldInfo->fill((array) $fields[$oldFieldName]);
             $oldDefinition = "`$oldFieldName` ".Table::getFieldDefinitionFromObject($fieldInfo);
             if ($oldDefinition == $definition) {
                 continue;

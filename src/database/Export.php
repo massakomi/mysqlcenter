@@ -306,6 +306,8 @@ class Export
             $dump .= ") ENGINE=$engine DEFAULT CHARSET=$charset$pack$ai$comment".$wr;
         }
 
+        $this->exportSequences();
+
         return $this->data .= $dump;
     }
 
@@ -407,8 +409,10 @@ class Export
                         continue;
                     }
                     if (isset($row[$i])) {
-                        if (stristr($v->Type, 'int')) {
+                        if (stristr($v->Type, 'int') || stristr($v->Type, 'float') || stristr($v->Type, 'double')) {
                             $val = $row[$i];
+                        } elseif (stristr($v->Type, 'boolean')) {
+                            $val = (string) $row[$i];
                         } else {
                             $val = '\''.$pdo->quote($row[$i]).'\'';
                         }
@@ -496,5 +500,52 @@ class Export
 
         // текстовое поле
         return $this->get();
+    }
+
+    private function exportSequences(): void
+    {
+        global $msc, $pdo;
+        if ($msc->driverName === 'pgsql') {
+            // Export sequences related to identity or serial columns
+            $sequences = $msc->driver->getSequences($this->table);
+            foreach ($sequences as $seq) {
+                $seqName = $seq['sequence_name'];
+                $start = $seq['start_value'];
+                $inc = $seq['increment'];
+                $max = $seq['maximum_value'];
+                $min = $seq['minimum_value'];
+                $cache = $seq['cache_size'];
+                $cycle = $seq['cycle_option'];
+
+                $this->data .= "\n-- Sequence: \"$seqName\"\n";
+                $this->data .= "CREATE SEQUENCE \"$seqName\"\n";
+                $this->data .= "    START WITH $start\n";
+                $this->data .= "    INCREMENT BY $inc\n";
+                $this->data .= "    MINVALUE $min\n";
+                $this->data .= "    MAXVALUE $max\n";
+                $this->data .= "    CACHE $cache\n";
+                $this->data .= "    $cycle;\n";
+            }
+
+            // 2. Export identity columns options
+            // Query identity columns and their generation options
+            $sqlIdentity = '
+                SELECT column_name, identity_generation
+                FROM information_schema.columns
+                WHERE table_name = :table
+                  AND table_schema = current_schema()
+                  AND identity_generation IS NOT NULL';
+            $stmtId = $pdo->prepare($sqlIdentity);
+            $stmtId->execute(['table' => $this->table]);
+            $identityCols = $stmtId->fetchAll(\PDO::FETCH_ASSOC);
+
+            foreach ($identityCols as $col) {
+                $colName = $col['column_name'];
+                $generation = $col['identity_generation']; // 'ALWAYS' or 'BY DEFAULT'
+
+                $this->data .= "\n-- Identity option for column $colName\n";
+                $this->data .= "ALTER TABLE $this->table ALTER COLUMN $colName ADD GENERATED $generation AS IDENTITY;\n";
+            }
+        }
     }
 }

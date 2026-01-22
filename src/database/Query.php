@@ -70,11 +70,11 @@ class Query
             if ($this->exceptionOnError && !isAjax()) {
                 // При USE ошибка перехватывается и выводится другой html
                 if (!str_starts_with($sql, 'USE')) {
-                //    echo '<pre>';
+                    //    echo '<pre>';
                 }
-                //echo $sql;
-                //echo '<hr />';
-                //throw new \Exception($this->error);
+                // echo $sql;
+                // echo '<hr />';
+                // throw new \Exception($this->error);
                 // Желательно показывать так, красиво и только в крайнем случае
                 $msc->error($e->getTraceAsString(), $sql);
             }

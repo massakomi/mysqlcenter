@@ -262,6 +262,7 @@ class MySQL implements Driver
     {
         global $msc;
         $sql = "ALTER TABLE `$table` AUTO_INCREMENT=$ai";
-        return (bool)$msc->execPdo($sql);
+
+        return (bool) $msc->execPdo($sql);
     }
 }

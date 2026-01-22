@@ -8,3 +8,4 @@
 /node_modules
 /public/js/dist.js
 /config/connect.json
+/.php-cs-fixer.cache

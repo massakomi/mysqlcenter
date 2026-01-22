@@ -52,9 +52,8 @@ class Search extends Base
         $results = [];
         $founded = 0;
         foreach ($array as $table) {
-            $fields = Table::getFieldNames($table);
-            $whereCondition = ' WHERE '.implode(' LIKE "%'.$query.'%" OR ', $fields).' LIKE "%'
-                .$query.'%"';
+            $fields = Table::getFields($table);
+            $whereCondition = Table::whereCondition($fields, $query);
             $sql = "SELECT COUNT(*) as c FROM $table $whereCondition";
             $result = $msc->fetchPdo($sql);
             if (!$result) {
@@ -94,10 +93,10 @@ class Search extends Base
         $founded = 0;
         $foundedTotal = 0;
         foreach ($array as $table) {
-            $fields = Table::getFieldNames($table);
+            $fields = Table::getFields($table);
             $founds = [];
             foreach ($fields as $field) {
-                if (stristr($field, $queryField)) {
+                if ($this->matchesPattern($field->Field, $queryField)) {
                     $founds[] = $field;
                     ++$foundedTotal;
                 }
@@ -107,7 +106,7 @@ class Search extends Base
                 ++$founded;
                 $results[] = [
                     'table' => ['href' => "/?s=tbl_data&db=$msc->db&table=$table", 'text' => $table],
-                    'fields' => implode(', ', $founds),
+                    'fields' => $founds,
                 ];
             }
         }
@@ -115,5 +114,47 @@ class Search extends Base
         $msc->pageTitle = "Результаты поиска по полям (найдено таблиц $founded, полей $foundedTotal)";
 
         return compact('results', 'founded', 'foundedTotal', 'tables');
+    }
+
+    /**
+     * Check if field name matches the search pattern.
+     *
+     * @param string $fieldName The field name to check
+     * @param string $pattern The search pattern which might contain wildcards
+     */
+    private function matchesPattern(string $fieldName, string $pattern): bool
+    {
+        // If pattern contains regex special chars or wildcards, treat as regex
+        if (preg_match('~[*?\[\]]~', $pattern)) {
+            // Escape regex special chars except for [] and -
+            // We do this by escaping all except these chars
+            $escaped = '';
+            $len = strlen($pattern);
+            for ($i = 0; $i < $len; ++$i) {
+                $char = $pattern[$i];
+                if (in_array($char, ['*', '?'])) {
+                    // leave for replacement later
+                    $escaped .= $char;
+                } elseif ($char === '[' || $char === ']' || $char === '-') {
+                    // leave as is
+                    $escaped .= $char;
+                } else {
+                    // escape regex special chars
+                    $escaped .= preg_quote($char, '/');
+                }
+            }
+
+            // Replace wildcards with regex equivalents
+            $regex = '/'.str_replace(
+                ['*', '?'],
+                ['.*', '.'],
+                $escaped
+            ).'/';
+
+            return (bool) preg_match($regex, $fieldName);
+        }
+
+        // Fall back to normal string search for patterns without wildcards
+        return stristr($fieldName, $pattern) !== false;
     }
 }

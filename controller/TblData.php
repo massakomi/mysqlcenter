@@ -26,11 +26,9 @@ class TblData extends Base
             if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
                 $msc->table = str_replace('`', '', $t[1]);
             } else {
-                //$text = 'SELECT-запрос сформирован неправильно и не удалось найти таблицу в запросе';
-                //$msc->error($text);
                 return [
                     'data' => $msc->getData($directSQL),
-                    'onlyData' => true
+                    'onlyData' => true,
                 ];
             }
         } elseif ($msc->table == '') {
@@ -66,7 +64,7 @@ class TblData extends Base
 
         // Составляем запрос, если не определён запрос из вне
         if (empty($directSQL)) {
-            $whereCondition = $this->getWhere($fieldsNames);
+            $whereCondition = $this->getWhere($fields);
 
             // Получаем кол-во рядов в таблице
             $count = 0;
@@ -89,7 +87,7 @@ class TblData extends Base
             if ($count == 0) {
                 if ($whereCondition) {
                     $msc->pageTitle = "Таблица: $msc->table";
-                    $msc->notice("Ничего не найдено в таблице $msc->table по условию");
+                    $msc->notice("Ничего не найдено в таблице $msc->table по условию $whereCondition");
                 } else {
                     $msc->pageTitle = "Таблица: $msc->table (пустая)";
                     $msc->notice("В таблице $msc->table нет данных");
@@ -149,21 +147,17 @@ class TblData extends Base
         ];
     }
 
-    /**
-     * @param array<string> $fieldsNames
-     */
-    private function getWhere(array $fieldsNames): ?string
+    private function getWhere(array $fields): ?string
     {
         global $msc;
-        // Собираем where условие если требуется, для выборки
         $whereCondition = null;
         $query = POST('query', GET('query'));
         if ($query != '' && $query != 'Поиск или where') {
+            $query = trim($query);
             if (preg_match('~([=<>]| (like|in|is) )~i', $query)) { // isWhere?
                 $whereCondition = ' WHERE '.$query;
             } else {
-                $where = implode('` LIKE "%'.$query.'%" OR `', $fieldsNames);
-                $whereCondition = ' WHERE `'.$where.'` LIKE "%'.$query.'%"';
+                $whereCondition = Table::whereCondition($fields, $query);
             }
         } elseif (GET('where') != null) {
             $whereCondition = ' WHERE '.urldecode(stripslashes(GET('where')));
@@ -175,7 +169,9 @@ class TblData extends Base
             }
         }
         if ($msc->driverName == 'pgsql' && $whereCondition) {
+            // Replace backticks with double quotes for PostgreSQL
             $whereCondition = str_replace('"', "'", $whereCondition);
+            $whereCondition = str_replace('`', '"', $whereCondition);
         }
 
         return $whereCondition;

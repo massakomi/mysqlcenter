@@ -49,7 +49,7 @@ final class TableInfo
     public function fill(iterable $row): void
     {
         foreach ($row as $key => $value) {
-            $this->{$key} = (string)$value;
+            $this->{$key} = (string) $value;
         }
     }
 }

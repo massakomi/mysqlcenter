@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace service;
 
 use database\{Driver, MySQL, PostgreSQL, Query};
-use dto\ConnectConfig;
 
 /**
  * Управляющий класс
@@ -16,7 +15,7 @@ use dto\ConnectConfig;
  */
 class MSCenter extends Query
 {
-    use \service\Message;
+    use Message;
 
     public string $db = '';
     public string $table = '';
@@ -25,6 +24,7 @@ class MSCenter extends Query
     public string $user = '';
 
     public ?Driver $driver = null;
+    public ?Config $config = null;
     public string $driverName = '';
 
     public string $pageTitle = '';
@@ -36,6 +36,7 @@ class MSCenter extends Query
     public function __construct()
     {
         $this->timer = round(array_sum(explode(' ', microtime())), 10);
+        $this->config = new Config();
     }
 
     /**
@@ -79,7 +80,7 @@ class MSCenter extends Query
      */
     private function initCurrentPage(): void
     {
-        if (!$this->connectConfigExists()) {
+        if (!$this->config->connectConfigExists()) {
             $this->page = 'login';
 
             return;
@@ -109,7 +110,7 @@ class MSCenter extends Query
      */
     private function initCurrentDatabase(): void
     {
-        if (!$this->connectConfigExists()) {
+        if (!$this->config->connectConfigExists()) {
             return;
         }
         $db = GET('db') ?: POST('db');
@@ -130,58 +131,18 @@ class MSCenter extends Query
         return $this->host !== '';
     }
 
-    public function connectConfigExists(): bool
-    {
-        return file_exists(MS_CONNECT_CONFIG_FILE);
-    }
-
-    public function getConfig(): ConnectConfig
-    {
-        $json = file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '';
-        $settings = json_decode($json, true);
-        $current = $settings['current'];
-        $config = $settings['config'][$current];
-        if (!$config) {
-            $this->connectError("Конфиг существует, но настройка current($current) в нем не найдена");
-
-            return new ConnectConfig();
-        }
-
-        return new ConnectConfig(
-            $config['host'],
-            $config['port'],
-            $config['database'],
-            $config['user'],
-            $config['password'],
-            $config['driver'],
-        );
-    }
-
-    public function saveConfig(string $configJson, string $current): false|int
-    {
-        $config = json_decode($configJson, true);
-        $config = [
-            'current' => $current,
-            'config' => $config,
-        ];
-        $backupFile = MS_DIR_UPLOAD.'/backup_'.date('YmdHis').'_'.basename(MS_CONNECT_CONFIG_FILE);
-        if (file_exists(MS_CONNECT_CONFIG_FILE)) {
-            copy(MS_CONNECT_CONFIG_FILE, $backupFile);
-        }
-        $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        return file_put_contents(MS_CONNECT_CONFIG_FILE, $content);
-    }
-
     /**
      * {@inheritdoc}
      */
     public function connect(): void
     {
-        if (!$this->connectConfigExists()) {
+        if (!$this->config->connectConfigExists()) {
             return;
         }
-        $config = $this->getConfig();
+        $config = $this->config->getConfig();
+        if (is_null($config->host)) {
+            $this->connectError('Конфиг существует, но настройка current в нем не найдена');
+        }
         try {
             $this->connectPdo($config, $this->db);
             $this->host  = $config->host;

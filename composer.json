@@ -1,6 +1,11 @@
 {
     "require-dev": {
-        "squizlabs/php_codesniffer": "*",
         "friendsofphp/php-cs-fixer": "^3.92.2"
-    }
+    },
+  "require": {
+    "ext-pdo": "*",
+    "ext-zlib": "*",
+    "ext-iconv": "*",
+        "symfony/process": "^8.0"
+  }
 }

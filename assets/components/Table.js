@@ -15,6 +15,8 @@ export function Table(props) {
         } else if (typeof (item) == 'boolean') {
             let className = item ? 'success-light' : 'warning-light'
             value = <span className={className}>{item.toString()}</span>
+        } else if (Array.isArray(item)) {
+            value = <Table data={item} />
         } else if (typeof (item) == 'object') {
             // item может быть объектом с полями text, href для создания ссылки
             if (item.hasOwnProperty('text')) {
@@ -26,6 +28,7 @@ export function Table(props) {
                 value = item.toString()
             }
         } else {
+          console.log(typeof(item), item)
             value = item
         }
         return value

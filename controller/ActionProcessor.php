@@ -116,13 +116,17 @@ class ActionProcessor
                 // в запросе обязательно должна быть указана БД и таблица
 
             case 'tableDelete':
-                $dbt->tableAction($db, $tables, 'DROP');
-                $this->redirect = "?s=tbl_list&db=$db";
+                $result = $dbt->tableAction($db, $tables, 'DROP');
+                if ($result) {
+                    $this->redirect = "?s=tbl_list&db=$db";
+                }
                 break;
 
             case 'tableTruncate':
-                $dbt->tableAction($db, $tables, 'TRUNCATE');
-                $this->redirect = UrlMaker::make('s', 'tbl_data', 'action', '');
+                $result = $dbt->tableAction($db, $tables, 'TRUNCATE');
+                if ($result) {
+                    $this->redirect = UrlMaker::make('s', 'tbl_data', 'action', '');
+                }
                 break;
 
             case 'tableRename':
