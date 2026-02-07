@@ -109,7 +109,7 @@ function Form(props) {
 
 
 function Results(props) {
-    return <textarea name="export" rows="40" wrap="off" defaultValue={props.content}></textarea>
+    return <textarea name="export" rows="40" wrap="off" className="sql" defaultValue={props.content}></textarea>
 }
 
 export function Export_special(props) {

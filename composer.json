@@ -6,6 +6,8 @@
     "ext-pdo": "*",
     "ext-zlib": "*",
     "ext-iconv": "*",
-        "symfony/process": "^8.0"
+    "symfony/process": "^8.0",
+    "ext-zip": "*",
+    "ext-bz2": "*"
   }
 }

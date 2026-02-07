@@ -51,7 +51,7 @@ span.menuChain a:hover {color: var(--text-color)}
 div.menuTopRight {margin-left: auto}
 
 /* Меню таблиц */
-div.menuTables { position: relative}
+div.menuTables { position: relative; overflow: hidden;}
 div.menuTables a { font-size:10px; text-decoration:none; line-height:120%; display:block}
 div.menuTables a:hover { text-decoration:underline}
 div.menuTables a.cur {color: var(--head-text-color)}
@@ -137,7 +137,7 @@ form.tableFormEdit td.inner { padding: 0; }
 [name="formExport"] label .l2 { margin-left:24px}
 [name="formExport"] .tableExport .l2 {margin-right: 5px}
 [name="formExport"] [name="fields[]"] {height:120px; width:150px;}
-textarea[name="export"] { width:100%; font-size:11px; overflow:scroll}
+textarea.sql { width:100%; font-size:11px; overflow:auto}
 #search_table select {margin-right: 10px}
 
 /* Общая форма внтури fieldset actionsdb actions */
