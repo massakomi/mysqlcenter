@@ -221,7 +221,7 @@ export function sqlFormSubmit(event) {
     event.preventDefault()
     let form = event.target.closest('form');
     let sql = form.querySelector('textarea').value
-    if (!sql || sql.match(/^\s*(select|show)/i)) {
+    if (!sql || sql.match(/^\s*(select|explain|show)/i)) {
         form.action = umaker({'s': 'tbl_data'})
         form.submit()
     } else {

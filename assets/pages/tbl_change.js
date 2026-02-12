@@ -12,7 +12,7 @@ export function Tbl_change() {
     if (options.redirect) {
         setTimeout(function () {
             location.href = options.redirect
-        }, 2000);
+        }, 500);
     }
 
     return (

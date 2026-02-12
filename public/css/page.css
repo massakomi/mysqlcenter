@@ -168,9 +168,9 @@ table.contentTable.interlaced tr:nth-child(odd) {background-color: var(--light-g
 .login .list {width: 50%}
 .login .list select {width: 200px; height: 150px; display: block; margin-bottom: 5px}
 .login .list [type="button"] {margin-right: 5px}
-.login form {margin-top: 10px; width: 30%}
 .login form > div {display: flex; gap: 10px; margin-bottom: 10px; align-items: center;}
 .login form > div label {width: 90px}
+.login form :is([type="text"], [type="password"], [type="number"]) {width: 250px}
 
 /* Разное */
 textarea.wide {width: 100%; height: 100px}

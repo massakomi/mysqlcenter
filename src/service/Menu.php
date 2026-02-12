@@ -189,7 +189,7 @@ class Menu
     private function getMenuTableLink(string $table): string
     {
         global $msc;
-        if (in_array($msc->page, ['tbl_struct', 'search', 'export', 'actions', 'tbl_change'])) {
+        if (in_array($msc->page, ['tbl_struct', 'search', 'export', 'actions'])) {
             $link = '?db='.$msc->db.'&table='.$table.'&s='.$msc->page;
         } else {
             $link = '?db='.$msc->db.'&table='.$table.'&s=tbl_data';

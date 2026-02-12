@@ -28,7 +28,6 @@ export function Table(props) {
                 value = item.toString()
             }
         } else {
-          console.log(typeof(item), item)
             value = item
         }
         return value

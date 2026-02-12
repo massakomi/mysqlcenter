@@ -22,7 +22,7 @@ class TblData extends Base
 
         $directSQL = POST('sql');
         // если это прямой запрос (из sql.php), то разрешаем не указывать таблицу
-        if (isset($directSQL) && $msc->table == '') {
+        if (isset($directSQL)) {
             if (preg_match('~^SELECT.*FROM\s+([`\w\d]+)(\s+|;|,)~iUs', $directSQL.' ', $t)) {
                 $msc->table = str_replace('`', '', $t[1]);
             } else {

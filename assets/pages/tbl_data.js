@@ -283,10 +283,14 @@ export function Tbl_data(props) {
     }
 
     if (empty(props)) {
-      return ''
+        return ''
     }
     if (props.onlyData) {
-      return <Table data={props.data} />
+        // Вывод explain
+        if (Array.isArray(props.data) && props.data.length > 0 && props.data[0].hasOwnProperty('QUERY PLAN')) {
+            return <QueryPlanDisplay data={props.data} />
+        }
+        return <Table data={props.data} />
     }
 
     useEffect(() => {
@@ -372,4 +376,13 @@ export function Tbl_data(props) {
 
       </Fragment>
     );
+}
+
+
+function QueryPlanDisplay(props) {
+    const queryPlanText = props.data
+      .map(item => item['QUERY PLAN'])
+      .filter(plan => plan !== null && plan !== undefined)
+      .join('\r\n');
+    return <textarea readOnly style={{width: '100%', minHeight: '400px', fontFamily: 'monospace'}} value={queryPlanText} />
 }

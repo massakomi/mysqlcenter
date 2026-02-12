@@ -109,7 +109,7 @@ export function Login(props) {
     }
 
     return (
-      <div className="login flex">
+      <div className="login flex mt-20">
         <form>
           <div>
             <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host}/>
@@ -134,7 +134,7 @@ export function Login(props) {
             </select>
           </div>
           <div>
-            <label>Путь к bin папке</label><input name="binPath" type="binPath" onChange={update} value={config[current].binPath}/>
+            <label>Путь к bin папке</label><input name="binPath" type="text" onChange={update} value={config[current].binPath}/>
           </div>
           <div>
             <input type="button" onClick={save.bind(this, 'open')} defaultValue="Открыть"/>
