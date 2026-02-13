@@ -235,10 +235,18 @@ function EditRows(props) {
             let value = data[field]
             let key = props.fields[field].Key;
             if (key.indexOf('PRI') > -1) {
-                pk.push(`${field}='${value}'`)
+                if (value === null) {
+                    pk.push(`${field} IS NULL`)
+                } else {
+                    pk.push(`${field}='${value}'`)
+                }
             }
             if (key.indexOf('MUL') > -1) {
-                mul.push(`${field}='${value}'`)
+                if (value === null) {
+                    mul.push(`${field} IS NULL`)
+                } else {
+                    mul.push(`${field}='${value}'`)
+                }
             }
             return <AddRow key={'row'+i} name={field} fields={props.fields} value={value} default={field.Default} i={i} j={j} />
         });

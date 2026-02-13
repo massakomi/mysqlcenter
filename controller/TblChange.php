@@ -121,7 +121,12 @@ class TblChange extends Base
             $where = $cValue = '';
             if ($editType == 0) {
                 $where = urldecode($_POST['cond'][$numRow]);
-                $cValue = $msc->fetchPdo('SELECT * FROM `'.$msc->table.'` WHERE '.$where)->fetchObject();
+                $sql = 'SELECT * FROM `'.$msc->table.'` WHERE '.$where;
+                $obj = $msc->fetchPdo($sql);
+                if (is_null($obj)) {
+                    exit($sql);
+                }
+                $cValue = $obj->fetchObject();
             }
             $arrayValues = [];
             $countEmpty = 0;

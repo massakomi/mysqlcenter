@@ -237,7 +237,7 @@ class PostgreSQL implements Driver
             $key = new KeyInfo();
             $key->Table = $constraint->TABLE_NAME;
             $key->Non_unique = in_array($constraint->CONSTRAINT_TYPE, ['UNIQUE', 'PRIMARY KEY']) ? 0 : 1;
-            $key->Key_name = $constraint->CONSTRAINT_NAME;
+            $key->Key_name = $constraint->CONSTRAINT_TYPE;
             $key->Seq_in_index = $constraint->ORDINAL_POSITION;
             $key->Column_name = $constraint->COLUMN_NAME;
             $key->Collation = '';

@@ -103,7 +103,11 @@ function TableData(props) {
                     console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`, row)
                     continue;
                 }
-                pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
+                if (row[pkCurrent] === null) {
+                    pkValues.push(`${pkCurrent} IS NULL`)
+                } else {
+                    pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
+                }
             }
             // если нет pk ключей, берем простые ключи
         } else if (mul.length > 0) {
@@ -112,7 +116,11 @@ function TableData(props) {
                     console.log(`Hey! Ключевого поля ${pkCurrent} не найдено в таблице!?`, row)
                     continue;
                 }
-                pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
+                if (row[pkCurrent] === null) {
+                    pkValues.push(`${pkCurrent} IS NULL`)
+                } else {
+                    pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
+                }
             }
             // если ничего нет, берем числовые поля
         } else {
@@ -125,7 +133,11 @@ function TableData(props) {
                 if (!row[pkCurrent]) {
                     continue;
                 }
-                pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
+                if (row[pkCurrent] === null) {
+                    pkValues.push(`${pkCurrent} IS NULL`)
+                } else {
+                    pkValues.push(`${pkCurrent}='${row[pkCurrent]}'`);
+                }
             }
         }
         return encodeURIComponent(pkValues.join(' AND '));
