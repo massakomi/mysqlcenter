@@ -40,57 +40,28 @@ class Table
         if (($type == 'RENAME' || $type == 'CHARSET' || $type == 'ORDER') && $param == null) {
             return $msc->error('Не указан требуемый параметр');
         }
-        switch ($type) {
-            case 'DROP':
-                $sql = "DROP TABLE `$table`";
-                $text = 'удалена';
-                break;
-            case 'TRUNCATE':
-                $sql = "TRUNCATE TABLE `$table`".($msc->driverName == 'pgsql' ? ' CASCADE' : '');
-                $text = 'очищена';
-                break;
-            case 'CHECK':
-                $sql = "CHECK TABLE `$table`";
-                $text = 'обработана';
-                break;
-            case 'ANALYZE':
-                $sql = "ANALYZE TABLE `$table`";
-                $text = 'обработана';
-                break;
-            case 'REPAIR':
-                $sql = "REPAIR TABLE `$table`";
-                $text = 'обработана';
-                break;
-            case 'OPTIMIZE':
-                $sql = "OPTIMIZE TABLE `$table`";
-                $text = 'обработана';
-                break;
-            case 'FLUSH':
-                $sql = "FLUSH TABLE `$table`";
-                $text = 'обработана';
-                break;
-            case 'RENAME':
-                if ($msc->driverName == 'pgsql') {
-                    $sql = "ALTER TABLE `$table` RENAME TO `$param`";
-                } else {
-                    $sql = "ALTER TABLE `$table` RENAME `$param`";
-                }
-                $text = 'переименована';
-                break;
-            case 'CHARSET':
-                $sql = "ALTER TABLE `$table` CONVERT TO CHARACTER SET `$param`";
-                $text = 'изменена';
-                break;
-            case 'COMMENT':
-                $sql = "ALTER TABLE `$table` COMMENT = '$param'";
-                $text = 'изменена';
-                break;
-            case 'ORDER':
-                $sql = "ALTER TABLE `$table` ORDER BY $param";
-                $text = 'изменена';
-                break;
-            default:
-                return $msc->error('Неверный тип обработки');
+        [$sql, $text] = match ($type) {
+            'DROP' => ["DROP TABLE `$table`", 'удалена'],
+            'TRUNCATE' => ["TRUNCATE TABLE `$table`".($msc->driverName == 'pgsql' ? ' CASCADE' : ''), 'очищена'],
+            'CHECK' => ["CHECK TABLE `$table`", 'обработана'],
+            'ANALYZE' => ["ANALYZE TABLE `$table`", 'обработана'],
+            'REPAIR' => ["REPAIR TABLE `$table`", 'обработана'],
+            'OPTIMIZE' => ["OPTIMIZE TABLE `$table`", 'обработана'],
+            'FLUSH' => ["FLUSH TABLE `$table`", 'обработана'],
+            'RENAME' => [
+                $msc->driverName == 'pgsql'
+                    ? "ALTER TABLE `$table` RENAME TO `$param`"
+                    : "ALTER TABLE `$table` RENAME `$param`",
+                'переименована',
+            ],
+            'CHARSET' => ["ALTER TABLE `$table` CONVERT TO CHARACTER SET `$param`", 'изменена'],
+            'COMMENT' => ["ALTER TABLE `$table` COMMENT = '$param'", 'изменена'],
+            'ORDER' => ["ALTER TABLE `$table` ORDER BY $param", 'изменена'],
+            default => [null, null],
+        };
+
+        if ($sql === null) {
+            return $msc->error('Неверный тип обработки');
         }
         $msc->selectDb($db);
         if (in_array($type, ['CHECK', 'ANALYZE', 'REPAIR', 'OPTIMIZE', 'FLUSH'])) {
@@ -195,13 +166,13 @@ class Table
                 $msc->selectDb($db);
                 $sql = "SELECT * FROM \"$table\"";
                 $sourceData = $msc->fetchPdo($sql);
-                
+
                 // Switch to target database and insert data
                 $msc->selectDb($database);
                 if (!empty($sourceData)) {
-                    $fields = array_keys((array)$sourceData[0]);
-                    $fieldsList = '"' . implode('", "', $fields) . '"';
-                    
+                    $fields = array_keys((array) $sourceData[0]);
+                    $fieldsList = '"'.implode('", "', $fields).'"';
+
                     foreach ($sourceData as $row) {
                         $values = [];
                         foreach ($row as $value) {
@@ -210,13 +181,14 @@ class Table
                             } elseif (is_numeric($value)) {
                                 $values[] = $value;
                             } else {
-                                $values[] = "'" . str_replace("'", "''", $value) . "'";
+                                $values[] = "'".str_replace("'", "''", $value)."'";
                             }
                         }
                         $valuesList = implode(', ', $values);
                         $insertSql = "INSERT INTO \"$newName\" ($fieldsList) OVERRIDING SYSTEM VALUE VALUES ($valuesList)";
                         if (!$msc->execPdo($insertSql)) {
                             $msc->error('Ошибка копирования данных', $insertSql);
+
                             return false;
                         }
                     }
@@ -239,6 +211,7 @@ class Table
                     $msc->success('Данные скопированы', $sql);
                 } else {
                     $msc->error('Ошибка копирования данных', $sql);
+
                     return false;
                 }
             }
