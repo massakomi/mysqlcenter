@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\schema\SchemaDriverFactory;
 use database\Table;
+use dto\ColumnDefinition;
 use dto\FieldInfo;
 
 class TblAdd extends Base
@@ -197,6 +199,69 @@ class TblAdd extends Base
      */
     public function fieldsEditEndAction(): void
     {
+        global $msc;
+
+        [
+            $fieldsDefEdit,
+            $names,
+            $fields,
+            $primaryKey,
+            $fieldsDefFull,
+            $newKeys,
+            $uniKeys,
+            $mulKeys
+        ] = $this->prepareAction();
+
+        $driver = SchemaDriverFactory::create($msc->driverName);
+        $table  = GET('table');
+
+        $currentFields = $fields;
+        $currentKeys   = Table::getTableKeys($msc->table);
+
+        foreach ($_POST['oldname'] as $k => $oldFieldName) {
+
+            if (!isset($currentFields[$oldFieldName])) {
+                continue;
+            }
+
+            $newName = $_POST['name'][$k];
+
+            $column = new ColumnDefinition(
+                oldName:  $oldFieldName,
+                newName:  $newName,
+                type:     $_POST['ftype'][$k],
+                length:   $_POST['length'][$k] !== ''
+                    ? (int) $_POST['length'][$k]
+                    : null,
+                nullable: isset($_POST['isNull'][$k]),
+                default:  $_POST['default'][$k] ?? null,
+                primary:  $primaryKey === $newName,
+                index:    array_key_exists($newName, $mulKeys),
+                unique:   array_key_exists($newName, $uniKeys),
+            );
+
+            $sqlBatch = $driver->applyColumnChanges(
+                $table,
+                $column,
+                $currentFields,
+                $currentKeys
+            );
+
+            foreach ($sqlBatch as $sql) {
+
+                if ($msc->execPdo($sql)) {
+                    $msc->success('Изменение выполнено', $sql);
+                } else {
+                    $msc->error('Ошибка SQL', $sql);
+                }
+            }
+        }
+
+
+        return;
+
+
+
         global $msc;
         [$fieldsDefEdit, $names, $fields, $primaryKey, $fieldsDefFull, $newKeys, $uniKeys, $mulKeys] = $this->prepareAction();
         // определение полей
