@@ -85,7 +85,7 @@ class ActionProcessor
             case 'querysql':
                 $sql = POST('sql');
                 $type = POST('type');
-                if (preg_match('~^\s*(update|delete|insert|drop|create|alter)~i', $sql)) {
+                if (preg_match('~^\s*(update|delete|insert|drop|create|alter|--)~i', $sql)) {
                     $type = 'exec';
                 }
                 if ($type == 'exec') {

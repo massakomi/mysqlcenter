@@ -139,9 +139,27 @@ class Table
 
         if ($struct) {
             if ($msc->driverName == 'pgsql') {
-                $sql = "CREATE TABLE $newName (
-                    LIKE $table INCLUDING ALL
-                );";
+                // For cross-database copy, we need to export structure first
+                if ($database != $db) {
+                    $exp = new ExportCli($msc->config->getConfig());
+                    $exp->setDatabase($db);
+                    $exp->setTable($table);
+                    $exp->setHeader('');
+                    $exp->startFull(true, false, true, false, '', '');
+                    $sql = $exp->data;
+                    // Replace all references to old table name with new name
+                    // This handles CREATE TABLE, ALTER TABLE, CREATE INDEX, etc.
+                    $sql = preg_replace(
+                        '/\b(?:["a-zA-Z0-9_`\-]+\.)?"?'.preg_quote($table, '/').'"?\b/i',
+                        'public."'.$newName.'"',
+                        $sql
+                    );
+                } else {
+                    // Same database - can use LIKE syntax
+                    $sql = "CREATE TABLE \"$newName\" (
+                        LIKE \"$table\" INCLUDING ALL
+                    );";
+                }
             } else {
                 $exp = new Export();
                 $exp->setDatabase($db);
@@ -171,21 +189,58 @@ class Table
 
         // дамп данных
         if ($data) {
-            $add = '';
-            if ($msc->driverName == 'pgsql') {
-                $add = ' OVERRIDING SYSTEM VALUE';
-            }
-            if ($database != $db) {
-                $sql = 'INSERT INTO '.$database.'.'.$newName.' '.$add.' SELECT * FROM '.$db.'.'.$table;
+            if ($msc->driverName == 'pgsql' && $database != $db) {
+                // PostgreSQL doesn't support cross-database queries
+                // Export data from source database first
+                $msc->selectDb($db);
+                $sql = "SELECT * FROM \"$table\"";
+                $sourceData = $msc->fetchPdo($sql);
+                
+                // Switch to target database and insert data
+                $msc->selectDb($database);
+                if (!empty($sourceData)) {
+                    $fields = array_keys((array)$sourceData[0]);
+                    $fieldsList = '"' . implode('", "', $fields) . '"';
+                    
+                    foreach ($sourceData as $row) {
+                        $values = [];
+                        foreach ($row as $value) {
+                            if ($value === null) {
+                                $values[] = 'NULL';
+                            } elseif (is_numeric($value)) {
+                                $values[] = $value;
+                            } else {
+                                $values[] = "'" . str_replace("'", "''", $value) . "'";
+                            }
+                        }
+                        $valuesList = implode(', ', $values);
+                        $insertSql = "INSERT INTO \"$newName\" ($fieldsList) OVERRIDING SYSTEM VALUE VALUES ($valuesList)";
+                        if (!$msc->execPdo($insertSql)) {
+                            $msc->error('Ошибка копирования данных', $insertSql);
+                            return false;
+                        }
+                    }
+                    $msc->success('Данные скопированы');
+                }
             } else {
-                $sql = "INSERT INTO $newName $add SELECT * FROM $table";
-            }
-            if ($msc->execPdo($sql)) {
-                $msc->success('Данные скопированы', $sql);
-            } else {
-                $msc->error('Ошибка копирования данных', $sql);
-
-                return false;
+                // Same database or MySQL
+                $add = '';
+                if ($msc->driverName == 'pgsql') {
+                    $add = ' OVERRIDING SYSTEM VALUE';
+                    $sql = "INSERT INTO \"$newName\" $add SELECT * FROM \"$table\"";
+                } else {
+                    if ($database != $db) {
+                        $sql = 'INSERT INTO '.$database.'.'.$newName.' SELECT * FROM '.$db.'.'.$table;
+                    } else {
+                        $sql = "INSERT INTO $newName SELECT * FROM $table";
+                    }
+                }
+                if ($msc->execPdo($sql)) {
+                    $msc->success('Данные скопированы', $sql);
+                } else {
+                    $msc->error('Ошибка копирования данных', $sql);
+                    return false;
+                }
             }
         }
 

@@ -286,7 +286,7 @@ class PostgreSQL implements Driver
     {
         global $msc;
         if ($db != $msc->db) {
-            $config = $msc->getConfig();
+            $config = $msc->config->getConfig();
             $msc->connectPdo($config, $db);
         }
     }

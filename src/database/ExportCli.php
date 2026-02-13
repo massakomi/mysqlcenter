@@ -90,6 +90,12 @@ final class ExportCli implements ExporterInterface
      */
     private function exportMySql(): void
     {
+        global $msc;
+        if (!is_dir($this->connection->binPath)) {
+            $msc->error('Binary path does not exist: ' . $this->connection->binPath);
+            return;
+        }
+
         $cmd = [
             $this->connection->binPath.'/mysqldump',
             '--single-transaction',
@@ -164,10 +170,18 @@ final class ExportCli implements ExporterInterface
      */
     private function exportPostgres(): void
     {
+        global $msc;
+        if (!is_dir($this->connection->binPath)) {
+            $msc->error('Binary path does not exist: ' . $this->connection->binPath);
+            return ;
+        }
+
         $cmd = [
             $this->connection->binPath.'/pg_dump',
             '--no-owner',
             '--no-privileges',
+            '--no-comments',
+            '--no-security-labels',
         ];
 
         $cmd[] = '-t';
@@ -186,8 +200,10 @@ final class ExportCli implements ExporterInterface
             $cmd[] = '--data-only';
         }
 
+        // Always use --inserts for standard SQL compatibility instead of COPY
+        $cmd[] = '--inserts';
         if ($this->option('inserts')) {
-            $cmd[] = '--inserts';
+            $cmd[] = '--column-inserts';
         }
 
         if ($this->option('columnInserts')) {
@@ -229,6 +245,8 @@ final class ExportCli implements ExporterInterface
         $process->setTimeout(null);
 
         $process->run(function ($type, $buffer) {
+            // Filter out problematic \restrict and \unrestrict lines
+            $buffer = preg_replace('/\\\\(?:restrict|unrestrict)\s+[A-Za-z0-9]+\s*\n/m', '', $buffer);
             fwrite($this->output, $buffer);
         });
 
