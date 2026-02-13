@@ -236,8 +236,8 @@ class PostgreSQL implements Driver
         foreach ($constraints as $constraint) {
             $key = new KeyInfo();
             $key->Table = $constraint->TABLE_NAME;
-            $key->Non_unique = $constraint->CONSTRAINT_TYPE == 'UNIQUE' ? 0 : 1;
-            $key->Key_name = $constraint->CONSTRAINT_TYPE;
+            $key->Non_unique = in_array($constraint->CONSTRAINT_TYPE, ['UNIQUE', 'PRIMARY KEY']) ? 0 : 1;
+            $key->Key_name = $constraint->CONSTRAINT_NAME;
             $key->Seq_in_index = $constraint->ORDINAL_POSITION;
             $key->Column_name = $constraint->COLUMN_NAME;
             $key->Collation = '';
@@ -277,7 +277,26 @@ class PostgreSQL implements Driver
             JOIN information_schema.key_column_usage AS kcu
             ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
             WHERE tc.table_name = '$table' AND (tc.table_schema = 'public' OR tc.table_schema = '$msc->db')
-            ORDER BY kcu.ordinal_position; ";
+            UNION ALL
+            SELECT 
+                n.nspname AS \"TABLE_SCHEMA\",
+                t.relname AS \"TABLE_NAME\",
+                'INDEX' AS \"CONSTRAINT_TYPE\",
+                i.relname AS \"CONSTRAINT_NAME\",
+                p.n AS \"ORDINAL_POSITION\",
+                a.attname AS \"COLUMN_NAME\"
+            FROM pg_class t
+            JOIN pg_index ix ON t.oid = ix.indrelid
+            JOIN pg_class i ON i.oid = ix.indexrelid
+            JOIN pg_namespace n ON n.oid = t.relnamespace
+            JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)
+            CROSS JOIN LATERAL unnest(ix.indkey) WITH ORDINALITY AS p(attnum, n)
+            WHERE t.relname = '$table' 
+              AND n.nspname IN ('public', '$msc->db')
+              AND a.attnum = p.attnum
+              AND NOT ix.indisunique
+              AND NOT ix.indisprimary
+            ORDER BY \"CONSTRAINT_NAME\", \"ORDINAL_POSITION\"; ";
 
         return $msc->getData($sql, \PDO::FETCH_OBJ);
     }
