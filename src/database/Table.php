@@ -565,13 +565,21 @@ class Table
             }
             // Check if field is numeric type (int, decimal, float, double, numeric)
             $isNumeric = preg_match('~^(int|decimal|float|double|numeric|real|smallint|bigint)~', $fieldType);
-            if ($msc->driverName == 'pgsql' && $isNumeric) {
-                // Cast numeric to text for LIKE
-                $parts[] = "\"$fieldName\"::text LIKE '%$query%'";
+            if ($msc->driverName == 'pgsql') {
+                if ($isNumeric) {
+                    // Cast numeric to text for LIKE
+                    $parts[] = "\"$fieldName\"::text LIKE '%$query%'";
+                } else {
+                    $parts[] = "\"$fieldName\" LIKE '%$query%'";
+                }
             } else {
                 // For MySQL or text fields
                 $parts[] = "`$fieldName` LIKE '%$query%'";
             }
+        }
+
+        if (empty($parts)) {
+            return '';
         }
 
         return ' WHERE '.implode(' OR ', $parts);

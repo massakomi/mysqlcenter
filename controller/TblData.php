@@ -155,21 +155,36 @@ class TblData extends Base
         if ($query != '' && $query != 'Поиск или where') {
             $query = trim($query);
             if (preg_match('~([=<>]| (like|in|is) )~i', $query)) { // isWhere?
-                $whereCondition = ' WHERE '.$query;
+                $whereCondition = $this->fixPgSqlQuotes(' WHERE '.$query);
             } else {
                 $whereCondition = Table::whereCondition($fields, $query);
             }
         } elseif (GET('where') != null) {
-            $whereCondition = ' WHERE '.urldecode(stripslashes(GET('where')));
+            $whereCondition = $this->fixPgSqlQuotes(' WHERE '.urldecode(stripslashes(GET('where'))));
         } elseif (POST('byField') != null) {
-            if (POST('like') == 'like') {
-                $whereCondition  = ' WHERE `'.POST('field')."` LIKE '%".POST('byField')."%'";
+            $field = POST('field');
+            $byField = POST('byField');
+            if ($msc->driverName == 'pgsql') {
+                $field = '"'.$field.'"';
             } else {
-                $whereCondition  = ' WHERE `'.POST('field')."`='".POST('byField')."'";
+                $field = '`'.$field.'`';
+            }
+            if (POST('like') == 'like') {
+                $whereCondition  = " WHERE $field LIKE '%$byField%'";
+            } else {
+                $whereCondition  = " WHERE $field='$byField'";
             }
         }
-        if ($msc->driverName == 'pgsql' && $whereCondition) {
+
+        return $whereCondition;
+    }
+
+    private function fixPgSqlQuotes(string $whereCondition): string
+    {
+        global $msc;
+        if ($msc->driverName == 'pgsql') {
             // Replace backticks with double quotes for PostgreSQL
+            // and double quotes with single quotes for values
             $whereCondition = str_replace('"', "'", $whereCondition);
             $whereCondition = str_replace('`', '"', $whereCondition);
         }
