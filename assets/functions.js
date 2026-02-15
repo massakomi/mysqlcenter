@@ -460,7 +460,7 @@ export function contentTableEvents() {
 
     forElementsEvent('mouseover', '.contentTable th', function() {
         this.classList.add('wide')
-    })
+    }, 1)
 
     forElements('.responsive', function() {
         this.style.maxWidth = window.innerWidth - 200
@@ -579,11 +579,35 @@ export function forElements(selector, callback) {
     })
 }
 
-export function forElementsEvent(event, selector, callback) {
+export function forElementsEvent(event, selector, callback, timeoutSeconds) {
     forElements(selector, function () {
-        this.addEventListener(event, function (e) {
-            callback.call(this, e)
-        })
+        if (timeoutSeconds) {
+            // Handle delayed execution with timeout
+            const timeoutKey = '_eventTimeout_' + event
+            const timeoutMs = timeoutSeconds * 1000
+            
+            this.addEventListener(event, function (e) {
+                if (this[timeoutKey]) clearTimeout(this[timeoutKey])
+                this[timeoutKey] = setTimeout(() => {
+                    callback.call(this, e)
+                    this[timeoutKey] = null
+                }, timeoutMs)
+            })
+            
+            // If it's mouseover, also handle cancellation on mouseout
+            if (event === 'mouseover') {
+                this.addEventListener('mouseout', function (e) {
+                    if (this[timeoutKey]) {
+                        clearTimeout(this[timeoutKey])
+                        this[timeoutKey] = null
+                    }
+                })
+            }
+        } else {
+            this.addEventListener(event, function (e) {
+                callback.call(this, e)
+            })
+        }
     })
 }
 
