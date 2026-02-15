@@ -25,6 +25,15 @@ function PgIdentityInfo(props) {
   );
 }
 
+function ActionFieldset(props) {
+  return (
+    <fieldset className="msGeneralForm">
+      <legend>{props.legend}</legend>
+      <form>{props.children}</form>
+    </fieldset>
+  );
+}
+
 
 function ActionsTable(props) {
     
@@ -63,77 +72,56 @@ function ActionsTable(props) {
     return (
       <Fragment>
 
-          <fieldset className="msGeneralForm">
-              <legend>Переименовать таблицу в:</legend>
-              <form>
-                  <input name="newName" type="text" onChange={onChangeRenameName} required value={renameName}/>
-                  <input type="button" value="Выполнить!" onClick={tableAction.bind(this, "tableRename")}
-                         disabled={!renameName} className="submit"/>
-              </form>
-          </fieldset>
+          <ActionFieldset legend="Переименовать таблицу в:">
+              <input name="newName" type="text" onChange={onChangeRenameName} required value={renameName}/>
+              <input type="button" value="Выполнить!" onClick={tableAction.bind(this, "tableRename")}
+                     disabled={!renameName} className="submit"/>
+          </ActionFieldset>
 
-          <fieldset className="msGeneralForm">
-              <legend>Переместить таблицы в (база данных.таблица):</legend>
-              <form>
-                  <HtmlSelector data={props.dbs} name="newDB" auto="false" value={props.db}/>
-                  .
-                  <input name="newName" required type="text" defaultValue={props.table}/>
-                  <input type="submit" onClick={tableAction.bind(this, "tableMove")} value="Выполнить!"
-                         className="submit"/>
-              </form>
-          </fieldset>
+          <ActionFieldset legend="Переместить таблицы в (база данных.таблица):">
+              <HtmlSelector data={props.dbs} name="newDB" auto="false" value={props.db}/>
+              .
+              <input name="newName" required type="text" defaultValue={props.table}/>
+              <input type="submit" onClick={tableAction.bind(this, "tableMove")} value="Выполнить!"
+                     className="submit"/>
+          </ActionFieldset>
 
-          <fieldset className="msGeneralForm">
-              <legend>Скопировать таблицу в (база данных.таблица):</legend>
-              <form>
-                  <HtmlSelector data={props.dbs} value={props.db} name="newDB"/>
-                  .
-                  <input name="newName" type="text" required defaultValue={props.table}/>
-                  <div className="mt-10">
-                      <input type="submit" onClick={tableAction.bind(this, "tableCopyTo")} value="Выполнить!"/>
-                      <input type="checkbox" name="tableCopyNoData" value="1"/> только структуру
-                  </div>
-              </form>
-          </fieldset>
+          <ActionFieldset legend="Скопировать таблицу в (база данных.таблица):">
+              <HtmlSelector data={props.dbs} value={props.db} name="newDB"/>
+              .
+              <input name="newName" type="text" required defaultValue={props.table}/>
+              <div className="mt-10">
+                  <input type="submit" onClick={tableAction.bind(this, "tableCopyTo")} value="Выполнить!"/>
+                  <input type="checkbox" name="tableCopyNoData" value="1"/> только структуру
+              </div>
+          </ActionFieldset>
 
-          {!empty(props.charsets) ? <fieldset className="msGeneralForm">
-              <legend>Изменить кодировку таблицы</legend>
-              <form>
-                  <CharsetSelector charsets={props.charsets} value={props.charset}/>
-                  <input type="button" onClick={tableAction.bind(this, "tableCharset")} value="Выполнить!"
-                         className="ml-10"/>
-              </form>
-          </fieldset> : null}
+          {!empty(props.charsets) ? <ActionFieldset legend="Изменить кодировку таблицы">
+              <CharsetSelector charsets={props.charsets} value={props.charset}/>
+              <input type="button" onClick={tableAction.bind(this, "tableCharset")} value="Выполнить!"
+                     className="ml-10"/>
+          </ActionFieldset> : null}
 
-          <fieldset className="msGeneralForm">
-              <legend>Комментарий к таблице</legend>
-              <form>
-                  <input name="comment" type="text" size="60" onChange={onChangeComment} defaultValue={comment}/>
-                  <input type="submit" onClick={tableAction.bind(this, "tableComment")} value="Выполнить!"
-                         disabled={!comment} className="submit"/>
-              </form>
-          </fieldset>
-          <fieldset className="msGeneralForm">
-              <legend>Изменить порядок</legend>
-              <form>
-                  <HtmlSelector data={props.fields} name="field"/>
-                  <select name="order" className="ml-10">
-                      <option value="">По возрастанию</option>
-                      <option value="DESC">По убыванию</option>
-                  </select>
-                  <input type="submit" onClick={tableAction.bind(this, "tableOrder")} value="Выполнить!"
-                         className="ml-10"/>
-              </form>
-          </fieldset>
-          <fieldset className="msGeneralForm">
-              <legend>Опции таблицы</legend>
-              <form>
-                  <input name="auto_increment" type="text" size="3" defaultValue={props.ai}/> auto_increment
-                  <input type="submit" onClick={tableAction.bind(this, "tableOptions")} value="Выполнить!"
-                         className="submit"/>
-              </form>
+          <ActionFieldset legend="Комментарий к таблице">
+              <input name="comment" type="text" size="60" onChange={onChangeComment} defaultValue={comment}/>
+              <input type="submit" onClick={tableAction.bind(this, "tableComment")} value="Выполнить!"
+                     disabled={!comment} className="submit"/>
+          </ActionFieldset>
+          <ActionFieldset legend="Изменить порядок">
+              <HtmlSelector data={props.fields} name="field"/>
+              <select name="order" className="ml-10">
+                  <option value="">По возрастанию</option>
+                  <option value="DESC">По убыванию</option>
+              </select>
+              <input type="submit" onClick={tableAction.bind(this, "tableOrder")} value="Выполнить!"
+                     className="ml-10"/>
+          </ActionFieldset>
+          <ActionFieldset legend="Опции таблицы">
+              <input name="auto_increment" type="text" size="3" defaultValue={props.ai}/> auto_increment
+              <input type="submit" onClick={tableAction.bind(this, "tableOptions")} value="Выполнить!"
+                     className="submit"/>
               <PgIdentityInfo identityInfo={props.identityInfo} />
-          </fieldset>
+          </ActionFieldset>
 
           <div className="globalMenu mb-20">
               <a onClick={tableAction.bind(this, "tableCheck")} href="#">Проверить таблицу</a>

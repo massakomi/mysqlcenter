@@ -1,154 +1,130 @@
-import React, {useState} from 'react';
-import {msQuery} from "../functions";
+import React, { useState, useEffect } from "react";
+import { msQuery } from "../functions";
+import LoginForm from "../components/LoginForm";
 
-export function Login(props) {
+const defaults = (name) => ({
+  name,
+  driver: "mysql",
+  host: "",
+  user: "",
+  password: "",
+  port: "3306",
+  database: "",
+  binPath: "",
+});
 
-    const changeCurrentSetting = (e) => {
-        let newSetting = e.target.options[e.target.selectedIndex].value
-        if (newSetting === current) {
-            return
-        }
-        setCurrent(newSetting)
+export function Login({ current: initialCurrent, config: initialConfig }) {
+  const [config, setConfig] = useState(
+    initialConfig ?? { "0": defaults("Default") }
+  );
+
+  const [current, setCurrent] = useState(
+    initialCurrent ?? Object.keys(initialConfig ?? { "0": {} })[0]
+  );
+
+  // гарантируем существование текущего ключа
+  useEffect(() => {
+    if (!config[current]) {
+      setConfig((prev) => ({
+        ...prev,
+        [current]: defaults("!error!"),
+      }));
+    }
+  }, [current, config]);
+
+  const changeCurrentSetting = (e) => {
+    const newValue = e.target.value;
+    if (newValue !== current) {
+      setCurrent(newValue);
+    }
+  };
+
+  const update = (e) => {
+    const { name, value } = e.target;
+
+    setConfig((prev) => ({
+      ...prev,
+      [current]: {
+        ...prev[current],
+        [name]: value,
+      },
+    }));
+  };
+
+  const add = () => {
+    const name = prompt("Введите название");
+    if (!name) return;
+
+    const maxKey = Math.max(...Object.keys(config).map(Number));
+    const newKey = String(maxKey + 1);
+
+    setConfig((prev) => ({
+      ...prev,
+      [newKey]: defaults(name),
+    }));
+
+    setCurrent(newKey);
+  };
+
+  const rename = () => {
+    if (!current) {
+      alert("Не выбрано ничего");
+      return;
     }
 
-    const update = (e) => {
-        let c = Object.assign({}, config)
-        c[current][e.target.name] = e.target.value
-        setConfig(c)
+    const name = prompt("Введите название", config[current].name);
+    if (!name) return;
+
+    setConfig((prev) => ({
+      ...prev,
+      [current]: {
+        ...prev[current],
+        name,
+      },
+    }));
+  };
+
+  const save = async (mode, e) => {
+    e.preventDefault();
+
+    try {
+      const data = await msQuery(mode, {
+        config: JSON.stringify(config),
+        current,
+      });
+
+      if (mode === "open") {
+        location.href = "?s=db_list";
+      }
+
+      console.log(data);
+    } catch (err) {
+      console.error("error", err);
     }
+  };
 
-    const add = () => {
-        let name = prompt('Введите название')
-        if (!name) {
-            return
-        }
+  const options = Object.entries(config).map(([key, value]) => (
+    <option key={key} value={key}>
+      {value.name}
+    </option>
+  ));
 
-        let maxValue = 0
-        for (let key in config) {
-            if (!maxValue || key > maxValue) {
-                maxValue = key
-            }
-        }
-        maxValue ++
+  const currentConfig = config[current];
 
-        let c = Object.assign({}, config)
-        c[maxValue] = defaults(name)
-        setConfig(c)
-        checkCurrentSetting()
-    }
+  if (!currentConfig) return null;
 
-    const defaults = name => ({
-        name: name,
-        driver: "mysql",
-        host: "",
-        user: "",
-        password: "",
-        port: "3306",
-        database: "",
-        binPath: "",
-    });
+  return (
+    <div className="login flex mt-20">
+      <LoginForm currentConfig={currentConfig} update={update} save={save} />
 
-    const rename = () => {
-        let selector =  document.querySelector('.login select[multiple]')
-        if (selector.selectedIndex === -1) {
-            alert('Не выбрано ничего')
-            return
-        }
-        let selected = selector.options[selector.selectedIndex]
-        let name = prompt('Введите название', selected.text)
-        if (!name) {
-            return
-        }
-        selected.text = name
-        let c = config
-        c[current].name = name
-        setConfig(c)
-    };
+      <div className="list">
+        <select value={current} size="8" onChange={changeCurrentSetting}>
+          {options}
+        </select>
 
-    const save = async (mode, e) => {
-        e.preventDefault()
-        const c = JSON.stringify(config);
-        await msQuery(mode, { config: c, current: current }, function(data) {
-            if (mode === 'open') {
-                location.href = '?s=db_list'
-            }
-            console.log(data)
-        }, function(data) {
-            console.log("error", data)
-        })
-    };
-
-    const checkCurrentSetting = (direct=false) => {
-        if (typeof(config[current]) == 'undefined') {
-            let c = config
-            c [current] = defaults("!error!")
-            if (direct) {
-                config = c
-            } else {
-                setConfig(c)
-            }
-        }
-    };
-
-    let current, config, setCurrent, setConfig;
-    if (props.current) {
-        [current, setCurrent] = useState(props.current);
-        [config, setConfig] = useState(props.config);
-    } else {
-        [current, setCurrent] = useState("0");
-        [config, setConfig] = useState({
-            "0": defaults("Default")
-        });
-    }
-
-    checkCurrentSetting(true)
-
-    let options = new Set()
-    for (let key in config) {
-        options.add(<option key={"opt-"+key} value={key}>{config[key].name}</option>)
-    }
-
-    return (
-      <div className="login flex mt-20">
-        <form>
-          <div>
-            <label>Хост</label><input name="host" type="text" onChange={update} value={config[current].host}/>
-          </div>
-          <div>
-            <label>Пользователь</label><input name="user" type="text" onChange={update} value={config[current].user}/>
-          </div>
-          <div>
-            <label>Пароль</label><input name="password" type="password" onChange={update} value={config[current].password}/>
-          </div>
-          <div>
-            <label>Порт</label><input name="port" type="number" onChange={update} value={config[current].port}/>
-          </div>
-          <div>
-            <label>База данных</label><input name="database" type="text" onChange={update} value={config[current].database}/>
-          </div>
-          <div>
-            <label>Драйвер</label>
-            <select name="driver" onChange={update} value={config[current].driver}>
-              <option>mysql</option>
-              <option>pgsql</option>
-            </select>
-          </div>
-          <div>
-            <label>Путь к bin папке</label><input name="binPath" type="text" onChange={update} value={config[current].binPath}/>
-          </div>
-          <div>
-            <input type="button" onClick={save.bind(this, 'open')} defaultValue="Открыть"/>
-            <input type="button" onClick={save.bind(this, 'save')} defaultValue="Сохранить"/>
-            <input type="button" onClick={save.bind(this, 'check')} defaultValue="Проверить"/>
-          </div>
-        </form>
-        <div className="list">
-          <select multiple defaultValue={[current]} onChange={changeCurrentSetting}>
-            {options}
-          </select>
-              <input type="button" onClick={add} defaultValue="Добавить"/>
-              <input type="button" onClick={rename.bind(this)} defaultValue="Переименовать"/>
-          </div>
+        <button onClick={add}>Добавить</button>
+        <button onClick={rename}>Переименовать</button>
       </div>
-    );
+    </div>
+  );
 }
