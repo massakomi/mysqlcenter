@@ -7,6 +7,9 @@ export function ExportOptions(props) {
         return props.dirImage + src
     }
 
+    const isMySQL = props.db_type === 'mysql' || props.db_type === 'mysqli' || props.db_type === 'pdo_mysql';
+    const isPostgreSQL = props.db_type === 'pgsql' || props.db_type === 'pdo_pgsql';
+
     return (
       <div className="options">
           <div>
@@ -18,67 +21,75 @@ export function ExportOptions(props) {
                   Добавить удаление таблицы
               </label>
 
-              <label htmlFor="f3"
-                     title="Будут преобразованы команды: CREATE TABLE IF NOT EXISTS... и при удалении таблиц DROP TABLE IF EXISTS ...">
-                  <input type="checkbox" value="1" className="l2" name="addIfNot" id="f3"/>
-                  Добавить IF NOT EXISTS
-              </label>
+              {isMySQL && (
+                  <label htmlFor="f3" title="Отключить индексы на время вставки данных">
+                      <input type="checkbox" value="1" className="l2" name="disableKeys" id="f3"/>
+                      Отключить индексы (DISABLE KEYS)
+                  </label>
+              )}
 
-              <label htmlFor="f4" title="К каждой таблице будет добавлено AUTO_INCREMENT=текущее значение">
-                  <input type="checkbox" value="1" className="l2" name="addAuto" id="f4"/>
-                  Добавить значение AUTO_INCREMENT
-              </label>
-
-              <label htmlFor="f5" title="Оставьте эту опцию, чтобы быть уверенным, что всё пройдет гладко">
-                  <input type="checkbox" value="1" className="l2" name="addKav" id="f5" defaultChecked/>
-                  Обратные `кавычки` в названиях таблиц и полей
-              </label>
-
-              <label htmlFor="f12" title="Шапка к дампу с информацией о версиях ПО, а также заголовки таблиц">
-                  <input type="checkbox" value="1" name="addComment" id="f12" defaultChecked/>
+              <label htmlFor="f4" title="Шапка к дампу с информацией о версиях ПО, а также заголовки таблиц">
+                  <input type="checkbox" value="1" name="addComment" className="l2" id="f4" defaultChecked/>
                   Добавлять комментарии
               </label>
 
-              <label htmlFor="f13"><input name="export_to" id="f13" type="radio" value="1"/> в архив</label>
-              <label htmlFor="f14"><input name="export_to" id="f14" type="radio" value="2" defaultChecked/> в
+              {isMySQL && (
+                  <>
+                      <label htmlFor="f5" title="Экспортировать хранимые процедуры и функции">
+                          <input type="checkbox" value="1" className="l2" name="routines" id="f5" defaultChecked/>
+                          Рутины (процедуры и функции)
+                      </label>
+
+                      <label htmlFor="f6" title="Экспортировать триггеры">
+                          <input type="checkbox" value="1" className="l2" name="triggers" id="f6" defaultChecked/>
+                          Триггеры
+                      </label>
+
+                      <label htmlFor="f7" title="Экспортировать события">
+                          <input type="checkbox" value="1" className="l2" name="events" id="f7"/>
+                          События
+                      </label>
+                  </>
+              )}
+
+              {isPostgreSQL && (
+                  <label htmlFor="f8" title="Отключить триггеры на время вставки данных">
+                      <input type="checkbox" value="1" className="l2" name="disableTriggers" id="f8"/>
+                      Отключить триггеры
+                  </label>
+              )}
+
+              <label htmlFor="f9"><input name="export_to" id="f9" type="radio" value="1"/> в архив</label>
+              <label htmlFor="f10"><input name="export_to" id="f10" type="radio" value="2" defaultChecked/> в
                   текст</label>
           </div>
           <div>
-              <label htmlFor="f6"><input type="checkbox" value="1" name="export_data" id="f6" defaultChecked/>Данные</label>
+              <label htmlFor="f11"><input type="checkbox" value="1" name="export_data" id="f11" defaultChecked/>Данные</label>
 
-              <label htmlFor="f7">
-                  <input type="checkbox" value="1" className="l2" name="insFull" id="f7" defaultChecked/>
-                  Указать все поля
-              </label>
-
-              <label htmlFor="f8">
-                  <input type="checkbox" value="1" className="l2" name="insExpand" id="f8"/>
+              <label htmlFor="f12">
+                  <input type="checkbox" value="1" className="l2" name="insExpand" id="f12"/>
                   Одним запросом
               </label>
 
-              <label htmlFor="f9">
-                  <input type="checkbox" value="1" className="l2" name="insZapazd" id="f9"/>
-                  DELAYED
-              </label>
+              {isMySQL && (
+                  <label htmlFor="f13">
+                      <input type="checkbox" value="1" className="l2" name="insIgnor" id="f13"/>
+                      IGNORE
+                  </label>
+              )}
 
-              <label htmlFor="f10">
-                  <input type="checkbox" value="1" className="l2" name="insIgnor" id="f10"/>
-                  IGNORE
-              </label>
+              {isPostgreSQL && (
+                  <label htmlFor="f14">
+                      <input type="checkbox" value="1" className="l2" name="columnInserts" id="f14"/>
+                      Вставка по колонкам (COLUMN INSERTS)
+                  </label>
+              )}
 
               Тип экспорта
               <select name="export_option">
                   <option>INSERT</option>
-                  <option>UPDATE</option>
                   <option>REPLACE</option>
               </select>
-
-              {props.fields &&
-                <Fragment>
-                    <div> Выбрать поля для экспорта:</div>
-                    <HtmlSelector data={props.fields} name="fields[]" multiple="multiple" value={props.fields}/>
-                </Fragment>
-              }
           </div>
 
       </div>

@@ -263,7 +263,7 @@ form.tableFormEdit .editHeader TD,
 form.tableFormEdit TH  { background-color:var(--hidden-text-color) }
 
 .interlace   { background-color: var(--light-grey-color)}
-.selectedRow { background-color: var(--light-grey-color)!important;}
+.selectedRow { background-color: var(--light-ok-color)!important;}
 
 /* Рамка */
 

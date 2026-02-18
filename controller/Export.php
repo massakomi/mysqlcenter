@@ -26,13 +26,6 @@ class Export extends Base
         $exType    = POST('export_option');
         $exWhere   = POST('export_where');
         $isDrop    = (POST('addDrop') != '');
-        $addIfNot  = (POST('addIfNot') != '');
-        $addAuto   = (POST('addAuto') != '');
-        $addKav    = (POST('addKav') != '');
-        $insFull   = (POST('insFull') != '');
-        $insExpand = (POST('insExpand') != '');
-        $insZapazd = (POST('insZapazd') != '');
-        $insIgnor  = (POST('insIgnor') != '');
 
         // 2. СПЕЦИАЛЬНЫЙ ЭКСПОРТ
         if (GET('mode') == 'special') {
@@ -50,10 +43,18 @@ class Export extends Base
                 // создание дампа
                 $config = (new \service\Config())->getConfig();
                 $exp = new ExportCli($config);
-                $exp->setComments(POST('addComment') != '');
                 $exp->setHeader($this->dumpHeader());
-                $exp->setOptionsStruct($addIfNot, $addAuto, $addKav);
-                $exp->setOptionsData($insFull, $insExpand, $insZapazd, $insIgnor);
+                // Новые опции
+                $exp->options['disableKeys'] = POST('disableKeys') != '';
+                $exp->options['routines'] = POST('routines') != '';
+                $exp->options['triggers'] = POST('triggers') != '';
+                $exp->options['events'] = POST('events') != '';
+                $exp->options['insertIgnore'] = POST('insIgnor') != '';
+                $exp->options['disableTriggers'] = POST('disableTriggers') != '';
+                $exp->options['columnInserts'] = POST('columnInserts') != '';
+                $exp->options['extendedInsert'] = POST('insExpand') == '';
+                $exp->options['gzip'] = intval(POST('export_to')) == 1;
+                $exp->options['comments'] = intval(POST('addComment')) == 1;
                 // Экспорт БД
                 if ($exportDb && count($exportDb) > 0) {
                     foreach ($exportDb as $db) {
@@ -147,6 +148,7 @@ class Export extends Base
             'optionsData' => $optionsData,
             'optionsSelected' => $optionsSelected,
             'fields' => GET('table') ? Table::getFieldNames(GET('table')) : [],
+            'db_type' => $msc->driverName,
         ];
     }
 

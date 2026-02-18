@@ -1,4 +1,4 @@
-import React, {Fragment, StrictMode} from 'react'
+import React, {Fragment} from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './pages/Sql'
 import { Actions } from './pages/actions'
@@ -50,9 +50,9 @@ const Component = getComponentByPage(map)
 const domNode = document.getElementById('root')
 const root = createRoot(domNode)
 root.render(
-  <StrictMode>
+  <Fragment>
       <HeadTop />
       <Messages messages={window.messages} />
       <Component {...window.options} />
-  </StrictMode>
+  </Fragment>
 )

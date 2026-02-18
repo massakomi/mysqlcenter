@@ -29,7 +29,7 @@ function Form(props) {
                   <a href="#" onClick={msMultiSelect} className="hs invert">инверт</a>
               </div>
               <div>
-                  <ExportOptions fields={props.fields} dirImage={props.dirImage} structChecked={props.structChecked} />
+                  <ExportOptions fields={props.fields} dirImage={props.dirImage} structChecked={props.structChecked} db_type={props.db_type} />
 
                   WHERE условие<br />
                   <input name="export_where" type="text" defaultValue={props.whereCondition} style={{width:'95%', display:'block', margin:'10px 0'}} />

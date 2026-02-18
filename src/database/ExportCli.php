@@ -33,11 +33,11 @@ interface ExporterInterface
 final class ExportCli implements ExporterInterface
 {
     /** @var array<string, mixed> */
-    private array $options = [];
+    public array $options = [];
 
     private ConnectConfig $connection;
 
-    public string $data;
+    public string $data = '';
     private string $driver;
     private string $table;
     private string $database;
@@ -92,7 +92,8 @@ final class ExportCli implements ExporterInterface
     {
         global $msc;
         if (!is_dir($this->connection->binPath)) {
-            $msc->error('Binary path does not exist: ' . $this->connection->binPath);
+            $msc->error('Binary path does not exist: '.$this->connection->binPath);
+
             return;
         }
 
@@ -172,8 +173,9 @@ final class ExportCli implements ExporterInterface
     {
         global $msc;
         if (!is_dir($this->connection->binPath)) {
-            $msc->error('Binary path does not exist: ' . $this->connection->binPath);
-            return ;
+            $msc->error('Binary path does not exist: '.$this->connection->binPath);
+
+            return;
         }
 
         $cmd = [
@@ -285,25 +287,9 @@ final class ExportCli implements ExporterInterface
         return $this->options[$name] ?? $default;
     }
 
-    public function setComments(bool $param): void
-    {
-        $this->options['comments'] = $param;
-    }
-
     public function setHeader(string $dumpHeader): void
     {
         $this->data = $dumpHeader;
-    }
-
-    public function setOptionsStruct(bool $addIfNot, bool $addAuto, bool $addKav): void
-    {
-        // $this->options['insertIgnore'] = $addIfNot;
-        // $this->options['replace']      = $addAuto;
-        // $this->options['disableKeys']  = $addKav;
-    }
-
-    public function setOptionsData(bool $insFull, bool $insExpand, bool $insZapazd, bool $insIgnor): void
-    {
     }
 
     public function setDatabase(mixed $db): void
