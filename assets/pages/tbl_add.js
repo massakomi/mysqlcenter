@@ -1,5 +1,5 @@
 import React, {Fragment, useEffect} from 'react';
-import {addRow, empty, forElementsEvent, GET, msQuery, qs, umaker} from "../functions";
+import {addRow, empty, forElementsEvent, GET, msQuery, qs, removeRow, umaker} from "../functions";
 import {Messages} from "../functions";
 
 const getAction = () => {
@@ -269,10 +269,6 @@ export function UnsignedSelect(props) {
 
 
 export function Tbl_add(props) {
-
-    const removeRow = (tableId, param) => {
-        removeRow(tableId, param)
-    }
 
     useEffect(() => {
         forElementsEvent('change', '[name="ftype[]"]', function () {

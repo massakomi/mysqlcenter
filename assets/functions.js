@@ -264,51 +264,52 @@ export function sqlFormEvents() {
 
 /**
  * Копирует последний ряд таблицы вниз
- * @param  tableId string   id таблицы
- * @param from
- * @param after
- * @return object Вставленная строка
+ * @param {string} tableId - ID таблицы
+ * @param {number|'last'} sourceRowIndex - Индекс строки-источника (по умолчанию 'last' - последняя строка)
+ * @param {boolean} insertAfter - Вставить после источника (true) или до (false)
+ * @return {HTMLTableRowElement} Вставленная строка
  */
-export function addRow(tableId, from = 'last', after = true) {
+export function addRow(tableId, sourceRowIndex = 'last', insertAfter = true) {
     const table = document.getElementById(tableId)
-    // сколько всего рядов
-    const i = table.rows.length
-    // берём последний/первый ряд
-    const tr = table.rows[from === 'last' ? i - 1 : from > i ? i - 1 : from]
-    // назначаем ему ид
-    tr.id = 'trAfterId' + i
-    // вставляем после/до него еще 1 строку
-    if (!after) {
-        insertBefore('trAfterId' + i, 'TR', 'trNewId' + i)
+    if (!table) {
+        throw new Error(`Таблица с ID "${tableId}" не найдена`)
+    }
+
+    const rowCount = table.rows.length
+    if (rowCount === 0) {
+        throw new Error('В таблице нет строк для копирования')
+    }
+
+    // Определяем индекс строки-источника
+    let sourceIndex
+    if (sourceRowIndex === 'last') {
+        sourceIndex = rowCount - 1
+    } else if (typeof sourceRowIndex === 'number') {
+        sourceIndex = Math.max(0, Math.min(sourceRowIndex, rowCount - 1))
     } else {
-        insertAfter('trAfterId' + i, 'TR', 'trNewId' + i)
+        sourceIndex = rowCount - 1
     }
-    // вот она!
-    const tr2 = document.getElementById('trNewId' + i)
-    // копируем ячейки из одной строки в другую
-    for (let j = 0; j < tr.cells.length; j++) {
-        let td = document.createElement('TD')
-        tr2.appendChild(td)
-        td.innerHTML = tr.cells[j].innerHTML
-    }
-    return tr2
-}
 
-/**
- * Вставляет элемент после другого элемента
- */
-function insertAfter(sAfterId, sTag, sId) {
-    let objSibling = document.getElementById(sAfterId)
-    let objElement = document.createElement(sTag)
-    objElement.setAttribute('id', sId)
-    objSibling.parentNode.insertBefore(objElement, objSibling.nextSibling)
-}
+    const sourceRow = table.rows[sourceIndex]
+    
+    // Клонируем строку с глубоким клонированием содержимого
+    const newRow = sourceRow.cloneNode(true)
+    
+    // Очищаем значения input элементов в клонированной строке
+    const inputs = newRow.querySelectorAll('input, select, textarea')
+    inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false
+        } else {
+            input.value = ''
+        }
+    })
 
-function insertBefore(sAfterId, sTag, sId) {
-    let objSibling = document.getElementById(sAfterId)
-    let objElement = document.createElement(sTag)
-    objElement.setAttribute('id', sId)
-    objSibling.parentNode.insertBefore(objElement, objSibling)
+    // Вставляем строку в нужную позицию
+    const referenceRow = insertAfter ? sourceRow.nextSibling : sourceRow
+    table.insertBefore(newRow, referenceRow)
+    
+    return newRow
 }
 
 /**
@@ -352,9 +353,6 @@ export function submitFormIfFieldNotEmpty(forma, fieldName) {
 }
 
 // Полезнейший набор функций
-function is_null(v) {
-    return typeof v == 'undefined'
-}
 
 export function empty(value) {
     if (typeof value == 'undefined') {

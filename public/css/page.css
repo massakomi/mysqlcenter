@@ -172,11 +172,20 @@ table.contentTable.interlaced tr:nth-child(odd) {background-color: var(--light-g
 .login form > div label {width: 90px}
 .login form :is([type="text"], [type="password"], [type="number"]) {width: 250px}
 
+/* config page */
+.config .rows {display: grid; grid-template-columns: auto 1fr; gap: 5px; width: fit-content;}
+.config .rows > div {display: contents;}
+.config .rows > div label {display: flex; align-items: center;}
+.config [type="checkbox"] {margin-right: 0}
+.config input[type=number] {width: 50px}
+
 /* Разное */
 textarea.wide {width: 100%; height: 100px}
 [type="checkbox"].aligned { vertical-align: -2px; margin: 0;}
 .responsive {overflow-x: auto; overflow-y: hidden}
 .pre {white-space: pre-line;}
+.center {text-align: center}
+.right {text-align: right}
 /* Кнопки */
 input[type="submit"], input[type="button"] {border-radius: 3px; border: 1px solid var(--light-text-color); cursor: pointer;/* padding: 5px 10px*/}
 input[type="submit"]:hover, input[type="button"]:hover {border-color: var(--head-text-color); background-color: var(--hidden-text-color)}
@@ -223,6 +232,7 @@ span.hiddenText { color: var(--hidden-text-color)}
 /* Layout */
 .flex {display: flex; gap: 20px}
 .flex.g0 {gap: 0}
+.flex.justify-sb {justify-content: space-between;}
 .flex.baseline {align-items: baseline;}
 .flex.center {align-items: center}
 .inline { display: inline-block}
