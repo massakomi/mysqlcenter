@@ -168,9 +168,7 @@ class PostgreSQL implements Driver
         foreach ($fields as $field) {
             if (array_key_exists($field->Field, $keys)) {
                 $fieldKeys = $keys[$field->Field];
-                foreach ($fieldKeys as $type) {
-                    $field->Key = $type;
-                }
+                $field->Key = implode(',', $fieldKeys);
             }
         }
 

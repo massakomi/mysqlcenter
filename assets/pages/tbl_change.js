@@ -3,21 +3,21 @@ import {HtmlSelector} from "../components";
 import {list} from "../functions";
 
 
-export function Tbl_change() {
+export function Tbl_change(props) {
 
     useEffect(() => {
         refreshActions()
     }, []);
 
-    if (options.redirect) {
+    if (props.redirect) {
         setTimeout(function () {
-            location.href = options.redirect
+            location.href = props.redirect
         }, 500);
     }
 
     return (
       <Fragment>
-          {options.isAdd ? <AddRows {...options} /> : <EditRows {...options} />}
+          {props.isAdd ? <AddRows {...props} /> : <EditRows {...props} />}
       </Fragment>
     );
 }

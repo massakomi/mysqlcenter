@@ -79,8 +79,8 @@ export function Search(props) {
       <Fragment>
         <div className="flex justify-between items-center">
           <div>
-            {!empty(props.table) ? <SearchTable {...props} /> : null }
             <SearchDatabase {...props} />
+            {!empty(props.table) ? <SearchTable {...props} /> : null }
           </div>
           <div>
             {props.results ? <Table data={props.results} /> : null}

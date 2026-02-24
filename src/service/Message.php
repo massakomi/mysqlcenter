@@ -13,6 +13,8 @@ trait Message
      */
     private array $messages = [];
 
+    private bool $hasErrors = false;
+
     /**
      * @return array<\dto\Message>
      */
@@ -21,11 +23,17 @@ trait Message
         return $this->messages;
     }
 
+    public function hasErrors(): bool
+    {
+        return $this->hasErrors;
+    }
+
     /**
      * Ошибка.
      */
     public function error(string $text, ?string $sql = null): bool
     {
+        $this->hasErrors = true;
         return $this->addMessage($text, MessageType::Error, $sql);
     }
 

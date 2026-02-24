@@ -58,7 +58,7 @@ class TblChange extends Base
             'dirImage' => MS_DIR_IMG,
             'isAdd' => $isAdd,
         ];
-        if (POST('redirect')) {
+        if (POST('redirect') && !$msc->hasErrors()) {
             $pageProps['redirect'] = UrlMaker::make('s', POST('redirect'));
         }
 

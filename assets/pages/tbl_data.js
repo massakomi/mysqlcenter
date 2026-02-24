@@ -283,7 +283,7 @@ export function Tbl_data(props) {
 
     const chbx_action = (opt, e) => {
         e.preventDefault()
-        checkboxAction('formTableRows', opt, 'cond[]')
+        checkboxAction('formTableRows', opt, 'row[]')
     }
 
     const submitForm = (action, page, event) => {
