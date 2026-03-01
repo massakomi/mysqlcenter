@@ -238,6 +238,7 @@ class PostgreSQL implements Driver
             $key->Key_name = $constraint->CONSTRAINT_TYPE;
             $key->Seq_in_index = $constraint->ORDINAL_POSITION;
             $key->Column_name = $constraint->COLUMN_NAME;
+            $key->Index_name = $constraint->CONSTRAINT_NAME;
             $key->Collation = '';
             $key->Cardinality = '';
             $key->Sub_part = '';

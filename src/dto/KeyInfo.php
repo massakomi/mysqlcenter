@@ -20,6 +20,7 @@ final class KeyInfo
         public ?string $Index_type = null,
         public ?string $Comment = null,
         public ?string $Index_comment = null,
+        public ?string $Index_name = null,
     ) {
     }
 }

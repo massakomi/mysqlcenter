@@ -20,18 +20,10 @@ function TableHeader(props) {
             field += '-'
         }
         form.querySelector('[name="order"]').value = field
+        document.cookie = `table_sort_${props.table}=${field}; path=/; max-age=31536000`
         form.submit()
     };
 
-    /**
-     * (для tbl_data и tbl_compare) Получить массив заголовков для таблицы данных. Заголовки для таблиц данных
-     * формируются особым образом, с переносом.
-     *
-     * @package data view
-     * @return array  Массив заголовков
-     * @param fields
-     * @param sortEnabled
-     */
     const getTableHeaders = (fields, sortEnabled=true) => {
         let headers = [];
         Object.keys(fields).forEach((k) =>  {
@@ -341,7 +333,7 @@ export function Tbl_data(props) {
             input.addEventListener('focusout', function() {
                 this.parentNode.innerHTML = this.value
                 let table = '`'+window.table+'`'
-                let sql = `UPDATE ${table} SET ${column}="${this.value}" WHERE ${rowId}`
+                let sql = `UPDATE ${table} SET ${column}='${this.value}' WHERE ${rowId}`
                 msQuery('querysql', {sql})
             })
         })

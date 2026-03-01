@@ -43,7 +43,7 @@ class TblChange extends Base
                 $sql = 'SELECT * FROM '.$msc->table.' WHERE '.$whereCondition;
                 $tableData = $msc->getData($sql);
                 if (!$tableData) {
-                    $msc->error('Ничего не выбрано', $sql);
+                    $msc->notice('Ничего не выбрано', $sql);
                 }
             }
         }

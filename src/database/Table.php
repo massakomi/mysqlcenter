@@ -55,7 +55,12 @@ class Table
                 'переименована',
             ],
             'CHARSET' => ["ALTER TABLE `$table` CONVERT TO CHARACTER SET `$param`", 'изменена'],
-            'COMMENT' => ["ALTER TABLE `$table` COMMENT = '$param'", 'изменена'],
+            'COMMENT' => [
+                $msc->driverName == 'pgsql'
+                    ? "COMMENT ON TABLE $table IS '$param';"
+                    : "ALTER TABLE `$table` COMMENT = '$param'",
+                'изменена',
+            ],
             'ORDER' => ["ALTER TABLE `$table` ORDER BY $param", 'изменена'],
             default => [null, null],
         };

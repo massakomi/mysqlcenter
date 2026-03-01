@@ -74,7 +74,7 @@ function ActionsTable(props) {
 
           <ActionFieldset legend="Переименовать таблицу в:">
               <input name="newName" type="text" onChange={onChangeRenameName} required value={renameName}/>
-              <input type="button" value="Выполнить!" onClick={tableAction.bind(this, "tableRename")}
+              <input type="submit" value="Выполнить!" onClick={tableAction.bind(this, "tableRename")}
                      disabled={!renameName} className="submit"/>
           </ActionFieldset>
 
@@ -107,15 +107,17 @@ function ActionsTable(props) {
               <input type="submit" onClick={tableAction.bind(this, "tableComment")} value="Выполнить!"
                      disabled={!comment} className="submit"/>
           </ActionFieldset>
-          <ActionFieldset legend="Изменить порядок">
-              <HtmlSelector data={props.fields} name="field"/>
-              <select name="order" className="ml-10">
-                  <option value="">По возрастанию</option>
-                  <option value="DESC">По убыванию</option>
-              </select>
-              <input type="submit" onClick={tableAction.bind(this, "tableOrder")} value="Выполнить!"
-                     className="ml-10"/>
-          </ActionFieldset>
+          {window.driver === 'mysql' ? (
+            <ActionFieldset legend="Изменить порядок">
+                <HtmlSelector data={props.fields} name="field"/>
+                <select name="order" className="ml-10">
+                    <option value="">По возрастанию</option>
+                    <option value="DESC">По убыванию</option>
+                </select>
+                <input type="submit" onClick={tableAction.bind(this, "tableOrder")} value="Выполнить!"
+                       className="ml-10"/>
+            </ActionFieldset>
+          ) : null}
           <ActionFieldset legend="Опции таблицы">
               <input name="auto_increment" type="text" size="3" defaultValue={props.ai}/> auto_increment
               <input type="submit" onClick={tableAction.bind(this, "tableOptions")} value="Выполнить!"

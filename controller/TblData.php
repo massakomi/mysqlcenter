@@ -57,7 +57,7 @@ class TblData extends Base
         }
 
         // Определяем параметры сортировки, старт и части
-        $order = $this->mscGetOrder(default: $pk[0] ?? '');
+        $order = $this->mscGetOrder($msc->table, default: $pk[0] ?? '');
         $start = intval(GET('go', POST('go')));
         $part  = intval(GET('part', POST('part') > 0 ? POST('part') : MS_DEFAULT_PART));
 
@@ -212,12 +212,16 @@ class TblData extends Base
     /**
      * Возвращает порядок текущей сортировки.
      */
-    private function mscGetOrder(?string $default = null): string
+    private function mscGetOrder(string $table, ?string $default = null): string
     {
         if (!config('sortDescDefault') && $default) {
             $default .= '-';
         }
-        $order = (POST('order') != null ? POST('order') : $default);
+        $order = POST('order');
+        if ($order === null) {
+            $cookieKey = 'table_sort_' . $table;
+            $order = $_COOKIE[$cookieKey] ?? $default;
+        }
         if ($order != null) {
             if (!strchr($order, '-')) {
                 $order .= ' DESC';
