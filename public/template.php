@@ -37,6 +37,7 @@ $databasesVisible = Server::getDatabasesWithoutHidden();
           title="Кликните, чтобы открыть форму быстрого запроса"><?php echo $time ?> с.</span>
     <span class="menuChain"><?php echo $menu->getChainMenu() ?></span>
     <div class="globalMenu menuTopRight">
+        <a href="#" id="add-task">Task</a>
         <a href="?s=config">Настройки</a>
         <a href="?s=login">Логин</a>
     </div>

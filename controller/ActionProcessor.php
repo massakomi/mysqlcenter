@@ -772,6 +772,26 @@ class ActionProcessor
     }
 
     /**
+     * Создание задачи в Yougile.
+     */
+    private function yougileAction(): bool
+    {
+        global $msc;
+
+        $task = POST('task');
+
+        $yougileService = new \service\Yougile();
+        $result = $yougileService->createTask($task);
+        if ($result === null) {
+            $msc->error('Ошибка создания задачи');
+        } else {
+            $msc->success('Задача создана');
+        }
+
+        return true;
+    }
+
+    /**
      * Возвращает параметр запроса.
      *
      * @param string $name Имя параметра

@@ -472,6 +472,13 @@ function generalEvents() {
             event.preventDefault()
         }
     })
+    document.getElementById('add-task').addEventListener('click', function (e) {
+        let task = prompt('Введите текст задачи')
+        if (task === null) {
+            return false
+        }
+        msQuery('yougile', {task})
+    })
 }
 
 document.addEventListener('DOMContentLoaded', function () {

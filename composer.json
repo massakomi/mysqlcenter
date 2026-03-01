@@ -8,6 +8,7 @@
     "ext-iconv": "*",
     "symfony/process": "^8.0",
     "ext-zip": "*",
-    "ext-bz2": "*"
+    "ext-bz2": "*",
+    "ext-curl": "*"
   }
 }
