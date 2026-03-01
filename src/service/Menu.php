@@ -194,6 +194,10 @@ class Menu
         } else {
             $link = '?db='.$msc->db.'&table='.$table.'&s=tbl_data';
         }
+        $current = GET('current');
+        if ($current !== '') {
+            $link .= '&current='.$current;
+        }
 
         return $link;
     }

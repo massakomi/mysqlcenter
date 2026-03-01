@@ -91,16 +91,18 @@ export function Db_compare(props) {
                     // Сравнение структур из экспорта
                     if (num === 3) {
                         if (dbArray[db][table]) {
+                            let text = '+'
                             let exportData = exportArray[db][table]
                             if (exportData) {
                                 if (exportData === exportDataPrev) {
                                     attr.backgroundColor = '#66ff66';
                                 } else if (exportDataPrev !== null) {
                                     exportDifference [table] = [exportDataPrev, exportData]
+                                    text = '-'
                                 }
                             }
                             exportDataPrev = exportData;
-                            row.push({text: '+', style: attr})
+                            row.push({text: text, style: attr})
                         } else {
                             row.push('-')
                         }

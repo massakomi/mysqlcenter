@@ -612,7 +612,7 @@ class ActionProcessor
         if ($this->dbt->rowCopy($this->tables, $row)) {
             $n = $msc->affectedRows;
             if ($n > 0) {
-                $msc->success('Добавлено '.$n.' рядов', $msc->lastSql);
+                $msc->success('Добавлено '.$n.' рядов [id='.$msc->lastInsertId.']', $msc->lastSql);
             } else {
                 $msc->success('Всё в порядке', $msc->lastSql);
             }

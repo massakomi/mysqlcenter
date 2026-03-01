@@ -33,7 +33,7 @@ class Config
     {
         $json = file_get_contents(MS_CONNECT_CONFIG_FILE) ?: '';
         $settings = json_decode($json, true);
-        $current = $settings['current'];
+        $current = GET('current', $settings['current']);
         $config = $settings['config'][$current];
         if (!$config) {
             return new ConnectConfig();

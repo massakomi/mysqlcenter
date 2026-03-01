@@ -45,6 +45,11 @@ class TblCompare extends Base
             $fields = Table::getFields($table);
             $pk = $this->getPrimaryKeys($fields);
             [$data1, $data2] = $this->selectDataFromDatabase($databases, $table, $pk);
+            foreach (array_keys($data1[0]) + array_keys($data2[0]) as $field) {
+                if (!isset($fields[$field])) {
+                    $fields[$field] = null;
+                }
+            }
             $tableData = compact('fields', 'pk', 'data1', 'data2');
             $pageProps['tables'][$table] = $tableData;
         }
@@ -87,7 +92,7 @@ class TblCompare extends Base
             $orderBy = ' ORDER BY '.implode(',', $pk); // . ' DESC';
         }
         // Первая  БД
-        $sql = "SELECT * FROM $databases[0].$table";
+        $sql = "SELECT * FROM $table";
         $result = $msc->fetchPdo($sql.$orderBy);
         $data1 = [];
         if (!$result) {
@@ -95,7 +100,7 @@ class TblCompare extends Base
 
             return [];
         }
-        while ($row = $result->fetch(\PDO::FETCH_OBJ)) {
+        while ($row = $result->fetch()) {
             $data1[] = $row;
         }
 
@@ -104,7 +109,7 @@ class TblCompare extends Base
         $msc->selectDb($databases[1]);
         $sql = "SELECT * FROM $table";
         $result = $msc->fetchPdo($sql.$orderBy);
-        while ($row = $result->fetch(\PDO::FETCH_OBJ)) {
+        while ($row = $result->fetch()) {
             $data2[] = $row;
         }
 

@@ -263,14 +263,14 @@ export function Tbl_list(props) {
                       <img src={image("delete.gif")} alt="" onClick={msFormQuery.bind(this, 'truncate_all')}/>
                       <img src={image("copy.gif")} alt="" onClick={msFormQuery.bind(this, 'copy_all')}/>
 
-                      <select name="act" onChange={msFormQuery.bind(this, 'dbAllAction')} className="ml-20">
+                      {window.driver === 'mysql' ? <select name="act" onChange={msFormQuery.bind(this, 'dbAll')} className="ml-20">
                           <option></option>
                           <option value="check">проверить</option>
                           <option value="analyze">анализ</option>
                           <option value="optimize">оптимизировать</option>
                           <option value="repair">починить</option>
                           <option value="flush">сбросить кэш</option>
-                      </select>
+                      </select> : null}
 
                       <input type="hidden" name="copy_struct" value="1"/>
                       <input type="hidden" name="copy_data" value="1"/>

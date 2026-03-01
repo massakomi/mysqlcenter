@@ -39,6 +39,10 @@ class UrlMaker
         if ($msc->page != '' && !in_array('s', $names)) {
             array_unshift($array, 's='.$msc->page);
         }
+        $current = GET('current');
+        if ($current != '') {
+            $array[] = 'current=' . $current;
+        }
 
         return MS_URL.'?'.(count($array) > 0 ? implode('&', $array) : '');
     }

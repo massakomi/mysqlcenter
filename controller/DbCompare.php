@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace controller;
 
+use database\ExportCli;
+
 class DbCompare extends Base
 {
     /**
@@ -56,18 +58,14 @@ class DbCompare extends Base
         }
 
         $exportArray = [];
-        $export = new \database\Export();
-        $export->setComments(false);
-        $export->setOptionsStruct(false, false, false);
+        $export = new ExportCLI($msc->config->getConfig());
         foreach ($dbArray as $db => $tables) {
             foreach ($tables as $table => $values) {
-                $export->data = null;
+                $export->data = '';
                 $export->setDatabase($db);
                 $export->setTable($table);
-                $exportData = $export->exportStructure(false, false);
-                $exportData = str_replace(' PACK_KEYS=0', '', $exportData);
-                $exportData = preg_replace('~COMMENT=".*"~U', '', $exportData);
-                $exportArray[$db][$table] = $exportData;
+                $export->startFull(true, false, false, '');
+                $exportArray[$db][$table] = $export->data;
             }
         }
 

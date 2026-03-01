@@ -170,12 +170,12 @@ class TblData extends Base
                 $field = '`'.$field.'`';
             }
             if (POST('like') == 'like') {
-                $whereCondition  = " WHERE $field LIKE '%$byField%'";
+                $like = $msc->driverName == 'pgsql' ? 'ILIKE' : 'LIKE';
+                $whereCondition  = " WHERE $field $like '%$byField%'";
             } else {
                 $whereCondition  = " WHERE $field='$byField'";
             }
         }
-
         return $whereCondition;
     }
 

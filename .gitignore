@@ -9,3 +9,4 @@
 /config/connect.json
 /.php-cs-fixer.cache
 /.proxyai
+/.env

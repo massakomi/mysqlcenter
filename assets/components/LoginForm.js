@@ -45,6 +45,7 @@ export default function LoginForm({ currentConfig, update, save }) {
 
       <div>
         <button onClick={(e) => save("open", e)}>Открыть</button>
+        <button onClick={(e) => save("show", e)}>Открыть без привязки</button>
         <button onClick={(e) => save("save", e)}>Сохранить</button>
         <button onClick={(e) => save("check", e)}>Проверить</button>
       </div>

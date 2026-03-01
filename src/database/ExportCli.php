@@ -55,7 +55,7 @@ final class ExportCli implements ExporterInterface
     /**
      * Entry point – mirrors Export::export().
      */
-    public function startFull(bool $isStruct, bool $isData, true $addDelim, bool $isDrop, mixed $exType, mixed $exWhere): void
+    public function startFull(bool $isStruct, bool $isData, bool $isDrop, mixed $exType): void
     {
         if ($isStruct && !$isData) {
             $this->options['schemaOnly'] = true;
@@ -239,10 +239,6 @@ final class ExportCli implements ExporterInterface
      */
     private function run(array $command, array $env = []): void
     {
-        if ($this->option('gzip')) {
-            $command = array_merge($command, ['|', 'gzip']);
-        }
-
         $process = new Process($command, null, $env);
         $process->setTimeout(null);
 

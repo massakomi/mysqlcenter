@@ -258,7 +258,7 @@ export function sqlFormEvents() {
     if (!table || textarea.value) {
         return;
     }
-    textarea.value = `SELECT DISTINCT * FROM ${table} WHERE`
+    textarea.value = `SELECT DISTINCT * FROM ${table} WHERE` + "\n" + `UPDATE ${table} SET `
     form.querySelector('span').innerHTML = window.fields.join(', ')
 }
 

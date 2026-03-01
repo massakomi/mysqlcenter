@@ -60,7 +60,8 @@ class PostgreSQL implements Driver
             }
         }
 
-        if ($msc->page == 'tbl_list') {
+        // Долго выполняется, поэтому запускаем только случайным образом в первые 5 минут каждого часа
+        if ($msc->page == 'tbl_list' && (int)date('i') < 5) {
             $this->updateStatistics($db);
         }
 
@@ -148,7 +149,7 @@ class PostgreSQL implements Driver
             FROM information_schema.tables 
             WHERE table_schema=\'public\' OR table_schema=\''.$db.'\'';
         $data = $msc->getData($sql, \PDO::FETCH_OBJ);
-        foreach ($data as $key => $value) {
+        foreach ($data as $value) {
             $msc->execPdo('ANALYZE "'.$value->table_name.'"');
         }
     }
@@ -303,10 +304,8 @@ class PostgreSQL implements Driver
     public function selectDb(string $db): void
     {
         global $msc;
-        if ($db != $msc->db) {
-            $config = $msc->config->getConfig();
-            $msc->connectPdo($config, $db);
-        }
+        $config = $msc->config->getConfig();
+        $msc->connectPdo($config, $db);
     }
 
     public function sqlCreateTable(string $table): string

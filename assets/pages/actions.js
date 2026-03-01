@@ -125,13 +125,13 @@ function ActionsTable(props) {
               <PgIdentityInfo identityInfo={props.identityInfo} />
           </ActionFieldset>
 
-          <div className="globalMenu mb-20">
+          {window.driver === 'mysql' ? <div className="globalMenu mb-20">
               <a onClick={tableAction.bind(this, "tableCheck")} href="#">Проверить таблицу</a>
               <a onClick={tableAction.bind(this, "tableAnalize")} href="#">Анализ таблицы</a>
               <a onClick={tableAction.bind(this, "tableRepair")} href="#">Починить таблицу</a>
               <a onClick={tableAction.bind(this, "tableOptimize")} href="#">Оптимизировать таблицу</a>
               <a onClick={tableAction.bind(this, "tableFlush")} href="#">Сбросить кэш таблицы (FLUSH)</a>
-          </div>
+          </div> : null}
       </Fragment>
     );
 }

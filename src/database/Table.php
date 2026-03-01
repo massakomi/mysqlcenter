@@ -121,7 +121,7 @@ class Table
                     $exp->setDatabase($db);
                     $exp->setTable($table);
                     $exp->setHeader('');
-                    $exp->startFull(true, false, true, false, '', '');
+                    $exp->startFull(true, false, false, '');
                     $sql = $exp->data;
                     // Replace all references to old table name with new name
                     // This handles CREATE TABLE, ALTER TABLE, CREATE INDEX, etc.
@@ -546,9 +546,9 @@ class Table
             if ($msc->driverName == 'pgsql') {
                 if ($isNumeric) {
                     // Cast numeric to text for LIKE
-                    $parts[] = "\"$fieldName\"::text LIKE '%$query%'";
+                    $parts[] = "\"$fieldName\"::text ILIKE '%$query%'";
                 } else {
-                    $parts[] = "\"$fieldName\" LIKE '%$query%'";
+                    $parts[] = "\"$fieldName\" ILIKE '%$query%'";
                 }
             } else {
                 // For MySQL or text fields

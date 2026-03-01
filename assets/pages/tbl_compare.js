@@ -1,5 +1,5 @@
 import React from 'react';
-import {processRowValue} from "../functions";
+import {empty, processRowValue} from "../functions";
 
 function compareData(data, fields, databases) {
     let output = []
@@ -12,19 +12,34 @@ function compareData(data, fields, databases) {
         let style = {};
         let rowValues = []
         if (typeof row[db1] !== 'undefined') {
+
+            // Таблица есть только во второй БД
             if (row[db1] === '-') {
                 values = ['-', '+']
                 rowValues = processValues(row[db2], fields)
+
+                // Таблица есть в первой БД
             } else if (row[db2] === '-') {
                 values = ['+', '-']
                 rowValues = processValues(row[db1], fields)
+
+                // Таблица есть в обеих БД
             } else {
                 style = {backgroundColor: '#6f6'}
-                let value2
-                for (let [field, value1] of Object.entries(row[db1])) {
+                for (let field in fields) {
+                    let value1 = row[db1][field]
+                    let value2 = row[db2][field]
+                    // Если поле не существует в одной из таблиц
+                    if (empty(fields[field])) {
+                        rowValues.push({
+                            'text': value1 === undefined ? `${value2} [only in ${db2}]` : `${value1} [only in ${db1}]`,
+                            'class': 'n'
+                        })
+                        continue;
+                    }
                     let type = fields[field].Type;
                     value1 = processRowValue(value1, type, 50);
-                    value2 = processRowValue(row[db2][field], type, 50);
+                    value2 = processRowValue(value2, type, 50);
                     if (value1 === value2) {
                         rowValues.push({
                             'text': value1,
@@ -53,9 +68,13 @@ function compareData(data, fields, databases) {
 function processValues(data, fields) {
     let outputValues = []
     for (let [field, value] of Object.entries(data)) {
-        let type = fields[field].Type;
-        let valueProcessed = processRowValue(value, type, 50);
-        outputValues.push(valueProcessed)
+        if (empty(fields[field])) {
+            outputValues.push(value)
+        } else {
+            let type = fields[field].Type;
+            let valueProcessed = processRowValue(value, type, 50);
+            outputValues.push(valueProcessed)
+        }
     }
     return outputValues;
 }
@@ -145,7 +164,7 @@ function TableCompare(props) {
 }
 
 export function Tbl_compare(props) {
-    //console.log(props.tables)
+    console.log(props)
     let compares = []
     for (let table in props.tables) {
         let options = props.tables[table]

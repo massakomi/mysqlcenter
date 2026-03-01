@@ -53,7 +53,6 @@ class Export extends Base
                 $exp->options['disableTriggers'] = POST('disableTriggers') != '';
                 $exp->options['columnInserts'] = POST('columnInserts') != '';
                 $exp->options['extendedInsert'] = POST('insExpand') == '';
-                $exp->options['gzip'] = intval(POST('export_to')) == 1;
                 $exp->options['comments'] = intval(POST('addComment')) == 1;
                 // Экспорт БД
                 if ($exportDb && count($exportDb) > 0) {
@@ -65,7 +64,7 @@ class Export extends Base
                         $array = Table::getTables($db);
                         foreach ($array as $t) {
                             $exp->setTable($t);
-                            $exp->startFull($isStruct, $isData, true, $isDrop, $exType, $exWhere);
+                            $exp->startFull($isStruct, $isData, $isDrop, $exType);
                         }
                     }
                 } else {
@@ -73,7 +72,7 @@ class Export extends Base
                     $exp->setDatabase(GET('db'));
                     foreach ($array as $t) {
                         $exp->setTable($t);
-                        $exp->startFull($isStruct, $isData, true, $isDrop, $exType, $exWhere);
+                        $exp->startFull($isStruct, $isData, $isDrop, $exType);
                     }
                 }
                 // Send

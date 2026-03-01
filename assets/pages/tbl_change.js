@@ -35,7 +35,7 @@ function FormBottom() {
     )
 }
 
-function getInputSize(props) {
+function getInputSize(props, defaultValue) {
     let diffLength = props.diffLength
     let type = props.type
     let value = props.value
@@ -45,27 +45,13 @@ function getInputSize(props) {
     if (a && a[1]) {
         length = parseInt(a[1]);
     }
-    if (length === 1) {
-        //return '<input name="row['.$i.'][]" type="checkbox" value="1" />';
+    if (length === null && defaultValue !== null) {
+      length = defaultValue.length
     }
 
-    let size
-    if (diffLength) {
-        if (length <= 15) {
-            size = length
-        } else if (length < 30) {
-            size = Math.round(length / 1.2)
-        } else {
-            size = Math.round(length / 3)
-        }
-    } else {
-        if (length <= 15) {
-            size = 15
-        } else if (length < 128) {
-            size = 50
-        } else {
-            size = 80
-        }
+    let size = 15
+    if (type.match(/(blob|text|char|json)/i)) {
+      size = 120
     }
     if (type === 'datetime') {
         size = 30
@@ -128,7 +114,7 @@ function MSC_InsertInput(props) {
         </div>
     }
 
-  let size = getInputSize(props)
+  let size = getInputSize(props, value)
   return <input name={`row[${j}][${i}]`} type="text" size={size} defaultValue={value} className="si" />
 }
 
@@ -267,7 +253,6 @@ function EditRows(props) {
                       <td>Поле</td>
                       <td>Ноль</td>
                       <td>Ряд #<span>{j + 1}</span></td>
-                      <td>Функция </td>
                   </tr>
                   {tableInnerRows}
                   </tbody>

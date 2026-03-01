@@ -84,17 +84,21 @@ export function Login({ current: initialCurrent, config: initialConfig }) {
     }));
   };
 
-  const save = async (mode, e) => {
+  const save = async (mode, e, addCurrent=false) => {
     e.preventDefault();
 
     try {
+      if (mode === 'show') {
+        location.href = `?s=db_list&current=${current}`;
+        return;
+      }
       const data = await msQuery(mode, {
         config: JSON.stringify(config),
         current,
       });
 
       if (mode === "open") {
-        location.href = "?s=db_list";
+        location.href = `?s=db_list`;
       }
 
       console.log(data);

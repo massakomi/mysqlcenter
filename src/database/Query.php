@@ -11,6 +11,7 @@ class Query
 {
     public int $affectedRows = 0;
     public string $lastSql = '';
+    public ?string $lastInsertId = null;
     public string $error = '';
     public string $db = '';
     public bool $exceptionOnError = true;
@@ -52,6 +53,7 @@ class Query
             if ($this->driverName == 'pgsql') {
                 $sql = str_replace('`', '"', $sql);
             }
+            $this->lastInsertId = null;
             $this->error = '';
             $this->lastSql = $sql;
             $this->affectedRows = 0;
@@ -60,30 +62,50 @@ class Query
                 if ($execResult !== false) {
                     $this->affectedRows = $execResult;
                     $result = true;
+                    $this->saveLastInsertId();
                 }
             } else {
                 $result = $pdo->query($sql, \PDO::FETCH_ASSOC); // PDOStatement|false
             }
         } catch (\PDOException $e) {
-            $this->error = $e->getMessage();
-            logError($this->error, $sql);
-            if ($this->exceptionOnError && !isAjax()) {
-                // При USE ошибка перехватывается и выводится другой html
-                if (!str_starts_with($sql, 'USE')) {
-                    //    echo '<pre>';
-                }
-                // echo $sql;
-                // echo '<hr />';
-                // throw new \Exception($this->error);
-                // Желательно показывать так, красиво и только в крайнем случае
-                $msc->error($e->getTraceAsString(), $sql);
-            }
+            $this->logError($e, $sql);
         }
         if ($this->logEnabled && $result) {
             $this->loqQuery($sql);
         }
 
         return $result === false ? null : $result;
+    }
+
+    private function saveLastInsertId(): void
+    {
+        global $pdo;
+        try {
+            $id = $pdo->lastInsertId();
+        } catch (\Throwable $e) {
+            $id = false;
+        }
+        if ($id !== false) {
+            $this->lastInsertId = $id;
+        }
+    }
+
+    private function logError(\PDOException $e, string $sql): void
+    {
+        global $msc;
+        $this->error = $e->getMessage();
+        logError($this->error, $sql);
+        if ($this->exceptionOnError && !isAjax()) {
+            // При USE ошибка перехватывается и выводится другой html
+            // if (!str_starts_with($sql, 'USE')) {
+                //    echo '<pre>';
+            // }
+            // echo $sql;
+            // echo '<hr />';
+            // throw new \Exception($this->error);
+            // Желательно показывать так, красиво и только в крайнем случае
+            $msc->error($e->getTraceAsString(), $sql);
+        }
     }
 
     /**
@@ -103,11 +125,13 @@ class Query
      */
     public function selectDb(string $db): bool
     {
-        if ($db == null) {
+        static $selectedDb;
+        if ($db == null || (isset($selectedDb) && $selectedDb === $db)) {
             return false;
         }
         try {
             $this->driver->selectDb($db);
+            $selectedDb = $db;
         } catch (\Exception $e) {
             $this->fatalError('Ошибка при выборе базы данных "'.$db.'": '.$e->getMessage());
         }
